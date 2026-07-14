@@ -24,13 +24,18 @@ function App() {
             setCarrito([...carrito, {...producto, cantidad: 1}]);
         }
     };
+
+    const eliminarDelCarrito = (id) => {
+        setCarrito(carrito.filter((item) => item.id !== id));
+    };
     
 
     return (
         <div>
             <h1>SumarketExpress</h1>
             <Catalogo productos = {productos} onAgregar = {agregarAlCarrito} />
-            <Carrito carrito = {carrito} />
+            <Carrito carrito = {carrito} onEliminar = {eliminarDelCarrito}/>
+            
         </div>
     )
 }

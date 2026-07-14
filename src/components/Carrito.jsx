@@ -1,4 +1,4 @@
-function Carrito ({carrito}) {
+function Carrito ({carrito, onEliminar}) {
     const total = carrito.reduce(
 
         //Inicio:  suma = 0
@@ -23,11 +23,13 @@ function Carrito ({carrito}) {
                     <span>{item.nombre}</span>
                     <span>x{item.cantidad}</span>
                     <span>${(item.precio * item.cantidad).toLocaleString("es-CL")}</span>
+                    <button onClick={() => onEliminar(item.id)}>Eliminar</button>
                     
                 </div>
             ))}
-
             <p>Total: ${total.toLocaleString("es-CL")}</p>
+            
+
         </aside>
     )
 

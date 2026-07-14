@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { productos } from "./data/producto.js";
 import Catalogo from "./components/Catalogo.jsx";
+import Carrito from "./components/Carrito.jsx";
 
 function App() {
 
@@ -29,7 +30,7 @@ function App() {
         <div>
             <h1>SumarketExpress</h1>
             <Catalogo productos = {productos} onAgregar = {agregarAlCarrito} />
-            <p>Items en el carrito: {carrito.length}</p>
+            <Carrito carrito = {carrito} />
         </div>
     )
 }

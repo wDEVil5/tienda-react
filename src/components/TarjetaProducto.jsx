@@ -1,4 +1,4 @@
-function TarjetaProducto({ producto }) {
+function TarjetaProducto({ producto, onAgregar }) {
     const enOferta = producto.precioAnterior !== null;
 
     return (
@@ -21,7 +21,9 @@ function TarjetaProducto({ producto }) {
                 )}
             </div>
 
-            <button>Agregar al carrito</button>
+            <button
+                onClick={() => onAgregar(producto)}
+                >Agregar al carrito</button>
         </article>
     )
 }

@@ -1,0 +1,18 @@
+.app {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--espacio-lg);
+}
+
+.titulo {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: var(--espacio-lg);
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: var(--espacio-lg);
+    align-items: start;
+}

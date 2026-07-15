@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 //import { productos } from "./data/producto.js"; ya no la uso porque estoy usando datos de la API
 import Catalogo from "./components/Catalogo.jsx";
 import Carrito from "./components/Carrito.jsx";
+import styles from "./App.module.css"
 
 function App() {
     const [productos, setProductos] = useState([]) //empieza vacia, los datos llegan despues
     const [cargando, setCargando] = useState(true) // ¿esta cargando? muestra un mensaje si esta en true...mientras llega la respuesta
-    
+
     const [carrito, setCarrito] = useState(() => {
         const guardado = localStorage.getItem("carrito");
         return guardado ? JSON.parse(guardado) : [];
@@ -78,11 +79,18 @@ function App() {
     };
 
     return (
-        <div>
-            <h1>SumarketExpress</h1>
-            <Catalogo productos = {productos} onAgregar = {agregarAlCarrito} />
-            <Carrito carrito = {carrito} onEliminar = {eliminarDelCarrito} onCambiarCantidad={cambiarCantidad}/>
-            
+        <div className={styles.app}>
+            <h1 className={styles.titulo}>SumarketExpress</h1>
+            <div className={styles.layout}>
+                <Catalogo 
+                    productos = {productos} 
+                    onAgregar = {agregarAlCarrito} />
+                <Carrito 
+                    carrito = {carrito} 
+                    onEliminar = {eliminarDelCarrito} 
+                    onCambiarCantidad={cambiarCantidad}/>
+                
+            </div>
         </div>
     )
 }

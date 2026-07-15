@@ -71,3 +71,23 @@
   justify-content: center;
   padding: 0 4px;
 }
+
+@media (max-width: 600px) {
+  .header {
+    flex-wrap: wrap;
+    gap: var(--espacio-md);
+  }
+
+  .logo {
+    font-size: 1.2rem;
+  }
+
+  .buscador {
+    width: 100%;
+    order: 3;
+  }
+
+  .carrito {
+    margin-left: auto;
+  }
+}

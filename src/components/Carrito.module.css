@@ -164,4 +164,16 @@
     width: 100%;
     max-width: 100%;
   }
+
+  .cabecera {
+    padding: var(--espacio-md);
+  }
+
+  .lista {
+    padding: 0 var(--espacio-md);
+  }
+
+  .pie {
+    padding: var(--espacio-md);
+  }
 }

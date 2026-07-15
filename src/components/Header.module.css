@@ -1,0 +1,46 @@
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-lg);
+  background-color: var(--color-fondo);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  padding: var(--espacio-md) var(--espacio-lg);
+  margin-bottom: var(--espacio-lg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.logo {
+  font-size: 1.25rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.buscador {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-sm);
+  padding: var(--espacio-sm) var(--espacio-md);
+}
+
+.buscador i {
+  color: var(--color-texto-suave);
+}
+
+.buscador input {
+  border: none;
+  outline: none;
+  font-size: 0.95rem;
+  font-family: inherit;
+  width: 100%;
+  background: transparent;
+}
+
+.carrito {
+  font-size: 1.2rem;
+  color: var(--color-texto);
+  white-space: nowrap;
+}

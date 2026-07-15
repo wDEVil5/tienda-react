@@ -3,9 +3,8 @@ import TarjetaProducto from "./TarjetaProducto.jsx";
 import styles from "../Catalogo.module.css";
 
 
-function Catalogo({ productos, onAgregar }) {
+function Catalogo({ productos, busqueda, onAgregar }) {
 
-    const [busqueda, setBusqueda] = useState(""); // lo que escribe el usuario
     const [categoria, setCategoria] = useState("todas"); // la ctegoria elegida
 
     //const categorias = ["todas", "frutas", "lacteos", "abarrotes", "bebidas", "snacks", "limpieza"]; //datos fijos MANUAL
@@ -26,15 +25,9 @@ function Catalogo({ productos, onAgregar }) {
     });
     
     return (
+        
         <section className={styles.catalogo}>
             <div className={styles.controles}>
-                <input
-                    className={styles.buscador}
-                    type="text"
-                    placeholder="Buscar producto"
-                    value={busqueda}
-                    onChange={(e) => setBusqueda(e.target.value)}
-                />
 
                 {/* Botones de categoria */}
                 <div className={styles.filtros}>

@@ -3,10 +3,12 @@ import { useState, useEffect } from "react";
 import Catalogo from "./components/Catalogo.jsx";
 import Carrito from "./components/Carrito.jsx";
 import styles from "./App.module.css";
+import Header from "./components/Header.jsx";
 
 function App() {
-    const [productos, setProductos] = useState([]) //empieza vacia, los datos llegan despues
-    const [cargando, setCargando] = useState(true) // ¿esta cargando? muestra un mensaje si esta en true...mientras llega la respuesta
+    const [busqueda, setBusqueda] = useState("");
+    const [productos, setProductos] = useState([]); //empieza vacia, los datos llegan despues
+    const [cargando, setCargando] = useState(true); // ¿esta cargando? muestra un mensaje si esta en true...mientras llega la respuesta
 
     const [carrito, setCarrito] = useState(() => {
         const guardado = localStorage.getItem("carrito");
@@ -81,9 +83,12 @@ function App() {
     return (
         <div className={styles.app}>
             <h1 className={styles.titulo}>SumarketExpress</h1>
+            <Header busqueda={busqueda} onBuscar={setBusqueda} />
+            
             <div className={styles.layout}>
                 <Catalogo 
                     productos = {productos} 
+                    busqueda={busqueda}
                     onAgregar = {agregarAlCarrito} />
                 <Carrito 
                     carrito = {carrito} 

@@ -3,7 +3,9 @@ import styles from "./Header.module.css";
 function Header({ busqueda, onBuscar, totalItems, onAbrirCarrito }) {
   return (
     <header className={styles.header}>
-      <span className={styles.logo}>SumarketExpress</span>
+      <span className={styles.logo}>
+        <strong>Sumarket</strong>Express
+        </span>
 
       <div className={styles.buscador}>
         <i className="fa-solid fa-magnifying-glass"></i>

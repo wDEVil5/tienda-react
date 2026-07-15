@@ -47,7 +47,6 @@
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--color-acento);
-  margin-top: auto;
   margin-bottom: var(--espacio-sm);
 }
 
@@ -83,6 +82,7 @@
   display: flex;
   align-items: baseline;
   gap: var(--espacio-sm);
+  margin-top: auto;
   margin-bottom: var(--espacio-sm);
 }
 

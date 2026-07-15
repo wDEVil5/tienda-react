@@ -14,18 +14,18 @@ function TarjetaProducto({ producto, onAgregar }) {
             </div>
             
 
-            {enOferta && <span className="badge">Oferta</span>}
+            {enOferta && <span className={styles.badge}>Oferta</span>}
 
             <h3 className={styles.nombre}>{producto.nombre}</h3>
             <p className={styles.categoria}>{producto.categoria}</p>
 
             <div className={styles.precios}>
                 <span className={styles.precio}>
-                    ${producto.precio.toLocaleString("en-CL")}
+                    ${producto.precio.toLocaleString("es-CL")}
                 </span>
                 {enOferta && (
                     <span className={styles.precioAntes}>
-                        ${producto.precioAnterior.toLocaleString("en-CL")}
+                        ${producto.precioAnterior.toLocaleString("es-CL")}
                     </span>
                 )}
             </div>

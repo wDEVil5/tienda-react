@@ -7,13 +7,16 @@
   max-width: 90vw;
   background-color: var(--color-fondo);
   border-left: 1px solid var(--color-borde);
-  padding: var(--espacio-lg);
   z-index: 1000;
-  overflow-y: auto;
   box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+
+  /* columna flex de altura completa */
+  display: flex;
+  flex-direction: column;
 
   transform: translateX(100%);        /* cerrado: fuera de pantalla (derecha) */
   transition: transform 0.3s ease;    /* anima el movimiento en AMBOS sentidos */
+  will-change: transform;
 }
 
 .abierto {
@@ -44,6 +47,7 @@
   font-size: 0.9rem;
   font-weight: 500;
   line-height: 1.3;
+  word-break: break-word;   /* corta palabras largas si es necesario */
 }
 
 .itemControles {
@@ -100,8 +104,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: var(--espacio-md);
-  padding-top: var(--espacio-md);
   font-size: 1.1rem;
   font-weight: 600;
 }
@@ -110,11 +112,31 @@
   color: var(--color-acento);
 }
 
+/* Zona 1: cabecera fija arriba */
 .cabecera {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--espacio-lg);
+  padding: var(--espacio-lg);
+  border-bottom: 1px solid var(--color-borde);
+  flex-shrink: 0;   /* no se encoge */
+}
+
+/* Zona 2: lista scrolleable pensado para escalabilidad) */
+.lista {
+  flex: 1;             /* toma todo el espacio disponible */
+  overflow-y: auto;    /* SCROLL solo aquí */
+  padding: 0 var(--espacio-lg);
+}
+
+/* Zona 3: total fijo abajo */
+.pie {
+  padding: var(--espacio-lg);
+  border-top: 1px solid var(--color-borde);
+  flex-shrink: 0;   /* no se encoge */
+
+  /* La sombra de scroll */
+  box-shadow: 0 -8px 12px -8px rgba(0, 0, 0, 0.12);
 }
 
 .cerrar {

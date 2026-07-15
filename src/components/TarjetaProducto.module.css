@@ -1,0 +1,91 @@
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-fondo);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  padding: var(--espacio-md);
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.tarjeta:hover {
+  border-color: var(--color-texto-suave);
+  transform: translateY(-3px);
+}
+
+.imagenWrap {
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--espacio-md);
+}
+
+.imagen {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.nombre {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: var(--espacio-xs);
+  line-height: 1.3;
+}
+
+.categoria {
+  font-size: 0.8rem;
+  color: var(--color-texto-suave);
+  margin-bottom: var(--espacio-sm);
+  text-transform: capitalize;
+}
+
+.precio {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-acento);
+  margin-top: auto;
+  margin-bottom: var(--espacio-sm);
+}
+
+.boton {
+  background-color: var(--color-boton);
+  color: #fff;
+  border: none;
+  padding: var(--espacio-sm) var(--espacio-md);
+  border-radius: var(--radio-sm);
+  font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  width: 100%;
+}
+
+.boton:hover {
+  background-color: var(--color-boton-hover);
+}
+
+.badge {
+  align-self: flex-start;
+  background-color: #fcebeb;
+  color: #a32d2d;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radio-sm);
+  margin-bottom: var(--espacio-sm);
+}
+
+.precios {
+  display: flex;
+  align-items: baseline;
+  gap: var(--espacio-sm);
+  margin-bottom: var(--espacio-sm);
+}
+
+.precioAntes {
+  font-size: 0.85rem;
+  color: var(--color-texto-suave);
+  text-decoration: line-through;
+}

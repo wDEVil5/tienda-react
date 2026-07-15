@@ -1,5 +1,6 @@
 import { useState } from "react";
 import TarjetaProducto from "./TarjetaProducto.jsx";
+import styles from "../Catalogo.module.css";
 
 
 function Catalogo({ productos, onAgregar }) {
@@ -25,32 +26,41 @@ function Catalogo({ productos, onAgregar }) {
     });
     
     return (
-        <section>
-            <input
-                type="text"
-                value={busqueda}
-                placeholder="Buscar producto"
-                onChange={(e) => setBusqueda(e.target.value)}
-            />
+        <section className={styles.catalogo}>
+            <div className={styles.controles}>
+                <input
+                    className={styles.buscador}
+                    type="text"
+                    placeholder="Buscar producto"
+                    value={busqueda}
+                    onChange={(e) => setBusqueda(e.target.value)}
+                />
 
-            {/* Botones de categoria */}
-            <div>
-                {categorias.map((cat) => (
-                    <button
-                        key={cat}
-                        onClick={() => setCategoria(cat)}
-                        className={categoria === cat ? "activo" : ""}
-                    >
-                        {cat}
-                    </button>
-                ))}
+                {/* Botones de categoria */}
+                <div className={styles.filtros}>
+                    {categorias.map((cat) => (
+                        <button
+                            key={cat}
+                            onClick={() => setCategoria(cat)}
+                            className={categoria === cat ? styles.filtroActivo : styles.filtro}
+                        >
+                            {cat}
+                        </button>
+                    ))}
+                </div>
             </div>
             
-
-            {productosFiltrados.map((producto) => (
-                <TarjetaProducto key = {producto.id} producto = {producto} onAgregar = {onAgregar}/>
-
-            ))}
+            
+            <div className={styles.grid}>
+                {productosFiltrados.map((producto) => (
+                <TarjetaProducto 
+                    key = {producto.id} 
+                    producto = {producto} 
+                    onAgregar = {onAgregar}
+                    />
+                ))}
+            </div>
+  
         </section>
     );
 }

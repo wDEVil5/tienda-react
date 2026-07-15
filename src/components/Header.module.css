@@ -21,9 +21,7 @@
 }
 
 .buscador {
-  flex: 1;
-  max-width: 480px;
-  margin: 0 auto;
+  width: 340px;
   display: flex;
   align-items: center;
   gap: var(--espacio-sm);
@@ -47,6 +45,7 @@
 }
 
 .carrito {
+  margin-left: auto;
   position: relative;
   background: none;
   border: none;

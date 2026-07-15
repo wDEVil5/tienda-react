@@ -3,7 +3,7 @@ import styles from "./Footer.module.css";
 function Footer() {
   return (
     <footer className={styles.footer}>
-      <p className={styles.marca}>SumarketExpress</p>
+      <p className={styles.marca}>SumarketExpress v2</p>
       <p className={styles.texto}>
         Proyecto desarrollado con React por MI, wil · {new Date().getFullYear()}
       </p>

@@ -35,6 +35,7 @@
   font-size: 0.9rem;
   text-align: center;
   margin-top: var(--espacio-xl);
+
 }
 
 .item {
@@ -155,4 +156,12 @@
 
 .cerrar:hover {
   color: var(--color-texto);
+}
+
+/* en pantallas de 480px desplegar pantalla de carrito completo */
+@media (max-width: 480px) {
+  .carrito {
+    width: 100%;
+    max-width: 100%;
+  }
 }

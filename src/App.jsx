@@ -7,104 +7,109 @@ import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
 
 function App() {
-    const [busqueda, setBusqueda] = useState("");
-    const [productos, setProductos] = useState([]); //empieza vacia, los datos llegan despues
-    const [cargando, setCargando] = useState(true); // ¿esta cargando? muestra un mensaje si esta en true...mientras llega la respuesta
-    
+  const [busqueda, setBusqueda] = useState("");
+  const [productos, setProductos] = useState([]); //empieza vacia, los datos llegan despues
+  const [cargando, setCargando] = useState(true); // ¿esta cargando?
 
-    const [carrito, setCarrito] = useState(() => {
-        const guardado = localStorage.getItem("carrito");
-        return guardado ? JSON.parse(guardado) : [];
-    });
+  const [carrito, setCarrito] = useState(() => {
+    const guardado = localStorage.getItem("carrito");
+    return guardado ? JSON.parse(guardado) : [];
+  });
+  const [carritoAbierto, setCarritoAbierto] = useState(false);
+  const totalItems = carrito.reduce((suma, item) => suma + item.cantidad, 0);
 
-    const totalItems = carrito.reduce((suma, item) => suma + item.cantidad, 0);
+  useEffect(() => {
+    fetch("https://fakestoreapi.com/products")
+      .then((respuesta) => respuesta.json())
+      .then((datos) => {
+        const traducidos = datos.map((p) => ({
+          id: p.id,
+          nombre: p.title,
+          precio: p.price,
+          imagen: p.image,
+          categoria: p.category,
+          precioAnterior: null,
+        }));
+        setProductos(traducidos);
+        setCargando(false);
+      });
+  }, []);
 
-    useEffect(() => {
-        fetch("https://fakestoreapi.com/products") //API datos ficticio
-        .then((respuesta) => respuesta.json()) //alternativa async/await
-        .then((datos) => {
-            const traducidos = datos.map((p) => ({ // traducir los datos de la API, para que se adapten
-                id: p.id,
-                nombre: p.title,
-                precio: p.price,
-                imagen: p.image,
-                categoria: p.category,
-                precioAnterior: null
-            }));
-            setProductos(traducidos); //guarda los productos pero ya traducidos traducidos
-            setCargando(false); //una vez este los datos apaga el "Cargando..."
-        });
-    }, []); // [] carga una vez y lito
+  //Guardar: cada vez que el carrito cambie
+  useEffect(() => {
+    localStorage.setItem("carrito", JSON.stringify(carrito));
+  }, [carrito]);
 
+  //early return
+  if (cargando) {
+    return <p>Cargando productos...</p>;
+  }
 
-    //Guardar: cada vez que el carrito cambie
-    useEffect(() => {
-        localStorage.setItem("carrito", JSON.stringify(carrito));
-    }, [carrito])
+  const agregarAlCarrito = (producto) => {
+    const itemExistente = carrito.find((item) => item.id === producto.id);
 
-    //early return
-    if (cargando) {
-        return <p>Cargando productos...</p>;
+    if (itemExistente) {
+      setCarrito(
+        carrito.map((item) =>
+          item.id === producto.id
+            ? { ...item, cantidad: item.cantidad + 1 }
+            : item,
+        ),
+      );
+    } else {
+      setCarrito([...carrito, { ...producto, cantidad: 1 }]);
     }
+  };
 
-    const agregarAlCarrito = (producto) => {
-        const itemExistente = carrito.find((item) => item.id === producto.id);
+  const eliminarDelCarrito = (id) => {
+    setCarrito(carrito.filter((item) => item.id !== id));
+  };
 
-        if (itemExistente) {
-            //si ya esta: recorro el carrito y le agrego uno SOLO al que coincide
-                setCarrito (
-                    carrito.map((item) => 
-                    item.id === producto.id
-                    ? {...item, cantidad: item.cantidad + 1 }
-                    : item
-                )
-            );
-        } else {
-            //si no esta: creo un archivo nuevo con todos los items + este, con cantidad 1
-            setCarrito([...carrito, {...producto, cantidad: 1}]);
-        }
-    };
+  const cambiarCantidad = (id, delta) => {
+    setCarrito(
+      carrito.map((item) =>
+        item.id === id
+          ? { ...item, cantidad: Math.max(1, item.cantidad + delta) }
+          : item,
+      ),
+    );
+  };
 
-    const eliminarDelCarrito = ( id ) => {
-        setCarrito(carrito.filter((item) => item.id !== id));
-    };
-    
-    const cambiarCantidad = (id, delta) => {
-        setCarrito(
+  return (
+    <div className={styles.app}>
+      <Header
+        busqueda={busqueda}
+        onBuscar={setBusqueda}
+        totalItems={totalItems}
+        onAbrirCarrito={() => setCarritoAbierto(true)}
+      />
 
-            //Math.max(a, b) devuelve el mayor de los dos valores.
-            //Math.max(1, item.cantidad + delta) significa:
-            //"usa el resultado de sumar el delta, pero nunca menos de 1".
-            carrito.map((item) => 
-            item.id === id
-                ? {...item, cantidad: Math.max(1, item.cantidad + delta) }
-                : item
-                
-            )
-        );
-    };
+      <Catalogo
+        productos={productos}
+        busqueda={busqueda}
+        onAgregar={agregarAlCarrito}
+      />
 
-    return (
-        <div className={styles.app}>
-            <Header busqueda={busqueda} 
-            onBuscar={setBusqueda} 
-            totalItems={totalItems}/>
-            
-            
-            <div className={styles.layout}>
+      {/* El overlay SÍ es condicional: aparece solo cuando el carrito está abierto */}
+      {carritoAbierto && (
+        <div
+          className={styles.overlay}
+          onClick={() => setCarritoAbierto(false)}
+        ></div>
+      )}
 
-                <Catalogo 
-                    productos = {productos} 
-                    busqueda={busqueda}
-                    onAgregar = {agregarAlCarrito} />
-                <Carrito 
-                    carrito = {carrito} 
-                    onEliminar = {eliminarDelCarrito} 
-                    onCambiarCantidad={cambiarCantidad}/>     
-            </div>
-            <Footer />
-        </div>
-    )
+      {/* El Carrito SIEMPRE montado: se desliza dentro/fuera según "abierto" */}
+      <Carrito
+        carrito={carrito}
+        onEliminar={eliminarDelCarrito}
+        onCambiarCantidad={cambiarCantidad}
+        onCerrar={() => setCarritoAbierto(false)}
+        abierto={carritoAbierto}
+      />
+
+      <Footer />
+    </div>
+  );
 }
 
 export default App;

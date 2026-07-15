@@ -1,6 +1,6 @@
 import styles from "./Header.module.css";
 
-function Header({ busqueda, onBuscar, totalItems }) {
+function Header({ busqueda, onBuscar, totalItems, onAbrirCarrito }) {
   return (
     <header className={styles.header}>
       <span className={styles.logo}>SumarketExpress</span>
@@ -15,10 +15,10 @@ function Header({ busqueda, onBuscar, totalItems }) {
         />
       </div>
 
-      <div className={styles.carrito}>
+      <button className={styles.carrito} onClick={onAbrirCarrito}>
         <i className="fa-solid fa-cart-shopping"></i>
         {totalItems > 0 && <span className={styles.badge}>{totalItems}</span>}
-      </div>
+      </button>
     </header>
   );
 }

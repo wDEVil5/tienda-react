@@ -1,11 +1,25 @@
 .carrito {
-  background-color: var(--color-fondo-suave);
-  border: 1px solid var(--color-borde);
-  border-radius: var(--radio-md);
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 380px;
+  max-width: 90vw;
+  background-color: var(--color-fondo);
+  border-left: 1px solid var(--color-borde);
   padding: var(--espacio-lg);
-  position: sticky;
-  top: var(--espacio-lg);
+  z-index: 1000;
+  overflow-y: auto;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+
+  transform: translateX(100%);        /* cerrado: fuera de pantalla (derecha) */
+  transition: transform 0.3s ease;    /* anima el movimiento en AMBOS sentidos */
 }
+
+.abierto {
+  transform: translateX(0);           /* abierto: en su posición */
+}
+
 
 .titulo {
   font-size: 1.2rem;
@@ -94,4 +108,25 @@
 
 .totalMonto {
   color: var(--color-acento);
+}
+
+.cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--espacio-lg);
+}
+
+.cerrar {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.3rem;
+  color: var(--color-texto-suave);
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.cerrar:hover {
+  color: var(--color-texto);
 }

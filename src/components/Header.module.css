@@ -41,8 +41,12 @@
 
 .carrito {
   position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
   font-size: 1.2rem;
   color: var(--color-texto);
+  padding: 0;
 }
 
 .badge {

@@ -1,0 +1,38 @@
+.footer {
+  margin-top: 6rem;          /* ← antes era var(--espacio-xl) = 2rem; ahora 6rem */
+  padding: var(--espacio-xl) var(--espacio-lg);
+  border-top: 1px solid var(--color-borde);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+}
+
+.marca {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-texto);
+}
+
+.texto {
+  font-size: 0.85rem;
+  color: var(--color-texto-suave);
+}
+
+.enlaces {
+  margin-top: var(--espacio-sm);
+  display: flex;
+  justify-content: center;
+  gap: var(--espacio-md);
+}
+
+.enlaces a {
+  color: var(--color-texto-suave);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.2s ease;
+}
+
+.enlaces a:hover {
+  color: var(--color-acento);
+}

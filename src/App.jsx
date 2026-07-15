@@ -4,6 +4,7 @@ import Catalogo from "./components/Catalogo.jsx";
 import Carrito from "./components/Carrito.jsx";
 import styles from "./App.module.css";
 import Header from "./components/Header.jsx";
+import Footer from "./components/Footer.jsx";
 
 function App() {
     const [busqueda, setBusqueda] = useState("");
@@ -91,6 +92,7 @@ function App() {
             
             
             <div className={styles.layout}>
+
                 <Catalogo 
                     productos = {productos} 
                     busqueda={busqueda}
@@ -100,6 +102,7 @@ function App() {
                     onEliminar = {eliminarDelCarrito} 
                     onCambiarCantidad={cambiarCantidad}/>     
             </div>
+            <Footer />
         </div>
     )
 }

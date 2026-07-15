@@ -6,7 +6,11 @@ import Carrito from "./components/Carrito.jsx";
 function App() {
     const [productos, setProductos] = useState([]) //empieza vacia, los datos llegan despues
     const [cargando, setCargando] = useState(true) // ¿esta cargando? muestra un mensaje si esta en true...mientras llega la respuesta
-    const [carrito, setCarrito] = useState([]) //parte vacio
+    
+    const [carrito, setCarrito] = useState(() => {
+        const guardado = localStorage.getItem("carrito");
+        return guardado ? JSON.parse(guardado) : [];
+    })
 
     useEffect(() => {
         fetch("https://fakestoreapi.com/products") //API datos ficticio
@@ -24,6 +28,12 @@ function App() {
             setCargando(false); //una vez este los datos apaga el "Cargando..."
         });
     }, []); // [] carga una vez y lito
+
+
+    //Guardar: cada vez que el carrito cambie
+    useEffect(() => {
+        localStorage.setItem("carrito", JSON.stringify(carrito));
+    }, [carrito])
 
     //early return
     if (cargando) {

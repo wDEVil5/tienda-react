@@ -1,11 +1,34 @@
-import { useState } from "react";
-import { productos } from "./data/producto.js";
+import { useState, useEffect } from "react";
+//import { productos } from "./data/producto.js"; ya no la uso porque estoy usando datos de la API
 import Catalogo from "./components/Catalogo.jsx";
 import Carrito from "./components/Carrito.jsx";
 
 function App() {
+    const [productos, setProductos] = useState([]) //empieza vacia, los datos llegan despues
+    const [cargando, setCargando] = useState(true) // ¿esta cargando? muestra un mensaje si esta en true...mientras llega la respuesta
+    const [carrito, setCarrito] = useState([]) //parte vacio
 
-    const [carrito, setCarrito] = useState([])
+    useEffect(() => {
+        fetch("https://fakestoreapi.com/products") //API datos ficticio
+        .then((respuesta) => respuesta.json()) //alternativa async/await
+        .then((datos) => {
+            const traducidos = datos.map((p) => ({ // traducir los datos de la API, para que se adapten
+                id: p.id,
+                nombre: p.title,
+                precio: p.price,
+                imagen: p.image,
+                categoria: p.category,
+                precioAnterior: null
+            }));
+            setProductos(traducidos); //guarda los productos pero ya traducidos traducidos
+            setCargando(false); //una vez este los datos apaga el "Cargando..."
+        });
+    }, []); // [] carga una vez y lito
+
+    //early return
+    if (cargando) {
+        return <p>Cargando productos...</p>;
+    }
 
     const agregarAlCarrito = (producto) => {
         const itemExistente = carrito.find((item) => item.id === producto.id);

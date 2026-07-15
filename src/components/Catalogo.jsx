@@ -7,7 +7,8 @@ function Catalogo({ productos, onAgregar }) {
     const [busqueda, setBusqueda] = useState(""); // lo que escribe el usuario
     const [categoria, setCategoria] = useState("todas"); // la ctegoria elegida
 
-    const categorias = ["todas", "frutas", "lacteos", "abarrotes", "bebidas", "snacks", "limpieza"];
+    //const categorias = ["todas", "frutas", "lacteos", "abarrotes", "bebidas", "snacks", "limpieza"]; //datos fijos MANUAL
+    const categorias = ["todas", ...new Set(productos.map((p) => p.categoria))]; // version Derivada, calculo automatico
 
     const productosFiltrados = productos.filter((producto) => {
         const coincideBusqueda = producto.nombre

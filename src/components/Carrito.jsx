@@ -1,40 +1,64 @@
-function Carrito ({carrito, onEliminar, onCambiarCantidad}) {
-    const total = carrito.reduce(
+import styles from "./Carrito.module.css";
 
-        //Inicio:  suma = 0
-        //Vuelta 1: suma = 0 + (990 × 2) = 1980
-        //Vuelta 2: suma = 1980 + (1200 × 1) = 3180
-        //Resultado: 3180
+function Carrito({ carrito, onEliminar, onCambiarCantidad }) {
+  const total = carrito.reduce(
+    (suma, item) => suma + item.precio * item.cantidad,
+    0
+  );
 
-        (suma, item) => suma + item.precio * item.cantidad,
-        0
-    );
-
-    if (carrito.length === 0) {
-        return <p>Tu carrito esta vacio.</p>
-    }
-
+  if (carrito.length === 0) {
     return (
-        <aside>
-            <h2>Tu carrito</h2>
+      <aside className={styles.carrito}>
+        <h2 className={styles.titulo}>Tu carrito</h2>
+        <p className={styles.vacio}>Tu carrito está vacío.</p>
+      </aside>
+    );
+  }
 
-            {carrito.map((item) => (
-                <div key={item.id}>
-                    <span>{item.nombre}</span>
-                    <button onClick={() => onCambiarCantidad(item.id, -1)}>-</button>
-                    <span>x{item.cantidad}</span>
-                    <span>${(item.precio * item.cantidad).toLocaleString("es-CL")}</span>
-                    <button onClick={() => onCambiarCantidad(item.id, 1)}>+</button>
-                    <button onClick={() => onEliminar(item.id)}>Eliminar</button>
-                    
-                </div>
-            ))}
-            <p>Total: ${total.toLocaleString("es-CL")}</p>
-            
+  return (
+    <aside className={styles.carrito}>
+      <h2 className={styles.titulo}>Tu carrito</h2>
 
-        </aside>
-    )
+      {carrito.map((item) => (
+        <div key={item.id} className={styles.item}>
+          <span className={styles.itemNombre}>{item.nombre}</span>
+          <div className={styles.itemControles}>
+            <div className={styles.cantidad}>
+              <button
+                className={styles.botonCantidad}
+                onClick={() => onCambiarCantidad(item.id, -1)}
+              >
+                −
+              </button>
+              <span>{item.cantidad}</span>
+              <button
+                className={styles.botonCantidad}
+                onClick={() => onCambiarCantidad(item.id, 1)}
+              >
+                +
+              </button>
+            </div>
+            <span className={styles.subtotal}>
+              ${(item.precio * item.cantidad).toLocaleString("es-CL")}
+            </span>
+          </div>
+          <button
+            className={styles.eliminar}
+            onClick={() => onEliminar(item.id)}
+          >
+            Eliminar
+          </button>
+        </div>
+      ))}
 
+      <div className={styles.total}>
+        <span>Total</span>
+        <span className={styles.totalMonto}>
+          ${total.toLocaleString("es-CL")}
+        </span>
+      </div>
+    </aside>
+  );
 }
 
 export default Carrito;

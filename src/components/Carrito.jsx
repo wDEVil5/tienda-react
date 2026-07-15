@@ -1,4 +1,4 @@
-function Carrito ({carrito, onEliminar}) {
+function Carrito ({carrito, onEliminar, onCambiarCantidad}) {
     const total = carrito.reduce(
 
         //Inicio:  suma = 0
@@ -21,8 +21,10 @@ function Carrito ({carrito, onEliminar}) {
             {carrito.map((item) => (
                 <div key={item.id}>
                     <span>{item.nombre}</span>
+                    <button onClick={() => onCambiarCantidad(item.id, -1)}>-</button>
                     <span>x{item.cantidad}</span>
                     <span>${(item.precio * item.cantidad).toLocaleString("es-CL")}</span>
+                    <button onClick={() => onCambiarCantidad(item.id, 1)}>+</button>
                     <button onClick={() => onEliminar(item.id)}>Eliminar</button>
                     
                 </div>

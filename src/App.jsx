@@ -25,16 +25,30 @@ function App() {
         }
     };
 
-    const eliminarDelCarrito = (id) => {
+    const eliminarDelCarrito = ( id ) => {
         setCarrito(carrito.filter((item) => item.id !== id));
     };
     
+    const cambiarCantidad = (id, delta) => {
+        setCarrito(
+
+            //Math.max(a, b) devuelve el mayor de los dos valores.
+            //Math.max(1, item.cantidad + delta) significa:
+            //"usa el resultado de sumar el delta, pero nunca menos de 1".
+            carrito.map((item) => 
+            item.id === id
+                ? {...item, cantidad: Math.max(1, item.cantidad + delta) }
+                : item
+                
+            )
+        );
+    };
 
     return (
         <div>
             <h1>SumarketExpress</h1>
             <Catalogo productos = {productos} onAgregar = {agregarAlCarrito} />
-            <Carrito carrito = {carrito} onEliminar = {eliminarDelCarrito}/>
+            <Carrito carrito = {carrito} onEliminar = {eliminarDelCarrito} onCambiarCantidad={cambiarCantidad}/>
             
         </div>
     )

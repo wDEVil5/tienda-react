@@ -9,11 +9,14 @@ function App() {
     const [busqueda, setBusqueda] = useState("");
     const [productos, setProductos] = useState([]); //empieza vacia, los datos llegan despues
     const [cargando, setCargando] = useState(true); // ¿esta cargando? muestra un mensaje si esta en true...mientras llega la respuesta
+    
 
     const [carrito, setCarrito] = useState(() => {
         const guardado = localStorage.getItem("carrito");
         return guardado ? JSON.parse(guardado) : [];
-    })
+    });
+
+    const totalItems = carrito.reduce((suma, item) => suma + item.cantidad, 0);
 
     useEffect(() => {
         fetch("https://fakestoreapi.com/products") //API datos ficticio
@@ -82,8 +85,10 @@ function App() {
 
     return (
         <div className={styles.app}>
-            <h1 className={styles.titulo}>SumarketExpress</h1>
-            <Header busqueda={busqueda} onBuscar={setBusqueda} />
+            <Header busqueda={busqueda} 
+            onBuscar={setBusqueda} 
+            totalItems={totalItems}/>
+            
             
             <div className={styles.layout}>
                 <Catalogo 

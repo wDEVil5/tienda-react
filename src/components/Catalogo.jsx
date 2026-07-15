@@ -13,7 +13,7 @@ function Catalogo({ productos, busqueda, onAgregar }) {
     const productosFiltrados = productos.filter((producto) => {
         const coincideBusqueda = producto.nombre
             .toLowerCase()
-            .includes(busqueda.toLocaleLowerCase());
+            .includes(busqueda.toLowerCase());
 
         const coincideCategoria = categoria === "todas" || producto.categoria === categoria;
 

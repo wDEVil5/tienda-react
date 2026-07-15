@@ -40,7 +40,24 @@
 }
 
 .carrito {
+  position: relative;
   font-size: 1.2rem;
   color: var(--color-texto);
-  white-space: nowrap;
+}
+
+.badge {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  background-color: var(--color-acento);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
 }

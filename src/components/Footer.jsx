@@ -11,7 +11,7 @@ function Footer() {
         <nav className={styles.navegacion} aria-label="Navegación del pie de página">
           <a href="#inicio">Inicio</a>
           <a href="#catalogo">Catálogo</a>
-          <a href="#footer">Créditos</a>
+          <a href="#footer">Portafolio</a>
         </nav>
 
         <div className={styles.enlaces}>

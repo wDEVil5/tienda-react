@@ -92,6 +92,30 @@
   gap: var(--espacio-md);
 }
 
+.cargarMasWrap {
+  display: flex;
+  justify-content: center;
+  padding-top: var(--espacio-sm);
+}
+
+.cargarMas {
+  border: none;
+  border-bottom: 1px solid var(--color-borde);
+  padding: var(--espacio-xs) var(--espacio-sm);
+  background-color: transparent;
+  color: var(--color-texto-suave);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.cargarMas:hover {
+  border-color: var(--color-acento);
+  color: var(--color-acento);
+}
+
 .filtro {
   flex: 0 0 auto;
   background: none;

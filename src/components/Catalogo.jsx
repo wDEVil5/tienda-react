@@ -3,11 +3,15 @@ import TarjetaProducto from "./TarjetaProducto.jsx";
 import styles from "../Catalogo.module.css";
 
 const LIMITE_CATEGORIAS_VISIBLES = 6;
+// Por ahora la API entrega todos los productos. Con un backend propio, este límite
+// debería enviarse a la API, por ejemplo: /productos?page=1&limit=8.
+const PRODUCTOS_POR_CARGA = 12;
 
 function Catalogo({ productos, busqueda, onAgregar }) {
   const [categoria, setCategoria] = useState("todas"); // la categoria elegida
   const [filtrosAbiertos, setFiltrosAbiertos] = useState(false);
   const [masCategoriasAbierto, setMasCategoriasAbierto] = useState(false);
+  const [limiteProductos, setLimiteProductos] = useState(PRODUCTOS_POR_CARGA);
 
   //const categorias = ["todas", "frutas", "lacteos", ...]; //datos fijos MANUAL
   const categorias = ["todas", ...new Set(productos.map((p) => p.categoria))]; // version Derivada, calculo automatico
@@ -16,6 +20,7 @@ function Catalogo({ productos, busqueda, onAgregar }) {
 
   const seleccionarCategoria = (cat) => {
     setCategoria(cat);
+    setLimiteProductos(PRODUCTOS_POR_CARGA);
     setFiltrosAbiertos(false);
     setMasCategoriasAbierto(false);
   };
@@ -31,6 +36,10 @@ function Catalogo({ productos, busqueda, onAgregar }) {
     //veredicto
     return coincideBusqueda && coincideCategoria;
   });
+
+  const productosVisibles = productosFiltrados.slice(0, limiteProductos);
+  const hayMasProductos = limiteProductos < productosFiltrados.length;
+  const productosRestantes = productosFiltrados.length - limiteProductos;
 
   return (
     <section id="catalogo" className={styles.catalogo}>
@@ -107,7 +116,7 @@ function Catalogo({ productos, busqueda, onAgregar }) {
       </div>
 
       <div className={styles.grid}>
-        {productosFiltrados.map((producto) => (
+        {productosVisibles.map((producto) => (
           <TarjetaProducto
             key={producto.id}
             producto={producto}
@@ -115,6 +124,18 @@ function Catalogo({ productos, busqueda, onAgregar }) {
           />
         ))}
       </div>
+
+      {hayMasProductos && (
+        <div className={styles.cargarMasWrap}>
+          <button
+            className={styles.cargarMas}
+            type="button"
+            onClick={() => setLimiteProductos((limite) => limite + PRODUCTOS_POR_CARGA)}
+          >
+            Cargar {Math.min(PRODUCTOS_POR_CARGA, productosRestantes)} productos más
+          </button>
+        </div>
+      )}
     </section>
   );
 }

@@ -37,10 +37,10 @@ function Footer() {
             href="https://x.com/"
             target="_blank"
             rel="noreferrer"
-            aria-label="Twitter"
-            title="Twitter"
+            aria-label="X"
+            title="X"
           >
-            <i className="fa-brands fa-twitter"></i>
+            <i className="fa-brands fa-x-twitter"></i>
           </a>
           <a
             href="https://www.linkedin.com/"

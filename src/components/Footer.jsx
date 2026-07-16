@@ -43,7 +43,7 @@ function Footer() {
             <i className="fa-brands fa-x-twitter"></i>
           </a>
           <a
-            href="https://www.linkedin.com/"
+            href="https://www.linkedin.com/in/wilnes-devil-5ab6b81a6/?locale=es"
             target="_blank"
             rel="noreferrer"
             aria-label="LinkedIn"

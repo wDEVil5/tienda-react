@@ -30,6 +30,22 @@
   font-size: 0.95rem;
 }
 
+.reintentar {
+  background-color: var(--color-boton);
+  color: #fff;
+  border: none;
+  padding: var(--espacio-sm) var(--espacio-lg);
+  border-radius: var(--radio-sm);
+  font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.reintentar:hover {
+  background-color: var(--color-boton-hover);
+}
+
 .loader {
   width: 36px;
   height: 36px;

@@ -10,6 +10,8 @@ function App() {
   const [busqueda, setBusqueda] = useState("");
   const [productos, setProductos] = useState([]); //empieza vacia, los datos llegan despues
   const [cargando, setCargando] = useState(true); // ¿esta cargando?
+  const [error, setError] = useState(null); // null = sin error, string = mensaje a mostrar
+  const [menuAbierto, setMenuAbierto] = useState(false);
 
   const [carrito, setCarrito] = useState(() => {
     const guardado = localStorage.getItem("carrito");
@@ -18,9 +20,15 @@ function App() {
   const [carritoAbierto, setCarritoAbierto] = useState(false);
   const totalItems = carrito.reduce((suma, item) => suma + item.cantidad, 0);
 
-  useEffect(() => {
+  const cargarProductos = () => {
     fetch("https://fakestoreapi.com/products")
-      .then((respuesta) => respuesta.json())
+      .then((respuesta) => {
+        if (!respuesta.ok) {
+          // fetch no rechaza por errores HTTP (404, 500...), hay que revisarlo nosotros
+          throw new Error("El servidor respondió con un error.");
+        }
+        return respuesta.json();
+      })
       .then((datos) => {
         const traducidos = datos.map((p) => ({
           id: p.id,
@@ -31,9 +39,24 @@ function App() {
           precioAnterior: null,
         }));
         setProductos(traducidos);
+      })
+      .catch(() => {
+        setError("No se pudo cargar el catálogo. Revisa tu conexión e intenta de nuevo.");
+      })
+      .finally(() => {
         setCargando(false);
       });
+  };
+
+  useEffect(() => {
+    cargarProductos();
   }, []);
+
+  const reintentar = () => {
+    setCargando(true);
+    setError(null);
+    cargarProductos();
+  };
 
   //Guardar: cada vez que el carrito cambie
   useEffect(() => {
@@ -42,12 +65,16 @@ function App() {
 
   //early return
   if (cargando) {
+    return <p>Cargando productos...</p>;
+  }
+
+  if (error) {
     return (
-      <div className={styles.app}>
-        <div className={styles.cargando} role="status">
-          <span className={styles.loader} aria-hidden="true"></span>
-          <p>Cargando productos...</p>
-        </div>
+      <div className={styles.cargando} role="alert">
+        <p>{error}</p>
+        <button className={styles.reintentar} onClick={reintentar}>
+          Reintentar
+        </button>
       </div>
     );
   }
@@ -89,15 +116,18 @@ function App() {
         onBuscar={setBusqueda}
         totalItems={totalItems}
         onAbrirCarrito={() => setCarritoAbierto(true)}
+        onToggleMenu={() => setMenuAbierto((prev) => !prev)}
       />
 
       <Catalogo
         productos={productos}
         busqueda={busqueda}
         onAgregar={agregarAlCarrito}
+        menuAbierto={menuAbierto}
+        onCerrarMenu={() => setMenuAbierto(false)}
       />
 
-      {/* El overlay SÍ es condicional: aparece solo cuando el carrito está abierto */}
+      {/* El overlay Si es condicional: aparece solo cuando el carrito está abierto */}
       {carritoAbierto && (
         <div
           className={styles.overlay}

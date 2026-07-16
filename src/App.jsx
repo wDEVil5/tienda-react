@@ -24,7 +24,7 @@ function App() {
     fetch("https://fakestoreapi.com/products")
       .then((respuesta) => {
         if (!respuesta.ok) {
-          // fetch no rechaza por errores HTTP (404, 500...), hay que revisarlo nosotros
+          // fetch no rechaza por errores HTTP (404, 500..), tengo que revisarlo yo (manual)
           throw new Error("El servidor respondió con un error.");
         }
         return respuesta.json();

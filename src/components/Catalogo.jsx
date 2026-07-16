@@ -4,7 +4,7 @@ import styles from "../Catalogo.module.css";
 
 const LIMITE_CATEGORIAS_VISIBLES = 6;
 // Por ahora la API entrega todos los productos. Con un backend propio, este límite
-// debería enviarse a la API, por ejemplo: /productos?page=1&limit=8.
+// debería enviarse a la API, por ejemplo: /productos?page=1&limit=12.
 const PRODUCTOS_POR_CARGA = 12;
 
 function Catalogo({ productos, busqueda, onAgregar }) {
@@ -13,7 +13,7 @@ function Catalogo({ productos, busqueda, onAgregar }) {
   const [masCategoriasAbierto, setMasCategoriasAbierto] = useState(false);
   const [limiteProductos, setLimiteProductos] = useState(PRODUCTOS_POR_CARGA);
 
-  //const categorias = ["todas", "frutas", "lacteos", ...]; //datos fijos MANUAL
+  //const categorias = ["todas", "frutas", "lacteos", ...]; //datos fijos MANUAL,
   const categorias = ["todas", ...new Set(productos.map((p) => p.categoria))]; // version Derivada, calculo automatico
   const categoriasVisibles = categorias.slice(0, LIMITE_CATEGORIAS_VISIBLES);
   const categoriasExtra = categorias.slice(LIMITE_CATEGORIAS_VISIBLES);

@@ -65,16 +65,25 @@ function App() {
 
   //early return
   if (cargando) {
-    return <p>Cargando productos...</p>;
+    return (
+      <div className={styles.app}>
+        <div className={styles.cargando} role="status">
+          <span className={styles.loader} aria-hidden="true"></span>
+          <p>Cargando productos...</p>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <div className={styles.cargando} role="alert">
-        <p>{error}</p>
-        <button className={styles.reintentar} onClick={reintentar}>
-          Reintentar
-        </button>
+      <div className={styles.app}>
+        <div className={styles.cargando} role="alert">
+          <p>{error}</p>
+          <button className={styles.reintentar} onClick={reintentar}>
+            Reintentar
+          </button>
+        </div>
       </div>
     );
   }

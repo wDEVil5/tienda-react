@@ -42,7 +42,14 @@ function App() {
 
   //early return
   if (cargando) {
-    return <p>Cargando productos...</p>;
+    return (
+      <div className={styles.app}>
+        <div className={styles.cargando} role="status">
+          <span className={styles.loader} aria-hidden="true"></span>
+          <p>Cargando productos...</p>
+        </div>
+      </div>
+    );
   }
 
   const agregarAlCarrito = (producto) => {

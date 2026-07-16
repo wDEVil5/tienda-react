@@ -11,7 +11,6 @@ function App() {
   const [productos, setProductos] = useState([]); //empieza vacia, los datos llegan despues
   const [cargando, setCargando] = useState(true); // ¿esta cargando?
   const [error, setError] = useState(null); // null = sin error, string = mensaje a mostrar
-  const [menuAbierto, setMenuAbierto] = useState(false);
 
   const [carrito, setCarrito] = useState(() => {
     const guardado = localStorage.getItem("carrito");
@@ -125,15 +124,12 @@ function App() {
         onBuscar={setBusqueda}
         totalItems={totalItems}
         onAbrirCarrito={() => setCarritoAbierto(true)}
-        onToggleMenu={() => setMenuAbierto((prev) => !prev)}
       />
 
       <Catalogo
         productos={productos}
         busqueda={busqueda}
         onAgregar={agregarAlCarrito}
-        menuAbierto={menuAbierto}
-        onCerrarMenu={() => setMenuAbierto(false)}
       />
 
       {/* El overlay Si es condicional: aparece solo cuando el carrito está abierto */}

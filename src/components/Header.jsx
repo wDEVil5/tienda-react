@@ -1,12 +1,8 @@
 import styles from "./Header.module.css";
 
-function Header({ busqueda, onBuscar, totalItems, onAbrirCarrito, onToggleMenu }) {
+function Header({ busqueda, onBuscar, totalItems, onAbrirCarrito }) {
   return (
     <header className={styles.header}>
-      <button className={styles.hamburguesa} onClick={onToggleMenu} aria-label="Menú de categorías">
-        <i className="fa-solid fa-bars"></i>
-      </button>
-
       <span className={styles.logo}>
         <strong>Sumarket</strong>Express
       </span>

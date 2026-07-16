@@ -40,7 +40,7 @@ Los productos se obtienen en tiempo real desde una API externa pública y se nor
 - **Persistencia del carrito en `localStorage`**, usando inicialización perezosa de `useState` para que el carrito sobreviva a un refresco de página.
 - **Contador de ítems** visible en el ícono del carrito, en el header.
 - **Carrito como panel lateral (drawer)** deslizante, con animación de entrada/salida, overlay de fondo y una estructura escalable: cabecera fija, lista de productos con scroll y total fijo en la parte inferior.
-- **Diseño responsive** para móvil, tablet y escritorio: grid de productos adaptable (4 / 3 / 2 / 1 columnas según el ancho), header reorganizado en pantallas pequeñas y menú tipo hamburguesa para los filtros en móvil.
+- **Diseño responsive** para móvil, tablet y escritorio: grid de productos adaptable (4 / 3 / 2 / 1 columnas según el ancho) y header reorganizado en pantallas pequeñas.
 - **Footer con navegación e identidad del proyecto**: enlaces por ancla a las secciones principales y enlaces a redes sociales.
 - **Atributos de accesibilidad (ARIA)** como `aria-expanded`, `aria-controls` y `aria-label` en botones y menús desplegables, para que su estado sea comprensible también con lectores de pantalla.
 - **Sistema de diseño propio** basado en design tokens (variables CSS para colores, espaciado y tipografía), con una estética minimalista y sobria.

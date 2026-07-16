@@ -1,16 +1,42 @@
 .footer {
-  margin-top: 6rem;          /* ← antes era var(--espacio-xl) = 2rem; ahora 6rem */
-  padding: var(--espacio-xl) var(--espacio-lg);
+  margin-top: auto;
   border-top: 1px solid var(--color-borde);
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: var(--espacio-xs);
+}
+
+.principal {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--espacio-lg);
+  padding: var(--espacio-lg) 0;
 }
 
 .marca {
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 400;
+  color: var(--color-texto);
+  letter-spacing: -0.02em;
+}
+
+.marca strong {
+  font-weight: 700;
+}
+
+.navegacion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-lg);
+}
+
+.navegacion a {
+  color: var(--color-texto-suave);
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.navegacion a:hover {
   color: var(--color-texto);
 }
 
@@ -20,19 +46,59 @@
 }
 
 .enlaces {
-  margin-top: var(--espacio-sm);
   display: flex;
-  justify-content: center;
-  gap: var(--espacio-md);
+  justify-content: flex-end;
+  gap: var(--espacio-xs);
 }
 
 .enlaces a {
-  color: var(--color-texto-suave);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: var(--color-texto);
   text-decoration: none;
-  font-size: 0.9rem;
-  transition: color 0.2s ease;
+  font-size: 1.15rem;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .enlaces a:hover {
   color: var(--color-acento);
+  background-color: var(--color-fondo-suave);
+}
+
+.pie {
+  padding: var(--espacio-md) 0;
+  text-align: center;
+}
+
+.copyright {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-texto);
+}
+
+@media (max-width: 600px) {
+  .footer {
+    margin-top: auto;
+  }
+
+  .principal {
+    grid-template-columns: 1fr auto;
+    gap: var(--espacio-md);
+    padding: var(--espacio-md) 0;
+  }
+
+  .navegacion {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: flex-start;
+    gap: var(--espacio-md);
+  }
+
+  .pie {
+    padding: var(--espacio-sm) 0;
+  }
 }

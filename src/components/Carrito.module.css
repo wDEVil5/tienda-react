@@ -132,6 +132,7 @@
 
 .subtotal {
   flex-shrink: 0;
+  margin-right: var(--espacio-xs);
   font-weight: 600;
   color: var(--color-acento);
   font-size: 0.95rem;

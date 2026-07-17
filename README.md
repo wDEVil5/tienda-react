@@ -12,6 +12,8 @@ Los productos se obtienen en tiempo real desde una API externa pública y se nor
 
 ![Vista previa de SumarketExpress](./src/assets/vistaprevia.png)
 
+![Vista del carrito de compras](./src/assets/vistaCarrito.png)
+
 ## 🛠️ Tecnologías
 
 - **React 19** (Hooks: `useState`, `useEffect`)
@@ -47,7 +49,7 @@ Los productos se obtienen en tiempo real desde una API externa pública y se nor
 
 ## 📚 Lo que aprendí
 
-Este proyecto fue y seguira mi campo de práctica para consolidar conceptos fundamentales de React y buenas prácticas de front-end:
+Este proyecto fue y actualmente es mi campo de práctica para consolidar conceptos fundamentales de React y buenas prácticas de front-end:
 
 - Construcción de **componentes reutilizables** y comunicación entre ellos mediante **props** (con destructuring).
 - Renderizado de listas con `map()` y uso correcto de `key`.

@@ -94,28 +94,27 @@ function App() {
   }
 
   const agregarAlCarrito = (producto) => {
-    const itemExistente = carrito.find((item) => item.id === producto.id);
+    setCarrito((prev) => {
+      const itemExistente = prev.find((item) => item.id === producto.id);
 
-    if (itemExistente) {
-      setCarrito(
-        carrito.map((item) =>
+      if (itemExistente) {
+        return prev.map((item) =>
           item.id === producto.id
             ? { ...item, cantidad: item.cantidad + 1 }
             : item,
-        ),
-      );
-    } else {
-      setCarrito([...carrito, { ...producto, cantidad: 1 }]);
-    }
+        );
+      }
+      return [...prev, { ...producto, cantidad: 1 }];
+    });
   };
 
   const eliminarDelCarrito = (id) => {
-    setCarrito(carrito.filter((item) => item.id !== id));
+    setCarrito((prev) => prev.filter((item) => item.id !== id));
   };
 
   const cambiarCantidad = (id, delta) => {
-    setCarrito(
-      carrito.map((item) =>
+    setCarrito((prev) =>
+      prev.map((item) =>
         item.id === id
           ? { ...item, cantidad: Math.max(1, item.cantidad + delta) }
           : item,

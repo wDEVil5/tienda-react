@@ -20,10 +20,21 @@ function Catalogo({ productos, busqueda, onAgregar }) {
 
   const seleccionarCategoria = (cat) => {
     setCategoria(cat);
-    setLimiteProductos(PRODUCTOS_POR_CARGA);
     setFiltrosAbiertos(false);
     setMasCategoriasAbierto(false);
   };
+
+  // Cuando cambian los filtros (búsqueda o categoría), volvemos a la primera "tanda"
+  // de productos. Patrón recomendado por React: ajustar el estado durante el render
+  // comparando con el valor anterior, en vez de un useEffect (que dispara render extra).
+  const [filtrosPrevios, setFiltrosPrevios] = useState({ busqueda, categoria });
+  if (
+    filtrosPrevios.busqueda !== busqueda ||
+    filtrosPrevios.categoria !== categoria
+  ) {
+    setFiltrosPrevios({ busqueda, categoria });
+    setLimiteProductos(PRODUCTOS_POR_CARGA);
+  }
 
   const productosFiltrados = productos.filter((producto) => {
     const coincideBusqueda = producto.nombre

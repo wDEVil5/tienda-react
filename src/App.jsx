@@ -13,8 +13,14 @@ function App() {
   const [error, setError] = useState(null); // null = sin error, string = mensaje a mostrar
 
   const [carrito, setCarrito] = useState(() => {
-    const guardado = localStorage.getItem("carrito");
-    return guardado ? JSON.parse(guardado) : [];
+    try {
+      const guardado = localStorage.getItem("carrito");
+      return guardado ? JSON.parse(guardado) : [];
+    } catch {
+      // si el dato guardado está corrupto, JSON.parse lanza error.
+      // en vez de romper toda la app, arrancamos con el carrito vacío.
+      return [];
+    }
   });
   const [carritoAbierto, setCarritoAbierto] = useState(false);
   const totalItems = carrito.reduce((suma, item) => suma + item.cantidad, 0);

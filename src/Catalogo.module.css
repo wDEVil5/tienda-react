@@ -92,6 +92,17 @@
   gap: var(--espacio-md);
 }
 
+.sinResultados {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh; /* ajuste de altura en pantalla */
+  padding: var(--espacio-xl) var(--espacio-md);
+  text-align: center;
+  color: var(--color-texto-suave);
+  font-size: 1rem;
+}
+
 .cargarMasWrap {
   display: flex;
   justify-content: center;

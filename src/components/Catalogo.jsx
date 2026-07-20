@@ -126,26 +126,34 @@ function Catalogo({ productos, busqueda, onAgregar }) {
         </div>
       </div>
 
-      <div className={styles.grid}>
-        {productosVisibles.map((producto) => (
-          <TarjetaProducto
-            key={producto.id}
-            producto={producto}
-            onAgregar={onAgregar}
-          />
-        ))}
-      </div>
+      {productosFiltrados.length === 0 ? (
+        <p className={styles.sinResultados}>
+          Sorry! no encontramos productos que coincidan con tu búsqueda.
+        </p>
+      ) : (
+        <>
+          <div className={styles.grid}>
+            {productosVisibles.map((producto) => (
+              <TarjetaProducto
+                key={producto.id}
+                producto={producto}
+                onAgregar={onAgregar}
+              />
+            ))}
+          </div>
 
-      {hayMasProductos && (
-        <div className={styles.cargarMasWrap}>
-          <button
-            className={styles.cargarMas}
-            type="button"
-            onClick={() => setLimiteProductos((limite) => limite + PRODUCTOS_POR_CARGA)}
-          >
-            Cargar {Math.min(PRODUCTOS_POR_CARGA, productosRestantes)} productos más
-          </button>
-        </div>
+          {hayMasProductos && (
+            <div className={styles.cargarMasWrap}>
+              <button
+                className={styles.cargarMas}
+                type="button"
+                onClick={() => setLimiteProductos((limite) => limite + PRODUCTOS_POR_CARGA)}
+              >
+                Cargar {Math.min(PRODUCTOS_POR_CARGA, productosRestantes)} productos más
+              </button>
+            </div>
+          )}
+        </>
       )}
     </section>
   );

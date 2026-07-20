@@ -40,6 +40,7 @@ function Carrito({
               <div className={styles.info}>
                 <div className={styles.filaSuperior}>
                   <span className={styles.itemNombre}>{item.nombre}</span>
+                  {/* Boton eliminar */}
                   <button
                     className={styles.eliminar}
                     onClick={() => onEliminar(item.id)}

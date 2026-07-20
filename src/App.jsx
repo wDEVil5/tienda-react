@@ -41,7 +41,11 @@ function App() {
           precio: p.price,
           imagen: p.image,
           categoria: p.category,
-          precioAnterior: null,
+          // La API no trae ofertas. Simulare una en los productos de id pares:
+          // un precio anterior 25% más alto, para mostrar el badge "Oferta" y el
+          // precio tachado. En la fase 2 (backend propio) esto será dato real
+          precioAnterior:
+            p.id % 2 === 0 ? Math.round(p.price * 1.25 * 100) / 100 : null,
         }));
         setProductos(traducidos);
       })

@@ -91,3 +91,21 @@
   color: var(--color-texto-suave);
   text-decoration: line-through;
 }
+
+/* Los enlaces a la página de detalle no deben verse como enlaces azules. */
+.imagenWrap a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.nombre a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.nombre a:hover {
+  color: var(--color-acento);
+}

@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import styles from "./TarjetaProducto.module.css";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 
@@ -8,17 +9,21 @@ function TarjetaProducto({ producto }) {
     return (
         <article className={styles.tarjeta}>
             <div className={styles.imagenWrap}>
-                <img
-                    className={styles.imagen}
-                    src= {producto.imagen} 
-                    alt={producto.nombre}
+                <Link to={`/producto/${producto.id}`}>
+                    <img
+                        className={styles.imagen}
+                        src={producto.imagen}
+                        alt={producto.nombre}
                     />
+                </Link>
             </div>
             
 
             {enOferta && <span className={styles.badge}>Oferta</span>}
 
-            <h3 className={styles.nombre}>{producto.nombre}</h3>
+            <h3 className={styles.nombre}>
+                <Link to={`/producto/${producto.id}`}>{producto.nombre}</Link>
+            </h3>
             <p className={styles.categoria}>{producto.categoria}</p>
 
             <div className={styles.precios}>

@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
+import { Routes, Route } from "react-router-dom";
 import Catalogo from "./components/Catalogo.jsx";
+import ProductoDetalle from "./pages/ProductoDetalle.jsx";
 import Carrito from "./components/Carrito.jsx";
 import styles from "./App.module.css";
 import Header from "./components/Header.jsx";
@@ -29,6 +31,7 @@ function App() {
           precio: p.price,
           imagen: p.image,
           categoria: p.category,
+          descripcion: p.description,
           // La API no trae ofertas. Simulare una en los productos de id pares:
           // un precio anterior 25% más alto, para mostrar el badge "Oferta" y el
           // precio tachado. En la fase 2 (backend propio) esto será dato real
@@ -88,7 +91,16 @@ function App() {
         onAbrirCarrito={() => setCarritoAbierto(true)}
       />
 
-      <Catalogo productos={productos} busqueda={busqueda} />
+      <Routes>
+        <Route
+          path="/"
+          element={<Catalogo productos={productos} busqueda={busqueda} />}
+        />
+        <Route
+          path="/producto/:id"
+          element={<ProductoDetalle productos={productos} />}
+        />
+      </Routes>
 
       {/* El overlay Si es condicional: aparece solo cuando el carrito está abierto */}
       {carritoAbierto && (

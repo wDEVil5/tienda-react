@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useCarrito } from "./hooks/useCarrito.js";
 import Catalogo from "./components/Catalogo.jsx";
 import Carrito from "./components/Carrito.jsx";
 import styles from "./App.module.css";
@@ -12,14 +11,6 @@ function App() {
   const [cargando, setCargando] = useState(true); // ¿esta cargando?
   const [error, setError] = useState(null); // null = sin error, string = mensaje a mostrar
 
-  // toda la lógica del carrito vive ahora en el custom hook useCarrito.
-  const {
-    carrito,
-    totalItems,
-    agregarAlCarrito,
-    eliminarDelCarrito,
-    cambiarCantidad,
-  } = useCarrito();
   const [carritoAbierto, setCarritoAbierto] = useState(false);
 
   const cargarProductos = () => {
@@ -94,15 +85,10 @@ function App() {
       <Header
         busqueda={busqueda}
         onBuscar={setBusqueda}
-        totalItems={totalItems}
         onAbrirCarrito={() => setCarritoAbierto(true)}
       />
 
-      <Catalogo
-        productos={productos}
-        busqueda={busqueda}
-        onAgregar={agregarAlCarrito}
-      />
+      <Catalogo productos={productos} busqueda={busqueda} />
 
       {/* El overlay Si es condicional: aparece solo cuando el carrito está abierto */}
       {carritoAbierto && (
@@ -114,9 +100,6 @@ function App() {
 
       {/* El Carrito SIEMPRE montado: se desliza dentro/fuera según "abierto" */}
       <Carrito
-        carrito={carrito}
-        onEliminar={eliminarDelCarrito}
-        onCambiarCantidad={cambiarCantidad}
         onCerrar={() => setCarritoAbierto(false)}
         abierto={carritoAbierto}
       />

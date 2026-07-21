@@ -1,6 +1,9 @@
 import styles from "./Header.module.css";
+import { useCarritoContext } from "../context/CarritoContext.jsx";
 
-function Header({ busqueda, onBuscar, totalItems, onAbrirCarrito }) {
+function Header({ busqueda, onBuscar, onAbrirCarrito }) {
+  const { totalItems } = useCarritoContext();
+
   return (
     <header className={styles.header}>
       <span className={styles.logo}>

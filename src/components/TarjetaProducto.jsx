@@ -1,6 +1,8 @@
 import styles from "./TarjetaProducto.module.css";
+import { useCarritoContext } from "../context/CarritoContext.jsx";
 
-function TarjetaProducto({ producto, onAgregar }) {
+function TarjetaProducto({ producto }) {
+    const { agregarAlCarrito } = useCarritoContext();
     const enOferta = producto.precioAnterior !== null;
 
     return (
@@ -32,7 +34,7 @@ function TarjetaProducto({ producto, onAgregar }) {
 
             <button
                 className={styles.boton}
-                onClick={() => onAgregar(producto)}>
+                onClick={() => agregarAlCarrito(producto)}>
                 Agregar al carrito
             </button>
         </article>

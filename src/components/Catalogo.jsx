@@ -7,7 +7,7 @@ const LIMITE_CATEGORIAS_VISIBLES = 6;
 // debería enviarse a la API, por ejemplo: /productos?page=1&limit=12.
 const PRODUCTOS_POR_CARGA = 12;
 
-function Catalogo({ productos, busqueda, onAgregar }) {
+function Catalogo({ productos, busqueda }) {
   const [categoria, setCategoria] = useState("todas"); // la categoria elegida
   const [filtrosAbiertos, setFiltrosAbiertos] = useState(false);
   const [masCategoriasAbierto, setMasCategoriasAbierto] = useState(false);
@@ -134,11 +134,7 @@ function Catalogo({ productos, busqueda, onAgregar }) {
         <>
           <div className={styles.grid}>
             {productosVisibles.map((producto) => (
-              <TarjetaProducto
-                key={producto.id}
-                producto={producto}
-                onAgregar={onAgregar}
-              />
+              <TarjetaProducto key={producto.id} producto={producto} />
             ))}
           </div>
 

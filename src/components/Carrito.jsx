@@ -1,12 +1,9 @@
 import styles from "./Carrito.module.css";
+import { useCarritoContext } from "../context/CarritoContext.jsx";
 
-function Carrito({
-  carrito,
-  onEliminar,
-  onCambiarCantidad,
-  onCerrar,
-  abierto,
-}) {
+function Carrito({ onCerrar, abierto }) {
+  const { carrito, eliminarDelCarrito, cambiarCantidad } = useCarritoContext();
+
   const total = carrito.reduce(
     (suma, item) => suma + item.precio * item.cantidad,
     0,
@@ -43,7 +40,7 @@ function Carrito({
                   {/* Boton eliminar */}
                   <button
                     className={styles.eliminar}
-                    onClick={() => onEliminar(item.id)}
+                    onClick={() => eliminarDelCarrito(item.id)}
                     aria-label="Eliminar producto"
                   >
                     <i className="fa-solid fa-trash"></i>
@@ -54,7 +51,7 @@ function Carrito({
                   <div className={styles.cantidad}>
                     <button
                       className={styles.botonCantidad}
-                      onClick={() => onCambiarCantidad(item.id, -1)}
+                      onClick={() => cambiarCantidad(item.id, -1)}
                     >
                       −
                     </button>
@@ -63,7 +60,7 @@ function Carrito({
                     </span>
                     <button
                       className={styles.botonCantidad}
-                      onClick={() => onCambiarCantidad(item.id, 1)}
+                      onClick={() => cambiarCantidad(item.id, 1)}
                     >
                       +
                     </button>

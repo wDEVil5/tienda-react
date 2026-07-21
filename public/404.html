@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>SumarketExpress</title>
+    <script type="text/javascript">
+      // Single Page Apps for GitHub Pages — https://github.com/rafgraph/spa-github-pages
+      // GitHub Pages sirve este 404.html cuando la ruta pedida no existe como archivo.
+      // Codificamos la ruta en el query string y redirigimos a index.html, que sí existe.
+      var pathSegmentsToKeep = 1; // conservar "/tienda-react" (es un project page)
+      var l = window.location;
+      l.replace(
+        l.protocol +
+          "//" +
+          l.hostname +
+          (l.port ? ":" + l.port : "") +
+          l.pathname.split("/").slice(0, 1 + pathSegmentsToKeep).join("/") +
+          "/?/" +
+          l.pathname
+            .slice(1)
+            .split("/")
+            .slice(pathSegmentsToKeep)
+            .join("/")
+            .replace(/&/g, "~and~") +
+          (l.search ? "&" + l.search.slice(1).replace(/&/g, "~and~") : "") +
+          l.hash
+      );
+    </script>
+  </head>
+  <body></body>
+</html>

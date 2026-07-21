@@ -1,6 +1,6 @@
 import { useReducer, useEffect } from "react";
 
-// Estado inicial: leemos el carrito guardado en localStorage (una sola vez).
+// Estado inicial: leemos el carrito guardado en localStorage una Unica vez.
 function iniciarCarrito() {
   try {
     const guardado = localStorage.getItem("carrito");
@@ -13,7 +13,7 @@ function iniciarCarrito() {
 }
 
 // El reducer: UNA sola función que centraliza TODAS las formas de cambiar el carrito.
-// Es una función pura: (estado actual, acción) => nuevo estado. Sin efectos secundarios.
+// Es una función pura: (estado actual, acción) => nuevo estado. sin efectos secundarios.
 function carritoReducer(estado, accion) {
   switch (accion.type) {
     case "AGREGAR": {
@@ -60,7 +60,7 @@ export function useCarrito() {
   // Estado derivado: se recalcula solo en cada render, no se guarda.
   const totalItems = carrito.reduce((suma, item) => suma + item.cantidad, 0);
 
-  // Funciones "envoltorio": traducen una intención a una acción y la despachan.
+  // Funciones "envoltorio" traducen una intención a una acción y la despachan.
   // Quien usa el hook no necesita saber que por dentro hay un reducer.
   const agregarAlCarrito = (producto) => dispatch({ type: "AGREGAR", producto });
   const eliminarDelCarrito = (id) => dispatch({ type: "ELIMINAR", id });

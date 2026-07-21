@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useCarrito } from "./hooks/useCarrito.js";
 import Catalogo from "./components/Catalogo.jsx";
 import Carrito from "./components/Carrito.jsx";
 import styles from "./App.module.css";
@@ -11,18 +12,15 @@ function App() {
   const [cargando, setCargando] = useState(true); // ¿esta cargando?
   const [error, setError] = useState(null); // null = sin error, string = mensaje a mostrar
 
-  const [carrito, setCarrito] = useState(() => {
-    try {
-      const guardado = localStorage.getItem("carrito");
-      return guardado ? JSON.parse(guardado) : [];
-    } catch {
-      // si el dato guardado está corrupto, JSON.parse lanza error.
-      // en vez de romper toda la app, arrancamos con el carrito vacío.
-      return [];
-    }
-  });
+  // toda la lógica del carrito vive ahora en el custom hook useCarrito.
+  const {
+    carrito,
+    totalItems,
+    agregarAlCarrito,
+    eliminarDelCarrito,
+    cambiarCantidad,
+  } = useCarrito();
   const [carritoAbierto, setCarritoAbierto] = useState(false);
-  const totalItems = carrito.reduce((suma, item) => suma + item.cantidad, 0);
 
   const cargarProductos = () => {
     fetch("https://fakestoreapi.com/products")
@@ -66,11 +64,6 @@ function App() {
     cargarProductos();
   };
 
-  //Guardar: cada vez que el carrito cambie
-  useEffect(() => {
-    localStorage.setItem("carrito", JSON.stringify(carrito));
-  }, [carrito]);
-
   //early return
   if (cargando) {
     return (
@@ -95,35 +88,6 @@ function App() {
       </div>
     );
   }
-
-  const agregarAlCarrito = (producto) => {
-    setCarrito((prev) => {
-      const itemExistente = prev.find((item) => item.id === producto.id);
-
-      if (itemExistente) {
-        return prev.map((item) =>
-          item.id === producto.id
-            ? { ...item, cantidad: item.cantidad + 1 }
-            : item,
-        );
-      }
-      return [...prev, { ...producto, cantidad: 1 }];
-    });
-  };
-
-  const eliminarDelCarrito = (id) => {
-    setCarrito((prev) => prev.filter((item) => item.id !== id));
-  };
-
-  const cambiarCantidad = (id, delta) => {
-    setCarrito((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? { ...item, cantidad: Math.max(1, item.cantidad + delta) }
-          : item,
-      ),
-    );
-  };
 
   return (
     <div className={styles.app}>

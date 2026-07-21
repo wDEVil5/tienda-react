@@ -1,20 +1,58 @@
-import { useState, useEffect } from "react";
+import { useReducer, useEffect } from "react";
 
-// Custom hook encapsula todo el estado y la lógica del carrito.
-// Es javascript puro (no depende de la UI), así que es reutilizable y testeable
-export function useCarrito() {
-  const [carrito, setCarrito] = useState(() => {
-    try {
-      const guardado = localStorage.getItem("carrito");
-      return guardado ? JSON.parse(guardado) : [];
-    } catch {
-      // si el dato guardado está corrupto, JSON.parse lanza error.
-      // en vez de romper toda la app, arrancamos con el carrito vacío.
-      return [];
+// Estado inicial: leemos el carrito guardado en localStorage (una sola vez).
+function iniciarCarrito() {
+  try {
+    const guardado = localStorage.getItem("carrito");
+    return guardado ? JSON.parse(guardado) : [];
+  } catch {
+    // si el dato guardado está corrupto, JSON.parse lanza error.
+    // en vez de romper toda la app, arrancamos con el carrito vacío.
+    return [];
+  }
+}
+
+// El reducer: UNA sola función que centraliza TODAS las formas de cambiar el carrito.
+// Es una función pura: (estado actual, acción) => nuevo estado. Sin efectos secundarios.
+function carritoReducer(estado, accion) {
+  switch (accion.type) {
+    case "AGREGAR": {
+      const itemExistente = estado.find((item) => item.id === accion.producto.id);
+      if (itemExistente) {
+        return estado.map((item) =>
+          item.id === accion.producto.id
+            ? { ...item, cantidad: item.cantidad + 1 }
+            : item,
+        );
+      }
+      return [...estado, { ...accion.producto, cantidad: 1 }];
     }
-  });
 
-  // Guardar: cada vez que el carrito cambie, lo persistimos en localStorage.
+    case "ELIMINAR":
+      return estado.filter((item) => item.id !== accion.id);
+
+    case "CAMBIAR_CANTIDAD":
+      return estado.map((item) =>
+        item.id === accion.id
+          ? { ...item, cantidad: Math.max(1, item.cantidad + accion.delta) }
+          : item,
+      );
+
+    case "VACIAR":
+      return [];
+
+    // Si llega una acción desconocida, no cambiamos nada.
+    default:
+      return estado;
+  }
+}
+
+export function useCarrito() {
+  // useReducer recibe: (reducer, argInicial, funciónDeInicio).
+  // El estado inicial se calcula con iniciarCarrito() la primera vez.
+  const [carrito, dispatch] = useReducer(carritoReducer, null, iniciarCarrito);
+
+  // Persistimos el carrito cada vez que cambia.
   useEffect(() => {
     localStorage.setItem("carrito", JSON.stringify(carrito));
   }, [carrito]);
@@ -22,41 +60,20 @@ export function useCarrito() {
   // Estado derivado: se recalcula solo en cada render, no se guarda.
   const totalItems = carrito.reduce((suma, item) => suma + item.cantidad, 0);
 
-  const agregarAlCarrito = (producto) => {
-    setCarrito((prev) => {
-      const itemExistente = prev.find((item) => item.id === producto.id);
+  // Funciones "envoltorio": traducen una intención a una acción y la despachan.
+  // Quien usa el hook no necesita saber que por dentro hay un reducer.
+  const agregarAlCarrito = (producto) => dispatch({ type: "AGREGAR", producto });
+  const eliminarDelCarrito = (id) => dispatch({ type: "ELIMINAR", id });
+  const cambiarCantidad = (id, delta) =>
+    dispatch({ type: "CAMBIAR_CANTIDAD", id, delta });
+  const vaciarCarrito = () => dispatch({ type: "VACIAR" });
 
-      if (itemExistente) {
-        return prev.map((item) =>
-          item.id === producto.id
-            ? { ...item, cantidad: item.cantidad + 1 }
-            : item,
-        );
-      }
-      return [...prev, { ...producto, cantidad: 1 }];
-    });
-  };
-
-  const eliminarDelCarrito = (id) => {
-    setCarrito((prev) => prev.filter((item) => item.id !== id));
-  };
-
-  const cambiarCantidad = (id, delta) => {
-    setCarrito((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? { ...item, cantidad: Math.max(1, item.cantidad + delta) }
-          : item,
-      ),
-    );
-  };
-
-  // Devolvemos un objeto: quien use el hook elige qué necesita, por nombre.
   return {
     carrito,
     totalItems,
     agregarAlCarrito,
     eliminarDelCarrito,
     cambiarCantidad,
+    vaciarCarrito,
   };
 }

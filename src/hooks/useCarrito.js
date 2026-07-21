@@ -14,7 +14,7 @@ function iniciarCarrito() {
 
 // El reducer: UNA sola función que centraliza TODAS las formas de cambiar el carrito.
 // Es una función pura: (estado actual, acción) => nuevo estado. sin efectos secundarios.
-function carritoReducer(estado, accion) {
+export function carritoReducer(estado, accion) {
   switch (accion.type) {
     case "AGREGAR": {
       const itemExistente = estado.find((item) => item.id === accion.producto.id);

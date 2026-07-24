@@ -4,7 +4,7 @@ import styles from "./Carrito.module.css";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 
 function Carrito({ onCerrar, abierto }) {
-  const { carrito, eliminarDelCarrito, cambiarCantidad, vaciarCarrito } =
+  const { carrito, totalItems, eliminarDelCarrito, cambiarCantidad, vaciarCarrito } =
     useCarritoContext();
 
   // solo cuando el carrito está ABIERTO, escuchamos la tecla Escape
@@ -37,7 +37,9 @@ function Carrito({ onCerrar, abierto }) {
     <aside className={`${styles.carrito} ${abierto ? styles.abierto : ""}`}>
       {/* Zona 1: cabecera */}
       <div className={styles.cabecera}>
-        <h2 className={styles.titulo}>Tu carrito</h2>
+        <h2 className={styles.titulo}>
+          Tu carrito{totalItems > 0 && ` (${totalItems})`}
+        </h2>
         <button className={styles.cerrar} onClick={onCerrar}>
           <i className="fa-solid fa-xmark"></i>
         </button>
@@ -130,7 +132,7 @@ function Carrito({ onCerrar, abierto }) {
               Vaciar
             </button>
 
-            {/* CTA principal. El checkout real llega en la Fase 4 (pagos). */}
+            {/* CTA principal. El checkout real lo hare en la Fase 4 (pagos). */}
             <button className={styles.pagar}>Ir a pagar</button>
           </div>
         </div>

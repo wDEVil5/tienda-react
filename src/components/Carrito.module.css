@@ -59,6 +59,15 @@
   border-radius: var(--radio-sm);
 }
 
+/* El item enlaza a su producto, el ancla debe llenar el cuadro de la imagen. */
+.imagenWrap a {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
 .imagen {
   width: 100%;
   height: 100%;
@@ -88,12 +97,19 @@
 }
 
 .itemNombre {
+  display: block;
   font-size: 0.9rem;
   font-weight: 500;
   line-height: 1.3;
+  color: inherit;
+  text-decoration: none;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.itemNombre:hover {
+  text-decoration: underline;
 }
 
 .cantidad {

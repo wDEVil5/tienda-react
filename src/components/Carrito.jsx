@@ -1,12 +1,13 @@
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
 import styles from "./Carrito.module.css";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 
 function Carrito({ onCerrar, abierto }) {
   const { carrito, eliminarDelCarrito, cambiarCantidad } = useCarritoContext();
 
-  // Efecto: solo cuando el carrito está ABIERTO, escuchamos la tecla Escape
-  // (evento del navegador → vive fuera de React) y congelamos el scroll del
+  // solo cuando el carrito está ABIERTO, escuchamos la tecla Escape
+  // (evento del navegador -> vive fuera de React) y congelamos el scroll del
   // fondo para que no se mueva la página detrás del drawer.
   useEffect(() => {
     if (!abierto) return;
@@ -18,8 +19,8 @@ function Carrito({ onCerrar, abierto }) {
     document.body.style.overflow = "hidden";
 
     // Cleanup: React lo ejecuta al cerrar el carrito o al desmontar. Si abrimos
-    // algo (un listener, un estilo), lo cerramos aquí. Sin esto quedarían
-    // listeners zombis y el scroll bloqueado para siempre.
+    // otra cosa (un listener, un estilo), lo cerramos aquí mismo. Sin esto quedarían
+    // listeners zombis y el scroll se bloquearia.
     return () => {
       window.removeEventListener("keydown", manejarTecla);
       document.body.style.overflow = "";
@@ -49,16 +50,24 @@ function Carrito({ onCerrar, abierto }) {
           carrito.map((item) => (
             <div key={item.id} className={styles.item}>
               <div className={styles.imagenWrap}>
-                <img
-                  className={styles.imagen}
-                  src={item.imagen}
-                  alt={item.nombre}
-                />
+                <Link to={`/producto/${item.id}`} onClick={onCerrar}>
+                  <img
+                    className={styles.imagen}
+                    src={item.imagen}
+                    alt={item.nombre}
+                  />
+                </Link>
               </div>
 
               <div className={styles.info}>
                 <div className={styles.filaSuperior}>
-                  <span className={styles.itemNombre}>{item.nombre}</span>
+                  <Link
+                    to={`/producto/${item.id}`}
+                    onClick={onCerrar}
+                    className={styles.itemNombre}
+                  >
+                    {item.nombre}
+                  </Link>
                   {/* Boton eliminar */}
                   <button
                     className={styles.eliminar}

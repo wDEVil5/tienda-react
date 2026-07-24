@@ -1,8 +1,30 @@
+import { useEffect } from "react";
 import styles from "./Carrito.module.css";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 
 function Carrito({ onCerrar, abierto }) {
   const { carrito, eliminarDelCarrito, cambiarCantidad } = useCarritoContext();
+
+  // Efecto: solo cuando el carrito está ABIERTO, escuchamos la tecla Escape
+  // (evento del navegador → vive fuera de React) y congelamos el scroll del
+  // fondo para que no se mueva la página detrás del drawer.
+  useEffect(() => {
+    if (!abierto) return;
+
+    const manejarTecla = (e) => {
+      if (e.key === "Escape") onCerrar();
+    };
+    window.addEventListener("keydown", manejarTecla);
+    document.body.style.overflow = "hidden";
+
+    // Cleanup: React lo ejecuta al cerrar el carrito o al desmontar. Si abrimos
+    // algo (un listener, un estilo), lo cerramos aquí. Sin esto quedarían
+    // listeners zombis y el scroll bloqueado para siempre.
+    return () => {
+      window.removeEventListener("keydown", manejarTecla);
+      document.body.style.overflow = "";
+    };
+  }, [abierto, onCerrar]);
 
   const total = carrito.reduce(
     (suma, item) => suma + item.precio * item.cantidad,

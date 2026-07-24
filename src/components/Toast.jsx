@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import styles from "./Toast.module.css";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 
-const DURACION_MS = 2600;
+const DURACION_MS = 2600; //en milisegundos
 
 function Toast() {
   const { aviso, descartarAviso } = useCarritoContext();

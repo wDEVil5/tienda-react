@@ -2,7 +2,7 @@
 
 Tienda e-commerce de una sola página (SPA) construida desde cero con **React** y **Vite**, desarrollada como proyecto personal para reforzar y demostrar mis habilidades de desarrollo front-end.
 
-Los productos se obtienen en tiempo real desde una API externa pública y se normalizan a un formato propio antes de mostrarse en el catálogo. Incluye buscador, filtros por categoría y un carrito de compras completo con persistencia en el navegador.
+Los productos se obtienen en tiempo real desde una API externa pública y se normalizan a un formato propio antes de mostrarse en el catálogo. Incluye enrutamiento del lado del cliente (con página de detalle por producto), buscador, filtros por categoría y un carrito de compras completo —como panel lateral (drawer)— con persistencia en el navegador. La lógica de estado usa patrones avanzados de React (**custom hooks**, **`useReducer`** y **Context**) y cuenta con **tests unitarios**.
 
 ## 🔗 Demo en vivo
 
@@ -16,8 +16,10 @@ Los productos se obtienen en tiempo real desde una API externa pública y se nor
 
 ## 🛠️ Tecnologías
 
-- **React 19** (Hooks: `useState`, `useEffect`)
+- **React 19** — Hooks (`useState`, `useEffect`, `useReducer`, `useContext`) y **custom hooks**
+- **React Router** para el enrutamiento del lado del cliente (SPA)
 - **Vite** como build tool y servidor de desarrollo
+- **Vitest** + **React Testing Library** para tests unitarios
 - **CSS Modules** + variables CSS (design tokens)
 - **JavaScript (ES6+)**
 - **[Fake Store API](https://fakestoreapi.com/)** como fuente de datos de productos
@@ -27,42 +29,67 @@ Los productos se obtienen en tiempo real desde una API externa pública y se nor
 
 ## ✨ Características
 
-- **Catálogo de productos** obtenido desde una API externa con `fetch` dentro de `useEffect`, con estado de carga ("Cargando productos...") mientras llega la respuesta.
-- **Manejo de errores de red**: si la petición falla o el servidor responde con error, se muestra un mensaje y un botón "Reintentar" que vuelve a disparar la carga (`catch` / `finally` sobre el `fetch`).
-- **Normalización de datos**: la respuesta de la API se transforma al formato propio que usa la aplicación, desacoplando la UI de la estructura externa.
+### Catálogo y navegación
+
+- **Catálogo de productos** obtenido desde una API externa con `fetch` dentro de `useEffect`, con estado de carga mientras llega la respuesta.
+- **Manejo de errores de red**: si la petición falla o el servidor responde con error, se muestra un mensaje y un botón "Reintentar" (`catch` / `finally` sobre el `fetch`).
+- **Normalización de datos**: la respuesta de la API se transforma al formato propio de la app, desacoplando la UI de la estructura externa.
+- **Enrutamiento SPA con React Router**: rutas para el catálogo (`/`) y el **detalle de cada producto** (`/producto/:id`), con navegación por URL y botón "atrás" del navegador. Los *deep links* y el refresco funcionan en GitHub Pages gracias a un `404.html` (técnica spa-github-pages).
 - **Buscador en tiempo real** mediante un input controlado.
-- **Filtros por categoría** generados dinámicamente a partir de los productos disponibles (usando `Set` para obtener categorías únicas, sin hardcodearlas).
-- **Categorías con overflow controlado**: se muestran las primeras categorías y el resto queda agrupado en un desplegable "Explorar X más", para no saturar la barra de filtros.
-- **Paginación tipo "cargar más"**: el catálogo no muestra todos los productos filtrados de una vez, sino en tandas, con un botón que indica cuántos productos más hay disponibles.
-- **Carrito de compras completo**:
-  - Agregar productos (si ya existe en el carrito, aumenta la cantidad en vez de duplicar la fila).
-  - Eliminar productos.
-  - Ajustar cantidades con botones `+` / `−` (con un mínimo de 1 unidad).
-  - Subtotal por producto (precio × cantidad) y cálculo del total en tiempo real como estado derivado, sin duplicar información.
-- **Persistencia del carrito en `localStorage`**, usando inicialización perezosa de `useState` para que el carrito sobreviva a un refresco de página.
-- **Contador de ítems** visible en el ícono del carrito, en el header.
-- **Carrito como panel lateral (drawer)** deslizante, con animación de entrada/salida, overlay de fondo y una estructura escalable: cabecera fija, lista de productos con scroll y total fijo en la parte inferior.
-- **Diseño responsive** para móvil, tablet y escritorio: grid de productos adaptable (4 / 3 / 2 / 1 columnas según el ancho) y header reorganizado en pantallas pequeñas.
-- **Footer con navegación e identidad del proyecto**: enlaces por ancla a las secciones principales y enlaces a redes sociales.
-- **Atributos de accesibilidad (ARIA)** como `aria-expanded`, `aria-controls` y `aria-label` en botones y menús desplegables, para que su estado sea comprensible también con lectores de pantalla.
+- **Filtros por categoría** generados dinámicamente con `Set` (sin hardcodear), con el overflow agrupado en un desplegable "Explorar X más".
+- **Paginación tipo "cargar más"** en tandas, indicando cuántos productos quedan.
+- **Imágenes con red de seguridad**: un componente reutilizable muestra un placeholder elegante si la imagen externa falla (`onError`).
+
+### Carrito de compras (panel lateral)
+
+- **Agregar productos** (si ya existe, aumenta la cantidad en vez de duplicar la fila), con un **aviso flotante (toast)** de confirmación que se descarta solo.
+- **Eliminar** productos y **ajustar cantidades** con `+` / `−` (mínimo 1 unidad).
+- **Vaciar el carrito** con confirmación previa.
+- **Subtotal por producto** y **total** calculados en tiempo real como **estado derivado**, sin duplicar información.
+- **Persistencia en `localStorage`** (inicialización perezosa) para que el carrito sobreviva a un refresco de página.
+- **Contador de ítems** en el ícono del header y en el título del panel.
+- **Cada ítem enlaza a su página de producto** y cierra el panel al navegar.
+- **UX del drawer**: se cierra con la tecla **Escape**, bloquea el scroll del fondo mientras está abierto, trunca nombres largos con elipsis y muestra un **estado vacío** con ícono y llamada a la acción.
+
+### Arquitectura, calidad y diseño
+
+- **Estado global con Context API** (`CarritoProvider` + hook consumidor `useCarritoContext`), eliminando el *prop drilling*.
+- **Lógica del carrito centralizada con `useReducer`** dentro de un **custom hook `useCarrito`** (acciones `AGREGAR`, `ELIMINAR`, `CAMBIAR_CANTIDAD`, `VACIAR`).
+- **Tests unitarios con Vitest + React Testing Library** sobre el reducer del carrito.
+- **Diseño responsive** para móvil, tablet y escritorio: grid adaptable (4 / 3 / 2 / 1 columnas) y header reorganizado en pantallas pequeñas.
+- **Accesibilidad (ARIA)**: `aria-expanded`, `aria-controls`, `aria-label`, `role` de estado/alerta y respeto por `prefers-reduced-motion`.
 - **Sistema de diseño propio** basado en design tokens (variables CSS para colores, espaciado y tipografía), con una estética minimalista y sobria.
+- **Footer con navegación e identidad del proyecto**: enlaces por ancla a las secciones principales y a redes sociales.
 
 ## 📚 Lo que aprendí
 
-Este proyecto fue y actualmente es mi campo de práctica para consolidar conceptos fundamentales de React y buenas prácticas de front-end:
+Este proyecto es mi campo de práctica para consolidar React y buenas prácticas de front-end. Además de los fundamentos, en esta etapa incorporé patrones más avanzados:
 
-- Construcción de **componentes reutilizables** y comunicación entre ellos mediante **props** (con destructuring).
-- Renderizado de listas con `map()` y uso correcto de `key`.
-- Manejo de estado con `useState` y efectos secundarios con `useEffect`.
-- **Estado derivado**: calcular valores (como el total del carrito) en lugar de duplicarlos en el estado.
-- **Inmutabilidad** al actualizar el estado, usando spread, `map` y `filter` en vez de mutar directamente.
-- **Lifting state up**: elevar el estado al ancestro común y pasar funciones por props para modificarlo desde componentes hijos.
-- **Renderizado condicional** con el operador `&&` y el operador ternario.
-- Manejo de **inputs controlados**.
-- Encapsulamiento de estilos por componente con **CSS Modules**.
-- Consumo de **APIs externas** con `fetch`, funciones `async` y manejo de estados de carga, error y reintento (`catch` / `finally`).
-- **Paginación en el cliente** con constantes de configuración (en vez de números mágicos) para controlar cuántos productos y categorías se muestran a la vez.
-- Nociones básicas de **accesibilidad** con atributos ARIA (`aria-expanded`, `aria-controls`, `aria-label`) en elementos interactivos.
+**Fundamentos**
+
+- **Componentes reutilizables** y comunicación por **props** (con destructuring).
+- Renderizado de listas con `map()` y uso correcto de `key` (y por qué `key={id}` importa para preservar el nodo del DOM).
+- Estado con `useState`, efectos con `useEffect` y su función de **cleanup** (p. ej. `addEventListener` + `removeEventListener` para cerrar con Escape).
+- **Estado derivado**: calcular valores (como el total del carrito) en vez de duplicarlos en el estado.
+- **Inmutabilidad** con spread, `map` y `filter`; actualizadores `prev =>` para evitar *stale closures*.
+- **Renderizado condicional** con `&&` y el ternario (incluido el *gotcha* de `0 &&` en JSX).
+- Manejo de **inputs controlados** y encapsulamiento de estilos con **CSS Modules**.
+
+**Patrones avanzados (esta etapa)**
+
+- **Custom hooks** para encapsular lógica con estado (`useCarrito`).
+- **`useReducer`** para centralizar las transiciones de estado por acciones, testeable como función pura.
+- **Context API** para estado global, eliminando el *prop drilling*.
+- **React Router**: `Routes`/`Route`, `useParams`, `Link`, `BrowserRouter` con `basename`, y el fallback `404.html` para SPAs en GitHub Pages.
+- **Testing** con Vitest + React Testing Library (función pura → test directo, `toBe` vs `toEqual`, patrón Arrange-Act-Assert).
+- **Igualdad por referencia** aplicada a propósito (re-disparar un efecto pasando un objeto nuevo).
+- Encapsular un comportamiento en un **componente reutilizable** para arreglar un bug en un solo lugar (el fallback de imagen).
+
+**Otros**
+
+- Consumo de **APIs externas** con `fetch`, `async` y manejo de estados de carga, error y reintento.
+- **Paginación en el cliente** con constantes de configuración (en vez de números mágicos).
+- **Accesibilidad** con atributos ARIA y `prefers-reduced-motion`.
 - **Diseño responsive** con media queries, pensado para escalar a distintos tamaños de pantalla.
 
 ## 💻 Cómo ejecutarlo localmente
@@ -79,9 +106,12 @@ npm install
 
 # Levantar el servidor de desarrollo
 npm run dev
+
+# Ejecutar los tests
+npm test
 ```
 
-La aplicación quedará disponible en `http://localhost:5173/`.
+La aplicación quedará disponible en `http://localhost:5173/tienda-react/` (el proyecto usa un `base` propio, `/tienda-react/`, para el despliegue en GitHub Pages).
 
 ## 🚀 Cómo desplegarlo
 

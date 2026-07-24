@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import styles from "./Carrito.module.css";
+import ImagenProducto from "./ImagenProducto.jsx";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 
 function Carrito({ onCerrar, abierto }) {
@@ -48,13 +49,22 @@ function Carrito({ onCerrar, abierto }) {
       {/* Zona 2: lista scrolleable */}
       <div className={styles.lista}>
         {carrito.length === 0 ? (
-          <p className={styles.vacio}>Tu carrito está vacío.</p>
+          <div className={styles.vacio}>
+            <i className={`fa-solid fa-cart-shopping ${styles.vacioIcono}`}></i>
+            <p className={styles.vacioTexto}>Tu carrito está vacío</p>
+            <p className={styles.vacioSub}>
+              Agrega productos para verlos aquí.
+            </p>
+            <button className={styles.vacioBoton} onClick={onCerrar}>
+              Explorar productos
+            </button>
+          </div>
         ) : (
           carrito.map((item) => (
             <div key={item.id} className={styles.item}>
               <div className={styles.imagenWrap}>
                 <Link to={`/producto/${item.id}`} onClick={onCerrar}>
-                  <img
+                  <ImagenProducto
                     className={styles.imagen}
                     src={item.imagen}
                     alt={item.nombre}

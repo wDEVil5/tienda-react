@@ -30,12 +30,52 @@
   margin-bottom: var(--espacio-md);
 }
 
+/* Estado vacío ocupa el alto de la lista y centra ícono,  mensaje,  acción. */
 .vacio {
-  color: var(--color-texto-suave);
-  font-size: 0.9rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-sm);
   text-align: center;
-  margin-top: var(--espacio-xl);
+  padding: var(--espacio-xl) var(--espacio-md);
+}
 
+.vacioIcono {
+  font-size: 2.5rem;
+  color: var(--color-borde);
+  margin-bottom: var(--espacio-sm);
+}
+
+.vacioTexto {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-texto);
+}
+
+.vacioSub {
+  font-size: 0.85rem;
+  color: var(--color-texto-suave);
+}
+
+.vacioBoton {
+  margin-top: var(--espacio-md);
+  height: 44px;
+  padding: 0 var(--espacio-lg);
+  border: none;
+  border-radius: var(--radio-sm);
+  background-color: var(--color-boton);
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.vacioBoton:hover {
+  background-color: var(--color-boton-hover);
 }
 
 .item {

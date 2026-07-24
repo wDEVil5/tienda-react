@@ -1,0 +1,12 @@
+/* Llena el contenedor que lo envuelve (cada uso le da su tamaño) y centra un
+   ícono tenue sobre el fondo suave. */
+.placeholder {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-fondo-suave);
+  color: var(--color-texto-suave);
+  font-size: 1.5rem;
+}

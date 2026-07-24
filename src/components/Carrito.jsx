@@ -4,7 +4,8 @@ import styles from "./Carrito.module.css";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 
 function Carrito({ onCerrar, abierto }) {
-  const { carrito, eliminarDelCarrito, cambiarCantidad } = useCarritoContext();
+  const { carrito, eliminarDelCarrito, cambiarCantidad, vaciarCarrito } =
+    useCarritoContext();
 
   // solo cuando el carrito está ABIERTO, escuchamos la tecla Escape
   // (evento del navegador -> vive fuera de React) y congelamos el scroll del
@@ -106,7 +107,7 @@ function Carrito({ onCerrar, abierto }) {
         )}
       </div>
 
-      {/* Zona 3: total fijo (solo si hay items) */}
+      {/* Zona 3: total + acciones fijo (solo si hay items) */}
       {carrito.length > 0 && (
         <div className={styles.pie}>
           <div className={styles.total}>
@@ -114,6 +115,23 @@ function Carrito({ onCerrar, abierto }) {
             <span className={styles.totalMonto}>
               ${total.toLocaleString("es-CL")}
             </span>
+          </div>
+
+          <div className={styles.acciones}>
+            {/* esa es una acción destructiva: confirmamos antes de borrar todo. */}
+            <button
+              className={styles.vaciar}
+              onClick={() => {
+                if (window.confirm("¿Vaciar todo el carrito?")) {
+                  vaciarCarrito();
+                }
+              }}
+            >
+              Vaciar
+            </button>
+
+            {/* CTA principal. El checkout real llega en la Fase 4 (pagos). */}
+            <button className={styles.pagar}>Ir a pagar</button>
           </div>
         </div>
       )}

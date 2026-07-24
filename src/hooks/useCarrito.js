@@ -1,4 +1,4 @@
-import { useReducer, useEffect } from "react";
+import { useReducer, useEffect, useState } from "react";
 
 // Estado inicial: leemos el carrito guardado en localStorage una Unica vez.
 function iniciarCarrito() {
@@ -60,9 +60,18 @@ export function useCarrito() {
   // Estado derivado: se recalcula solo en cada render, no se guarda.
   const totalItems = carrito.reduce((suma, item) => suma + item.cantidad, 0);
 
+  // Aviso flotante (toast). Guardamos un OBJETO, no solo el nombre: cada agregado
+  // crea una referencia nueva, así el efecto del Toast se re-dispara aunque
+  // agregues el mismo producto dos veces (igualdad por referencia, como en toBe).
+  const [aviso, setAviso] = useState(null);
+  const descartarAviso = () => setAviso(null);
+
   // Funciones "envoltorio" traducen una intención a una acción y la despachan.
   // Quien usa el hook no necesita saber que por dentro hay un reducer.
-  const agregarAlCarrito = (producto) => dispatch({ type: "AGREGAR", producto });
+  const agregarAlCarrito = (producto) => {
+    dispatch({ type: "AGREGAR", producto });
+    setAviso({ nombre: producto.nombre, key: Date.now() });
+  };
   const eliminarDelCarrito = (id) => dispatch({ type: "ELIMINAR", id });
   const cambiarCantidad = (id, delta) =>
     dispatch({ type: "CAMBIAR_CANTIDAD", id, delta });
@@ -71,6 +80,8 @@ export function useCarrito() {
   return {
     carrito,
     totalItems,
+    aviso,
+    descartarAviso,
     agregarAlCarrito,
     eliminarDelCarrito,
     cambiarCantidad,

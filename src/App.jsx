@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import Catalogo from "./components/Catalogo.jsx";
 import ProductoDetalle from "./pages/ProductoDetalle.jsx";
 import Carrito from "./components/Carrito.jsx";
+import Toast from "./components/Toast.jsx";
 import styles from "./App.module.css";
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
@@ -115,6 +116,9 @@ function App() {
         onCerrar={() => setCarritoAbierto(false)}
         abierto={carritoAbierto}
       />
+
+      {/* Aviso flotante que aparece al agregar y se va solo */}
+      <Toast />
 
       <Footer />
     </div>

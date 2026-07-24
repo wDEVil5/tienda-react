@@ -1,0 +1,71 @@
+.toast {
+  position: fixed;
+  bottom: var(--espacio-xl);
+  left: 50%;
+  z-index: 1100; /* por encima del carrito (1000) */
+
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+  padding: var(--espacio-md) var(--espacio-lg);
+
+  background-color: var(--color-texto);
+  color: #fff;
+  border-radius: var(--radio-md);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  font-size: 0.9rem;
+
+  /* translateX(-50%) centra el toast respecto a su propio ancho. Es la posición
+     BASE: cuando la animación termina, el elemento vuelve aquí y sigue centrado. */
+  transform: translateX(-50%);
+  animation: entrar 0.25s ease;
+}
+
+@keyframes entrar {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.icono {
+  color: #4ade80; /* verde éxito */
+  font-size: 1.1rem;
+}
+
+.texto strong {
+  font-weight: 600;
+}
+
+/* Respetar a quien prefiere menos movimiento. */
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .toast {
+    left: var(--espacio-md);
+    right: var(--espacio-md);
+    bottom: var(--espacio-md);
+    /* En móvil ocupa el ancho entre los bordes: ya no se centra por translateX. */
+    transform: none;
+    animation: entrar-movil 0.25s ease;
+  }
+
+  @keyframes entrar-movil {
+    from {
+      opacity: 0;
+      transform: translateY(1rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}

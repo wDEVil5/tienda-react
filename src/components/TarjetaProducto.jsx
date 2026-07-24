@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import styles from "./TarjetaProducto.module.css";
+import ImagenProducto from "./ImagenProducto.jsx";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 
 function TarjetaProducto({ producto }) {
@@ -10,7 +11,7 @@ function TarjetaProducto({ producto }) {
         <article className={styles.tarjeta}>
             <div className={styles.imagenWrap}>
                 <Link to={`/producto/${producto.id}`}>
-                    <img
+                    <ImagenProducto
                         className={styles.imagen}
                         src={producto.imagen}
                         alt={producto.nombre}

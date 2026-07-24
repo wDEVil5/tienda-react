@@ -1,5 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
+import ImagenProducto from "../components/ImagenProducto.jsx";
 import styles from "./ProductoDetalle.module.css";
 
 function ProductoDetalle({ productos }) {
@@ -32,7 +33,7 @@ function ProductoDetalle({ productos }) {
 
       <div className={styles.contenido}>
         <div className={styles.imagenWrap}>
-          <img
+          <ImagenProducto
             className={styles.imagen}
             src={producto.imagen}
             alt={producto.nombre}

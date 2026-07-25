@@ -86,6 +86,30 @@
   border-top: 1px solid var(--color-borde);
 }
 
+/* Barra de ordenamiento: etiqueta + selector, alineados a la derecha. */
+.barraOrden {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--espacio-sm);
+}
+
+.ordenLabel {
+  font-size: 0.9rem;
+  color: var(--color-texto-suave);
+}
+
+.ordenSelect {
+  padding: var(--espacio-xs) var(--espacio-sm);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-sm);
+  background-color: var(--color-fondo);
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--color-texto);
+  cursor: pointer;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

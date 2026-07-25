@@ -12,8 +12,9 @@ function Catalogo({ productos, busqueda }) {
   const [filtrosAbiertos, setFiltrosAbiertos] = useState(false);
   const [masCategoriasAbierto, setMasCategoriasAbierto] = useState(false);
   const [limiteProductos, setLimiteProductos] = useState(PRODUCTOS_POR_CARGA);
+  const [orden, setOrden] = useState("relevancia"); // criterio de ordenamiento
 
-  //const categorias = ["todas", "frutas", "lacteos", ...]; //datos fijos MANUAL,
+  
   const categorias = ["todas", ...new Set(productos.map((p) => p.categoria))]; // version Derivada, calculo automatico
   const categoriasVisibles = categorias.slice(0, LIMITE_CATEGORIAS_VISIBLES);
   const categoriasExtra = categorias.slice(LIMITE_CATEGORIAS_VISIBLES);
@@ -48,7 +49,20 @@ function Catalogo({ productos, busqueda }) {
     return coincideBusqueda && coincideCategoria;
   });
 
-  const productosVisibles = productosFiltrados.slice(0, limiteProductos);
+  // Ordenamiento derivado. .sort() MUTA el array, así que copiamos primero con
+  // [...] para no alterar productosFiltrados (ni, por ende, la prop productos).
+  // "relevancia" deja el orden original que entrega la API.
+  const productosOrdenados = [...productosFiltrados];
+  if (orden === "precio-asc") {
+    productosOrdenados.sort((a, b) => a.precio - b.precio);
+  } else if (orden === "precio-desc") {
+    productosOrdenados.sort((a, b) => b.precio - a.precio);
+  } else if (orden === "alfabetico") {
+    // localeCompare ordena texto respetando acentos y mayúsculas del idioma.
+    productosOrdenados.sort((a, b) => a.nombre.localeCompare(b.nombre));
+  }
+
+  const productosVisibles = productosOrdenados.slice(0, limiteProductos);
   const hayMasProductos = limiteProductos < productosFiltrados.length;
   const productosRestantes = productosFiltrados.length - limiteProductos;
 
@@ -132,6 +146,23 @@ function Catalogo({ productos, busqueda }) {
         </p>
       ) : (
         <>
+          <div className={styles.barraOrden}>
+            <label htmlFor="orden" className={styles.ordenLabel}>
+              Ordenar por
+            </label>
+            <select
+              id="orden"
+              className={styles.ordenSelect}
+              value={orden}
+              onChange={(e) => setOrden(e.target.value)}
+            >
+              <option value="relevancia">Relevancia</option>
+              <option value="precio-asc">Precio: menor a mayor</option>
+              <option value="precio-desc">Precio: mayor a menor</option>
+              <option value="alfabetico">Nombre: A - Z</option>
+            </select>
+          </div>
+
           <div className={styles.grid}>
             {productosVisibles.map((producto) => (
               <TarjetaProducto key={producto.id} producto={producto} />

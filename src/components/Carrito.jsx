@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import styles from "./Carrito.module.css";
 import ImagenProducto from "./ImagenProducto.jsx";
@@ -14,6 +14,10 @@ function Carrito({ onCerrar, abierto }) {
     fijarCantidad,
     vaciarCarrito,
   } = useCarritoContext();
+
+  // Refs: cajas que persisten entre renders sin causar re-render.
+  const drawerRef = useRef(null); // handle al <aside> del DOM
+  const elementoPrevioRef = useRef(null); // quién tenía el foco antes de abrir
 
   // solo cuando el carrito está ABIERTO, escuchamos la tecla Escape
   // (evento del navegador -> vive fuera de React) y congelamos el scroll del
@@ -36,6 +40,43 @@ function Carrito({ onCerrar, abierto }) {
     };
   }, [abierto, onCerrar]);
 
+  // Manejo de foco (diálogo accesible): al abrir, recordamos quién tenía el foco
+  // y lo movemos DENTRO del carrito; al cerrar, se lo devolvemos. Mientras está
+  // abierto, atrapamos el Tab para que el foco no se escape al fondo (focus trap).
+  useEffect(() => {
+    if (!abierto) return;
+
+    const drawer = drawerRef.current;
+    const selector =
+      'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    elementoPrevioRef.current = document.activeElement;
+    drawer.querySelector(selector)?.focus(); // foco al primer elemento
+
+    const atraparTab = (e) => {
+      if (e.key !== "Tab") return;
+      // Recalculamos en cada Tab: el contenido del carrito puede cambiar.
+      const focusables = drawer.querySelectorAll(selector);
+      if (focusables.length === 0) return;
+
+      const primero = focusables[0];
+      const ultimo = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === primero) {
+        e.preventDefault();
+        ultimo.focus(); // Shift+Tab en el primero → salta al último
+      } else if (!e.shiftKey && document.activeElement === ultimo) {
+        e.preventDefault();
+        primero.focus(); // Tab en el último → vuelve al primero
+      }
+    };
+    drawer.addEventListener("keydown", atraparTab);
+
+    return () => {
+      drawer.removeEventListener("keydown", atraparTab);
+      elementoPrevioRef.current?.focus(); // devolvemos el foco al abridor
+    };
+  }, [abierto]);
+
   const total = carrito.reduce(
     (suma, item) => suma + item.precio * item.cantidad,
     0,
@@ -51,10 +92,17 @@ function Carrito({ onCerrar, abierto }) {
   const hayDescuento = descuento > 0;
 
   return (
-    <aside className={`${styles.carrito} ${abierto ? styles.abierto : ""}`}>
+    <aside
+      ref={drawerRef}
+      className={`${styles.carrito} ${abierto ? styles.abierto : ""}`}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="carrito-titulo"
+      inert={!abierto}
+    >
       {/* Zona 1: cabecera */}
       <div className={styles.cabecera}>
-        <h2 className={styles.titulo}>
+        <h2 id="carrito-titulo" className={styles.titulo}>
           Tu carrito{totalItems > 0 && ` (${totalItems})`}
         </h2>
         <button className={styles.cerrar} onClick={onCerrar}>

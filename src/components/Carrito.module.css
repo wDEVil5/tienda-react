@@ -198,6 +198,11 @@
   font-weight: 600;
 }
 
+.descuento {
+  color: #2e9e5b; /* verde: ahorro para el cliente */
+  font-weight: 600;
+}
+
 .total {
   display: flex;
   justify-content: space-between;

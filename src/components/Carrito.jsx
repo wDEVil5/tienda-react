@@ -41,6 +41,15 @@ function Carrito({ onCerrar, abierto }) {
     0,
   );
 
+  // Subtotal a precios ORIGINALES (usa precioAnterior si el ítem está en oferta).
+  // El descuento es lo que se ahorra; solo lo mostramos si es mayor que 0.
+  const subtotalOriginal = carrito.reduce(
+    (suma, item) => suma + (item.precioAnterior ?? item.precio) * item.cantidad,
+    0,
+  );
+  const descuento = subtotalOriginal - total;
+  const hayDescuento = descuento > 0;
+
   return (
     <aside className={`${styles.carrito} ${abierto ? styles.abierto : ""}`}>
       {/* Zona 1: cabecera */}
@@ -121,8 +130,20 @@ function Carrito({ onCerrar, abierto }) {
           <div className={styles.resumen}>
             <div className={styles.filaResumen}>
               <span>Subtotal</span>
-              <span>${total.toLocaleString("es-CL")}</span>
+              <span>
+                ${(hayDescuento ? subtotalOriginal : total).toLocaleString(
+                  "es-CL",
+                )}
+              </span>
             </div>
+            {hayDescuento && (
+              <div className={styles.filaResumen}>
+                <span>Descuento</span>
+                <span className={styles.descuento}>
+                  −${descuento.toLocaleString("es-CL")}
+                </span>
+              </div>
+            )}
             <div className={styles.filaResumen}>
               <span>Envío</span>
               <span className={styles.envioGratis}>Gratis</span>

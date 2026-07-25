@@ -2,11 +2,18 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import styles from "./Carrito.module.css";
 import ImagenProducto from "./ImagenProducto.jsx";
+import ControlCantidad from "./ControlCantidad.jsx";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 
 function Carrito({ onCerrar, abierto }) {
-  const { carrito, totalItems, eliminarDelCarrito, cambiarCantidad, vaciarCarrito } =
-    useCarritoContext();
+  const {
+    carrito,
+    totalItems,
+    eliminarDelCarrito,
+    cambiarCantidad,
+    fijarCantidad,
+    vaciarCarrito,
+  } = useCarritoContext();
 
   // solo cuando el carrito está ABIERTO, escuchamos la tecla Escape
   // (evento del navegador -> vive fuera de React) y congelamos el scroll del
@@ -92,23 +99,12 @@ function Carrito({ onCerrar, abierto }) {
                 </div>
 
                 <div className={styles.filaInferior}>
-                  <div className={styles.cantidad}>
-                    <button
-                      className={styles.botonCantidad}
-                      onClick={() => cambiarCantidad(item.id, -1)}
-                    >
-                      −
-                    </button>
-                    <span className={styles.numeroCantidad}>
-                      {item.cantidad}
-                    </span>
-                    <button
-                      className={styles.botonCantidad}
-                      onClick={() => cambiarCantidad(item.id, 1)}
-                    >
-                      +
-                    </button>
-                  </div>
+                  <ControlCantidad
+                    cantidad={item.cantidad}
+                    onDisminuir={() => cambiarCantidad(item.id, -1)}
+                    onAumentar={() => cambiarCantidad(item.id, 1)}
+                    onFijar={(n) => fijarCantidad(item.id, n)}
+                  />
                   <span className={styles.subtotal}>
                     ${(item.precio * item.cantidad).toLocaleString("es-CL")}
                   </span>

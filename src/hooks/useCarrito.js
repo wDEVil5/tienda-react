@@ -38,6 +38,15 @@ export function carritoReducer(estado, accion) {
           : item,
       );
 
+    // Como CAMBIAR_CANTIDAD pero con un valor ABSOLUTO (para el input editable),
+    // no un delta. Igual protegemos el mínimo de 1.
+    case "FIJAR_CANTIDAD":
+      return estado.map((item) =>
+        item.id === accion.id
+          ? { ...item, cantidad: Math.max(1, accion.cantidad) }
+          : item,
+      );
+
     case "VACIAR":
       return [];
 
@@ -75,6 +84,8 @@ export function useCarrito() {
   const eliminarDelCarrito = (id) => dispatch({ type: "ELIMINAR", id });
   const cambiarCantidad = (id, delta) =>
     dispatch({ type: "CAMBIAR_CANTIDAD", id, delta });
+  const fijarCantidad = (id, cantidad) =>
+    dispatch({ type: "FIJAR_CANTIDAD", id, cantidad });
   const vaciarCarrito = () => dispatch({ type: "VACIAR" });
 
   return {
@@ -85,6 +96,7 @@ export function useCarrito() {
     agregarAlCarrito,
     eliminarDelCarrito,
     cambiarCantidad,
+    fijarCantidad,
     vaciarCarrito,
   };
 }

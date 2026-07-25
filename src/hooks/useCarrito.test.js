@@ -60,6 +60,28 @@ describe("carritoReducer", () => {
     expect(resultado[0].cantidad).toBe(1);
   });
 
+  it("FIJAR_CANTIDAD: fija la cantidad a un valor absoluto", () => {
+    const estado = [{ id: 1, cantidad: 3 }];
+    const resultado = carritoReducer(estado, {
+      type: "FIJAR_CANTIDAD",
+      id: 1,
+      cantidad: 7,
+    });
+
+    expect(resultado[0].cantidad).toBe(7);
+  });
+
+  it("FIJAR_CANTIDAD: nunca fija por debajo de 1", () => {
+    const estado = [{ id: 1, cantidad: 3 }];
+    const resultado = carritoReducer(estado, {
+      type: "FIJAR_CANTIDAD",
+      id: 1,
+      cantidad: 0,
+    });
+
+    expect(resultado[0].cantidad).toBe(1);
+  });
+
   it("VACIAR: deja el carrito vacío", () => {
     const estado = [{ id: 1, cantidad: 3 }];
     const resultado = carritoReducer(estado, { type: "VACIAR" });

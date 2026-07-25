@@ -82,6 +82,22 @@ describe("carritoReducer", () => {
     expect(resultado[0].cantidad).toBe(1);
   });
 
+  it("RESTAURAR: reinserta un ítem en su posición original", () => {
+    const estado = [
+      { id: 1, cantidad: 1 },
+      { id: 3, cantidad: 1 },
+    ];
+    const item = { id: 2, cantidad: 5 };
+    const resultado = carritoReducer(estado, {
+      type: "RESTAURAR",
+      item,
+      indice: 1,
+    });
+
+    expect(resultado).toHaveLength(3);
+    expect(resultado[1]).toEqual({ id: 2, cantidad: 5 });
+  });
+
   it("VACIAR: deja el carrito vacío", () => {
     const estado = [{ id: 1, cantidad: 3 }];
     const resultado = carritoReducer(estado, { type: "VACIAR" });

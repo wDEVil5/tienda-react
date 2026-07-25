@@ -47,6 +47,14 @@ export function carritoReducer(estado, accion) {
           : item,
       );
 
+    // Reinserta un ítem previamente eliminado en su posición original (para el
+    // "Deshacer"). splice sobre una COPIA para no mutar el estado anterior.
+    case "RESTAURAR": {
+      const copia = [...estado];
+      copia.splice(accion.indice, 0, accion.item);
+      return copia;
+    }
+
     case "VACIAR":
       return [];
 
@@ -69,19 +77,33 @@ export function useCarrito() {
   // Estado derivado: se recalcula solo en cada render, no se guarda.
   const totalItems = carrito.reduce((suma, item) => suma + item.cantidad, 0);
 
-  // Aviso flotante (toast). Guardamos un OBJETO, no solo el nombre: cada agregado
-  // crea una referencia nueva, así el efecto del Toast se re-dispara aunque
-  // agregues el mismo producto dos veces (igualdad por referencia, como en toBe).
+  // Aviso flotante (toast). Objeto { mensaje, key, accion }:
+  // - la referencia nueva en cada aviso re-dispara el efecto del Toast (como toBe);
+  // - "accion" es opcional: un botón dentro del toast, p. ej. "Deshacer".
   const [aviso, setAviso] = useState(null);
   const descartarAviso = () => setAviso(null);
+  const mostrarAviso = (mensaje, accion = null) =>
+    setAviso({ mensaje, key: Date.now(), accion });
 
   // Funciones "envoltorio" traducen una intención a una acción y la despachan.
   // Quien usa el hook no necesita saber que por dentro hay un reducer.
   const agregarAlCarrito = (producto) => {
     dispatch({ type: "AGREGAR", producto });
-    setAviso({ nombre: producto.nombre, key: Date.now() });
+    mostrarAviso(`${producto.nombre} se agregó al carrito`);
   };
-  const eliminarDelCarrito = (id) => dispatch({ type: "ELIMINAR", id });
+
+  // Guardamos el ítem y su posición ANTES de borrarlo, para poder devolverlo
+  // intacto (con su cantidad) si el usuario pulsa "Deshacer".
+  const eliminarDelCarrito = (id) => {
+    const indice = carrito.findIndex((item) => item.id === id);
+    if (indice === -1) return;
+    const eliminado = carrito[indice];
+    dispatch({ type: "ELIMINAR", id });
+    mostrarAviso(`${eliminado.nombre} eliminado`, {
+      texto: "Deshacer",
+      alHacer: () => dispatch({ type: "RESTAURAR", item: eliminado, indice }),
+    });
+  };
   const cambiarCantidad = (id, delta) =>
     dispatch({ type: "CAMBIAR_CANTIDAD", id, delta });
   const fijarCantidad = (id, cantidad) =>

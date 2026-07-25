@@ -2,30 +2,48 @@ import { useEffect } from "react";
 import styles from "./Toast.module.css";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 
-const DURACION_MS = 2600; //en milisegundos
+const DURACION_MS = 2600; // aviso simple
+const DURACION_ACCION_MS = 5000; // con botón: más tiempo para reaccionar
 
 function Toast() {
   const { aviso, descartarAviso } = useCarritoContext();
 
-  // Cada vez que hay un aviso NUEVO (objeto con referencia distinta), arrancamos
-  // un temporizador que lo borra solo. El cleanup limpia el timer anterior: si
-  // el usuario agrega rápido dos veces, el contador se REINICIA en vez de apilarse.
+  // Un toast con acción ("Deshacer") vive más para dar tiempo a pulsarlo.
+  const duracion = aviso?.accion ? DURACION_ACCION_MS : DURACION_MS;
+
+  // Cada aviso NUEVO (referencia distinta) arranca un temporizador que lo borra
+  // solo. El cleanup limpia el timer anterior: avisos seguidos reinician la cuenta.
   useEffect(() => {
     if (!aviso) return;
 
-    const id = setTimeout(descartarAviso, DURACION_MS);
+    const id = setTimeout(descartarAviso, duracion);
     return () => clearTimeout(id);
-  }, [aviso, descartarAviso]);
+  }, [aviso, descartarAviso, duracion]);
 
   // Sin aviso, no renderizamos nada.
   if (!aviso) return null;
 
+  const icono = aviso.accion ? "fa-trash-can" : "fa-circle-check";
+
   return (
     <div className={styles.toast} role="status">
-      <i className={`fa-solid fa-circle-check ${styles.icono}`}></i>
-      <span className={styles.texto}>
-        <strong>{aviso.nombre}</strong> se agregó al carrito
-      </span>
+      <i
+        className={`fa-solid ${icono} ${styles.icono} ${
+          aviso.accion ? styles.iconoAccion : ""
+        }`}
+      ></i>
+      <span className={styles.texto}>{aviso.mensaje}</span>
+      {aviso.accion && (
+        <button
+          className={styles.accion}
+          onClick={() => {
+            aviso.accion.alHacer();
+            descartarAviso();
+          }}
+        >
+          {aviso.accion.texto}
+        </button>
+      )}
     </div>
   );
 }

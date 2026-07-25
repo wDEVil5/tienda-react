@@ -37,6 +37,30 @@
   font-size: 1.1rem;
 }
 
+/* Para el toast de "eliminado" el verde no pega: color neutro claro mejor. */
+.iconoAccion {
+  color: #cbd5e1;
+}
+
+/* Botón dentro del toast ("Deshacer"), sobre el fondo oscuro. */
+.accion {
+  margin-left: var(--espacio-sm);
+  border: none;
+  background: transparent;
+  color: #6ea8fe; /* azul claro para contrastar con el fondo oscuro */
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  padding: 0;
+}
+
+.accion:hover {
+  text-decoration: underline;
+}
+
 .texto strong {
   font-weight: 600;
 }

@@ -118,6 +118,17 @@ function Carrito({ onCerrar, abierto }) {
       {/* Zona 3: total + acciones fijo (solo si hay items) */}
       {carrito.length > 0 && (
         <div className={styles.pie}>
+          <div className={styles.resumen}>
+            <div className={styles.filaResumen}>
+              <span>Subtotal</span>
+              <span>${total.toLocaleString("es-CL")}</span>
+            </div>
+            <div className={styles.filaResumen}>
+              <span>Envío</span>
+              <span className={styles.envioGratis}>Gratis</span>
+            </div>
+          </div>
+
           <div className={styles.total}>
             <span>Total</span>
             <span className={styles.totalMonto}>

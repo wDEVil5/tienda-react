@@ -176,6 +176,28 @@
   color: #a32d2d;
 }
 
+/* Desglose de precios sobre el total. */
+.resumen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+  margin-bottom: var(--espacio-md);
+  padding-bottom: var(--espacio-md);
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.filaResumen {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: var(--color-texto-suave);
+}
+
+.envioGratis {
+  color: #2e9e5b; /* verde: envío gratis */
+  font-weight: 600;
+}
+
 .total {
   display: flex;
   justify-content: space-between;

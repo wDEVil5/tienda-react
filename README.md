@@ -1,6 +1,6 @@
 # 🛒 SumarketExpress
 
-Tienda e-commerce de una sola página (SPA) construida desde cero con **React** y **Vite**, desarrollada como proyecto personal para reforzar y demostrar mis habilidades de desarrollo front-end.
+Tienda e-commerce de una sola página (SPA) construida desde cero con **React** y **Vite**, desarrollada como proyecto personal de aprendizaje con una **hoja de ruta full-stack**: el frontend actual es la primera etapa hacia una tienda completa con backend propio, autenticación, pagos y app móvil.
 
 Los productos se obtienen en tiempo real desde una API externa pública y se normalizan a un formato propio antes de mostrarse en el catálogo. Incluye enrutamiento del lado del cliente (con página de detalle por producto), buscador, filtros por categoría y un carrito de compras completo —como panel lateral (drawer)— con persistencia en el navegador. La lógica de estado usa patrones avanzados de React (**custom hooks**, **`useReducer`** y **Context**) y cuenta con **tests unitarios**.
 
@@ -91,6 +91,19 @@ Este proyecto es mi campo de práctica para consolidar React y buenas prácticas
 - **Paginación en el cliente** con constantes de configuración (en vez de números mágicos).
 - **Accesibilidad** con atributos ARIA y `prefers-reduced-motion`.
 - **Diseño responsive** con media queries, pensado para escalar a distintos tamaños de pantalla.
+
+## 🗺️ Hacia dónde va (roadmap)
+
+SumarketExpress es un proyecto **full-stack en construcción**, desarrollado por fases (una a la vez) para convertirse en una **tienda completa**:
+
+- ✅ **Frontend profesional**  — React con hooks, `useReducer`, Context, React Router y tests unitarios.
+- 🔜 **Backend propio** — API REST con **Node.js + Express** y base de datos **PostgreSQL + Prisma** (reemplaza a la API externa).
+- 🔒 **Autenticación** — cuentas de usuario con **JWT** y contraseñas hasheadas con **bcrypt**; roles usuario/admin.
+- 💳 **Pagos reales** — checkout con **Stripe / Mercado Pago** (modo test).
+- 🛠️ **Panel de administración** — gestión de productos (con imágenes), pedidos e inventario de la tienda.
+- 📱 **App móvil** — iOS y Android con **React Native + Expo**, compartiendo la misma API.
+
+> El alcance detallado se mantiene en un documento de producto (PRD) aparte.
 
 ## 💻 Cómo ejecutarlo localmente
 

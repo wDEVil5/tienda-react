@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TarjetaProducto from "./TarjetaProducto.jsx";
 import styles from "../Catalogo.module.css";
 
@@ -13,9 +13,27 @@ function Catalogo({ productos, busqueda }) {
   const [limiteProductos, setLimiteProductos] = useState(PRODUCTOS_POR_CARGA);
   const [orden, setOrden] = useState("relevancia"); // criterio de ordenamiento
   const [soloOfertas, setSoloOfertas] = useState(false); // filtrar solo ofertas
+  const [filtrosAbiertos, setFiltrosAbiertos] = useState(false); // hoja de filtros (móvil)
+  // Rango de precio: null = sin límite (usa el extremo del catálogo).
+  const [precioMin, setPrecioMin] = useState(null);
+  const [precioMax, setPrecioMax] = useState(null);
 
+  // Mientras la hoja de filtros está abierta (solo móvil): cerrar con Escape y
+  // bloquear el scroll del fondo. Mismo patrón que el drawer del carrito.
+  useEffect(() => {
+    if (!filtrosAbiertos) return;
+    const alPresionar = (e) => {
+      if (e.key === "Escape") setFiltrosAbiertos(false);
+    };
+    window.addEventListener("keydown", alPresionar);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", alPresionar);
+      document.body.style.overflow = "";
+    };
+  }, [filtrosAbiertos]);
 
-  const categorias = ["todas", ...new Set(productos.map((p) => p.categoria))]; // version Derivada, calculo automatico
+  const categorias = ["todas", ...new Set(productos.map((p) => p.categoria))]; // version Derivada
   const categoriasVisibles = categorias.slice(0, LIMITE_CATEGORIAS_VISIBLES);
   const categoriasExtra = categorias.slice(LIMITE_CATEGORIAS_VISIBLES);
 
@@ -27,25 +45,51 @@ function Catalogo({ productos, busqueda }) {
   const contarCategoria = (cat) =>
     cat === "todas" ? productos.length : conteos[cat] ?? 0;
 
+  // Límites de precio del catálogo (derivados) para el slider de rango.
+  const precios = productos.map((p) => p.precio);
+  const precioPiso = precios.length ? Math.floor(Math.min(...precios)) : 0;
+  const precioTope = precios.length ? Math.ceil(Math.max(...precios)) : 0;
+  const minActual = precioMin ?? precioPiso;
+  const maxActual = precioMax ?? precioTope;
+  const rango = precioTope - precioPiso || 1;
+
   const seleccionarCategoria = (cat) => {
     setCategoria(cat);
     setMasCategoriasAbierto(false);
   };
 
-  // Cuando cambian los filtros (búsqueda, categoría u ofertas), volvemos a la
-  // primera "tanda" de productos. Patrón recomendado por React: ajustar el estado
-  // durante el render comparando con el valor anterior, en vez de un useEffect.
+  const limpiarFiltros = () => {
+    setCategoria("todas");
+    setSoloOfertas(false);
+    setPrecioMin(null);
+    setPrecioMax(null);
+    setMasCategoriasAbierto(false);
+  };
+
+  // Cuántos filtros están activos (para el badge del botón "Filtrar").
+  const precioActivo = minActual > precioPiso || maxActual < precioTope;
+  const filtrosActivos =
+    (categoria !== "todas" ? 1 : 0) +
+    (soloOfertas ? 1 : 0) +
+    (precioActivo ? 1 : 0);
+
+  // Cuando cambia cualquier filtro, volvemos a la primera "tanda" de productos.
+  // Patrón de ajuste en render (sin useEffect), comparando con el valor anterior.
   const [filtrosPrevios, setFiltrosPrevios] = useState({
     busqueda,
     categoria,
     soloOfertas,
+    minActual,
+    maxActual,
   });
   if (
     filtrosPrevios.busqueda !== busqueda ||
     filtrosPrevios.categoria !== categoria ||
-    filtrosPrevios.soloOfertas !== soloOfertas
+    filtrosPrevios.soloOfertas !== soloOfertas ||
+    filtrosPrevios.minActual !== minActual ||
+    filtrosPrevios.maxActual !== maxActual
   ) {
-    setFiltrosPrevios({ busqueda, categoria, soloOfertas });
+    setFiltrosPrevios({ busqueda, categoria, soloOfertas, minActual, maxActual });
     setLimiteProductos(PRODUCTOS_POR_CARGA);
   }
 
@@ -59,25 +103,42 @@ function Catalogo({ productos, busqueda }) {
 
     const coincideOferta = !soloOfertas || producto.precioAnterior !== null;
 
+    const coincidePrecio =
+      producto.precio >= minActual && producto.precio <= maxActual;
+
     //veredicto
-    return coincideBusqueda && coincideCategoria && coincideOferta;
+    return (
+      coincideBusqueda && coincideCategoria && coincideOferta && coincidePrecio
+    );
   });
 
   // Ordenamiento derivado. .sort() MUTA el array, así que copiamos primero con
   // [...] para no alterar productosFiltrados (ni, por ende, la prop productos).
-  // "relevancia" deja el orden original que entrega la API.
   const productosOrdenados = [...productosFiltrados];
   if (orden === "precio-asc") {
     productosOrdenados.sort((a, b) => a.precio - b.precio);
   } else if (orden === "precio-desc") {
     productosOrdenados.sort((a, b) => b.precio - a.precio);
   } else if (orden === "alfabetico") {
-    // localeCompare ordena texto respetando acentos y mayúsculas del idioma.
     productosOrdenados.sort((a, b) => a.nombre.localeCompare(b.nombre));
   }
 
   const productosVisibles = productosOrdenados.slice(0, limiteProductos);
   const hayMasProductos = limiteProductos < productosFiltrados.length;
+
+  // Chips de categoría (se reutilizan en la fila de escritorio y en la hoja).
+  const renderChips = (lista) =>
+    lista.map((cat) => (
+      <button
+        key={cat}
+        type="button"
+        onClick={() => seleccionarCategoria(cat)}
+        className={`${styles.chip} ${categoria === cat ? styles.chipActivo : ""}`}
+      >
+        {cat}
+        <span className={styles.conteo}>{contarCategoria(cat)}</span>
+      </button>
+    ));
 
   return (
     <section id="catalogo" className={styles.catalogo}>
@@ -107,19 +168,68 @@ function Catalogo({ productos, busqueda }) {
         </div>
       </div>
 
-      <div className={styles.controles}>
+      {/* Barra superior (solo móvil): Filtrar + orden + conteo. Reemplaza la
+          fila de orden del escritorio, que se oculta en móvil. */}
+      <div className={styles.toolbarMovil}>
+        <button
+          className={styles.abrirFiltros}
+          type="button"
+          onClick={() => setFiltrosAbiertos(true)}
+          aria-expanded={filtrosAbiertos}
+          aria-controls="filtros-sheet"
+        >
+          Filtrar
+          {filtrosActivos > 0 && (
+            <span className={styles.filtrosBadge}>{filtrosActivos}</span>
+          )}
+        </button>
+
+        <select
+          className={styles.ordenSelect}
+          value={orden}
+          onChange={(e) => setOrden(e.target.value)}
+          aria-label="Ordenar"
+        >
+          <option value="relevancia">Relevancia</option>
+          <option value="precio-asc">Precio: menor a mayor</option>
+          <option value="precio-desc">Precio: mayor a menor</option>
+          <option value="alfabetico">Nombre: A - Z</option>
+        </select>
+
+        <span className={styles.conteoMovil}>
+          {productosVisibles.length} de {productosFiltrados.length}
+        </span>
+      </div>
+
+      {/* Fondo oscuro de la hoja (solo móvil). Cerrar al tocar fuera. */}
+      {filtrosAbiertos && (
+        <div
+          className={styles.filtrosOverlay}
+          onClick={() => setFiltrosAbiertos(false)}
+        ></div>
+      )}
+
+      <div
+        id="filtros-sheet"
+        className={`${styles.controles} ${filtrosAbiertos ? styles.controlesAbierto : ""}`}
+      >
+        <span className={styles.sheetHandle} aria-hidden="true"></span>
+
+        {/* Encabezado de la hoja (solo móvil). */}
+        <div className={styles.sheetHeader}>
+          <span className={styles.sheetTitulo}>Filtrar</span>
+          <button
+            className={styles.limpiar}
+            type="button"
+            onClick={limpiarFiltros}
+          >
+            Limpiar
+          </button>
+        </div>
+
+        <p className={styles.grupoLabel}>Categoría</p>
         <div className={styles.chips}>
-          {categoriasVisibles.map((cat) => (
-            <button
-              key={cat}
-              type="button"
-              onClick={() => seleccionarCategoria(cat)}
-              className={`${styles.chip} ${categoria === cat ? styles.chipActivo : ""}`}
-            >
-              {cat}
-              <span className={styles.conteo}>{contarCategoria(cat)}</span>
-            </button>
-          ))}
+          {renderChips(categoriasVisibles)}
 
           {categoriasExtra.length > 0 && (
             <div className={styles.masCategorias}>
@@ -139,26 +249,56 @@ function Catalogo({ productos, busqueda }) {
 
               {masCategoriasAbierto && (
                 <div id="categorias-extra" className={styles.listaExtra}>
-                  {categoriasExtra.map((cat) => (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => seleccionarCategoria(cat)}
-                      className={`${styles.chip} ${categoria === cat ? styles.chipActivo : ""}`}
-                    >
-                      {cat}
-                      <span className={styles.conteo}>
-                        {contarCategoria(cat)}
-                      </span>
-                    </button>
-                  ))}
+                  {renderChips(categoriasExtra)}
                 </div>
               )}
             </div>
           )}
         </div>
 
+        {/* Rango de precio (slider de dos extremos). */}
+        <p className={styles.grupoLabel}>Precio</p>
+        <div className={styles.precioGrupo}>
+          <div className={styles.precioRango}>
+            <span className={styles.precioPista} aria-hidden="true"></span>
+            <span
+              className={styles.precioRelleno}
+              style={{
+                left: `${((minActual - precioPiso) / rango) * 100}%`,
+                right: `${100 - ((maxActual - precioPiso) / rango) * 100}%`,
+              }}
+              aria-hidden="true"
+            ></span>
+            <input
+              type="range"
+              min={precioPiso}
+              max={precioTope}
+              value={minActual}
+              onChange={(e) =>
+                setPrecioMin(Math.min(Number(e.target.value), maxActual))
+              }
+              aria-label="Precio mínimo"
+            />
+            <input
+              type="range"
+              min={precioPiso}
+              max={precioTope}
+              value={maxActual}
+              onChange={(e) =>
+                setPrecioMax(Math.max(Number(e.target.value), minActual))
+              }
+              aria-label="Precio máximo"
+            />
+          </div>
+          <div className={styles.precioValores}>
+            <span>${minActual.toLocaleString("es-CL")}</span>
+            <span>${maxActual.toLocaleString("es-CL")}</span>
+          </div>
+        </div>
+
+        <p className={styles.grupoLabel}>Filtros</p>
         <label className={styles.soloOfertas}>
+          Solo ofertas
           <input
             type="checkbox"
             className={styles.switchInput}
@@ -166,8 +306,29 @@ function Catalogo({ productos, busqueda }) {
             onChange={(e) => setSoloOfertas(e.target.checked)}
           />
           <span className={styles.switchTrack} aria-hidden="true"></span>
-          Solo ofertas
         </label>
+
+        {/* Deshabilitados: dependen de datos que aún no existen (stock / modo
+            de entrega). Se muestran para reflejar el diseño; llegan con el backend. */}
+        <label className={`${styles.soloOfertas} ${styles.switchPronto}`}>
+          Disponible hoy
+          <input type="checkbox" className={styles.switchInput} disabled />
+          <span className={styles.switchTrack} aria-hidden="true"></span>
+        </label>
+        <label className={`${styles.soloOfertas} ${styles.switchPronto}`}>
+          Retiro en tienda
+          <input type="checkbox" className={styles.switchInput} disabled />
+          <span className={styles.switchTrack} aria-hidden="true"></span>
+        </label>
+
+        {/* Cierra la hoja (solo móvil). */}
+        <button
+          className={styles.verProductos}
+          type="button"
+          onClick={() => setFiltrosAbiertos(false)}
+        >
+          Ver {productosFiltrados.length} productos
+        </button>
       </div>
 
       {productosFiltrados.length === 0 ? (

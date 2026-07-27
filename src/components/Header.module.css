@@ -355,16 +355,16 @@
   background-color: rgba(255, 255, 255, 0.08);
 }
 
-/* ---- Responsive del header ---- */
-/* Tablet: se cae la fila de navegación (queda en el menú si baja más). */
-@media (max-width: 900px) {
+/* ---- Responsive del header (breakpoints del handoff) ---- */
+/* Tablet (768–1023): header sin la fila de navegación. */
+@media (max-width: 1023px) {
   .navFila {
     display: none;
   }
 }
 
-/* Móvil: hamburguesa + logo + buscador (full width) + carrito. */
-@media (max-width: 680px) {
+/* Móvil (≤767): hamburguesa + logo + buscador (full width) + carrito. */
+@media (max-width: 767px) {
   .hamburguesa {
     display: inline-flex;
   }
@@ -386,7 +386,7 @@
 }
 
 /* Seguridad: si se agranda la ventana con el menú abierto, no lo mostramos. */
-@media (min-width: 681px) {
+@media (min-width: 768px) {
   .menuMovil {
     display: none;
   }

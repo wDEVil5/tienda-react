@@ -211,6 +211,177 @@
     box-shadow: 0 0 0 2px var(--color-crudo), 0 0 0 4px var(--color-texto);
 }
 
+/* ---- Hoja de filtros (móvil). Ocultos en escritorio; se activan por media query. ---- */
+.toolbarMovil,
+.sheetHandle,
+.sheetHeader,
+.grupoLabel,
+.precioGrupo,
+.switchPronto,
+.verProductos,
+.filtrosOverlay {
+  display: none;
+}
+
+/* Barra superior móvil: Filtrar + orden + conteo. */
+.toolbarMovil {
+  align-items: center;
+  gap: var(--e-sm);
+}
+
+.conteoMovil {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--color-texto-suave);
+  white-space: nowrap;
+}
+
+/* Botón "Filtrar" (oscuro, con badge del número de filtros activos). */
+.abrirFiltros {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-sm);
+  height: 44px;
+  padding: 0 var(--e-lg);
+  background-color: var(--color-texto);
+  border: none;
+  border-radius: var(--radio-control);
+  font-family: inherit;
+  font-size: 14px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.filtrosBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  background-color: var(--color-acento);
+  color: #fff;
+  border-radius: var(--radio-badge);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Encabezado de la hoja: "Filtrar" + "Limpiar". */
+.sheetHeader {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sheetTitulo {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--color-texto);
+}
+
+.limpiar {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--color-texto-suave);
+  cursor: pointer;
+}
+
+.limpiar:hover {
+  color: var(--color-texto);
+}
+
+/* Eyebrow de cada grupo de la hoja (Categoría / Precio / Filtros). */
+.grupoLabel {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-texto-tenue);
+}
+
+/* ---- Slider de rango de precio (dos extremos) ---- */
+.precioRango {
+  position: relative;
+  height: 34px;
+}
+
+/* Pista de fondo y relleno entre los dos thumbs. */
+.precioPista {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 4px;
+  transform: translateY(-50%);
+  background-color: var(--color-borde-3);
+  border-radius: var(--radio-pill);
+}
+
+.precioRelleno {
+  position: absolute;
+  top: 50%;
+  height: 4px;
+  transform: translateY(-50%);
+  background-color: var(--color-acento);
+  border-radius: var(--radio-pill);
+}
+
+/* Los dos <input type=range> se superponen; solo los thumbs son interactivos. */
+.precioRango input[type="range"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background: transparent;
+  pointer-events: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.precioRango input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  pointer-events: auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: #fff;
+  border: 1.5px solid var(--color-acento);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(28, 27, 24, 0.2);
+}
+
+.precioRango input[type="range"]::-moz-range-thumb {
+  pointer-events: auto;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--color-acento);
+  border-radius: 50%;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.precioRango input[type="range"]::-moz-range-track {
+  background: transparent;
+}
+
+.precioValores {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--e-sm);
+  font-size: 13px;
+  color: var(--color-texto);
+}
+
+/* Switch deshabilitado (funcionalidad futura: stock / modo de entrega). */
+.switchPronto {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ---- Grid de productos ---- */
 /* minmax(0, 1fr) en vez de 1fr: el mínimo por defecto de una columna es "auto"
    (el ancho del contenido), lo que puede desbordar el grid con nombres largos.
@@ -265,21 +436,125 @@
     border-color: var(--color-texto-suave);
 }
 
-/* RESPONSIVE (grid). Los 5 breakpoints definitivos llegan en el paso 6. */
-@media (max-width: 1024px) {
+/* RESPONSIVE (handoff): 5 ≥1280 · 4 ≤1279 · 3 ≤1023 · 2 ≤767 · 2 compacta ≤559 */
+@media (max-width: 1279px) {
     .grid {
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 }
 
-@media (max-width: 820px) {
+@media (max-width: 1023px) {
     .grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
 
-@media (max-width: 560px) {
+/* Móvil (≤767): grid 2 y la fila de chips pasa a hoja inferior (bottom sheet). */
+@media (max-width: 767px) {
     .grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    /* Elementos que solo existen dentro de la hoja. */
+    .sheetHeader {
+        display: flex;
+    }
+
+    .grupoLabel,
+    .precioGrupo {
+        display: block;
+    }
+
+    /* Los switches pasan a fila completa: etiqueta a la izq, control a la der. */
+    .soloOfertas {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+
+    .toolbarMovil {
+        display: flex;
+    }
+
+    /* La fila de orden del escritorio se oculta: el orden vive en la barra. */
+    .barraOrden {
+        display: none;
+    }
+
+    .controles {
+        display: none;
+    }
+
+    .controlesAbierto {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--e-lg);
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1000;
+        max-height: 80vh;
+        overflow-y: auto;
+        padding: var(--e-md) var(--e-lg) var(--e-lg);
+        background-color: var(--color-fondo);
+        border: none;
+        border-radius: 20px 20px 0 0;
+        box-shadow: 0 -8px 30px rgba(28, 27, 24, 0.2);
+        animation: subir 0.25s ease;
+    }
+
+    @keyframes subir {
+        from {
+            transform: translateY(100%);
+        }
+        to {
+            transform: translateY(0);
+        }
+    }
+
+    .sheetHandle {
+        display: block;
+        align-self: center;
+        width: 44px;
+        height: 4px;
+        border-radius: var(--radio-pill);
+        background-color: var(--color-borde-3);
+        margin-bottom: var(--e-xs);
+    }
+
+    .verProductos {
+        display: block;
+        height: 48px;
+        border: none;
+        border-radius: var(--radio-control);
+        background-color: var(--color-acento);
+        color: #fff;
+        font-family: inherit;
+        font-size: 14.5px;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .filtrosOverlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 999;
+        background-color: rgba(28, 27, 24, 0.45);
+    }
+}
+
+/* Compacta (<560): menos padding de sección y título un paso abajo.
+   Los precios NO bajan (serif 21px en tarjeta): la regla es no bajar de 19px. */
+@media (max-width: 559px) {
+    .catalogo {
+        padding: var(--e-lg);
+    }
+
+    .titulo {
+        font-size: 28px;
     }
 }

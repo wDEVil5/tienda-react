@@ -66,6 +66,42 @@
   margin-top: var(--e-xl);
 }
 
+.accesos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-sm);
+  margin-top: var(--e-lg);
+}
+
+.acceso {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 var(--e-md);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: var(--radio-pill);
+  color: var(--color-sobre-oscuro);
+  font-size: 13px;
+  text-decoration: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.acceso:hover {
+  border-color: rgba(255, 255, 255, 0.64);
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.accesoOferta {
+  border-color: transparent;
+  background-color: var(--color-acento);
+  color: #fff;
+}
+
+.accesoOferta:hover {
+  border-color: transparent;
+  background-color: #285d40;
+}
+
 .btnPrimario,
 .btnSecundario {
   display: flex;

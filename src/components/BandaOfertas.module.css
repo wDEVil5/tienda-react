@@ -115,7 +115,9 @@
   }
 
   .derecha {
-    justify-content: space-between;
+    /* En tablet el título ya ocupa su propia fila; tarjetas y CTA se agrupan
+       para evitar el vacío horizontal que deja el botón en el extremo. */
+    justify-content: flex-start;
   }
 }
 

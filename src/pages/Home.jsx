@@ -10,7 +10,7 @@ import MarcasGondola from "../components/MarcasGondola.jsx";
 function Home({ productos, busqueda }) {
   return (
     <>
-      <Hero />
+      <Hero productos={productos} />
       <TiraConfianza />
       <Categorias productos={productos} />
       <BandaOfertas productos={productos} />

@@ -360,6 +360,12 @@
     border-top: 1px solid rgba(255, 255, 255, 0.12);
   }
 
+  /* La banda del newsletter ya deja su propio separador: evitar una segunda
+     línea antes del primer acordeón. */
+  .col:first-of-type {
+    border-top: none;
+  }
+
   /* La cabecera del acordeón: 48px, texto normal + signo +/−. */
   .colTitulo {
     display: flex;

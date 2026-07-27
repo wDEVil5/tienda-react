@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import TarjetaProducto from "./TarjetaProducto.jsx";
 import styles from "../Catalogo.module.css";
 
@@ -8,11 +9,10 @@ const LIMITE_CATEGORIAS_VISIBLES = 6;
 const PRODUCTOS_POR_CARGA = 10;
 
 function Catalogo({ productos, busqueda }) {
-  const [categoria, setCategoria] = useState("todas"); // la categoria elegida
+  const [searchParams, setSearchParams] = useSearchParams();
   const [masCategoriasAbierto, setMasCategoriasAbierto] = useState(false);
   const [limiteProductos, setLimiteProductos] = useState(PRODUCTOS_POR_CARGA);
   const [orden, setOrden] = useState("relevancia"); // criterio de ordenamiento
-  const [soloOfertas, setSoloOfertas] = useState(false); // filtrar solo ofertas
   const [filtrosAbiertos, setFiltrosAbiertos] = useState(false); // hoja de filtros (móvil)
   // Rango de precio: null = sin límite (usa el extremo del catálogo).
   const [precioMin, setPrecioMin] = useState(null);
@@ -37,6 +37,31 @@ function Catalogo({ productos, busqueda }) {
   const categoriasVisibles = categorias.slice(0, LIMITE_CATEGORIAS_VISIBLES);
   const categoriasExtra = categorias.slice(LIMITE_CATEGORIAS_VISIBLES);
 
+  // Categoría y ofertas se sincronizan con la URL: los enlaces del hero, los
+  // chips del catálogo y el switch usan una única fuente de verdad.
+  const categoriaUrl = searchParams.get("categoria");
+  const ofertasUrl = searchParams.get("ofertas") === "1";
+  const categoria = categorias.includes(categoriaUrl) ? categoriaUrl : "todas";
+  const soloOfertas = ofertasUrl;
+
+  const actualizarFiltrosUrl = ({
+    nuevaCategoria = categoria,
+    nuevasOfertas = soloOfertas,
+  }) => {
+    const siguientes = new URLSearchParams(searchParams);
+    if (nuevaCategoria === "todas") {
+      siguientes.delete("categoria");
+    } else {
+      siguientes.set("categoria", nuevaCategoria);
+    }
+    if (nuevasOfertas) {
+      siguientes.set("ofertas", "1");
+    } else {
+      siguientes.delete("ofertas");
+    }
+    setSearchParams(siguientes, { replace: true });
+  };
+
   // Conteo de productos por categoría (derivado) para el número de cada chip.
   const conteos = productos.reduce((acc, p) => {
     acc[p.categoria] = (acc[p.categoria] || 0) + 1;
@@ -54,13 +79,12 @@ function Catalogo({ productos, busqueda }) {
   const rango = precioTope - precioPiso || 1;
 
   const seleccionarCategoria = (cat) => {
-    setCategoria(cat);
+    actualizarFiltrosUrl({ nuevaCategoria: cat });
     setMasCategoriasAbierto(false);
   };
 
   const limpiarFiltros = () => {
-    setCategoria("todas");
-    setSoloOfertas(false);
+    actualizarFiltrosUrl({ nuevaCategoria: "todas", nuevasOfertas: false });
     setPrecioMin(null);
     setPrecioMax(null);
     setMasCategoriasAbierto(false);
@@ -309,7 +333,7 @@ function Catalogo({ productos, busqueda }) {
               type="checkbox"
               className={styles.switchInput}
               checked={soloOfertas}
-              onChange={(e) => setSoloOfertas(e.target.checked)}
+              onChange={(e) => actualizarFiltrosUrl({ nuevasOfertas: e.target.checked })}
             />
             <span className={styles.switchTrack} aria-hidden="true"></span>
           </label>

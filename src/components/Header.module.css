@@ -211,6 +211,86 @@
   font-weight: 600;
 }
 
+/* ---- Fila de navegación (mismo fondo oscuro) ---- */
+.navFila .contenedor {
+  display: flex;
+  align-items: center;
+  gap: var(--e-xl);
+  height: 44px;
+}
+
+.navLink {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: var(--color-sobre-oscuro);
+  cursor: pointer;
+  text-decoration: none;
+  /* Borde transparente para reservar el espacio del subrayado activo y
+     evitar saltos de layout al activarse. */
+  border-bottom: 1.5px solid transparent;
+  padding-bottom: 3px;
+  transition: color 0.2s ease;
+}
+
+.navLink:hover {
+  color: #fff;
+}
+
+.navActivo {
+  color: #fff;
+  border-bottom-color: var(--color-acento-claro);
+}
+
+/* ---- Barra de estado (banda clara verde) ---- */
+.estado {
+  background-color: var(--color-acento-bg);
+  border-bottom: 1px solid #d5e2d9;
+  font-size: 13px;
+  color: var(--color-texto);
+}
+
+.estado .contenedor {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-md);
+  min-height: 40px;
+  padding-top: var(--e-sm);
+  padding-bottom: var(--e-sm);
+}
+
+.estadoInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--e-sm);
+}
+
+.punto {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radio-pill);
+  background-color: var(--color-acento);
+  flex-shrink: 0;
+}
+
+.verHorarios {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--color-acento);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.verHorarios:hover {
+  text-decoration: underline;
+}
+
 /* Responsive básico; los 5 breakpoints definitivos llegan en el paso 6. */
 @media (max-width: 600px) {
   .barraPrincipal .contenedor {
@@ -225,7 +305,8 @@
   /* Estos vuelven en el paso 6 dentro del menú hamburguesa móvil. */
   .franja,
   .categorias,
-  .entrar {
+  .entrar,
+  .navFila {
     display: none;
   }
 }

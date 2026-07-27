@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import styles from "./Header.module.css";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 
@@ -74,6 +74,46 @@ function Header({ busqueda, onBuscar, onAbrirCarrito }) {
             {totalItems > 0 && (
               <span className={styles.contador}>{totalItems}</span>
             )}
+          </button>
+        </div>
+      </div>
+
+      {/* Fila de navegación. Solo "Catálogo" tiene ruta real hoy; el resto
+          son placeholders (Ofertas → filtro, secciones del Home futuras). */}
+      <nav className={styles.navFila} aria-label="Navegación principal">
+        <div className={styles.contenedor}>
+          <NavLink
+            to="/"
+            end
+            className={({ isActive }) =>
+              `${styles.navLink} ${isActive ? styles.navActivo : ""}`
+            }
+          >
+            Catálogo
+          </NavLink>
+          <button className={styles.navLink} type="button">
+            Ofertas
+          </button>
+          <button className={styles.navLink} type="button">
+            Cómo comprar
+          </button>
+          <button className={styles.navLink} type="button">
+            Nuestra tienda
+          </button>
+        </div>
+      </nav>
+
+      {/* Barra de estado. "Tienda abierta" será dinámico cuando exista la
+          lógica de horario/corte de las reglas de la tienda (Fase 5). */}
+      <div className={styles.estado}>
+        <div className={styles.contenedor}>
+          <span className={styles.estadoInfo}>
+            <span className={styles.punto} aria-hidden="true"></span>
+            <strong>Tienda abierta</strong> · pedidos hasta las 19:00 se retiran
+            hoy mismo
+          </span>
+          <button className={styles.verHorarios} type="button">
+            Ver horarios
           </button>
         </div>
       </div>

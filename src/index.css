@@ -48,31 +48,7 @@
   color: var(--color-texto);
 }
 
-/* 
-   PUENTE DE COMPATIBILIDAD (temporal, patrón strangler fig)
-   Nombres de token viejos que los componentes aún usan. Mantiene
-   la app funcionando mientras migramos pantalla por pantalla.
-   ⚠️ Se elimina cuando ningún *.module.css referencie estos nombres.
-    */
-:root {
-  --color-boton:        var(--color-texto);
-  --color-boton-hover:  #111110;
-  --color-fondo-suave:  var(--color-crudo);
-
-  /* Espaciado viejo: se mantienen los valores originales para NO mover
-     el layout todavía. La migración a --e-* se hace por componente. */
-  --espacio-xs: 4px;
-  --espacio-sm: 8px;
-  --espacio-md: 16px;
-  --espacio-lg: 24px;
-  --espacio-xl: 32px;
-
-  /* Radios viejos: valores originales; migran a --radio-* por componente. */
-  --radio-sm: 8px;
-  --radio-md: 12px;
-}
-
-/* 
+/*
    Reset y base
     */
 * {

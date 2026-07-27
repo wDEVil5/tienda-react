@@ -5,7 +5,7 @@
 }
 
 /* Columna centrada del contenido. El ancho/padding de la página vive AQUÍ
-   (antes estaba en .app), para que Header y Footer sean full-bleed. */
+   (no en .app), para que Header y Footer sean full-bleed. */
 .contenido {
     width: 100%;
     max-width: 1200px;
@@ -14,43 +14,32 @@
     flex: 1;                    /* empuja el footer hacia abajo */
 }
 
-.titulo {
-    font-size: 1.75rem;
-    font-weight: 600;
-    margin-bottom: var(--espacio-lg);
-}
-
-.layout {
-    display: grid;
-    grid-template-columns: 1fr 320px;
-    gap: var(--espacio-lg);
-    align-items: start;
-}
-
 .cargando {
   flex: 1;
   display: grid;
   place-content: center;
   justify-items: center;
-  gap: var(--espacio-md);
+  gap: var(--e-md);
   color: var(--color-texto-suave);
   font-size: 0.95rem;
 }
 
 .reintentar {
-  background-color: var(--color-boton);
+  height: 46px;
+  padding: 0 var(--e-xl);
+  background-color: var(--color-acento);
   color: #fff;
   border: none;
-  padding: var(--espacio-sm) var(--espacio-lg);
-  border-radius: var(--radio-sm);
-  font-size: 0.9rem;
+  border-radius: var(--radio-control);
+  font-size: 14px;
   font-family: inherit;
+  font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
 .reintentar:hover {
-  background-color: var(--color-boton-hover);
+  background-color: #285d40;
 }
 
 .loader {
@@ -74,7 +63,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(28, 27, 24, 0.45);
   z-index: 999;
   animation: aparecer 0.3s ease;
 }

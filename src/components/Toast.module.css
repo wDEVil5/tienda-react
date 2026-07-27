@@ -1,56 +1,53 @@
 .toast {
   position: fixed;
-  bottom: var(--espacio-xl);
-  left: 50%;
+  bottom: var(--e-2xl);
+  left: var(--e-2xl); /* abajo a la izquierda (handoff §8.3) */
   z-index: 1100; /* por encima del carrito (1000) */
 
   display: flex;
   align-items: center;
-  gap: var(--espacio-sm);
-  padding: var(--espacio-md) var(--espacio-lg);
+  gap: var(--e-sm);
+  padding: var(--e-md) var(--e-lg);
 
   background-color: var(--color-texto);
   color: #fff;
-  border-radius: var(--radio-md);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-  font-size: 0.9rem;
+  border-radius: var(--radio-caja);
+  box-shadow: 0 8px 24px rgba(28, 27, 24, 0.22);
+  font-size: 13.5px;
 
-  /* translateX(-50%) centra el toast respecto a su propio ancho. Es la posición
-     BASE: cuando la animación termina, el elemento vuelve aquí y sigue centrado. */
-  transform: translateX(-50%);
   animation: entrar 0.25s ease;
 }
 
 @keyframes entrar {
   from {
     opacity: 0;
-    transform: translate(-50%, 1rem);
+    transform: translateY(1rem);
   }
   to {
     opacity: 1;
-    transform: translate(-50%, 0);
+    transform: translateY(0);
   }
 }
 
 .icono {
-  color: #4ade80; /* verde éxito */
-  font-size: 1.1rem;
+  color: var(--color-acento-claro); /* verde claro: éxito sobre fondo oscuro */
+  font-size: 16px;
 }
 
-/* Para el toast de "eliminado" el verde no pega: color neutro claro mejor. */
+/* Para el toast de "eliminado" el verde no pega: color neutro claro. */
 .iconoAccion {
-  color: #cbd5e1;
+  color: var(--color-sobre-oscuro);
 }
 
 /* Botón dentro del toast ("Deshacer"), sobre el fondo oscuro. */
 .accion {
-  margin-left: var(--espacio-sm);
+  margin-left: var(--e-sm);
   border: none;
   background: transparent;
-  color: #6ea8fe; /* azul claro para contrastar con el fondo oscuro */
+  color: var(--color-acento-claro);
   font-family: inherit;
-  font-size: 0.85rem;
-  font-weight: 700;
+  font-size: 12.5px;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.02em;
   cursor: pointer;
@@ -74,22 +71,8 @@
 
 @media (max-width: 480px) {
   .toast {
-    left: var(--espacio-md);
-    right: var(--espacio-md);
-    bottom: var(--espacio-md);
-    /* En móvil ocupa el ancho entre los bordes: ya no se centra por translateX. */
-    transform: none;
-    animation: entrar-movil 0.25s ease;
-  }
-
-  @keyframes entrar-movil {
-    from {
-      opacity: 0;
-      transform: translateY(1rem);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    left: var(--e-md);
+    right: var(--e-md);
+    bottom: var(--e-md);
   }
 }

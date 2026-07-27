@@ -6,7 +6,7 @@
   height: 100%;
   align-items: center;
   justify-content: center;
-  background-color: var(--color-fondo-suave);
-  color: var(--color-texto-suave);
+  background-color: var(--color-crudo);
+  color: var(--color-texto-tenue);
   font-size: 1.5rem;
 }

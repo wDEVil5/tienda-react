@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./Footer.module.css";
 
+const LIMITE_CATEGORIAS_FOOTER = 4;
+
 // Columna del footer. En escritorio se ve como columna (CSS muestra los enlaces
 // siempre); en móvil es un acordeón: el botón alterna el estado y CSS muestra
 // u oculta los enlaces. Se usa estado en vez de <details> porque Chrome oculta
@@ -27,7 +29,19 @@ function AcordeonCol({ titulo, children }) {
   );
 }
 
-function Footer() {
+function Footer({ productos, onBuscar, onSeleccionarCategoria }) {
+  // La lista se deriva del catálogo disponible. Cuando la API propia entregue
+  // categorías, el footer las reflejará sin mantener una segunda lista manual.
+  const categorias = [...new Set(productos.map((producto) => producto.categoria))].slice(
+    0,
+    LIMITE_CATEGORIAS_FOOTER,
+  );
+
+  const seleccionarCategoria = (categoria) => {
+    onBuscar("");
+    onSeleccionarCategoria(categoria);
+  };
+
   return (
     <footer id="footer" className={styles.footer}>
       <div className={styles.contenedor}>
@@ -96,6 +110,16 @@ function Footer() {
             <Link to="/#ofertas" className={styles.enlace}>
               Ofertas de la semana
             </Link>
+            {categorias.map((categoria) => (
+              <Link
+                key={categoria}
+                to="/#catalogo"
+                className={styles.enlace}
+                onClick={() => seleccionarCategoria(categoria)}
+              >
+                {categoria}
+              </Link>
+            ))}
           </AcordeonCol>
 
           <AcordeonCol titulo="Tu cuenta">

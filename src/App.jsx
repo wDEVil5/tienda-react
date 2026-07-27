@@ -149,7 +149,11 @@ function App() {
       {/* Aviso flotante que aparece al agregar y se va solo */}
       <Toast />
 
-      <Footer />
+      <Footer
+        productos={productos}
+        onBuscar={setBusqueda}
+        onSeleccionarCategoria={setCategoria}
+      />
     </div>
   );
 }

@@ -183,52 +183,90 @@
   color: var(--color-texto);
 }
 
-/* Estado vacío: ocupa el alto de la lista y centra ícono, mensaje, acción. */
+/* Estado vacío: una tarjeta clara dentro de la zona desplazable del drawer. */
 .vacio {
-  flex: 1;
+  width: 100%;
+  min-height: 268px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--e-sm);
+  gap: 10px;
   text-align: center;
-  padding: var(--e-2xl) var(--e-md);
+  padding: var(--e-xl) var(--e-lg);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-tarjeta);
+  background-color: #fff;
 }
 
 .vacioIcono {
-  font-size: 2.5rem;
-  color: var(--color-borde-3);
-  margin-bottom: var(--e-sm);
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 50%;
+  background-color: var(--color-crudo);
+  color: var(--color-texto-suave);
+  font-size: 19px;
+  margin-bottom: 8px;
 }
 
 .vacioTexto {
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: 24px;
+  line-height: 1.1;
   color: var(--color-texto);
 }
 
 .vacioSub {
-  font-size: 13.5px;
+  max-width: 270px;
+  font-size: 13px;
+  line-height: 1.55;
   color: var(--color-texto-suave);
 }
 
-.vacioBoton {
+.vacioAcciones {
+  display: flex;
+  gap: var(--e-sm);
   margin-top: var(--e-md);
+}
+
+.vacioBotonPrimario,
+.vacioBotonSecundario {
   height: 46px;
-  padding: 0 var(--e-xl);
-  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--e-lg);
   border-radius: var(--radio-control);
-  background-color: var(--color-acento);
-  color: #fff;
   font-family: inherit;
   font-size: 14px;
   font-weight: 500;
+  text-decoration: none;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-.vacioBoton:hover {
-  background-color: #285d40;
+.vacioBotonPrimario {
+  border: 1px solid var(--color-texto);
+  background-color: var(--color-texto);
+  color: #fff;
+}
+
+.vacioBotonSecundario {
+  border: 1px solid var(--color-borde-3);
+  background-color: #fff;
+  color: var(--color-texto);
+}
+
+.vacioBotonPrimario:hover {
+  background-color: #30302c;
+}
+
+.vacioBotonSecundario:hover {
+  border-color: var(--color-texto-suave);
+  background-color: var(--color-crudo);
 }
 
 /* Zona 3: total fijo abajo */

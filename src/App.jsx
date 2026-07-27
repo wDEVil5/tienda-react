@@ -122,6 +122,7 @@ function App() {
       <Carrito
         onCerrar={() => setCarritoAbierto(false)}
         abierto={carritoAbierto}
+        productos={productos}
       />
 
       {/* Aviso flotante que aparece al agregar y se va solo */}

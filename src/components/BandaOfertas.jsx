@@ -15,7 +15,7 @@ function BandaOfertas({ productos }) {
   );
 
   return (
-    <section className={styles.banda}>
+    <section id="ofertas" className={styles.banda}>
       <div className={styles.texto}>
         <p className={styles.eyebrow}>Ofertas de la semana</p>
         <h2 className={styles.titulo}>

@@ -5,7 +5,7 @@ import ImagenProducto from "./ImagenProducto.jsx";
 import ControlCantidad from "./ControlCantidad.jsx";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 
-function Carrito({ onCerrar, abierto }) {
+function Carrito({ onCerrar, abierto, productos }) {
   const {
     carrito,
     totalItems,
@@ -90,6 +90,11 @@ function Carrito({ onCerrar, abierto }) {
   );
   const descuento = subtotalOriginal - total;
   const hayDescuento = descuento > 0;
+  // La frase del estado vacío usa las ofertas que vienen del catálogo actual;
+  // cuando el backend reemplace Fake Store seguirá siendo un valor derivado.
+  const cantidadOfertas = productos.filter(
+    (producto) => typeof producto.precioAnterior === "number",
+  ).length;
 
   return (
     <aside
@@ -117,11 +122,17 @@ function Carrito({ onCerrar, abierto }) {
             <i className={`fa-solid fa-cart-shopping ${styles.vacioIcono}`}></i>
             <p className={styles.vacioTexto}>Tu carrito está vacío</p>
             <p className={styles.vacioSub}>
-              Agrega productos para verlos aquí.
+              Parte por las ofertas: {cantidadOfertas} productos con descuento esta
+              semana.
             </p>
-            <button className={styles.vacioBoton} onClick={onCerrar}>
-              Explorar productos
-            </button>
+            <div className={styles.vacioAcciones}>
+              <a className={styles.vacioBotonPrimario} href="/#ofertas" onClick={onCerrar}>
+                Ver ofertas
+              </a>
+              <a className={styles.vacioBotonSecundario} href="/#catalogo" onClick={onCerrar}>
+                Ir al catálogo
+              </a>
+            </div>
           </div>
         ) : (
           carrito.map((item) => (

@@ -231,8 +231,7 @@ function Footer() {
         {/* Banda 4: legal. */}
         <div className={styles.legal}>
           <p className={styles.copyright}>
-            © {new Date().getFullYear()} SumarketExpress · Todos los precios en
-            pesos chilenos e incluyen IVA
+            © {new Date().getFullYear()} SumarketExpress · Desarrollado por Wilnes
           </p>
           <nav className={styles.legalLinks} aria-label="Legal">
             <button className={styles.enlace} type="button">

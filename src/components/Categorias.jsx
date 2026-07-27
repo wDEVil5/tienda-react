@@ -11,7 +11,7 @@ function Categorias({ productos }) {
   return (
     <section className={styles.categorias}>
       <div className={styles.header}>
-        <h2 className={styles.titulo}>Categorías</h2>
+        <h2 className={styles.titulo}>Compra por categoría</h2>
         <a href="#catalogo" className={styles.verTodas}>
           Ver las {categorias.length} categorías
         </a>

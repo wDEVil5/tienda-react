@@ -42,9 +42,9 @@
   text-decoration: none;
 }
 
-/* Imagen placeholder a rayas (patrón del handoff), 4:3 y radio de tarjeta. */
+/* Imagen placeholder a rayas (patrón del handoff). Landscape en escritorio. */
 .imagen {
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 16 / 10;
   border-radius: var(--radio-tarjeta);
   background-image: repeating-linear-gradient(
     135deg,
@@ -80,6 +80,10 @@
 
   .grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .imagen {
+    aspect-ratio: 4 / 3;
   }
 
   .nombre {

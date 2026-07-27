@@ -1,0 +1,156 @@
+.banda {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-2xl);
+  flex-wrap: wrap;
+  margin: var(--e-2xl) 0;
+  padding: var(--e-2xl);
+  background-color: var(--color-texto); /* #1c1b18 */
+  border-radius: var(--radio-tarjeta);
+  color: #fff;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-acento-claro);
+  margin-bottom: var(--e-sm);
+}
+
+.titulo {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1.1;
+  color: #fff;
+}
+
+.derecha {
+  display: flex;
+  align-items: center;
+  gap: var(--e-lg);
+}
+
+.minis {
+  display: flex;
+  gap: var(--e-sm);
+}
+
+/* Mini-tarjeta de producto en oferta (sobre el fondo oscuro). */
+.mini {
+  flex: 0 0 auto;
+  width: 108px;
+  padding: var(--e-sm);
+  background-color: rgba(255, 255, 255, 0.07);
+  border-radius: var(--radio-caja);
+}
+
+/* Imagen placeholder: gris sólido (handoff: "imagen sobre rgba(255,255,255,.07)"). */
+.miniImg {
+  aspect-ratio: 3 / 2;
+  margin-bottom: var(--e-sm);
+  border-radius: var(--radio-campo);
+  background-color: rgba(255, 255, 255, 0.09);
+}
+
+.miniNombre {
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--color-sobre-oscuro);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.miniPrecio {
+  margin-top: 2px;
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: #fff;
+}
+
+/* Pastilla "+N": oculta en escritorio (3 tarjetas), visible en móvil (2 + esta). */
+.masTile {
+  display: none;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  background-color: rgba(255, 255, 255, 0.07);
+  border-radius: var(--radio-caja);
+  font-size: 15px;
+  color: var(--color-sobre-oscuro);
+}
+
+.boton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  height: 46px;
+  padding: 0 var(--e-xl);
+  background-color: var(--color-acento);
+  color: #fff;
+  border-radius: var(--radio-control);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.boton:hover {
+  background-color: #285d40;
+}
+
+/* Móvil: todo apilado; las mini-tarjetas pueden desplazarse en horizontal. */
+@media (max-width: 767px) {
+  .banda {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--e-lg);
+    padding: var(--e-lg);
+  }
+
+  .titulo {
+    font-size: 24px;
+  }
+
+  .derecha {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--e-lg);
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Grid en vez de flex: minmax(0,1fr) fuerza a las columnas a poder encogerse
+     (el mismo arreglo del grid del catálogo). Dos tarjetas + la pastilla "+N". */
+  .minis {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 56px;
+    gap: var(--e-sm);
+    width: 100%;
+    min-width: 0;
+  }
+
+  .mini {
+    width: auto;
+    min-width: 0;
+  }
+
+  .miniTercera {
+    display: none;
+  }
+
+  .masTile {
+    display: flex;
+    width: auto; /* la columna de 56px del grid ya fija su ancho */
+  }
+
+  .boton {
+    width: 100%;
+  }
+}

@@ -32,10 +32,10 @@ export function normalizarProductoFakeStore(p) {
     imagen: p.image,
     categoria: p.category,
     descripcion: p.description,
-    // La Fake Store API no trae ofertas. Simulamos una en los ids pares: un
-    // precio anterior 25% más alto, para mostrar el badge "Oferta" y el precio
-    // tachado. En la Fase 2 (backend propio) esto será un dato real.
+    // La Fake Store API no trae ofertas. Simulamos una en los ids pares: el
+    // precio anterior deja el actual con 25% de descuento. En la Fase 2
+    // (backend propio) este valor llegará como dato real.
     precioAnterior:
-      p.id % 2 === 0 ? Math.round(p.price * 1.25 * 100) / 100 : null,
+      p.id % 2 === 0 ? Math.round((p.price / 0.75) * 100) / 100 : null,
   };
 }

@@ -161,8 +161,15 @@ function Header({ busqueda, onBuscar, onAbrirCarrito }) {
         <div className={styles.contenedor}>
           <span className={styles.estadoInfo}>
             <span className={styles.punto} aria-hidden="true"></span>
-            <strong>Tienda abierta</strong> · pedidos hasta las 19:00 se retiran
-            hoy mismo
+            <span>
+              <strong>Tienda abierta</strong>
+              <span className={styles.estadoLargo}>
+                {" "}· pedidos hasta las 19:00 se retiran hoy mismo
+              </span>
+              <span className={styles.estadoCorto}>
+                {" "}· retira hoy hasta las 19:00
+              </span>
+            </span>
           </span>
           <button className={styles.verHorarios} type="button">
             Ver horarios

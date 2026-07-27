@@ -266,6 +266,12 @@
   display: flex;
   align-items: center;
   gap: var(--e-sm);
+  min-width: 0;
+  line-height: 1.4;
+}
+
+.estadoCorto {
+  display: none;
 }
 
 .punto {
@@ -289,6 +295,16 @@
 
 .verHorarios:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 1023px) {
+  .estadoLargo {
+    display: none;
+  }
+
+  .estadoCorto {
+    display: inline;
+  }
 }
 
 /* ---- Menú hamburguesa (móvil) ---- */
@@ -422,6 +438,20 @@
   .franja,
   .categorias,
   .entrar {
+    display: none;
+  }
+
+  .estado .contenedor {
+    min-height: 36px;
+    padding-top: var(--e-xs);
+    padding-bottom: var(--e-xs);
+  }
+
+  .estadoInfo {
+    font-size: 12px;
+  }
+
+  .verHorarios {
     display: none;
   }
 

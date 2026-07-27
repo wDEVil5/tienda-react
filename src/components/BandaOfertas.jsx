@@ -1,4 +1,5 @@
 import styles from "./BandaOfertas.module.css";
+import ImagenProducto from "./ImagenProducto.jsx";
 
 // Banda de ofertas del Home. Deriva las ofertas reales (las que tienen
 // precioAnterior) para el conteo y las mini-tarjetas.
@@ -7,13 +8,18 @@ function BandaOfertas({ productos }) {
   if (ofertas.length === 0) return null;
 
   const mostradas = ofertas.slice(0, 3);
+  const descuentoMaximo = Math.max(
+    ...ofertas.map((producto) =>
+      Math.round((1 - producto.precio / producto.precioAnterior) * 100)
+    )
+  );
 
   return (
     <section className={styles.banda}>
       <div className={styles.texto}>
         <p className={styles.eyebrow}>Ofertas de la semana</p>
         <h2 className={styles.titulo}>
-          Hasta 20% en {ofertas.length} productos
+          Hasta {descuentoMaximo}% en {ofertas.length} productos
         </h2>
       </div>
 
@@ -24,7 +30,13 @@ function BandaOfertas({ productos }) {
               key={p.id}
               className={`${styles.mini} ${i === 2 ? styles.miniTercera : ""}`}
             >
-              <div className={styles.miniImg} aria-hidden="true"></div>
+              <div className={styles.miniImg}>
+                <ImagenProducto
+                  src={p.imagen}
+                  alt={p.nombre}
+                  className={styles.miniImagen}
+                />
+              </div>
               <p className={styles.miniNombre}>{p.nombre}</p>
               <p className={styles.miniPrecio}>
                 ${p.precio.toLocaleString("es-CL")}

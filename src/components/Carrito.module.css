@@ -416,4 +416,29 @@
   .subtotal {
     font-size: 18px;
   }
+
+  .resumen {
+    margin-bottom: var(--e-sm);
+    padding-bottom: var(--e-sm);
+  }
+
+  .filaResumen {
+    font-size: 12.5px;
+  }
+
+  .total {
+    margin-bottom: var(--e-sm);
+  }
+
+  .totalMonto {
+    font-size: 25px;
+  }
+
+  .pagar {
+    height: 48px;
+  }
+
+  .accionesSec {
+    margin-top: var(--e-sm);
+  }
 }

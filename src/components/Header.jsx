@@ -50,12 +50,6 @@ function Header({ busqueda, onBuscar, onAbrirCarrito }) {
             ></i>
           </button>
 
-          {/* Placeholder: abrirá el menú de categorías en un paso futuro. */}
-          <button className={styles.categorias} type="button">
-            <i className="fa-solid fa-bars" aria-hidden="true"></i>
-            Categorías
-          </button>
-
           <form
             className={styles.buscador}
             role="search"

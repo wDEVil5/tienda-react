@@ -56,28 +56,6 @@
   padding-bottom: var(--e-md);
 }
 
-/* ---- Botón Categorías (relleno translúcido sobre el header oscuro) ---- */
-.categorias {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--e-sm);
-  height: 46px;
-  padding: 0 var(--e-lg);
-  background-color: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: var(--radio-control);
-  color: #fff;
-  font-family: inherit;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  white-space: nowrap;
-}
-
-.categorias:hover {
-  background-color: rgba(255, 255, 255, 0.14);
-}
-
 /* ---- Botón Entrar (fantasma con borde) ---- */
 .entrar {
   height: 46px;
@@ -405,7 +383,6 @@
     display: inline-flex;
   }
 
-  .categorias,
   .entrar {
     display: none;
   }
@@ -446,7 +423,6 @@
   }
 
   .franja,
-  .categorias,
   .entrar {
     display: none;
   }

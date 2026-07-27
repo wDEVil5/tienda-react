@@ -1,5 +1,31 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./Footer.module.css";
+
+// Columna del footer. En escritorio se ve como columna (CSS muestra los enlaces
+// siempre); en móvil es un acordeón: el botón alterna el estado y CSS muestra
+// u oculta los enlaces. Se usa estado en vez de <details> porque Chrome oculta
+// el contenido cerrado con content-visibility (no se puede forzar por CSS).
+function AcordeonCol({ titulo, children }) {
+  const [abierto, setAbierto] = useState(false);
+  return (
+    <div className={styles.col}>
+      <button
+        type="button"
+        className={styles.colTitulo}
+        aria-expanded={abierto}
+        onClick={() => setAbierto((a) => !a)}
+      >
+        {titulo}
+      </button>
+      <div
+        className={`${styles.colLinks} ${abierto ? styles.colAbierto : ""}`}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
 
 function Footer() {
   return (
@@ -14,22 +40,34 @@ function Footer() {
           </p>
 
           <div className={styles.newsletter}>
-            <h2 className={styles.nlTitulo}>
-              Las ofertas, cada lunes en tu correo
-            </h2>
-            <form
-              className={styles.nlForm}
-              onSubmit={(e) => e.preventDefault()}
-            >
-              <input
-                type="email"
-                placeholder="tu@correo.cl"
-                aria-label="Tu correo electrónico"
-              />
-              <button type="submit">Suscribirme</button>
-            </form>
+            <div className={styles.nlTexto}>
+              <h2 className={styles.nlTitulo}>
+                Las ofertas, cada lunes en tu correo
+              </h2>
+              <p className={styles.nlSub}>
+                Una vez por semana · te sales con un clic.
+              </p>
+            </div>
+            <div className={styles.nlFormWrap}>
+              <form
+                className={styles.nlForm}
+                onSubmit={(e) => e.preventDefault()}
+              >
+                <input
+                  type="email"
+                  placeholder="tu@correo.cl"
+                  aria-label="Tu correo electrónico"
+                />
+                <button type="submit">Suscribirme</button>
+              </form>
+              <p className={styles.nlNota}>
+                Al suscribirte aceptas la política de privacidad.
+              </p>
+            </div>
           </div>
-          <p className={styles.nlNota}>
+          {/* Nota solo-móvil: va debajo del form (en escritorio se usan las dos
+              notas de arriba: subtítulo bajo el título + legal bajo el form). */}
+          <p className={styles.nlNotaMovil}>
             Una vez por semana · te sales con un clic.
           </p>
         </div>
@@ -40,9 +78,9 @@ function Footer() {
             <p className={styles.marca}>
               Sumarket<em>Express</em>
             </p>
-            <p className={styles.dato}>Av. Providencia 1234, Santiago</p>
-            <p className={styles.dato}>Lun a Sáb · 09:00 – 20:00</p>
-            <p className={styles.dato}>+56 2 2345 6789</p>
+            <p className={styles.dato}>Av. Matta 980, Santiago</p>
+            <p className={styles.dato}>Lun a sáb 09-21h · Dom 10-15h</p>
+            <p className={styles.dato}>+56 9 1234 5678</p>
             <p className={styles.dato}>hola@sumarketexpress.cl</p>
             <p className={styles.abierto}>
               <span className={styles.punto} aria-hidden="true"></span>
@@ -50,73 +88,78 @@ function Footer() {
             </p>
           </div>
 
-          {/* En escritorio se ven como columnas (contenido forzado visible por
-              CSS); en móvil, <details> los vuelve acordeones nativos de 48px. */}
-          <details className={styles.col}>
-            <summary className={styles.colTitulo}>Comprar</summary>
-            <div className={styles.colLinks}>
-              <Link to="/" className={styles.enlace}>
-                Catálogo
-              </Link>
-              <button className={styles.enlace} type="button">
-                Ofertas
-              </button>
-              <button className={styles.enlace} type="button">
-                Categorías
-              </button>
-              <button className={styles.enlace} type="button">
-                Novedades
-              </button>
-            </div>
-          </details>
+          {/* En escritorio se ven como columnas; en móvil son acordeones. */}
+          <AcordeonCol titulo="Comprar">
+            <Link to="/" className={styles.enlace}>
+              Todo el catálogo
+            </Link>
+            <button className={styles.enlace} type="button">
+              Ofertas de la semana
+            </button>
+            <button className={styles.enlace} type="button">
+              Despensa
+            </button>
+            <button className={styles.enlace} type="button">
+              Bebidas
+            </button>
+            <button className={styles.enlace} type="button">
+              Lácteos
+            </button>
+            <button className={styles.enlace} type="button">
+              Limpieza
+            </button>
+          </AcordeonCol>
 
-          <details className={styles.col}>
-            <summary className={styles.colTitulo}>Tu cuenta</summary>
-            <div className={styles.colLinks}>
-              <button className={styles.enlace} type="button">
-                Entrar
-              </button>
-              <button className={styles.enlace} type="button">
-                Mis pedidos
-              </button>
-              <button className={styles.enlace} type="button">
-                Mis direcciones
-              </button>
-            </div>
-          </details>
+          <AcordeonCol titulo="Tu cuenta">
+            <button className={styles.enlace} type="button">
+              Entrar
+            </button>
+            <button className={styles.enlace} type="button">
+              Crear cuenta
+            </button>
+            <button className={styles.enlace} type="button">
+              Mis pedidos
+            </button>
+            <button className={styles.enlace} type="button">
+              Mi perfil
+            </button>
+            <button className={styles.enlace} type="button">
+              Volver a comprar
+            </button>
+          </AcordeonCol>
 
-          <details className={styles.col}>
-            <summary className={styles.colTitulo}>Ayuda</summary>
-            <div className={styles.colLinks}>
-              <button className={styles.enlace} type="button">
-                Cómo comprar
-              </button>
-              <button className={styles.enlace} type="button">
-                Envíos y retiro
-              </button>
-              <button className={styles.enlace} type="button">
-                Devoluciones
-              </button>
-              <button className={styles.enlace} type="button">
-                Contacto
-              </button>
-            </div>
-          </details>
+          <AcordeonCol titulo="Ayuda">
+            <button className={styles.enlace} type="button">
+              Cómo comprar
+            </button>
+            <button className={styles.enlace} type="button">
+              Retiro y despacho
+            </button>
+            <button className={styles.enlace} type="button">
+              Medios de pago
+            </button>
+            <button className={styles.enlace} type="button">
+              Cambios y devoluciones
+            </button>
+            <button className={styles.enlace} type="button">
+              Preguntas frecuentes
+            </button>
+          </AcordeonCol>
 
-          <details className={styles.col}>
-            <summary className={styles.colTitulo}>La tienda</summary>
-            <div className={styles.colLinks}>
-              <button className={styles.enlace} type="button">
-                Nuestra historia
-              </button>
-              <button className={styles.enlace} type="button">
-                Trabaja con nosotros
-              </button>
-              <button className={styles.enlace} type="button">
-                Términos
-              </button>
-            </div>
-          </details>
+          <AcordeonCol titulo="La tienda">
+            <button className={styles.enlace} type="button">
+              Sobre nosotros
+            </button>
+            <button className={styles.enlace} type="button">
+              Dónde estamos
+            </button>
+            <button className={styles.enlace} type="button">
+              Trabaja con nosotros
+            </button>
+            <button className={styles.enlace} type="button">
+              Contacto
+            </button>
+          </AcordeonCol>
         </div>
 
         {/* Banda 3: medios de pago + redes + selector de moneda/idioma. */}
@@ -188,15 +231,15 @@ function Footer() {
         {/* Banda 4: legal. */}
         <div className={styles.legal}>
           <p className={styles.copyright}>
-            © {new Date().getFullYear()} SumarketExpress · Precios en CLP con IVA
-            incluido.
+            © {new Date().getFullYear()} SumarketExpress · Todos los precios en
+            pesos chilenos e incluyen IVA
           </p>
           <nav className={styles.legalLinks} aria-label="Legal">
             <button className={styles.enlace} type="button">
-              Términos
+              Términos de servicio
             </button>
             <button className={styles.enlace} type="button">
-              Privacidad
+              Política de privacidad
             </button>
             <button className={styles.enlace} type="button">
               Accesibilidad

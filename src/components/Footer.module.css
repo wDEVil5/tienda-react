@@ -46,6 +46,18 @@
   max-width: 42ch;
 }
 
+/* Columna derecha del newsletter: form + nota legal debajo. */
+.nlFormWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-sm);
+}
+
+/* Nota solo-móvil (debajo del form). Oculta en escritorio. */
+.nlNotaMovil {
+  display: none;
+}
+
 .nlForm {
   display: flex;
   align-items: center;
@@ -94,7 +106,6 @@
 .nlNota {
   font-size: 11.5px;
   color: var(--color-tenue-oscuro);
-  margin-top: var(--e-md);
 }
 
 /* ---- Banda 2: 5 columnas ---- */
@@ -139,18 +150,12 @@
   flex-shrink: 0;
 }
 
-/* Columna = <details>. En escritorio es una columna normal; el contenido se
-   fuerza visible más abajo (por media query). Se quita el triángulo nativo. */
-.col > summary {
-  list-style: none;
-}
-
-.col > summary::-webkit-details-marker {
-  display: none;
-}
-
-/* Título de columna: eyebrow mono en escritorio (no interactivo). */
+/* Título de columna (botón). Eyebrow mono en escritorio, no interactivo. */
 .colTitulo {
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.12em;
@@ -160,6 +165,7 @@
   cursor: default;
 }
 
+/* En escritorio los enlaces se ven siempre (columna normal). */
 .colLinks {
   display: flex;
   flex-direction: column;
@@ -289,16 +295,10 @@
   color: var(--color-tenue-oscuro);
 }
 
-/* Escritorio (≥768): el contenido de cada columna se muestra SIEMPRE. El
-   !important vence a la regla del navegador que oculta el contenido de un
-   <details> cerrado; así el acordeón solo "actúa" en móvil. */
+/* Escritorio (≥768): el título no es interactivo (los enlaces ya se ven). */
 @media (min-width: 768px) {
-  .colLinks {
-    display: flex !important;
-  }
-
   .colTitulo {
-    pointer-events: none; /* en escritorio el título no es interactivo */
+    pointer-events: none;
   }
 }
 
@@ -312,6 +312,23 @@
 
   .nlForm {
     width: 100%;
+  }
+
+  .nlFormWrap {
+    width: 100%;
+  }
+
+  /* En móvil se usa una sola nota debajo del form; las dos de escritorio
+     (subtítulo bajo el título + legal) se ocultan. */
+  .nlSub,
+  .nlNota {
+    display: none;
+  }
+
+  .nlNotaMovil {
+    display: block;
+    font-size: 12px;
+    color: var(--color-tenue-oscuro);
   }
 
   /* La marca aparece arriba del newsletter (serif, Express en verde). */
@@ -348,6 +365,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    width: 100%;
     min-height: 48px;
     margin-bottom: 0;
     font-family: var(--font-ui);
@@ -364,12 +382,18 @@
     color: var(--color-tenue-oscuro);
   }
 
-  /* Al abrir el <details>, el signo cambia a "−". */
-  .col[open] > .colTitulo::after {
+  /* Al abrir (aria-expanded=true) el signo cambia a "−". */
+  .colTitulo[aria-expanded="true"]::after {
     content: "−";
   }
 
+  /* Enlaces ocultos por defecto; se muestran solo con la clase "abierto". */
   .colLinks {
+    display: none;
     padding-bottom: var(--e-md);
+  }
+
+  .colAbierto {
+    display: flex;
   }
 }

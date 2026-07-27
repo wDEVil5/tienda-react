@@ -10,12 +10,91 @@
   padding: 0 var(--e-lg);
 }
 
+/* ---- Franja utilitaria (tira superior más oscura) ---- */
+.franja {
+  background-color: #14130f;
+  font-size: 12.5px;
+  color: #8f8c84;
+}
+
+.franja .contenedor {
+  display: flex;
+  align-items: center;
+  gap: var(--e-md);
+  height: 34px;
+}
+
+.franjaSelector {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.franjaSelector i {
+  font-size: 9px;
+}
+
+/* Separador vertical de 1×12px semitransparente. */
+.franjaSep {
+  width: 1px;
+  height: 12px;
+  background-color: rgba(255, 255, 255, 0.16);
+}
+
 .barraPrincipal .contenedor {
   display: flex;
   align-items: center;
   gap: var(--e-lg);
   padding-top: var(--e-md);
   padding-bottom: var(--e-md);
+}
+
+/* ---- Botón Categorías (relleno translúcido sobre el header oscuro) ---- */
+.categorias {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-sm);
+  height: 46px;
+  padding: 0 var(--e-lg);
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--radio-control);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.categorias:hover {
+  background-color: rgba(255, 255, 255, 0.14);
+}
+
+/* ---- Botón Entrar (fantasma con borde) ---- */
+.entrar {
+  height: 46px;
+  padding: 0 var(--e-lg);
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radio-control);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.entrar:hover {
+  background-color: rgba(255, 255, 255, 0.08);
 }
 
 /* ---- Logo ---- */
@@ -141,5 +220,12 @@
   .buscador {
     order: 3;
     flex-basis: 100%;
+  }
+
+  /* Estos vuelven en el paso 6 dentro del menú hamburguesa móvil. */
+  .franja,
+  .categorias,
+  .entrar {
+    display: none;
   }
 }

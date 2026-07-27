@@ -383,6 +383,46 @@
     order: 3;
     flex-basis: 100%;
   }
+
+  /* Logo un paso más chico para que la fila superior no fuerce el salto. */
+  .logo {
+    font-size: 22px;
+  }
+
+  /* Empuja la hamburguesa y el carrito al borde derecho (logo queda a la izq). */
+  .hamburguesa {
+    margin-left: auto;
+  }
+
+  /* El carrito se reduce a solo ícono + badge (sin "Mi carrito" ni monto). */
+  .carritoTexto {
+    display: none;
+  }
+
+  .carrito {
+    position: relative;
+    width: 46px;
+    padding: 0;
+    justify-content: center;
+    flex-shrink: 0; /* nunca se encoge ni salta de línea */
+  }
+
+  .carrito > i {
+    font-size: 16px;
+  }
+
+  /* El contador pasa a badge verde en la esquina superior derecha. */
+  .contador {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: auto;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border: 2px solid var(--color-texto); /* separa el badge del header oscuro */
+    font-size: 11px;
+  }
 }
 
 /* Seguridad: si se agranda la ventana con el menú abierto, no lo mostramos. */

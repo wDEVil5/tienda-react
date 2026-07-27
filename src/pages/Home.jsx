@@ -3,6 +3,7 @@ import TiraConfianza from "../components/TiraConfianza.jsx";
 import Categorias from "../components/Categorias.jsx";
 import BandaOfertas from "../components/BandaOfertas.jsx";
 import Catalogo from "../components/Catalogo.jsx";
+import MarcasGondola from "../components/MarcasGondola.jsx";
 
 // Página de inicio: compone las secciones del Home en orden.
 function Home({ productos, busqueda }) {
@@ -13,6 +14,7 @@ function Home({ productos, busqueda }) {
       <Categorias productos={productos} />
       <BandaOfertas productos={productos} />
       <Catalogo productos={productos} busqueda={busqueda} />
+      <MarcasGondola />
     </>
   );
 }

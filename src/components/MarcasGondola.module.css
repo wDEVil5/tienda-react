@@ -1,0 +1,161 @@
+/* Banda full-bleed (mismo truco que el catálogo): rompe la columna centrada
+   para que las pistas de logos lleguen de borde a borde y se recorten con las
+   máscaras laterales. El fondo es el de la página (--color-fondo). */
+.marcas {
+  position: relative;
+  left: 50%;
+  right: 50%;
+  width: 100vw;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  padding: var(--e-2xl) 0;
+  background-color: var(--color-fondo);
+  overflow: hidden; /* refuerza que nada se salga del ancho del viewport */
+}
+
+/* El encabezado sí vuelve a alinearse con el resto de la página (máx 1200). */
+.inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--e-lg);
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--e-lg);
+  margin-bottom: var(--e-xl);
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-texto-tenue);
+  margin-bottom: var(--e-sm);
+}
+
+.titulo {
+  font-family: var(--font-display);
+  font-size: 32px;
+  line-height: 1.1;
+  font-weight: 400;
+  color: var(--color-texto);
+}
+
+.nota {
+  max-width: 34ch;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--color-texto-suave);
+  text-align: right;
+}
+
+/* ---- Pistas (marquee) ----
+   Dos filas apiladas. aria-hidden en el JSX: son placeholders decorativos.
+   Las máscaras difuminan 120px a cada lado para que los tiles "aparezcan" y
+   "desaparezcan" en vez de cortarse de golpe. */
+.pistas {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 120px,
+    #000 calc(100% - 120px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 120px,
+    #000 calc(100% - 120px),
+    transparent 100%
+  );
+}
+
+.fila {
+  overflow: hidden;
+}
+
+/* El track lleva el set de 7 tiles DUPLICADO. Al desplazarlo justo el ancho de
+   un set (7 tiles × 200 + 7 gaps × 16 = 1512px) el segundo set queda donde
+   estaba el primero: el bucle es imperceptible. */
+.track {
+  display: flex;
+  gap: 16px;
+  width: max-content;
+}
+
+.filaIzq .track {
+  animation: desplazarIzq 38s linear infinite;
+}
+
+.filaDer .track {
+  animation: desplazarDer 46s linear infinite;
+}
+
+@keyframes desplazarIzq {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-1512px);
+  }
+}
+
+/* La fila de la derecha arranca ya desplazada y vuelve a 0: se mueve hacia la
+   derecha. Mismo recorrido, sentido inverso. */
+@keyframes desplazarDer {
+  from {
+    transform: translateX(-1512px);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Respeta a quien pide menos movimiento (RNF de accesibilidad): sin animación,
+   se ven los tiles quietos. */
+@media (prefers-reduced-motion: reduce) {
+  .filaIzq .track,
+  .filaDer .track {
+    animation: none;
+  }
+}
+
+.tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 200px;
+  height: 96px;
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-caja);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-texto-tenue);
+}
+
+/* Móvil: encabezado apilado, nota a la izquierda; los tiles siguen igual
+   (se deslizan, no importa que sobresalgan). */
+@media (max-width: 767px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--e-sm);
+  }
+
+  .titulo {
+    font-size: 26px;
+  }
+
+  .nota {
+    text-align: left;
+  }
+}

@@ -99,13 +99,17 @@
     border-color: var(--color-texto-suave);
 }
 
-/* El chip activo hereda todo lo del chip base con `composes` y solo cambia
-   los colores → sin duplicar la geometría. */
+/* Modificador: el JSX aplica SIEMPRE .chip y añade .chipActivo cuando toca,
+   así que aquí solo sobrescribimos los colores (patrón base + modificador).
+   Va después de .chip en el archivo para ganar por orden de cascada. */
 .chipActivo {
-    composes: chip;
     background-color: var(--color-texto);
     border-color: var(--color-texto);
     color: #fff;
+}
+
+.chipActivo:hover {
+    border-color: var(--color-texto);
 }
 
 .conteo {

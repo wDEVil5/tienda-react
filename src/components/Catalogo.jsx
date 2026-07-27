@@ -114,7 +114,7 @@ function Catalogo({ productos, busqueda }) {
               key={cat}
               type="button"
               onClick={() => seleccionarCategoria(cat)}
-              className={categoria === cat ? styles.chipActivo : styles.chip}
+              className={`${styles.chip} ${categoria === cat ? styles.chipActivo : ""}`}
             >
               {cat}
               <span className={styles.conteo}>{contarCategoria(cat)}</span>
@@ -144,9 +144,7 @@ function Catalogo({ productos, busqueda }) {
                       key={cat}
                       type="button"
                       onClick={() => seleccionarCategoria(cat)}
-                      className={
-                        categoria === cat ? styles.chipActivo : styles.chip
-                      }
+                      className={`${styles.chip} ${categoria === cat ? styles.chipActivo : ""}`}
                     >
                       {cat}
                       <span className={styles.conteo}>

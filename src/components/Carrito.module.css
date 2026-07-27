@@ -362,6 +362,19 @@
   .subtotal {
     font-size: 21px;
   }
+
+  .resumen {
+    margin-bottom: var(--e-lg);
+    padding-bottom: var(--e-lg);
+  }
+
+  .totalMonto {
+    font-size: 30px;
+  }
+
+  .pagar {
+    height: 52px;
+  }
 }
 
 /* En pantallas ≤480px el carrito ocupa toda la pantalla. */

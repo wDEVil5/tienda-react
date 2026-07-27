@@ -20,8 +20,7 @@ function Categorias({ productos }) {
       <div className={styles.grid}>
         {categorias.map((cat) => (
           <a key={cat} href="#catalogo" className={styles.tile}>
-            <div className={styles.imagen} aria-hidden="true"></div>
-            <div>
+            <div className={styles.info}>
               <p className={styles.nombre}>{cat}</p>
               <p className={styles.conteo}>{conteo(cat)} productos</p>
             </div>

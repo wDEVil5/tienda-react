@@ -34,42 +34,40 @@
   gap: var(--e-md);
 }
 
+/* El tile ES la imagen placeholder (rayas del handoff); el texto va anclado
+   abajo-izquierda, DENTRO del tile (align-items:flex-end + padding). */
 .tile {
   display: flex;
-  flex-direction: column;
-  gap: var(--e-sm);
-  color: inherit;
-  text-decoration: none;
-}
-
-/* Imagen placeholder a rayas (patrón del handoff). Landscape en escritorio. */
-.imagen {
+  align-items: flex-end;
   aspect-ratio: 16 / 10;
+  padding: var(--e-lg);
   border-radius: var(--radio-tarjeta);
   background-image: repeating-linear-gradient(
     135deg,
     #efece3 0 9px,
     #f6f4ed 9px 18px
   );
+  color: inherit;
+  text-decoration: none;
   transition: transform 0.2s ease;
 }
 
-.tile:hover .imagen {
+.tile:hover {
   transform: translateY(-3px);
 }
 
 .nombre {
   font-family: var(--font-display);
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 400;
   text-transform: capitalize;
   color: var(--color-texto);
 }
 
 .conteo {
-  margin-top: 2px;
-  font-size: 13px;
-  color: var(--color-texto-tenue);
+  margin-top: 1px;
+  font-size: 12px;
+  color: var(--color-texto-suave);
 }
 
 /* Móvil: 2 columnas y títulos un paso abajo. */
@@ -82,11 +80,11 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .imagen {
+  .tile {
     aspect-ratio: 4 / 3;
   }
 
   .nombre {
-    font-size: 20px;
+    font-size: 17px;
   }
 }

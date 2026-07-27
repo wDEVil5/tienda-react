@@ -83,16 +83,20 @@ function App() {
         onAbrirCarrito={() => setCarritoAbierto(true)}
       />
 
-      <Routes>
-        <Route
-          path="/"
-          element={<Catalogo productos={productos} busqueda={busqueda} />}
-        />
-        <Route
-          path="/producto/:id"
-          element={<ProductoDetalle productos={productos} />}
-        />
-      </Routes>
+      {/* Contenido centrado: el Header y el Footer viven FUERA de este
+          envoltorio para poder ir de borde a borde . */}
+      <main className={styles.contenido}>
+        <Routes>
+          <Route
+            path="/"
+            element={<Catalogo productos={productos} busqueda={busqueda} />}
+          />
+          <Route
+            path="/producto/:id"
+            element={<ProductoDetalle productos={productos} />}
+          />
+        </Routes>
+      </main>
 
       {/* El overlay Si es condicional: aparece solo cuando el carrito está abierto */}
       {carritoAbierto && (

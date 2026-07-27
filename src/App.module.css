@@ -1,10 +1,17 @@
 .app {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: var(--espacio-lg);
     min-height: 100vh;          /* al menos el alto de la pantalla */
     display: flex;
     flex-direction: column;
+}
+
+/* Columna centrada del contenido. El ancho/padding de la página vive AQUÍ
+   (antes estaba en .app), para que Header y Footer sean full-bleed. */
+.contenido {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--e-lg);
+    flex: 1;                    /* empuja el footer hacia abajo */
 }
 
 .titulo {

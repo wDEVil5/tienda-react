@@ -328,6 +328,11 @@
   gap: 14px;
 }
 
+/* Las relacionadas conservan el estilo de tarjeta y solo suman un borde fino. */
+.relGrid > article {
+  border: 1px solid var(--color-borde);
+}
+
 .noEncontrado {
   display: flex;
   flex-direction: column;

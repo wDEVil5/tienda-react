@@ -1,4 +1,5 @@
 import styles from "./Hero.module.css";
+import { Link } from "react-router-dom";
 
 // Sección héroe del Home. La imagen de fondo es un placeholder a rayas (aún no
 // hay foto real; el handoff pide 1 foto de héroe 1280×520 con tratamiento cálido).
@@ -20,12 +21,12 @@ function Hero({ productos }) {
           Retira hoy o recíbelo mañana.
         </p>
         <div className={styles.acciones}>
-          <a href="#catalogo" className={styles.btnPrimario}>
+          <Link to="/#catalogo" className={styles.btnPrimario}>
             Ver el catálogo
-          </a>
-          <a href="#catalogo" className={styles.btnSecundario}>
+          </Link>
+          <Link to="/#ofertas" className={styles.btnSecundario}>
             Ofertas de la semana
-          </a>
+          </Link>
         </div>
         <div className={styles.accesos} aria-label="Categorías destacadas">
           {accesos.map((acceso) => (

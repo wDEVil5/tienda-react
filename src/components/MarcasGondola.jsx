@@ -30,7 +30,7 @@ function MarcasGondola() {
   const filaAbajo = LOGOS.slice(7);
 
   return (
-    <section className={styles.marcas}>
+    <section id="nuestra-tienda" className={styles.marcas}>
       <div className={styles.inner}>
         <div className={styles.header}>
           <div>

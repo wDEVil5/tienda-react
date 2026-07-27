@@ -24,7 +24,7 @@ const PASOS = [
 
 function ComoComprar() {
   return (
-    <section className={styles.comoComprar}>
+    <section id="como-comprar" className={styles.comoComprar}>
       <h2 className={styles.titulo}>Cómo comprar</h2>
 
       <div className={styles.grid}>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import styles from "./Header.module.css";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 import ImagenProducto from "./ImagenProducto.jsx";
@@ -235,25 +235,18 @@ function Header({
           barra. Solo se muestra cuando la hamburguesa está abierta. */}
       {menuAbierto && (
         <nav id="menu-movil" className={styles.menuMovil} aria-label="Menú">
-          <NavLink
-            to="/"
-            end
-            onClick={cerrarMenu}
-            className={({ isActive }) =>
-              `${styles.menuLink} ${isActive ? styles.menuLinkActivo : ""}`
-            }
-          >
+          <Link to="/#catalogo" onClick={cerrarMenu} className={styles.menuLink}>
             Catálogo
-          </NavLink>
-          <button className={styles.menuLink} type="button" onClick={cerrarMenu}>
+          </Link>
+          <Link to="/#ofertas" onClick={cerrarMenu} className={styles.menuLink}>
             Ofertas
-          </button>
-          <button className={styles.menuLink} type="button" onClick={cerrarMenu}>
+          </Link>
+          <Link to="/#como-comprar" onClick={cerrarMenu} className={styles.menuLink}>
             Cómo comprar
-          </button>
-          <button className={styles.menuLink} type="button" onClick={cerrarMenu}>
+          </Link>
+          <Link to="/#nuestra-tienda" onClick={cerrarMenu} className={styles.menuLink}>
             Nuestra tienda
-          </button>
+          </Link>
           <button
             className={styles.menuEntrar}
             type="button"
@@ -264,28 +257,22 @@ function Header({
         </nav>
       )}
 
-      {/* Fila de navegación. Solo "Catálogo" tiene ruta real hoy; el resto
-          son placeholders (Ofertas → filtro, secciones del Home futuras). */}
+      {/* Navegación por secciones del Home. Los hashes también funcionan si se
+          navega desde una ficha de producto (App se encarga del scroll). */}
       <nav className={styles.navFila} aria-label="Navegación principal">
         <div className={styles.contenedor}>
-          <NavLink
-            to="/"
-            end
-            className={({ isActive }) =>
-              `${styles.navLink} ${isActive ? styles.navActivo : ""}`
-            }
-          >
+          <Link to="/#catalogo" className={styles.navLink}>
             Catálogo
-          </NavLink>
-          <button className={styles.navLink} type="button">
+          </Link>
+          <Link to="/#ofertas" className={styles.navLink}>
             Ofertas
-          </button>
-          <button className={styles.navLink} type="button">
+          </Link>
+          <Link to="/#como-comprar" className={styles.navLink}>
             Cómo comprar
-          </button>
-          <button className={styles.navLink} type="button">
+          </Link>
+          <Link to="/#nuestra-tienda" className={styles.navLink}>
             Nuestra tienda
-          </button>
+          </Link>
         </div>
       </nav>
 

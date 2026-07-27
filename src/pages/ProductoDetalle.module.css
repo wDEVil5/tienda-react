@@ -248,6 +248,30 @@
   color: var(--color-texto-suave);
 }
 
+/* ---- Relacionados ---- */
+.relacionados {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-lg);
+  margin-top: var(--e-xl);
+  padding: var(--e-2xl);
+  background-color: var(--color-crudo);
+  border-radius: var(--radio-tarjeta);
+}
+
+.relTitulo {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--color-texto);
+}
+
+.relGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
 .noEncontrado {
   display: flex;
   flex-direction: column;
@@ -268,5 +292,9 @@
   .imagenWrap {
     height: 320px;
     padding: var(--e-lg);
+  }
+
+  .relGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

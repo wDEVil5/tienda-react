@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 import ImagenProducto from "../components/ImagenProducto.jsx";
+import TarjetaProducto from "../components/TarjetaProducto.jsx";
 import styles from "./ProductoDetalle.module.css";
 
 function ProductoDetalle({ productos }) {
@@ -30,6 +31,11 @@ function ProductoDetalle({ productos }) {
     ? Math.round((1 - producto.precio / producto.precioAnterior) * 100)
     : 0;
   const ahorro = enOferta ? producto.precioAnterior - producto.precio : 0;
+
+  // Relacionados: misma categoría, sin incluir el actual, hasta 4.
+  const relacionados = productos
+    .filter((p) => p.categoria === producto.categoria && p.id !== producto.id)
+    .slice(0, 4);
 
   return (
     <section className={styles.detalle}>
@@ -133,6 +139,17 @@ function ProductoDetalle({ productos }) {
           <p className={styles.descripcion}>{producto.descripcion}</p>
         </div>
       </div>
+
+      {relacionados.length > 0 && (
+        <section className={styles.relacionados}>
+          <h2 className={styles.relTitulo}>También te puede interesar</h2>
+          <div className={styles.relGrid}>
+            {relacionados.map((p) => (
+              <TarjetaProducto key={p.id} producto={p} />
+            ))}
+          </div>
+        </section>
+      )}
     </section>
   );
 }

@@ -1,33 +1,80 @@
-/* Estilos Globales*/
-/* son variables que TODA la app comparte */
+/*
+   Design tokens — fuente de verdad: design_handoff_sumarket/README.md
+   Estas variables las comparte TODA la app. El rediseño empieza aquí.
+  */
 
 :root {
-  /*  Colores  */
-  --color-texto: #2c2c2a;        /* negro suave para texto principal */
-  --color-texto-suave: #888780;   /* gris para texto secundario */
-  --color-acento: #2563eb;        /* azul, SOLO para precios */
-  --color-boton: #2c2c2a;         /* negro para botones */
-  --color-boton-hover: #1a1a19;   /* negro más oscuro al pasar mouse */
-  --color-borde: #ecebe6;         /* borde sutil */
-  --color-fondo: #ffffff;         /* fondo blanco */
-  --color-fondo-suave: #fafaf8;   /* fondo apenas grisáceo (carrito) */
+  /* ---- Color ---- */
+  --color-texto:        #1c1b18;  /* negro cálido, texto y botón oscuro */
+  --color-texto-2:      #4a4841;  /* etiquetas de formulario */
+  --color-texto-suave:  #6f6d64;  /* texto secundario (AA sobre blanco y crudo) */
+  --color-texto-tenue:  #8a877d;  /* metadatos, captions */
+  --color-borde:        #e3e0d7;
+  --color-borde-2:      #eeebe3;  /* hairlines internos */
+  --color-borde-3:      #ddd9cf;  /* bordes sobre fondo crudo */
+  --color-fondo:        #fbfaf7;  /* fondo de página */
+  --color-superficie:   #ffffff;  /* tarjetas, campos */
+  --color-crudo:        #f2efe9;  /* bandas y chips */
+  --color-acento:       #2f6b4a;  /* verde mercado: CTA primario, badge del carrito */
+  --color-acento-claro: #8fc7a8;  /* acento sobre fondo oscuro */
+  --color-acento-bg:    #e6efe8;  /* fondo de estado positivo */
+  --color-oferta:       #a8452c;  /* terracota: descuentos */
+  --color-oferta-bg:    #f8ece7;
+  --color-aviso:        #8a6a1f;  /* ámbar: pendiente, últimas unidades */
+  --color-aviso-bg:     #f6efdd;
+  --color-info:         #3a5a78;  /* enviada */
+  --color-info-bg:      #e7edf3;
+  --color-sobre-oscuro: #ddd9d0;  /* texto sobre #1c1b18 */
+  --color-tenue-oscuro: #9a978f;  /* texto legal sobre #1c1b18 (AA) */
 
-  /* Espaciado ( escala de 4px )  */
-  --espacio-xs: 0.25rem;   /* 4px */
-  --espacio-sm: 0.5rem;    /* 8px */
-  --espacio-md: 1rem;      /* 16px */
-  --espacio-lg: 1.5rem;    /* 24px */
-  --espacio-xl: 2rem;      /* 32px */
+  /* ---- Tipografía ---- */
+  --font-display: "Instrument Serif", Georgia, serif;        /* titulares y precios */
+  --font-ui:      "Instrument Sans", system-ui, sans-serif;
+  --font-mono:    "IBM Plex Mono", ui-monospace, monospace;  /* eyebrows, SKU, IDs */
 
-  /* Bordes redondeados  */
-  --radio-sm: 0.5rem;      /* 8px */
-  --radio-md: 0.75rem;     /* 12px */
+  /* ---- Radios ---- */
+  --radio-control: 11px;  /* TODO control interactivo: botón, chip cuadrado, input alto */
+  --radio-campo:   10px;  /* campos de formulario compactos */
+  --radio-caja:    12px;  /* cajas internas */
+  --radio-tarjeta: 14px;  /* tarjetas y contenedores */
+  --radio-badge:   6px;
+  --radio-pill:    999px; /* SOLO chips de filtro/categoría y contadores */
 
-  /* Tipografía  */
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  /* ---- Espaciado (escala de 4px) ---- */
+  --e-xs: 4px; --e-sm: 8px; --e-md: 12px; --e-lg: 16px; --e-xl: 22px; --e-2xl: 40px;
+
+  /* Base tipográfica global */
+  font-family: var(--font-ui);
   color: var(--color-texto);
 }
 
+/* 
+   PUENTE DE COMPATIBILIDAD (temporal, patrón strangler fig)
+   Nombres de token viejos que los componentes aún usan. Mantiene
+   la app funcionando mientras migramos pantalla por pantalla.
+   ⚠️ Se elimina cuando ningún *.module.css referencie estos nombres.
+    */
+:root {
+  --color-boton:        var(--color-texto);
+  --color-boton-hover:  #111110;
+  --color-fondo-suave:  var(--color-crudo);
+
+  /* Espaciado viejo: se mantienen los valores originales para NO mover
+     el layout todavía. La migración a --e-* se hace por componente. */
+  --espacio-xs: 4px;
+  --espacio-sm: 8px;
+  --espacio-md: 16px;
+  --espacio-lg: 24px;
+  --espacio-xl: 32px;
+
+  /* Radios viejos: valores originales; migran a --radio-* por componente. */
+  --radio-sm: 8px;
+  --radio-md: 12px;
+}
+
+/* 
+   Reset y base
+    */
 * {
   margin: 0;
   padding: 0;
@@ -36,5 +83,15 @@
 
 body {
   background-color: var(--color-fondo);
+  color: var(--color-texto);
+  font-family: var(--font-ui);
   line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Anillo de foco global (RNF-3). Los componentes pueden afinarlo,
+   pero por defecto todo control enfocado por teclado es visible. */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-superficie), 0 0 0 4px var(--color-texto);
 }

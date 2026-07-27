@@ -9,31 +9,43 @@ const PRODUCTOS_POR_CARGA = 12;
 
 function Catalogo({ productos, busqueda }) {
   const [categoria, setCategoria] = useState("todas"); // la categoria elegida
-  const [filtrosAbiertos, setFiltrosAbiertos] = useState(false);
   const [masCategoriasAbierto, setMasCategoriasAbierto] = useState(false);
   const [limiteProductos, setLimiteProductos] = useState(PRODUCTOS_POR_CARGA);
   const [orden, setOrden] = useState("relevancia"); // criterio de ordenamiento
+  const [soloOfertas, setSoloOfertas] = useState(false); // filtrar solo ofertas
 
-  
+
   const categorias = ["todas", ...new Set(productos.map((p) => p.categoria))]; // version Derivada, calculo automatico
   const categoriasVisibles = categorias.slice(0, LIMITE_CATEGORIAS_VISIBLES);
   const categoriasExtra = categorias.slice(LIMITE_CATEGORIAS_VISIBLES);
 
+  // Conteo de productos por categoría (derivado) para el número de cada chip.
+  const conteos = productos.reduce((acc, p) => {
+    acc[p.categoria] = (acc[p.categoria] || 0) + 1;
+    return acc;
+  }, {});
+  const contarCategoria = (cat) =>
+    cat === "todas" ? productos.length : conteos[cat] ?? 0;
+
   const seleccionarCategoria = (cat) => {
     setCategoria(cat);
-    setFiltrosAbiertos(false);
     setMasCategoriasAbierto(false);
   };
 
-  // Cuando cambian los filtros (búsqueda o categoría), volvemos a la primera "tanda"
-  // de productos. Patrón recomendado por React: ajustar el estado durante el render
-  // comparando con el valor anterior, en vez de un useEffect (que dispara render extra).
-  const [filtrosPrevios, setFiltrosPrevios] = useState({ busqueda, categoria });
+  // Cuando cambian los filtros (búsqueda, categoría u ofertas), volvemos a la
+  // primera "tanda" de productos. Patrón recomendado por React: ajustar el estado
+  // durante el render comparando con el valor anterior, en vez de un useEffect.
+  const [filtrosPrevios, setFiltrosPrevios] = useState({
+    busqueda,
+    categoria,
+    soloOfertas,
+  });
   if (
     filtrosPrevios.busqueda !== busqueda ||
-    filtrosPrevios.categoria !== categoria
+    filtrosPrevios.categoria !== categoria ||
+    filtrosPrevios.soloOfertas !== soloOfertas
   ) {
-    setFiltrosPrevios({ busqueda, categoria });
+    setFiltrosPrevios({ busqueda, categoria, soloOfertas });
     setLimiteProductos(PRODUCTOS_POR_CARGA);
   }
 
@@ -45,8 +57,10 @@ function Catalogo({ productos, busqueda }) {
     const coincideCategoria =
       categoria === "todas" || producto.categoria === categoria;
 
+    const coincideOferta = !soloOfertas || producto.precioAnterior !== null;
+
     //veredicto
-    return coincideBusqueda && coincideCategoria;
+    return coincideBusqueda && coincideCategoria && coincideOferta;
   });
 
   // Ordenamiento derivado. .sort() MUTA el array, así que copiamos primero con
@@ -95,40 +109,33 @@ function Catalogo({ productos, busqueda }) {
       </div>
 
       <div className={styles.controles}>
-        {/* Botones de categoria */}
-        <button
-          className={styles.selectorCategoria}
-          type="button"
-          onClick={() => setFiltrosAbiertos(!filtrosAbiertos)}
-          aria-expanded={filtrosAbiertos}
-          aria-controls="lista-categorias"
-        >
-          <span>Categoría: {categoria}</span>
-          <i className={`fa-solid ${filtrosAbiertos ? "fa-chevron-up" : "fa-chevron-down"}`}></i>
-        </button>
-
-        <div className={styles.filtrosEscritorio}>
+        <div className={styles.chips}>
           {categoriasVisibles.map((cat) => (
             <button
               key={cat}
+              type="button"
               onClick={() => seleccionarCategoria(cat)}
-              className={categoria === cat ? styles.filtroActivo : styles.filtro}
+              className={categoria === cat ? styles.chipActivo : styles.chip}
             >
               {cat}
+              <span className={styles.conteo}>{contarCategoria(cat)}</span>
             </button>
           ))}
 
           {categoriasExtra.length > 0 && (
             <div className={styles.masCategorias}>
               <button
-                className={styles.verMas}
+                className={styles.chip}
                 type="button"
                 onClick={() => setMasCategoriasAbierto(!masCategoriasAbierto)}
                 aria-expanded={masCategoriasAbierto}
                 aria-controls="categorias-extra"
               >
-                Explorar {categoriasExtra.length} más
-                <i className={`fa-solid ${masCategoriasAbierto ? "fa-chevron-up" : "fa-chevron-down"}`}></i>
+                {categoriasExtra.length} más
+                <i
+                  className={`fa-solid ${masCategoriasAbierto ? "fa-chevron-up" : "fa-chevron-down"}`}
+                  aria-hidden="true"
+                ></i>
               </button>
 
               {masCategoriasAbierto && (
@@ -136,10 +143,16 @@ function Catalogo({ productos, busqueda }) {
                   {categoriasExtra.map((cat) => (
                     <button
                       key={cat}
+                      type="button"
                       onClick={() => seleccionarCategoria(cat)}
-                      className={categoria === cat ? styles.filtroActivo : styles.filtro}
+                      className={
+                        categoria === cat ? styles.chipActivo : styles.chip
+                      }
                     >
                       {cat}
+                      <span className={styles.conteo}>
+                        {contarCategoria(cat)}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -148,22 +161,16 @@ function Catalogo({ productos, busqueda }) {
           )}
         </div>
 
-        <div
-          id="lista-categorias"
-          className={`${styles.filtrosMovil} ${filtrosAbiertos ? styles.filtrosAbiertos : ""}`}
-        >
-          {categorias.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => seleccionarCategoria(cat)}
-              className={
-                categoria === cat ? styles.filtroActivo : styles.filtro
-              }
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
+        <label className={styles.soloOfertas}>
+          <input
+            type="checkbox"
+            className={styles.switchInput}
+            checked={soloOfertas}
+            onChange={(e) => setSoloOfertas(e.target.checked)}
+          />
+          <span className={styles.switchTrack} aria-hidden="true"></span>
+          Solo ofertas
+        </label>
       </div>
 
       {productosFiltrados.length === 0 ? (

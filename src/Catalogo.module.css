@@ -31,263 +31,239 @@
     margin-top: 2px;
 }
 
-.controles {
-    display: flex;
-    flex-direction: column;
-    gap: var(--espacio-sm);
-}
-
-.buscador {
-    padding: var(--espacio-sm) var(--espacio-md);
-    border: 1px solid var(--color-borde);
-    border-radius: var(--radio-sm);
-    font-size: 1rem;
-    font-family: inherit;
-    width: 100%;
-    max-width: 400px;
-}
-
-.filtrosEscritorio {
-    display: flex;
-    gap: var(--espacio-sm);
-    justify-content: center;
-}
-
-.filtrosMovil {
-  display: none;
-}
-
-.selectorCategoria {
-  display: none;
-}
-
-.masCategorias {
-  position: relative;
-  flex: 0 0 auto;
-}
-
-.verMas {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--espacio-xs);
-  border: 1px solid var(--color-borde);
-  border-radius: 999px;
-  padding: var(--espacio-xs) var(--espacio-sm);
-  background-color: var(--color-fondo-suave);
-  color: var(--color-texto);
-  font: inherit;
-  font-size: 0.9rem;
-  cursor: pointer;
-}
-
-.listaExtra {
-  position: absolute;
-  z-index: 10;
-  top: calc(100% + var(--espacio-sm));
-  right: 0;
-  display: flex;
-  width: max-content;
-  min-width: 180px;
-  max-width: 260px;
-  max-height: 300px;
-  flex-direction: column;
-  overflow-y: auto;
-  border: 1px solid var(--color-borde);
-  border-radius: var(--radio-sm);
-  background-color: var(--color-fondo);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
-}
-
-.listaExtra .filtro,
-.listaExtra .filtroActivo {
-  width: 100%;
-  padding: 0.7rem var(--espacio-md);
-  text-align: left;
-}
-
-.listaExtra .filtro + .filtro,
-.listaExtra .filtro + .filtroActivo,
-.listaExtra .filtroActivo + .filtro,
-.listaExtra .filtroActivo + .filtroActivo {
-  border-top: 1px solid var(--color-borde);
-}
-
 /* Barra de ordenamiento: etiqueta + selector. */
 .barraOrden {
-  display: flex;
-  align-items: center;
-  gap: var(--e-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--e-sm);
 }
 
 .ordenLabel {
-  font-size: 13.5px;
-  color: var(--color-texto-suave);
+    font-size: 13.5px;
+    color: var(--color-texto-suave);
 }
 
 .ordenSelect {
-  height: 44px;
-  padding: 0 var(--e-md);
-  border: 1px solid var(--color-borde-3);
-  border-radius: var(--radio-control);
-  background-color: var(--color-fondo);
-  font-family: inherit;
-  font-size: 14px;
-  color: var(--color-texto);
-  cursor: pointer;
+    height: 44px;
+    padding: 0 var(--e-md);
+    border: 1px solid var(--color-borde-3);
+    border-radius: var(--radio-control);
+    background-color: var(--color-fondo);
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--color-texto);
+    cursor: pointer;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--espacio-md);
-}
-
-.sinResultados {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 60vh; /* ajuste de altura en pantalla */
-  padding: var(--espacio-xl) var(--espacio-md);
-  text-align: center;
-  color: var(--color-texto-suave);
-  font-size: 1rem;
-}
-
-.cargarMasWrap {
-  display: flex;
-  justify-content: center;
-  padding-top: var(--espacio-sm);
-}
-
-.cargarMas {
-  border: none;
-  border-bottom: 1px solid var(--color-borde);
-  padding: var(--espacio-xs) var(--espacio-sm);
-  background-color: transparent;
-  color: var(--color-texto-suave);
-  font: inherit;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: border-color 0.2s ease, color 0.2s ease;
-}
-
-.cargarMas:hover {
-  border-color: var(--color-acento);
-  color: var(--color-acento);
-}
-
-.filtro {
-  flex: 0 0 auto;
-  background: none;
-  border: none;
-  padding: var(--espacio-xs) var(--espacio-sm);
-  color: var(--color-texto-suave);
-  font-size: 0.95rem;
-  font-family: inherit;
-  cursor: pointer;
-  text-transform: capitalize;
-  transition: color 0.2s ease;
-}
-
-.filtro:hover {
-  color: var(--color-texto);
-}
-
-.filtroActivo {
-  flex: 0 0 auto;
-  background: none;
-  border: none;
-  padding: var(--espacio-xs) var(--espacio-sm);
-  color: var(--color-texto);
-  font-size: 0.95rem;
-  font-family: inherit;
-  cursor: pointer;
-  text-transform: capitalize;
-  font-weight: 600;
-  transition: color 0.2s ease;
-}
-
-/* RESPONSIVE */
-
-/* Tablet: 3 columnas */
-@media (max-width: 1024px) {
-  .grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-/* Tablet pequeña: 2 columnas */
-@media (max-width: 768px) {
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* Móvil: 1 columna */
-@media (max-width: 480px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 600px) {
-  .controles {
-    position: relative;
-  }
-
-  .selectorCategoria {
+/* ---- Fila de controles: chips a la izquierda, switch a la derecha ---- */
+.controles {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 100%;
-    min-height: 44px;
-    padding: var(--espacio-sm) var(--espacio-md);
-    border: 1px solid var(--color-borde);
-    border-radius: var(--radio-sm);
-    background-color: var(--color-fondo-suave);
-    color: var(--color-texto);
-    font: inherit;
-    font-weight: 600;
-    text-transform: capitalize;
-    cursor: pointer;
-  }
+    gap: var(--e-md);
+    flex-wrap: wrap;
+    padding-bottom: var(--e-md);
+    border-bottom: 1px solid var(--color-borde-3);
+}
 
-  .filtrosEscritorio {
-    display: none;
-  }
-
-  .filtrosMovil.filtrosAbiertos {
+.chips {
     display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* Chip base. box-sizing:border-box hace que el borde de 1px cuente DENTRO de
+   los 42px, así el chip activo (con su propio fondo) mide igual que los demás. */
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 42px;
+    box-sizing: border-box;
+    padding: 0 var(--e-md);
+    background-color: var(--color-fondo);
+    border: 1px solid var(--color-borde-3);
+    border-radius: var(--radio-pill);
+    color: var(--color-texto);
+    font-family: inherit;
+    font-size: 13.5px;
+    text-transform: capitalize;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.chip:hover {
+    border-color: var(--color-texto-suave);
+}
+
+/* El chip activo hereda todo lo del chip base con `composes` y solo cambia
+   los colores → sin duplicar la geometría. */
+.chipActivo {
+    composes: chip;
+    background-color: var(--color-texto);
+    border-color: var(--color-texto);
+    color: #fff;
+}
+
+.conteo {
+    color: var(--color-texto-tenue);
+    font-size: 12px;
+}
+
+.chipActivo .conteo {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Desplegable de categorías que no caben ("X más"). */
+.masCategorias {
+    position: relative;
+}
+
+.listaExtra {
     position: absolute;
     z-index: 10;
-    top: calc(100% + var(--espacio-sm));
+    top: calc(100% + var(--e-sm));
     left: 0;
-    width: 100%;
+    display: flex;
     flex-direction: column;
-    align-items: stretch;
-    gap: 0;
-    max-height: min(50vh, 320px);
+    gap: var(--e-xs);
+    width: max-content;
+    min-width: 180px;
+    max-width: 260px;
+    max-height: 300px;
     overflow-y: auto;
+    padding: var(--e-xs);
+    background-color: var(--color-superficie);
     border: 1px solid var(--color-borde);
-    border-radius: var(--radio-sm);
-    background-color: var(--color-fondo);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
-  }
+    border-radius: var(--radio-caja);
+    box-shadow: 0 12px 24px rgba(28, 27, 24, 0.12);
+}
 
-  .filtro,
-  .filtroActivo {
-    flex: 0 0 auto;
+.listaExtra .chip {
     width: 100%;
-    padding: 0.75rem var(--espacio-md);
-    border-radius: 0;
-    text-align: left;
-  }
+    justify-content: space-between;
+    height: 40px;
+    border-radius: var(--radio-campo);
+}
 
-  .filtro + .filtro,
-  .filtro + .filtroActivo,
-  .filtroActivo + .filtro,
-  .filtroActivo + .filtroActivo {
-    border-top: 1px solid var(--color-borde);
-  }
+/* ---- Switch "Solo ofertas" ---- */
+.soloOfertas {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e-sm);
+    font-size: 13.5px;
+    color: var(--color-texto);
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+/* La casilla real: invisible pero presente (accesible por teclado). Se coloca
+   encima de la pista para que el clic y el foco funcionen. */
+.switchInput {
+    position: absolute;
+    width: 34px;
+    height: 19px;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.switchTrack {
+    position: relative;
+    width: 34px;
+    height: 19px;
+    flex-shrink: 0;
+    background-color: var(--color-borde-3);
+    border-radius: var(--radio-pill);
+    transition: background-color 0.2s ease;
+}
+
+/* El círculo que se desliza. */
+.switchTrack::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 15px;
+    height: 15px;
+    background-color: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+}
+
+.switchInput:checked + .switchTrack {
+    background-color: var(--color-acento);
+}
+
+.switchInput:checked + .switchTrack::after {
+    transform: translateX(15px);
+}
+
+.switchInput:focus-visible + .switchTrack {
+    box-shadow: 0 0 0 2px var(--color-crudo), 0 0 0 4px var(--color-texto);
+}
+
+/* ---- Grid de productos ---- */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--espacio-md);
+}
+
+.sinResultados {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    padding: var(--espacio-xl) var(--espacio-md);
+    text-align: center;
+    color: var(--color-texto-suave);
+    font-size: 1rem;
+}
+
+.cargarMasWrap {
+    display: flex;
+    justify-content: center;
+    padding-top: var(--espacio-sm);
+}
+
+.cargarMas {
+    border: none;
+    border-bottom: 1px solid var(--color-borde);
+    padding: var(--espacio-xs) var(--espacio-sm);
+    background-color: transparent;
+    color: var(--color-texto-suave);
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.cargarMas:hover {
+    border-color: var(--color-acento);
+    color: var(--color-acento);
+}
+
+/* RESPONSIVE (grid). Los 5 breakpoints definitivos llegan en el paso 6. */
+@media (max-width: 1024px) {
+    .grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
 }

@@ -3,7 +3,6 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--e-2xl);
-  flex-wrap: wrap;
   margin: var(--e-2xl) 0;
   padding: var(--e-2xl);
   background-color: var(--color-texto); /* #1c1b18 */
@@ -32,6 +31,7 @@
   display: flex;
   align-items: center;
   gap: var(--e-lg);
+  min-width: 0;
 }
 
 .minis {
@@ -105,6 +105,20 @@
   background-color: #285d40;
 }
 
+/* Tablet: la oferta conserva sus elementos juntos, pero el bloque de texto
+   pasa arriba para evitar saltos arbitrarios de una sola tarjeta. */
+@media (max-width: 1023px) {
+  .banda {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--e-lg);
+  }
+
+  .derecha {
+    justify-content: space-between;
+  }
+}
+
 /* Móvil: todo apilado; las mini-tarjetas pueden desplazarse en horizontal. */
 @media (max-width: 767px) {
   .banda {
@@ -152,5 +166,22 @@
 
   .boton {
     width: 100%;
+  }
+}
+
+/* Teléfonos compactos: se preserva la estructura de dos productos y el
+   contador, reduciendo solo el espacio que desperdician los extremos. */
+@media (max-width: 374px) {
+  .banda {
+    padding: var(--e-md);
+  }
+
+  .minis {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 48px;
+    gap: var(--e-xs);
+  }
+
+  .mini {
+    padding: var(--e-xs);
   }
 }

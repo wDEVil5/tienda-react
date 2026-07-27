@@ -1,6 +1,5 @@
-/* Banda full-bleed (mismo truco que el catálogo): rompe la columna centrada
-   para que las pistas de logos lleguen de borde a borde y se recorten con las
-   máscaras laterales. El fondo es el de la página (--color-fondo). */
+/* Banda full-bleed con un carrusel contenido: el fondo llega a los bordes,
+   pero el contenido conserva la misma alineación del catálogo. */
 .marcas {
   position: relative;
   left: 50%;
@@ -13,11 +12,11 @@
   overflow: hidden; /* refuerza que nada se salga del ancho del viewport */
 }
 
-/* El encabezado sí vuelve a alinearse con el resto de la página (máx 1200). */
+/* Encabezado alineado con el resto de la página. */
 .inner {
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 0 var(--e-lg);
+  padding: 0 var(--e-2xl);
 }
 
 .header {
@@ -39,40 +38,42 @@
 
 .titulo {
   font-family: var(--font-display);
-  font-size: 32px;
+  font-size: 36px;
   line-height: 1.1;
   font-weight: 400;
   color: var(--color-texto);
 }
 
 .nota {
-  max-width: 34ch;
   font-size: 13.5px;
   line-height: 1.5;
   color: var(--color-texto-suave);
   text-align: right;
+  white-space: nowrap;
 }
 
 /* ---- Pistas (marquee) ----
-   Dos filas apiladas. aria-hidden en el JSX: son placeholders decorativos.
-   Las máscaras difuminan 120px a cada lado para que los tiles "aparezcan" y
-   "desaparezcan" en vez de cortarse de golpe. */
+   Dos filas de seis espacios visibles en escritorio. El recorte leve permite
+   notar el movimiento sin alejar los logos del ritmo de la grilla. */
 .pistas {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--e-2xl);
   -webkit-mask-image: linear-gradient(
     90deg,
     transparent 0,
-    #000 120px,
-    #000 calc(100% - 120px),
+    #000 96px,
+    #000 calc(100% - 96px),
     transparent 100%
   );
   mask-image: linear-gradient(
     90deg,
     transparent 0,
-    #000 120px,
-    #000 calc(100% - 120px),
+    #000 96px,
+    #000 calc(100% - 96px),
     transparent 100%
   );
 }
@@ -81,21 +82,20 @@
   overflow: hidden;
 }
 
-/* El track lleva el set de 7 tiles DUPLICADO. Al desplazarlo justo el ancho de
-   un set (7 tiles × 200 + 7 gaps × 16 = 1512px) el segundo set queda donde
-   estaba el primero: el bucle es imperceptible. */
+/* El segundo set empieza después de la primera fila y su gap. Al mover la
+   mitad del track más medio gap, la copia ocupa exactamente el lugar original. */
 .track {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   width: max-content;
 }
 
 .filaIzq .track {
-  animation: desplazarIzq 38s linear infinite;
+  animation: desplazarIzq 34s linear infinite;
 }
 
 .filaDer .track {
-  animation: desplazarDer 46s linear infinite;
+  animation: desplazarDer 40s linear infinite;
 }
 
 @keyframes desplazarIzq {
@@ -103,7 +103,7 @@
     transform: translateX(0);
   }
   to {
-    transform: translateX(-1512px);
+    transform: translateX(calc(-50% - 6px));
   }
 }
 
@@ -111,7 +111,7 @@
    derecha. Mismo recorrido, sentido inverso. */
 @keyframes desplazarDer {
   from {
-    transform: translateX(-1512px);
+    transform: translateX(calc(-50% - 6px));
   }
   to {
     transform: translateX(0);
@@ -132,8 +132,8 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 200px;
-  height: 96px;
+  width: 184px;
+  height: 92px;
   background-color: var(--color-superficie);
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-caja);
@@ -142,20 +142,18 @@
   color: var(--color-texto-tenue);
 }
 
-/* Móvil: encabezado apilado, nota a la izquierda; los tiles siguen igual
-   (se deslizan, no importa que sobresalgan). */
+@media (max-width: 1023px) {
+  .inner,
+  .pistas {
+    padding-right: var(--e-xl);
+    padding-left: var(--e-xl);
+  }
+}
+
+/* En la composición móvil, esta banda no aparece: después del catálogo viene
+   directamente el footer. */
 @media (max-width: 767px) {
-  .header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--e-sm);
-  }
-
-  .titulo {
-    font-size: 26px;
-  }
-
-  .nota {
-    text-align: left;
+  .marcas {
+    display: none;
   }
 }

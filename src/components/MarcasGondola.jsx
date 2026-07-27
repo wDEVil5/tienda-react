@@ -4,10 +4,9 @@ import styles from "./MarcasGondola.module.css";
 // opuestos. Son PLACEHOLDERS "[ logo NN ]" a propósito: . Cuando la
 // tienda tenga permisos, se reemplaza el texto por <img> dentro del mismo tile.
 //
-// 14 logos: la fila de arriba usa 01–07 y la de abajo 08–14. Cada fila duplica
-// su set de 7 para que la animación (translateX de un set completo) sea un bucle
-// sin costuras. gg
-const LOGOS = Array.from({ length: 14 }, (_, i) => String(i + 1).padStart(2, "0"));
+// Doce espacios temporales, seis por fila. Cada pista duplica su propio set
+// para que el carrusel pueda desplazarse en bucle sin un salto visible.
+const LOGOS = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0"));
 
 function Pista({ logos, direccion }) {
   const claseFila = direccion === "izquierda" ? styles.filaIzq : styles.filaDer;
@@ -39,7 +38,7 @@ function MarcasGondola() {
             <h2 className={styles.titulo}>Trabajamos con las marcas de siempre</h2>
           </div>
           <p className={styles.nota}>
-            Las mismas que encuentras en el local, al mismo precio.
+            Las marcas que conoces, al precio de siempre.
           </p>
         </div>
       </div>

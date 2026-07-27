@@ -161,3 +161,30 @@
     flex: 0 0 auto;
   }
 }
+
+/* Tablet vertical: conserva la composición horizontal, pero con una escala
+   intermedia para no heredar las proporciones de escritorio grande. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .inner {
+    min-height: 440px;
+    padding: var(--e-xl) var(--e-2xl);
+  }
+
+  .titulo {
+    font-size: 48px;
+  }
+
+  .parrafo {
+    font-size: 15px;
+  }
+
+  .acciones {
+    margin-top: var(--e-lg);
+  }
+
+  .btnPrimario,
+  .btnSecundario {
+    height: 46px;
+    padding: 0 var(--e-xl);
+  }
+}

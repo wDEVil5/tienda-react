@@ -1,18 +1,23 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
 import TarjetaProducto from "./TarjetaProducto.jsx";
 import styles from "../Catalogo.module.css";
 
 const LIMITE_CATEGORIAS_VISIBLES = 6;
+const LIMITE_CATEGORIAS_TABLET = 4;
+const CONSULTA_TABLET = "(min-width: 768px) and (max-width: 1023px)";
 // Por ahora la API entrega todos los productos. Con un backend propio, este límite
 // debería enviarse a la API, por ejemplo: /productos?page=1&limit=12.
 const PRODUCTOS_POR_CARGA = 10;
 
 function Catalogo({ productos, busqueda }) {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [categoria, setCategoria] = useState("todas"); // la categoria elegida
+  const [esTablet, setEsTablet] = useState(
+    () => typeof window !== "undefined" && window.matchMedia(CONSULTA_TABLET).matches
+  );
   const [masCategoriasAbierto, setMasCategoriasAbierto] = useState(false);
   const [limiteProductos, setLimiteProductos] = useState(PRODUCTOS_POR_CARGA);
   const [orden, setOrden] = useState("relevancia"); // criterio de ordenamiento
+  const [soloOfertas, setSoloOfertas] = useState(false); // filtrar solo ofertas
   const [filtrosAbiertos, setFiltrosAbiertos] = useState(false); // hoja de filtros (móvil)
   // Rango de precio: null = sin límite (usa el extremo del catálogo).
   const [precioMin, setPrecioMin] = useState(null);
@@ -33,34 +38,21 @@ function Catalogo({ productos, busqueda }) {
     };
   }, [filtrosAbiertos]);
 
+  // El límite de chips cambia solo en tablet: evita que una categoría quede
+  // aislada en una nueva fila y conserva el acceso a las restantes en "más".
+  useEffect(() => {
+    const mediaTablet = window.matchMedia(CONSULTA_TABLET);
+    const actualizarTablet = (evento) => setEsTablet(evento.matches);
+    mediaTablet.addEventListener("change", actualizarTablet);
+    return () => mediaTablet.removeEventListener("change", actualizarTablet);
+  }, []);
+
   const categorias = ["todas", ...new Set(productos.map((p) => p.categoria))]; // version Derivada
-  const categoriasVisibles = categorias.slice(0, LIMITE_CATEGORIAS_VISIBLES);
-  const categoriasExtra = categorias.slice(LIMITE_CATEGORIAS_VISIBLES);
-
-  // Categoría y ofertas se sincronizan con la URL: los enlaces del hero, los
-  // chips del catálogo y el switch usan una única fuente de verdad.
-  const categoriaUrl = searchParams.get("categoria");
-  const ofertasUrl = searchParams.get("ofertas") === "1";
-  const categoria = categorias.includes(categoriaUrl) ? categoriaUrl : "todas";
-  const soloOfertas = ofertasUrl;
-
-  const actualizarFiltrosUrl = ({
-    nuevaCategoria = categoria,
-    nuevasOfertas = soloOfertas,
-  }) => {
-    const siguientes = new URLSearchParams(searchParams);
-    if (nuevaCategoria === "todas") {
-      siguientes.delete("categoria");
-    } else {
-      siguientes.set("categoria", nuevaCategoria);
-    }
-    if (nuevasOfertas) {
-      siguientes.set("ofertas", "1");
-    } else {
-      siguientes.delete("ofertas");
-    }
-    setSearchParams(siguientes, { replace: true });
-  };
+  const limiteCategorias = esTablet
+    ? LIMITE_CATEGORIAS_TABLET
+    : LIMITE_CATEGORIAS_VISIBLES;
+  const categoriasVisibles = categorias.slice(0, limiteCategorias);
+  const categoriasExtra = categorias.slice(limiteCategorias);
 
   // Conteo de productos por categoría (derivado) para el número de cada chip.
   const conteos = productos.reduce((acc, p) => {
@@ -79,12 +71,13 @@ function Catalogo({ productos, busqueda }) {
   const rango = precioTope - precioPiso || 1;
 
   const seleccionarCategoria = (cat) => {
-    actualizarFiltrosUrl({ nuevaCategoria: cat });
+    setCategoria(cat);
     setMasCategoriasAbierto(false);
   };
 
   const limpiarFiltros = () => {
-    actualizarFiltrosUrl({ nuevaCategoria: "todas", nuevasOfertas: false });
+    setCategoria("todas");
+    setSoloOfertas(false);
     setPrecioMin(null);
     setPrecioMax(null);
     setMasCategoriasAbierto(false);
@@ -333,7 +326,7 @@ function Catalogo({ productos, busqueda }) {
               type="checkbox"
               className={styles.switchInput}
               checked={soloOfertas}
-              onChange={(e) => actualizarFiltrosUrl({ nuevasOfertas: e.target.checked })}
+              onChange={(e) => setSoloOfertas(e.target.checked)}
             />
             <span className={styles.switchTrack} aria-hidden="true"></span>
           </label>

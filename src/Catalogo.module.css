@@ -512,6 +512,26 @@
     }
 }
 
+/* Tablet: las categorías y el switch dejan de depender del salto automático
+   del flex. El switch se mantiene anclado arriba y los chips usan el ancho
+   restante de forma predecible. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .controles {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    flex-wrap: nowrap;
+  }
+
+  .chips {
+    gap: var(--e-sm);
+  }
+
+  .soloOfertas {
+    align-self: start;
+  }
+}
+
 /* Móvil (≤767): grid 2 y la fila de chips pasa a hoja inferior (bottom sheet). */
 @media (max-width: 767px) {
     .grid {

@@ -121,6 +121,42 @@
   }
 }
 
+/* Tablet: la banda mantiene la lectura editorial en dos columnas. Las
+   mini-ofertas y el CTA forman un bloque compacto para no dejar un vacío a la
+   derecha ni convertir la sección en una tarjeta excesivamente alta. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .banda {
+    display: grid;
+    grid-template-columns: minmax(190px, 0.85fr) minmax(0, 1.45fr);
+    align-items: center;
+    gap: var(--e-xl);
+    padding: var(--e-xl);
+  }
+
+  .titulo {
+    font-size: 28px;
+  }
+
+  .derecha {
+    justify-content: flex-end;
+    gap: var(--e-md);
+  }
+
+  .minis {
+    gap: var(--e-xs);
+  }
+
+  .mini {
+    width: 90px;
+    padding: var(--e-xs);
+  }
+
+  .boton {
+    height: 42px;
+    padding: 0 var(--e-lg);
+  }
+}
+
 /* Móvil: todo apilado; las mini-tarjetas pueden desplazarse en horizontal. */
 @media (max-width: 767px) {
   .banda {

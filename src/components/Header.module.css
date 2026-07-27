@@ -363,6 +363,56 @@
   }
 }
 
+/* Tablet: el header deja de intentar comprimir todos los controles de
+   escritorio. Mantiene búsqueda visible y traslada navegación/cuenta al menú. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .contenedor {
+    padding-right: var(--e-xl);
+    padding-left: var(--e-xl);
+  }
+
+  .barraPrincipal .contenedor {
+    gap: var(--e-md);
+  }
+
+  .hamburguesa {
+    display: inline-flex;
+  }
+
+  .categorias,
+  .entrar {
+    display: none;
+  }
+
+  .logo {
+    font-size: 24px;
+  }
+
+  .carritoTexto {
+    display: none;
+  }
+
+  .carrito {
+    position: relative;
+    width: 46px;
+    padding: 0;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .contador {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: auto;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border: 2px solid var(--color-texto);
+    font-size: 11px;
+  }
+}
+
 /* Móvil (≤767): hamburguesa + logo + buscador (full width) + carrito. */
 @media (max-width: 767px) {
   .hamburguesa {
@@ -426,7 +476,7 @@
 }
 
 /* Seguridad: si se agranda la ventana con el menú abierto, no lo mostramos. */
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .menuMovil {
     display: none;
   }

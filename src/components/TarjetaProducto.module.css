@@ -53,15 +53,6 @@
   border-radius: var(--radio-badge);
 }
 
-.categoria {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--color-texto-tenue);
-  margin-bottom: var(--e-xs);
-}
-
 .nombre {
   font-size: 13px;
   font-weight: 500;

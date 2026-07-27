@@ -18,10 +18,10 @@
 .catalogoInner {
     display: flex;
     flex-direction: column;
-    gap: var(--e-lg);
-    max-width: 1200px;
+    gap: var(--e-xl);
+    max-width: 1280px;
     margin: 0 auto;
-    padding: 0 var(--e-lg);
+    padding: 0 var(--e-2xl);
 }
 
 /* Encabezado: título + contador a la izquierda, orden a la derecha. */
@@ -30,6 +30,16 @@
     align-items: flex-end;
     justify-content: space-between;
     gap: var(--e-lg);
+    flex-wrap: wrap;
+}
+
+/* Título + contador en la MISMA línea, alineados a la base (como el diseño):
+   "Todo el catálogo   200 productos · precios de hoy". flex-wrap por si en una
+   pantalla intermedia no cabe. */
+.tituloFila {
+    display: flex;
+    align-items: baseline;
+    gap: var(--e-md);
     flex-wrap: wrap;
 }
 
@@ -44,31 +54,58 @@
 .subtitulo {
     font-size: 13.5px;
     color: var(--color-texto-suave);
-    margin-top: 2px;
 }
 
-/* Barra de ordenamiento: etiqueta + selector. */
+/* En escritorio el orden es UN solo control tipo píldora ("Ordenar: Relevancia
+   ⌄"): el borde/altura viven en .barraOrden y el <select> interior va sin borde
+   para que se vean como una pieza. En móvil el mismo .ordenSelect se usa suelto
+   (con su borde) dentro de .toolbarMovil, por eso conserva sus estilos base. */
 .barraOrden {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: var(--e-sm);
-}
-
-.ordenLabel {
-    font-size: 13.5px;
-    color: var(--color-texto-suave);
-}
-
-.ordenSelect {
+    gap: 6px;
     height: 44px;
     padding: 0 var(--e-md);
     border: 1px solid var(--color-borde-3);
     border-radius: var(--radio-control);
     background-color: var(--color-fondo);
+}
+
+.ordenLabel {
+    font-size: 14px;
+    color: var(--color-texto-suave);
+    white-space: nowrap;
+}
+
+/* appearance:none quita el cromado nativo del SO (botón gris + doble flecha) y
+   dibujamos nuestro propio chevron con un SVG de fondo, para que se vea igual de
+   limpio en todos los navegadores. El padding derecho deja hueco para la flecha. */
+.ordenSelect {
+    height: 44px;
+    padding: 0 34px 0 var(--e-md);
+    border: 1px solid var(--color-borde-3);
+    border-radius: var(--radio-control);
+    background-color: var(--color-fondo);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none' stroke='%236f6d64' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right var(--e-md) center;
+    appearance: none;
+    -webkit-appearance: none;
     font-family: inherit;
     font-size: 14px;
     color: var(--color-texto);
     cursor: pointer;
+}
+
+/* El <select> dentro de la píldora de escritorio: sin caja propia, pero conserva
+   el chevron (por eso background-COLOR transparente, no el shorthand, que borraría
+   la imagen). Más específico que .ordenSelect, así solo aplica aquí, no en móvil. */
+.barraOrden .ordenSelect {
+    height: auto;
+    padding: 0 16px 0 0; /* deja justo el hueco del chevron, pegado a la palabra */
+    border: none;
+    background-color: transparent;
+    background-position: right center;
 }
 
 /* ---- Fila de controles: chips a la izquierda, switch a la derecha ---- */
@@ -175,6 +212,11 @@
     display: inline-flex;
     align-items: center;
     gap: var(--e-sm);
+    min-height: 42px;
+    padding: 0 var(--e-md);
+    background-color: var(--color-fondo);
+    border: 1px solid var(--color-borde-3);
+    border-radius: var(--radio-pill);
     font-size: 13.5px;
     color: var(--color-texto);
     white-space: nowrap;
@@ -422,10 +464,11 @@
 /* ---- Pie: "X de Y" + botón de contorno ---- */
 .pie {
     display: flex;
-    flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: var(--e-md);
-    padding-top: var(--e-sm);
+    min-height: 46px;
+    padding-top: var(--e-md);
 }
 
 .conteoTotal {
@@ -460,6 +503,10 @@
 }
 
 @media (max-width: 1023px) {
+    .catalogoInner {
+        padding: 0 var(--e-xl);
+    }
+
     .grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
@@ -487,6 +534,11 @@
         justify-content: space-between;
         align-items: center;
         width: 100%;
+        min-height: 44px;
+        padding: 0;
+        background: none;
+        border: none;
+        border-radius: 0;
     }
 
     .toolbarMovil {
@@ -570,7 +622,36 @@
         padding: var(--e-xl) 0;
     }
 
+    .catalogoInner {
+        gap: var(--e-lg);
+        padding: 0 var(--e-lg);
+    }
+
+    .tituloFila {
+        width: 100%;
+        flex-wrap: nowrap;
+        justify-content: space-between;
+    }
+
     .titulo {
         font-size: 28px;
+    }
+
+    .subtituloDetalle {
+        display: none;
+    }
+
+    .pie {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--e-sm);
+    }
+
+    .conteoTotal {
+        text-align: center;
+    }
+
+    .cargarMas {
+        width: 100%;
     }
 }

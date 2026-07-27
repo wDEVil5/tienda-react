@@ -134,6 +134,7 @@ function Catalogo({ productos, busqueda }) {
         type="button"
         onClick={() => seleccionarCategoria(cat)}
         className={`${styles.chip} ${categoria === cat ? styles.chipActivo : ""}`}
+        aria-pressed={categoria === cat}
       >
         {cat}
         <span className={styles.conteo}>{contarCategoria(cat)}</span>
@@ -143,225 +144,229 @@ function Catalogo({ productos, busqueda }) {
   return (
     <section id="catalogo" className={styles.catalogo}>
       <div className={styles.catalogoInner}>
-      <div className={styles.encabezado}>
-        <div>
-          <h2 className={styles.titulo}>Todo el catálogo</h2>
-          <p className={styles.subtitulo}>
-            {productosFiltrados.length} productos · precios de hoy
-          </p>
+        <div className={styles.encabezado}>
+          <div className={styles.tituloFila}>
+            <h2 className={styles.titulo}>Todo el catálogo</h2>
+            <p className={styles.subtitulo}>
+              <span>{productosFiltrados.length}</span>
+              <span className={styles.subtituloDetalle}>
+                {" "}
+                productos · precios de hoy
+              </span>
+            </p>
+          </div>
+
+          <div className={styles.barraOrden}>
+            <label htmlFor="orden" className={styles.ordenLabel}>
+              Ordenar:
+            </label>
+            <select
+              id="orden"
+              className={styles.ordenSelect}
+              value={orden}
+              onChange={(e) => setOrden(e.target.value)}
+            >
+              <option value="relevancia">Relevancia</option>
+              <option value="precio-asc">Precio: menor a mayor</option>
+              <option value="precio-desc">Precio: mayor a menor</option>
+              <option value="alfabetico">Nombre: A - Z</option>
+            </select>
+          </div>
         </div>
 
-        <div className={styles.barraOrden}>
-          <label htmlFor="orden" className={styles.ordenLabel}>
-            Ordenar
-          </label>
+        {/* Barra superior (solo móvil): Filtrar + orden + conteo. Reemplaza la
+            fila de orden del escritorio, que se oculta en móvil. */}
+        <div className={styles.toolbarMovil}>
+          <button
+            className={styles.abrirFiltros}
+            type="button"
+            onClick={() => setFiltrosAbiertos(true)}
+            aria-expanded={filtrosAbiertos}
+            aria-controls="filtros-sheet"
+          >
+            Filtrar
+            {filtrosActivos > 0 && (
+              <span className={styles.filtrosBadge}>{filtrosActivos}</span>
+            )}
+          </button>
+
           <select
-            id="orden"
             className={styles.ordenSelect}
             value={orden}
             onChange={(e) => setOrden(e.target.value)}
+            aria-label="Ordenar"
           >
             <option value="relevancia">Relevancia</option>
             <option value="precio-asc">Precio: menor a mayor</option>
             <option value="precio-desc">Precio: mayor a menor</option>
             <option value="alfabetico">Nombre: A - Z</option>
           </select>
+
+          <span className={styles.conteoMovil}>
+            {productosVisibles.length} de {productosFiltrados.length}
+          </span>
         </div>
-      </div>
 
-      {/* Barra superior (solo móvil): Filtrar + orden + conteo. Reemplaza la
-          fila de orden del escritorio, que se oculta en móvil. */}
-      <div className={styles.toolbarMovil}>
-        <button
-          className={styles.abrirFiltros}
-          type="button"
-          onClick={() => setFiltrosAbiertos(true)}
-          aria-expanded={filtrosAbiertos}
-          aria-controls="filtros-sheet"
-        >
-          Filtrar
-          {filtrosActivos > 0 && (
-            <span className={styles.filtrosBadge}>{filtrosActivos}</span>
-          )}
-        </button>
+        {/* Fondo oscuro de la hoja (solo móvil). Cerrar al tocar fuera. */}
+        {filtrosAbiertos && (
+          <div
+            className={styles.filtrosOverlay}
+            onClick={() => setFiltrosAbiertos(false)}
+          ></div>
+        )}
 
-        <select
-          className={styles.ordenSelect}
-          value={orden}
-          onChange={(e) => setOrden(e.target.value)}
-          aria-label="Ordenar"
-        >
-          <option value="relevancia">Relevancia</option>
-          <option value="precio-asc">Precio: menor a mayor</option>
-          <option value="precio-desc">Precio: mayor a menor</option>
-          <option value="alfabetico">Nombre: A - Z</option>
-        </select>
-
-        <span className={styles.conteoMovil}>
-          {productosVisibles.length} de {productosFiltrados.length}
-        </span>
-      </div>
-
-      {/* Fondo oscuro de la hoja (solo móvil). Cerrar al tocar fuera. */}
-      {filtrosAbiertos && (
         <div
-          className={styles.filtrosOverlay}
-          onClick={() => setFiltrosAbiertos(false)}
-        ></div>
-      )}
+          id="filtros-sheet"
+          className={`${styles.controles} ${filtrosAbiertos ? styles.controlesAbierto : ""}`}
+        >
+          <span className={styles.sheetHandle} aria-hidden="true"></span>
 
-      <div
-        id="filtros-sheet"
-        className={`${styles.controles} ${filtrosAbiertos ? styles.controlesAbierto : ""}`}
-      >
-        <span className={styles.sheetHandle} aria-hidden="true"></span>
+          {/* Encabezado de la hoja (solo móvil). */}
+          <div className={styles.sheetHeader}>
+            <span className={styles.sheetTitulo}>Filtrar</span>
+            <button
+              className={styles.limpiar}
+              type="button"
+              onClick={limpiarFiltros}
+            >
+              Limpiar
+            </button>
+          </div>
 
-        {/* Encabezado de la hoja (solo móvil). */}
-        <div className={styles.sheetHeader}>
-          <span className={styles.sheetTitulo}>Filtrar</span>
+          <p className={styles.grupoLabel}>Categoría</p>
+          <div className={styles.chips}>
+            {renderChips(categoriasVisibles)}
+
+            {categoriasExtra.length > 0 && (
+              <div className={styles.masCategorias}>
+                <button
+                  className={styles.chip}
+                  type="button"
+                  onClick={() => setMasCategoriasAbierto(!masCategoriasAbierto)}
+                  aria-expanded={masCategoriasAbierto}
+                  aria-controls="categorias-extra"
+                >
+                  {categoriasExtra.length} más
+                  <i
+                    className={`fa-solid ${masCategoriasAbierto ? "fa-chevron-up" : "fa-chevron-down"}`}
+                    aria-hidden="true"
+                  ></i>
+                </button>
+
+                {masCategoriasAbierto && (
+                  <div id="categorias-extra" className={styles.listaExtra}>
+                    {renderChips(categoriasExtra)}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Rango de precio (slider de dos extremos). */}
+          <p className={styles.grupoLabel}>Precio</p>
+          <div className={styles.precioGrupo}>
+            <div className={styles.precioRango}>
+              <span className={styles.precioPista} aria-hidden="true"></span>
+              <span
+                className={styles.precioRelleno}
+                style={{
+                  left: `${((minActual - precioPiso) / rango) * 100}%`,
+                  right: `${100 - ((maxActual - precioPiso) / rango) * 100}%`,
+                }}
+                aria-hidden="true"
+              ></span>
+              <input
+                type="range"
+                min={precioPiso}
+                max={precioTope}
+                value={minActual}
+                onChange={(e) =>
+                  setPrecioMin(Math.min(Number(e.target.value), maxActual))
+                }
+                aria-label="Precio mínimo"
+              />
+              <input
+                type="range"
+                min={precioPiso}
+                max={precioTope}
+                value={maxActual}
+                onChange={(e) =>
+                  setPrecioMax(Math.max(Number(e.target.value), minActual))
+                }
+                aria-label="Precio máximo"
+              />
+            </div>
+            <div className={styles.precioValores}>
+              <span>${minActual.toLocaleString("es-CL")}</span>
+              <span>${maxActual.toLocaleString("es-CL")}</span>
+            </div>
+          </div>
+
+          <p className={styles.grupoLabel}>Filtros</p>
+          <label className={styles.soloOfertas}>
+            Solo ofertas
+            <input
+              type="checkbox"
+              className={styles.switchInput}
+              checked={soloOfertas}
+              onChange={(e) => setSoloOfertas(e.target.checked)}
+            />
+            <span className={styles.switchTrack} aria-hidden="true"></span>
+          </label>
+
+          {/* Deshabilitados: dependen de datos que aún no existen (stock / modo
+              de entrega). Se muestran para reflejar el diseño; llegan con el backend. */}
+          <label className={`${styles.soloOfertas} ${styles.switchPronto}`}>
+            Disponible hoy
+            <input type="checkbox" className={styles.switchInput} disabled />
+            <span className={styles.switchTrack} aria-hidden="true"></span>
+          </label>
+          <label className={`${styles.soloOfertas} ${styles.switchPronto}`}>
+            Retiro en tienda
+            <input type="checkbox" className={styles.switchInput} disabled />
+            <span className={styles.switchTrack} aria-hidden="true"></span>
+          </label>
+
+          {/* Cierra la hoja (solo móvil). */}
           <button
-            className={styles.limpiar}
+            className={styles.verProductos}
             type="button"
-            onClick={limpiarFiltros}
+            onClick={() => setFiltrosAbiertos(false)}
           >
-            Limpiar
+            Ver {productosFiltrados.length} productos
           </button>
         </div>
 
-        <p className={styles.grupoLabel}>Categoría</p>
-        <div className={styles.chips}>
-          {renderChips(categoriasVisibles)}
+        {productosFiltrados.length === 0 ? (
+          <p className={styles.sinResultados}>
+            No encontramos productos que coincidan con tu búsqueda.
+          </p>
+        ) : (
+          <>
+            <div className={styles.grid}>
+              {productosVisibles.map((producto) => (
+                <TarjetaProducto key={producto.id} producto={producto} />
+              ))}
+            </div>
 
-          {categoriasExtra.length > 0 && (
-            <div className={styles.masCategorias}>
-              <button
-                className={styles.chip}
-                type="button"
-                onClick={() => setMasCategoriasAbierto(!masCategoriasAbierto)}
-                aria-expanded={masCategoriasAbierto}
-                aria-controls="categorias-extra"
-              >
-                {categoriasExtra.length} más
-                <i
-                  className={`fa-solid ${masCategoriasAbierto ? "fa-chevron-up" : "fa-chevron-down"}`}
-                  aria-hidden="true"
-                ></i>
-              </button>
-
-              {masCategoriasAbierto && (
-                <div id="categorias-extra" className={styles.listaExtra}>
-                  {renderChips(categoriasExtra)}
-                </div>
+            <div className={styles.pie}>
+              <p className={styles.conteoTotal}>
+                {productosVisibles.length} de {productosFiltrados.length}
+              </p>
+              {hayMasProductos && (
+                <button
+                  className={styles.cargarMas}
+                  type="button"
+                  onClick={() =>
+                    setLimiteProductos((limite) => limite + PRODUCTOS_POR_CARGA)
+                  }
+                >
+                  Cargar más
+                </button>
               )}
             </div>
-          )}
-        </div>
-
-        {/* Rango de precio (slider de dos extremos). */}
-        <p className={styles.grupoLabel}>Precio</p>
-        <div className={styles.precioGrupo}>
-          <div className={styles.precioRango}>
-            <span className={styles.precioPista} aria-hidden="true"></span>
-            <span
-              className={styles.precioRelleno}
-              style={{
-                left: `${((minActual - precioPiso) / rango) * 100}%`,
-                right: `${100 - ((maxActual - precioPiso) / rango) * 100}%`,
-              }}
-              aria-hidden="true"
-            ></span>
-            <input
-              type="range"
-              min={precioPiso}
-              max={precioTope}
-              value={minActual}
-              onChange={(e) =>
-                setPrecioMin(Math.min(Number(e.target.value), maxActual))
-              }
-              aria-label="Precio mínimo"
-            />
-            <input
-              type="range"
-              min={precioPiso}
-              max={precioTope}
-              value={maxActual}
-              onChange={(e) =>
-                setPrecioMax(Math.max(Number(e.target.value), minActual))
-              }
-              aria-label="Precio máximo"
-            />
-          </div>
-          <div className={styles.precioValores}>
-            <span>${minActual.toLocaleString("es-CL")}</span>
-            <span>${maxActual.toLocaleString("es-CL")}</span>
-          </div>
-        </div>
-
-        <p className={styles.grupoLabel}>Filtros</p>
-        <label className={styles.soloOfertas}>
-          Solo ofertas
-          <input
-            type="checkbox"
-            className={styles.switchInput}
-            checked={soloOfertas}
-            onChange={(e) => setSoloOfertas(e.target.checked)}
-          />
-          <span className={styles.switchTrack} aria-hidden="true"></span>
-        </label>
-
-        {/* Deshabilitados: dependen de datos que aún no existen (stock / modo
-            de entrega). Se muestran para reflejar el diseño; llegan con el backend. */}
-        <label className={`${styles.soloOfertas} ${styles.switchPronto}`}>
-          Disponible hoy
-          <input type="checkbox" className={styles.switchInput} disabled />
-          <span className={styles.switchTrack} aria-hidden="true"></span>
-        </label>
-        <label className={`${styles.soloOfertas} ${styles.switchPronto}`}>
-          Retiro en tienda
-          <input type="checkbox" className={styles.switchInput} disabled />
-          <span className={styles.switchTrack} aria-hidden="true"></span>
-        </label>
-
-        {/* Cierra la hoja (solo móvil). */}
-        <button
-          className={styles.verProductos}
-          type="button"
-          onClick={() => setFiltrosAbiertos(false)}
-        >
-          Ver {productosFiltrados.length} productos
-        </button>
-      </div>
-
-      {productosFiltrados.length === 0 ? (
-        <p className={styles.sinResultados}>
-          Sorry! no encontramos productos que coincidan con tu búsqueda.
-        </p>
-      ) : (
-        <>
-          <div className={styles.grid}>
-            {productosVisibles.map((producto) => (
-              <TarjetaProducto key={producto.id} producto={producto} />
-            ))}
-          </div>
-
-          <div className={styles.pie}>
-            <p className={styles.conteoTotal}>
-              {productosVisibles.length} de {productosFiltrados.length}
-            </p>
-            {hayMasProductos && (
-              <button
-                className={styles.cargarMas}
-                type="button"
-                onClick={() =>
-                  setLimiteProductos((limite) => limite + PRODUCTOS_POR_CARGA)
-                }
-              >
-                Cargar más
-              </button>
-            )}
-          </div>
-        </>
-      )}
+          </>
+        )}
       </div>
     </section>
   );

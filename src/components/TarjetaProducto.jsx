@@ -24,8 +24,6 @@ function TarjetaProducto({ producto }) {
                 {enOferta && <span className={styles.badge}>−{descuento}%</span>}
             </div>
 
-            <p className={styles.categoria}>{producto.categoria}</p>
-
             <h3 className={styles.nombre}>
                 <Link to={`/producto/${producto.id}`}>{producto.nombre}</Link>
             </h3>

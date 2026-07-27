@@ -90,24 +90,12 @@ function Footer() {
 
           {/* En escritorio se ven como columnas; en móvil son acordeones. */}
           <AcordeonCol titulo="Comprar">
-            <Link to="/" className={styles.enlace}>
+            <Link to="/#catalogo" className={styles.enlace}>
               Todo el catálogo
             </Link>
-            <button className={styles.enlace} type="button">
+            <Link to="/#ofertas" className={styles.enlace}>
               Ofertas de la semana
-            </button>
-            <button className={styles.enlace} type="button">
-              Despensa
-            </button>
-            <button className={styles.enlace} type="button">
-              Bebidas
-            </button>
-            <button className={styles.enlace} type="button">
-              Lácteos
-            </button>
-            <button className={styles.enlace} type="button">
-              Limpieza
-            </button>
+            </Link>
           </AcordeonCol>
 
           <AcordeonCol titulo="Tu cuenta">

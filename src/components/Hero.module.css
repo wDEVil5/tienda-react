@@ -1,0 +1,127 @@
+/* Banda full-bleed (mismo truco que el catálogo). El margin-top negativo cancela
+   el padding superior de .contenido para que el héroe pegue con el header. */
+.hero {
+  position: relative;
+  left: 50%;
+  right: 50%;
+  width: 100vw;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  margin-top: calc(-1 * var(--e-lg));
+  overflow: hidden;
+  background-color: #1c1b18;
+  /* Placeholder de la foto: rayas diagonales muy sutiles sobre el oscuro. */
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.025) 0 14px,
+    transparent 14px 28px
+  );
+  color: #fff;
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 1200px;
+  min-height: 340px;
+  margin: 0 auto;
+  padding: var(--e-2xl) var(--e-lg);
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-acento-claro);
+  margin-bottom: var(--e-md);
+}
+
+.titulo {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 36px;
+  line-height: 1.05;
+  color: #fff;
+}
+
+.titulo em {
+  font-style: italic;
+  color: var(--color-acento-claro);
+}
+
+.parrafo {
+  margin-top: var(--e-md);
+  max-width: 46ch;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-sobre-oscuro);
+}
+
+.acciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-sm);
+  margin-top: var(--e-xl);
+}
+
+.btnPrimario,
+.btnSecundario {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
+  padding: 0 var(--e-2xl);
+  border-radius: var(--radio-control);
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.btnPrimario {
+  background-color: var(--color-acento);
+  color: #fff;
+}
+
+.btnPrimario:hover {
+  background-color: #285d40;
+}
+
+.btnSecundario {
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+}
+
+.btnSecundario:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Escritorio: héroe más alto, título grande, botones en fila. */
+@media (min-width: 768px) {
+  .inner {
+    min-height: 520px;
+    padding: var(--e-2xl);
+  }
+
+  .titulo {
+    font-size: 62px;
+    line-height: 1.02;
+  }
+
+  .parrafo {
+    font-size: 16px;
+  }
+
+  .acciones {
+    flex-direction: row;
+  }
+
+  .btnPrimario,
+  .btnSecundario {
+    flex: 0 0 auto;
+  }
+}

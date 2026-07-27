@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
-import Catalogo from "./components/Catalogo.jsx";
+import Home from "./pages/Home.jsx";
 import ProductoDetalle from "./pages/ProductoDetalle.jsx";
 import Carrito from "./components/Carrito.jsx";
 import Toast from "./components/Toast.jsx";
@@ -89,7 +89,7 @@ function App() {
         <Routes>
           <Route
             path="/"
-            element={<Catalogo productos={productos} busqueda={busqueda} />}
+            element={<Home productos={productos} busqueda={busqueda} />}
           />
           <Route
             path="/producto/:id"

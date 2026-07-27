@@ -338,6 +338,67 @@
   }
 }
 
+/* Tablet: dos columnas compactas. La ficha conserva contexto visual sin
+   comprimir el bloque de compra ni adoptar todavía el apilado de móvil. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .detalle {
+    gap: var(--e-lg);
+  }
+
+  .topBar {
+    padding-bottom: var(--e-md);
+    border-bottom: 1px solid var(--color-borde-2);
+  }
+
+  .contenido {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: var(--e-xl);
+  }
+
+  .imagenWrap {
+    height: 360px;
+    padding: var(--e-xl);
+  }
+
+  .info {
+    gap: var(--e-sm);
+  }
+
+  .nombre {
+    font-size: 30px;
+  }
+
+  .precio {
+    font-size: 36px;
+  }
+
+  .compra {
+    gap: var(--e-sm);
+  }
+
+  .boton {
+    padding: 0 var(--e-lg);
+  }
+
+  .infoBox {
+    padding: var(--e-md);
+  }
+
+  .infoRow {
+    gap: var(--e-sm);
+    font-size: 12.5px;
+  }
+
+  .infoLabel {
+    width: 80px;
+  }
+
+  .relacionados {
+    margin-top: var(--e-lg);
+    padding: var(--e-xl);
+  }
+}
+
 /* Móvil: una sola columna y acciones fáciles de alcanzar. */
 @media (max-width: 767px) {
   .detalle {

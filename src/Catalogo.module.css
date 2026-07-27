@@ -208,10 +208,13 @@
 }
 
 /* ---- Grid de productos ---- */
+/* minmax(0, 1fr) en vez de 1fr: el mínimo por defecto de una columna es "auto"
+   (el ancho del contenido), lo que puede desbordar el grid con nombres largos.
+   Con 0 forzamos que la columna pueda encogerse y respete el ancho disponible. */
 .grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--espacio-md);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 14px;
 }
 
 .sinResultados {
@@ -219,51 +222,60 @@
     align-items: center;
     justify-content: center;
     min-height: 60vh;
-    padding: var(--espacio-xl) var(--espacio-md);
+    padding: var(--e-xl) var(--e-md);
     text-align: center;
     color: var(--color-texto-suave);
     font-size: 1rem;
 }
 
-.cargarMasWrap {
+/* ---- Pie: "X de Y" + botón de contorno ---- */
+.pie {
     display: flex;
-    justify-content: center;
-    padding-top: var(--espacio-sm);
+    flex-direction: column;
+    align-items: center;
+    gap: var(--e-md);
+    padding-top: var(--e-sm);
+}
+
+.conteoTotal {
+    font-size: 13px;
+    color: var(--color-texto-suave);
 }
 
 .cargarMas {
-    border: none;
-    border-bottom: 1px solid var(--color-borde);
-    padding: var(--espacio-xs) var(--espacio-sm);
-    background-color: transparent;
-    color: var(--color-texto-suave);
-    font: inherit;
-    font-size: 0.9rem;
+    height: 46px;
+    padding: 0 var(--e-xl);
+    background: none;
+    border: 1px solid var(--color-borde-3);
+    border-radius: var(--radio-control);
+    color: var(--color-texto);
+    font-family: inherit;
+    font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: border-color 0.2s ease, color 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .cargarMas:hover {
-    border-color: var(--color-acento);
-    color: var(--color-acento);
+    background-color: var(--color-fondo);
+    border-color: var(--color-texto-suave);
 }
 
 /* RESPONSIVE (grid). Los 5 breakpoints definitivos llegan en el paso 6. */
 @media (max-width: 1024px) {
     .grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 820px) {
     .grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 560px) {
     .grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }

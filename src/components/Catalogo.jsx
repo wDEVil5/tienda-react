@@ -78,7 +78,6 @@ function Catalogo({ productos, busqueda }) {
 
   const productosVisibles = productosOrdenados.slice(0, limiteProductos);
   const hayMasProductos = limiteProductos < productosFiltrados.length;
-  const productosRestantes = productosFiltrados.length - limiteProductos;
 
   return (
     <section id="catalogo" className={styles.catalogo}>
@@ -185,17 +184,22 @@ function Catalogo({ productos, busqueda }) {
             ))}
           </div>
 
-          {hayMasProductos && (
-            <div className={styles.cargarMasWrap}>
+          <div className={styles.pie}>
+            <p className={styles.conteoTotal}>
+              {productosVisibles.length} de {productosFiltrados.length}
+            </p>
+            {hayMasProductos && (
               <button
                 className={styles.cargarMas}
                 type="button"
-                onClick={() => setLimiteProductos((limite) => limite + PRODUCTOS_POR_CARGA)}
+                onClick={() =>
+                  setLimiteProductos((limite) => limite + PRODUCTOS_POR_CARGA)
+                }
               >
-                Cargar {Math.min(PRODUCTOS_POR_CARGA, productosRestantes)} productos más
+                Cargar más
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </>
       )}
     </section>

@@ -56,13 +56,29 @@ function ProductoDetalle({ productos }) {
       <div className={styles.contenido}>
         {/* Columna izquierda: imagen. Una sola foto por ahora; la galería de
             miniaturas del handoff requiere varias imágenes (backend, Fase 2). */}
-        <div className={styles.imagenWrap}>
-          <ImagenProducto
-            className={styles.imagen}
-            src={producto.imagen}
-            alt={producto.nombre}
-          />
-          {enOferta && <span className={styles.badge}>−{descuento}%</span>}
+        <div className={styles.galeria}>
+          <div className={styles.imagenWrap}>
+            <ImagenProducto
+              className={styles.imagen}
+              src={producto.imagen}
+              alt={producto.nombre}
+            />
+            {enOferta && <span className={styles.badge}>−{descuento}%</span>}
+          </div>
+
+          {/* Solo existe una imagen en Fake Store. Los dos espacios restantes
+              dejan preparada la galería para cuando el backend entregue más fotos. */}
+          <div className={styles.miniaturas} aria-label="Imágenes del producto">
+            <div className={`${styles.miniatura} ${styles.miniaturaActiva}`}>
+              <ImagenProducto
+                className={styles.miniaturaImagen}
+                src={producto.imagen}
+                alt={`Vista principal de ${producto.nombre}`}
+              />
+            </div>
+            <span className={`${styles.miniatura} ${styles.miniaturaPendiente}`} aria-hidden="true"></span>
+            <span className={`${styles.miniatura} ${styles.miniaturaPendiente}`} aria-hidden="true"></span>
+          </div>
         </div>
 
         {/* Columna derecha: info */}

@@ -338,15 +338,69 @@
   }
 }
 
-/* Móvil / tablet: una sola columna */
-@media (max-width: 768px) {
+/* Móvil: una sola columna y acciones fáciles de alcanzar. */
+@media (max-width: 767px) {
+  .detalle {
+    gap: var(--e-md);
+  }
+
+  .topBar {
+    align-items: flex-start;
+  }
+
+  .migaActual {
+    max-width: 18ch;
+  }
+
   .contenido {
     grid-template-columns: 1fr;
     gap: var(--e-lg);
   }
 
   .imagenWrap {
-    height: 320px;
+    height: 300px;
+    padding: var(--e-lg);
+  }
+
+  .info {
+    gap: var(--e-sm);
+  }
+
+  .nombre {
+    font-size: 28px;
+  }
+
+  .precio {
+    font-size: 34px;
+  }
+
+  .compra {
+    display: grid;
+    grid-template-columns: 108px minmax(0, 1fr);
+    width: 100%;
+    flex-wrap: nowrap;
+  }
+
+  .boton {
+    width: 100%;
+    padding: 0 var(--e-md);
+  }
+
+  .infoBox {
+    padding: var(--e-md);
+  }
+
+  .infoRow {
+    gap: var(--e-sm);
+    font-size: 12.5px;
+  }
+
+  .infoLabel {
+    width: 82px;
+  }
+
+  .relacionados {
+    margin-top: var(--e-lg);
     padding: var(--e-lg);
   }
 

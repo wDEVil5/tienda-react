@@ -136,7 +136,12 @@ function ProductoDetalle({ productos }) {
             </div>
           </div>
 
-          <p className={styles.descripcion}>{producto.descripcion}</p>
+          <section className={styles.descripcionBloque} aria-labelledby="descripcion-titulo">
+            <h2 id="descripcion-titulo" className={styles.descripcionTitulo}>
+              Descripción
+            </h2>
+            <p className={styles.descripcion}>{producto.descripcion}</p>
+          </section>
         </div>
       </div>
 

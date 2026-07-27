@@ -11,6 +11,9 @@ import { normalizarProductoFakeStore } from "./data/producto.js";
 
 function App() {
   const [busqueda, setBusqueda] = useState("");
+  // Header y catálogo comparten estos filtros: una sugerencia puede cambiar la
+  // categoría y el catálogo la refleja sin depender de un backend todavía.
+  const [categoria, setCategoria] = useState("todas");
   const [productos, setProductos] = useState([]); //empieza vacia, los datos llegan despues
   const [cargando, setCargando] = useState(true); // ¿esta cargando?
   const [error, setError] = useState(null); // null = sin error, string = mensaje a mostrar
@@ -80,6 +83,8 @@ function App() {
       <Header
         busqueda={busqueda}
         onBuscar={setBusqueda}
+        productos={productos}
+        onSeleccionarCategoria={setCategoria}
         onAbrirCarrito={() => setCarritoAbierto(true)}
       />
 
@@ -89,7 +94,14 @@ function App() {
         <Routes>
           <Route
             path="/"
-            element={<Home productos={productos} busqueda={busqueda} />}
+            element={
+              <Home
+                productos={productos}
+                busqueda={busqueda}
+                categoria={categoria}
+                onSeleccionarCategoria={setCategoria}
+              />
+            }
           />
           <Route
             path="/producto/:id"

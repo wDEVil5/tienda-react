@@ -9,8 +9,9 @@ const CONSULTA_TABLET = "(min-width: 768px) and (max-width: 1023px)";
 // debería enviarse a la API, por ejemplo: /productos?page=1&limit=12.
 const PRODUCTOS_POR_CARGA = 10;
 
-function Catalogo({ productos, busqueda }) {
-  const [categoria, setCategoria] = useState("todas"); // la categoria elegida
+function Catalogo({ productos, busqueda, categoria, onSeleccionarCategoria }) {
+  // `categoria` vive en App para que también pueda cambiarse desde las
+  // sugerencias del Header; este componente solo notifica la intención.
   const [esTablet, setEsTablet] = useState(
     () => typeof window !== "undefined" && window.matchMedia(CONSULTA_TABLET).matches
   );
@@ -71,12 +72,12 @@ function Catalogo({ productos, busqueda }) {
   const rango = precioTope - precioPiso || 1;
 
   const seleccionarCategoria = (cat) => {
-    setCategoria(cat);
+    onSeleccionarCategoria(cat);
     setMasCategoriasAbierto(false);
   };
 
   const limpiarFiltros = () => {
-    setCategoria("todas");
+    onSeleccionarCategoria("todas");
     setSoloOfertas(false);
     setPrecioMin(null);
     setPrecioMax(null);

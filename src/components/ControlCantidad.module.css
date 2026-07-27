@@ -4,8 +4,10 @@
   width: fit-content;
   height: 34px;
   overflow: hidden;
-  border: 1px solid var(--color-borde);
-  border-radius: 999px;
+  background-color: var(--color-fondo);
+  border: 1px solid var(--color-borde-3);
+  /* Es un control interactivo, no un chip de filtro: radio-control, no píldora. */
+  border-radius: var(--radio-control);
 }
 
 .boton {
@@ -13,15 +15,17 @@
   height: 100%;
   border: none;
   background-color: transparent;
+  color: var(--color-texto);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 15px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background-color 0.2s ease;
 }
 
 .boton:hover {
-  background-color: var(--color-fondo-suave);
+  background-color: var(--color-crudo);
 }
 
 .input {
@@ -31,13 +35,14 @@
   background: transparent;
   text-align: center;
   font-family: inherit;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums; /* dígitos de ancho fijo: no "saltan" */
+  color: var(--color-texto);
   padding: 0;
 }
 
 .input:focus {
   outline: none;
-  background-color: var(--color-fondo-suave);
+  background-color: var(--color-crudo);
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import Home from "./pages/Home.jsx";
 import ProductoDetalle from "./pages/ProductoDetalle.jsx";
 import Carrito from "./components/Carrito.jsx";
@@ -11,6 +11,7 @@ import { normalizarProductoFakeStore } from "./data/producto.js";
 
 function App() {
   const ubicacion = useLocation();
+  const navegar = useNavigate();
   const [busqueda, setBusqueda] = useState("");
   // Header y catálogo comparten estos filtros: una sugerencia puede cambiar la
   // categoría y el catálogo la refleja sin depender de un backend todavía.
@@ -49,7 +50,8 @@ function App() {
   }, []);
 
   // React Router actualiza la URL, pero no desplaza automáticamente al hash.
-  // Esperamos a que el Home esté montado y llevamos el foco visual a la sección.
+  // Tras llegar a la sección limpiamos el hash: al recargar, la tienda vuelve
+  // a iniciar desde el hero en vez de conservar la última sección visitada.
   useEffect(() => {
     if (cargando || !ubicacion.hash) return;
 
@@ -59,10 +61,11 @@ function App() {
         behavior: "smooth",
         block: "start",
       });
+      navegar(`${ubicacion.pathname}${ubicacion.search}`, { replace: true });
     });
 
     return () => cancelAnimationFrame(cuadro);
-  }, [cargando, ubicacion.hash]);
+  }, [cargando, navegar, ubicacion.hash, ubicacion.pathname, ubicacion.search]);
 
   const reintentar = () => {
     setCargando(true);

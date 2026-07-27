@@ -17,15 +17,18 @@ function iniciarCarrito() {
 export function carritoReducer(estado, accion) {
   switch (accion.type) {
     case "AGREGAR": {
+      // Cantidad opcional: si la acción no la trae, agregamos 1 (comportamiento
+      // de siempre). Así los llamados existentes no cambian.
+      const cantidad = accion.cantidad ?? 1;
       const itemExistente = estado.find((item) => item.id === accion.producto.id);
       if (itemExistente) {
         return estado.map((item) =>
           item.id === accion.producto.id
-            ? { ...item, cantidad: item.cantidad + 1 }
+            ? { ...item, cantidad: item.cantidad + cantidad }
             : item,
         );
       }
-      return [...estado, { ...accion.producto, cantidad: 1 }];
+      return [...estado, { ...accion.producto, cantidad }];
     }
 
     case "ELIMINAR":
@@ -87,8 +90,8 @@ export function useCarrito() {
 
   // Funciones "envoltorio" traducen una intención a una acción y la despachan.
   // Quien usa el hook no necesita saber que por dentro hay un reducer.
-  const agregarAlCarrito = (producto) => {
-    dispatch({ type: "AGREGAR", producto });
+  const agregarAlCarrito = (producto, cantidad = 1) => {
+    dispatch({ type: "AGREGAR", producto, cantidad });
     mostrarAviso(`${producto.nombre} se agregó al carrito`);
   };
 

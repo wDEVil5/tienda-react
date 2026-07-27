@@ -27,6 +27,28 @@ describe("carritoReducer", () => {
     expect(resultado[0].cantidad).toBe(2);
   });
 
+  it("AGREGAR: con cantidad, agrega un producto nuevo con esa cantidad", () => {
+    const estado = [];
+    const resultado = carritoReducer(estado, {
+      type: "AGREGAR",
+      producto: { id: 1, nombre: "Plátano", precio: 990 },
+      cantidad: 3,
+    });
+
+    expect(resultado[0].cantidad).toBe(3);
+  });
+
+  it("AGREGAR: con cantidad, suma esa cantidad a un producto existente", () => {
+    const estado = [{ id: 1, nombre: "Plátano", precio: 990, cantidad: 2 }];
+    const resultado = carritoReducer(estado, {
+      type: "AGREGAR",
+      producto: { id: 1, nombre: "Plátano", precio: 990 },
+      cantidad: 3,
+    });
+
+    expect(resultado[0].cantidad).toBe(5);
+  });
+
   it("ELIMINAR: quita el producto con ese id", () => {
     const estado = [
       { id: 1, cantidad: 1 },

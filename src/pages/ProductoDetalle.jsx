@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 import ImagenProducto from "../components/ImagenProducto.jsx";
@@ -8,6 +9,7 @@ function ProductoDetalle({ productos }) {
   // llega SIEMPRE como string, por eso lo convertimos con Number() para comparar.
   const { id } = useParams();
   const { agregarAlCarrito } = useCarritoContext();
+  const [cantidad, setCantidad] = useState(1); // cantidad a agregar
 
   const producto = productos.find((p) => p.id === Number(id));
 
@@ -86,12 +88,32 @@ function ProductoDetalle({ productos }) {
             En stock
           </p>
 
-          <button
-            className={styles.boton}
-            onClick={() => agregarAlCarrito(producto)}
-          >
-            Agregar al carrito
-          </button>
+          <div className={styles.compra}>
+            <div className={styles.cantidad}>
+              <button
+                type="button"
+                onClick={() => setCantidad((c) => Math.max(1, c - 1))}
+                aria-label="Quitar una unidad"
+              >
+                −
+              </button>
+              <span aria-live="polite">{cantidad}</span>
+              <button
+                type="button"
+                onClick={() => setCantidad((c) => c + 1)}
+                aria-label="Agregar una unidad"
+              >
+                +
+              </button>
+            </div>
+
+            <button
+              className={styles.boton}
+              onClick={() => agregarAlCarrito(producto, cantidad)}
+            >
+              Agregar al carrito
+            </button>
+          </div>
 
           <div className={styles.infoBox}>
             <div className={styles.infoRow}>

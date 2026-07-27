@@ -451,79 +451,55 @@
 }
 
 .sinResultados {
-    min-height: 300px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: var(--e-xl);
-    border: 1px solid var(--color-borde);
-    border-radius: var(--radio-tarjeta);
-    background-color: var(--color-superficie);
+    padding: var(--e-xl) 0;
     text-align: center;
     color: var(--color-texto-suave);
-}
-
-.sinResultadosIcono {
-    display: grid;
-    width: 48px;
-    height: 48px;
-    place-items: center;
-    margin-bottom: var(--e-xs);
-    border-radius: 50%;
-    background-color: var(--color-crudo);
-    color: var(--color-texto-suave);
-    font-size: 18px;
-}
-
-.sinResultados h3 {
-    font-family: var(--font-display);
-    font-size: 26px;
-    font-weight: 400;
-    line-height: 1.1;
-    color: var(--color-texto);
-}
-
-.sinResultados p {
-    max-width: 410px;
     font-size: 14px;
-    line-height: 1.55;
 }
 
-.sinResultados strong {
-    color: var(--color-texto);
-    font-weight: 600;
-}
-
-.sinResultadosAcciones {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+/* La consulta vive en App, pero al bajar al catálogo el input del Header deja
+   de verse. Esta fila permite desactivarla desde el mismo contexto del filtro. */
+.busquedaActiva {
+    display: inline-flex;
+    align-self: flex-start;
+    align-items: center;
     gap: var(--e-sm);
-    margin-top: var(--e-md);
-}
-
-.sinResultadosAcciones button {
     min-height: 36px;
-    padding: 0 var(--e-md);
-    border: 1px solid var(--color-borde-3);
+    max-width: 100%;
+    padding: 0 6px 0 var(--e-md);
+    border: 1px solid var(--color-borde);
     border-radius: var(--radio-pill);
-    background-color: var(--color-superficie);
-    color: var(--color-texto-2);
-    font-family: inherit;
-    font-size: 13px;
-    cursor: pointer;
-    transition: border-color 0.2s ease, background-color 0.2s ease;
-}
-
-.sinResultadosAcciones button:first-child {
-    background-color: var(--color-crudo);
-}
-
-.sinResultadosAcciones button:hover {
-    border-color: var(--color-texto-suave);
     background-color: var(--color-fondo);
+    color: var(--color-texto-2);
+    font-size: 13px;
+}
+
+.busquedaActiva span {
+    max-width: 230px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.busquedaActiva button {
+    display: grid;
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    place-items: center;
+    border: none;
+    border-radius: 50%;
+    background: none;
+    color: var(--color-texto-suave);
+    font-family: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.busquedaActiva button:hover {
+    background-color: var(--color-crudo);
+    color: var(--color-texto);
 }
 
 /* ---- Pie: "X de Y" + botón de contorno ---- */
@@ -596,16 +572,6 @@
     align-self: start;
   }
 
-  /* En tablet el estado vacío ocupa el ancho de las tres tarjetas de la
-     grilla, pero mantiene una altura moderada para no empujar el footer. */
-  .sinResultados {
-    min-height: 310px;
-    padding: 32px var(--e-xl);
-  }
-
-  .sinResultados p {
-    max-width: 370px;
-  }
 }
 
 /* Móvil (≤767): grid 2 y la fila de chips pasa a hoja inferior (bottom sheet). */
@@ -751,29 +717,4 @@
         width: 100%;
     }
 
-    .sinResultados {
-        min-height: 264px;
-        padding: var(--e-xl) var(--e-md);
-    }
-
-    .sinResultados h3 {
-        font-size: 24px;
-    }
-
-    .sinResultados p {
-        max-width: 290px;
-        font-size: 13px;
-    }
-
-    .sinResultadosAcciones {
-        width: 100%;
-        flex-wrap: nowrap;
-    }
-
-    .sinResultadosAcciones button {
-        flex: 1;
-        min-width: 0;
-        padding: 0 var(--e-sm);
-        white-space: nowrap;
-    }
 }

@@ -315,6 +315,14 @@
   font-weight: 600;
 }
 
+/* En escritorio el total se consulta dentro del drawer: en el header basta
+   identificar el carrito y mostrar su contador, sin competir con el buscador. */
+@media (min-width: 1024px) {
+  .carritoMonto {
+    display: none;
+  }
+}
+
 .contador {
   display: flex;
   align-items: center;

@@ -91,16 +91,6 @@ function Catalogo({
     setMasCategoriasAbierto(false);
   };
 
-  // Conserva la consulta, pero quita los filtros que podían ocultar coincidencias
-  // en otra categoría. Así el CTA del estado vacío tiene un efecto predecible.
-  const buscarEnTodas = () => {
-    onSeleccionarCategoria("todas");
-    setSoloOfertas(false);
-    setPrecioMin(null);
-    setPrecioMax(null);
-    setMasCategoriasAbierto(false);
-  };
-
   // Cuántos filtros están activos (para el badge del botón "Filtrar").
   const precioActivo = minActual > precioPiso || maxActual < precioTope;
   const filtrosActivos =
@@ -372,28 +362,26 @@ function Catalogo({
           </button>
         </div>
 
-        {productosFiltrados.length === 0 ? (
-          <div className={styles.sinResultados} role="status">
-            <div className={styles.sinResultadosIcono} aria-hidden="true">
-              <i className="fa-solid fa-magnifying-glass"></i>
-            </div>
-            <h3>Nada por aquí</h3>
-            <p>
-              No encontramos productos para <strong>“{busqueda || "esta búsqueda"}”</strong>
-              {categoria !== "todas" && ` en ${categoria}`}
-              {categoria === "todas" && "."}
-            </p>
-            <div className={styles.sinResultadosAcciones}>
-              {busqueda && categoria !== "todas" && (
-                <button type="button" onClick={buscarEnTodas}>
-                  Buscar “{busqueda}” en todas
-                </button>
-              )}
-              <button type="button" onClick={limpiarFiltros}>
-                Limpiar filtros
-              </button>
-            </div>
+        {/* El header puede quedar fuera de vista al navegar al catálogo. Este
+            chip compacto conserva una salida visible para quitar la búsqueda. */}
+        {busqueda.trim() && (
+          <div className={styles.busquedaActiva}>
+            <span>“{busqueda}”</span>
+            <button
+              type="button"
+              onClick={() => onBuscar("")}
+              aria-label="Limpiar búsqueda"
+              title="Limpiar búsqueda"
+            >
+              <i className="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
           </div>
+        )}
+
+        {productosFiltrados.length === 0 ? (
+          <p className={styles.sinResultados} role="status">
+            No encontramos productos que coincidan con tu búsqueda.
+          </p>
         ) : (
           <>
             <div className={styles.grid}>

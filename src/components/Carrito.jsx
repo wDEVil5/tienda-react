@@ -149,11 +149,15 @@ function Carrito({ onCerrar, abierto }) {
                   <button
                     className={styles.eliminar}
                     onClick={() => eliminarDelCarrito(item.id)}
-                    aria-label="Eliminar producto"
+                    aria-label={`Eliminar ${item.nombre}`}
                   >
-                    <i className="fa-solid fa-trash"></i>
+                    <i className="fa-solid fa-xmark" aria-hidden="true"></i>
                   </button>
                 </div>
+
+                <span className={styles.precioUnitario}>
+                  ${item.precio.toLocaleString("es-CL")} c/u
+                </span>
 
                 <div className={styles.filaInferior}>
                   <ControlCantidad
@@ -205,8 +209,14 @@ function Carrito({ onCerrar, abierto }) {
             </span>
           </div>
 
-          <div className={styles.acciones}>
-            {/* esa es una acción destructiva: confirmamos antes de borrar todo. */}
+          {/* CTA principal. El checkout real lo hare en la Fase 4 (pagos). */}
+          <button className={styles.pagar}>Ir a pagar</button>
+
+          <div className={styles.accionesSec}>
+            <button className={styles.seguir} onClick={onCerrar}>
+              Seguir comprando
+            </button>
+            {/* Acción destructiva: confirmamos antes de borrar todo. */}
             <button
               className={styles.vaciar}
               onClick={() => {
@@ -215,11 +225,8 @@ function Carrito({ onCerrar, abierto }) {
                 }
               }}
             >
-              Vaciar
+              Vaciar carrito
             </button>
-
-            {/* CTA principal. El checkout real lo hare en la Fase 4 (pagos). */}
-            <button className={styles.pagar}>Ir a pagar</button>
           </div>
         </div>
       )}

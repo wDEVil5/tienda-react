@@ -6,6 +6,10 @@ import { useCarritoContext } from "../context/CarritoContext.jsx";
 function TarjetaProducto({ producto }) {
     const { agregarAlCarrito } = useCarritoContext();
     const enOferta = producto.precioAnterior !== null;
+    // % de descuento derivado del precio anterior (se muestra en el badge).
+    const descuento = enOferta
+        ? Math.round((1 - producto.precio / producto.precioAnterior) * 100)
+        : 0;
 
     return (
         <article className={styles.tarjeta}>
@@ -17,32 +21,35 @@ function TarjetaProducto({ producto }) {
                         alt={producto.nombre}
                     />
                 </Link>
+                {enOferta && <span className={styles.badge}>−{descuento}%</span>}
             </div>
-            
 
-            {enOferta && <span className={styles.badge}>Oferta</span>}
+            <p className={styles.categoria}>{producto.categoria}</p>
 
             <h3 className={styles.nombre}>
                 <Link to={`/producto/${producto.id}`}>{producto.nombre}</Link>
             </h3>
-            <p className={styles.categoria}>{producto.categoria}</p>
 
-            <div className={styles.precios}>
-                <span className={styles.precio}>
-                    ${producto.precio.toLocaleString("es-CL")}
-                </span>
-                {enOferta && (
-                    <span className={styles.precioAntes}>
-                        ${producto.precioAnterior.toLocaleString("es-CL")}
+            <div className={styles.pie}>
+                <div className={styles.precios}>
+                    {enOferta && (
+                        <span className={styles.precioAntes}>
+                            ${producto.precioAnterior.toLocaleString("es-CL")}
+                        </span>
+                    )}
+                    <span className={styles.precio}>
+                        ${producto.precio.toLocaleString("es-CL")}
                     </span>
-                )}
-            </div>
+                </div>
 
-            <button
-                className={styles.boton}
-                onClick={() => agregarAlCarrito(producto)}>
-                Agregar al carrito
-            </button>
+                <button
+                    className={styles.boton}
+                    onClick={() => agregarAlCarrito(producto)}
+                    aria-label={`Agregar ${producto.nombre} al carrito`}
+                >
+                    <i className="fa-solid fa-plus" aria-hidden="true"></i>
+                </button>
+            </div>
         </article>
     );
 }

@@ -377,6 +377,38 @@
   }
 }
 
+/* Tablet: sigue siendo un panel lateral, con una huella más contenida que en
+   escritorio grande para preservar contexto de la página de fondo. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .carrito {
+    width: 390px;
+  }
+
+  .cabecera,
+  .pie {
+    padding: var(--e-lg);
+  }
+
+  .lista {
+    padding: 0 var(--e-lg);
+  }
+
+  .item {
+    gap: var(--e-md);
+    padding: var(--e-lg) 0;
+  }
+
+  .imagenWrap {
+    flex-basis: 64px;
+    width: 64px;
+    height: 64px;
+  }
+
+  .subtotal {
+    font-size: 19px;
+  }
+}
+
 /* En pantallas ≤480px el carrito ocupa toda la pantalla. */
 @media (max-width: 480px) {
   .carrito {

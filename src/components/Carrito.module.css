@@ -389,7 +389,31 @@
     padding: var(--e-md);
   }
 
+  .titulo {
+    font-size: 22px;
+  }
+
   .lista {
     padding: 0 var(--e-md);
+  }
+
+  .item {
+    gap: var(--e-md);
+    padding: var(--e-md) 0;
+  }
+
+  .imagenWrap {
+    flex-basis: 56px;
+    width: 56px;
+    height: 56px;
+    padding: var(--e-xs);
+  }
+
+  .itemNombre {
+    font-size: 13px;
+  }
+
+  .subtotal {
+    font-size: 18px;
   }
 }

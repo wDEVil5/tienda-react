@@ -2,6 +2,7 @@ import Hero from "../components/Hero.jsx";
 import TiraConfianza from "../components/TiraConfianza.jsx";
 import Categorias from "../components/Categorias.jsx";
 import BandaOfertas from "../components/BandaOfertas.jsx";
+import ComoComprar from "../components/ComoComprar.jsx";
 import Catalogo from "../components/Catalogo.jsx";
 import MarcasGondola from "../components/MarcasGondola.jsx";
 
@@ -13,6 +14,7 @@ function Home({ productos, busqueda }) {
       <TiraConfianza />
       <Categorias productos={productos} />
       <BandaOfertas productos={productos} />
+      <ComoComprar />
       <Catalogo productos={productos} busqueda={busqueda} />
       <MarcasGondola />
     </>

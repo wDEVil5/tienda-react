@@ -595,6 +595,17 @@
   .soloOfertas {
     align-self: start;
   }
+
+  /* En tablet el estado vacío ocupa el ancho de las tres tarjetas de la
+     grilla, pero mantiene una altura moderada para no empujar el footer. */
+  .sinResultados {
+    min-height: 310px;
+    padding: 32px var(--e-xl);
+  }
+
+  .sinResultados p {
+    max-width: 370px;
+  }
 }
 
 /* Móvil (≤767): grid 2 y la fila de chips pasa a hoja inferior (bottom sheet). */

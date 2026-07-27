@@ -457,6 +457,17 @@
   .subtotal {
     font-size: 19px;
   }
+
+  /* El drawer sigue siendo lateral en tablet: el estado vacío aprovecha su
+     ancho contenido sin adoptar la escala amplia de escritorio. */
+  .vacio {
+    min-height: 280px;
+    padding: var(--e-xl) var(--e-lg);
+  }
+
+  .vacioSub {
+    max-width: 265px;
+  }
 }
 
 /* En pantallas ≤480px el carrito ocupa toda la pantalla. */

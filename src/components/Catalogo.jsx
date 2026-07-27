@@ -9,7 +9,13 @@ const CONSULTA_TABLET = "(min-width: 768px) and (max-width: 1023px)";
 // debería enviarse a la API, por ejemplo: /productos?page=1&limit=12.
 const PRODUCTOS_POR_CARGA = 10;
 
-function Catalogo({ productos, busqueda, categoria, onSeleccionarCategoria }) {
+function Catalogo({
+  productos,
+  busqueda,
+  onBuscar,
+  categoria,
+  onSeleccionarCategoria,
+}) {
   // `categoria` vive en App para que también pueda cambiarse desde las
   // sugerencias del Header; este componente solo notifica la intención.
   const [esTablet, setEsTablet] = useState(
@@ -77,6 +83,17 @@ function Catalogo({ productos, busqueda, categoria, onSeleccionarCategoria }) {
   };
 
   const limpiarFiltros = () => {
+    onBuscar("");
+    onSeleccionarCategoria("todas");
+    setSoloOfertas(false);
+    setPrecioMin(null);
+    setPrecioMax(null);
+    setMasCategoriasAbierto(false);
+  };
+
+  // Conserva la consulta, pero quita los filtros que podían ocultar coincidencias
+  // en otra categoría. Así el CTA del estado vacío tiene un efecto predecible.
+  const buscarEnTodas = () => {
     onSeleccionarCategoria("todas");
     setSoloOfertas(false);
     setPrecioMin(null);
@@ -356,9 +373,27 @@ function Catalogo({ productos, busqueda, categoria, onSeleccionarCategoria }) {
         </div>
 
         {productosFiltrados.length === 0 ? (
-          <p className={styles.sinResultados}>
-            No encontramos productos que coincidan con tu búsqueda.
-          </p>
+          <div className={styles.sinResultados} role="status">
+            <div className={styles.sinResultadosIcono} aria-hidden="true">
+              <i className="fa-solid fa-magnifying-glass"></i>
+            </div>
+            <h3>Nada por aquí</h3>
+            <p>
+              No encontramos productos para <strong>“{busqueda || "esta búsqueda"}”</strong>
+              {categoria !== "todas" && ` en ${categoria}`}
+              {categoria === "todas" && "."}
+            </p>
+            <div className={styles.sinResultadosAcciones}>
+              {busqueda && categoria !== "todas" && (
+                <button type="button" onClick={buscarEnTodas}>
+                  Buscar “{busqueda}” en todas
+                </button>
+              )}
+              <button type="button" onClick={limpiarFiltros}>
+                Limpiar filtros
+              </button>
+            </div>
+          </div>
         ) : (
           <>
             <div className={styles.grid}>

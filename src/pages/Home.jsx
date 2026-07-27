@@ -7,7 +7,13 @@ import Catalogo from "../components/Catalogo.jsx";
 import MarcasGondola from "../components/MarcasGondola.jsx";
 
 // Página de inicio: compone las secciones del Home en orden.
-function Home({ productos, busqueda, categoria, onSeleccionarCategoria }) {
+function Home({
+  productos,
+  busqueda,
+  onBuscar,
+  categoria,
+  onSeleccionarCategoria,
+}) {
   return (
     <>
       <Hero productos={productos} />
@@ -18,6 +24,7 @@ function Home({ productos, busqueda, categoria, onSeleccionarCategoria }) {
       <Catalogo
         productos={productos}
         busqueda={busqueda}
+        onBuscar={onBuscar}
         categoria={categoria}
         onSeleccionarCategoria={onSeleccionarCategoria}
       />

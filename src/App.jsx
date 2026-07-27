@@ -98,6 +98,7 @@ function App() {
               <Home
                 productos={productos}
                 busqueda={busqueda}
+                onBuscar={setBusqueda}
                 categoria={categoria}
                 onSeleccionarCategoria={setCategoria}
               />

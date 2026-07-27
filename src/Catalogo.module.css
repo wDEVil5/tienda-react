@@ -451,14 +451,79 @@
 }
 
 .sinResultados {
+    min-height: 300px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 60vh;
-    padding: var(--e-xl) var(--e-md);
+    gap: 10px;
+    padding: var(--e-xl);
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-tarjeta);
+    background-color: var(--color-superficie);
     text-align: center;
     color: var(--color-texto-suave);
-    font-size: 1rem;
+}
+
+.sinResultadosIcono {
+    display: grid;
+    width: 48px;
+    height: 48px;
+    place-items: center;
+    margin-bottom: var(--e-xs);
+    border-radius: 50%;
+    background-color: var(--color-crudo);
+    color: var(--color-texto-suave);
+    font-size: 18px;
+}
+
+.sinResultados h3 {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 400;
+    line-height: 1.1;
+    color: var(--color-texto);
+}
+
+.sinResultados p {
+    max-width: 410px;
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+.sinResultados strong {
+    color: var(--color-texto);
+    font-weight: 600;
+}
+
+.sinResultadosAcciones {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--e-sm);
+    margin-top: var(--e-md);
+}
+
+.sinResultadosAcciones button {
+    min-height: 36px;
+    padding: 0 var(--e-md);
+    border: 1px solid var(--color-borde-3);
+    border-radius: var(--radio-pill);
+    background-color: var(--color-superficie);
+    color: var(--color-texto-2);
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.sinResultadosAcciones button:first-child {
+    background-color: var(--color-crudo);
+}
+
+.sinResultadosAcciones button:hover {
+    border-color: var(--color-texto-suave);
+    background-color: var(--color-fondo);
 }
 
 /* ---- Pie: "X de Y" + botón de contorno ---- */

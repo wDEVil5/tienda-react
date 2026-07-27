@@ -5,7 +5,7 @@ import styles from "../Catalogo.module.css";
 const LIMITE_CATEGORIAS_VISIBLES = 6;
 // Por ahora la API entrega todos los productos. Con un backend propio, este límite
 // debería enviarse a la API, por ejemplo: /productos?page=1&limit=12.
-const PRODUCTOS_POR_CARGA = 12;
+const PRODUCTOS_POR_CARGA = 10;
 
 function Catalogo({ productos, busqueda }) {
   const [categoria, setCategoria] = useState("todas"); // la categoria elegida

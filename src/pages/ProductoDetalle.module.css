@@ -1,25 +1,66 @@
 .detalle {
   display: flex;
   flex-direction: column;
-  gap: var(--espacio-md);
-  margin-bottom: var(--espacio-xl);
+  gap: var(--e-lg);
+  margin-bottom: var(--e-2xl);
+}
+
+/* ---- Barra superior: miga + volver ---- */
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-md);
+  flex-wrap: wrap;
+}
+
+.miga {
+  display: flex;
+  align-items: center;
+  gap: var(--e-sm);
+  font-size: 13px;
+  color: var(--color-texto-tenue);
+  min-width: 0;
+}
+
+.miga a {
+  color: var(--color-texto-suave);
+  text-decoration: none;
+}
+
+.miga a:hover {
+  color: var(--color-texto);
+}
+
+.migaCat {
+  text-transform: capitalize;
+}
+
+/* El nombre actual puede ser largo: lo truncamos para no romper la fila. */
+.migaActual {
+  color: var(--color-texto);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 40ch;
 }
 
 .volver {
-  align-self: flex-start;
   color: var(--color-texto-suave);
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: 13.5px;
+  white-space: nowrap;
 }
 
 .volver:hover {
   color: var(--color-acento);
 }
 
+/* ---- Cuerpo: 2 columnas ---- */
 .contenido {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--espacio-xl);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--e-2xl);
   align-items: start;
 }
 
@@ -28,96 +69,151 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--espacio-xl);
-  background-color: var(--color-fondo-suave);
-  border-radius: var(--radio-sm);
+  /* Alto fijo (no aspect-ratio): mantiene la fila estable con object-fit. */
+  height: 440px;
+  padding: var(--e-2xl);
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-tarjeta);
 }
 
 .imagen {
   max-width: 100%;
-  max-height: 400px;
+  max-height: 100%;
   object-fit: contain;
 }
 
 .badge {
   position: absolute;
-  top: var(--espacio-md);
-  left: var(--espacio-md);
-  background-color: var(--color-acento);
+  top: var(--e-md);
+  left: var(--e-md);
+  background-color: var(--color-oferta);
   color: #fff;
-  padding: var(--espacio-xs) var(--espacio-sm);
-  border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 9px;
+  border-radius: var(--radio-badge);
 }
 
 .info {
   display: flex;
   flex-direction: column;
-  gap: var(--espacio-sm);
+  align-items: flex-start;
+  gap: var(--e-md);
 }
 
-.categoria {
-  color: var(--color-texto-suave);
-  text-transform: capitalize;
-  font-size: 0.9rem;
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-texto-tenue);
 }
 
 .nombre {
-  font-size: 1.6rem;
-  line-height: 1.3;
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1.15;
   color: var(--color-texto);
 }
 
 .precios {
   display: flex;
   align-items: baseline;
-  gap: var(--espacio-sm);
-  margin-top: var(--espacio-sm);
+  flex-wrap: wrap;
+  gap: var(--e-sm) var(--e-md);
 }
 
 .precio {
-  font-size: 1.8rem;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 36px;
+  line-height: 1;
   color: var(--color-texto);
 }
 
 .precioAntes {
-  font-size: 1.1rem;
-  color: var(--color-texto-suave);
+  font-size: 16px;
+  color: var(--color-texto-tenue);
   text-decoration: line-through;
 }
 
-.descripcion {
+.ahorro {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--color-oferta);
+}
+
+.stock {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
   color: var(--color-texto-suave);
-  line-height: 1.6;
-  margin-top: var(--espacio-sm);
+}
+
+.punto {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radio-pill);
+  background-color: var(--color-acento);
 }
 
 .boton {
-  margin-top: var(--espacio-md);
-  align-self: flex-start;
-  padding: var(--espacio-sm) var(--espacio-xl);
+  height: 48px;
+  padding: 0 var(--e-2xl);
   border: none;
-  border-radius: var(--radio-sm);
+  border-radius: var(--radio-control);
   background-color: var(--color-acento);
   color: #fff;
-  font: inherit;
-  font-weight: 600;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 500;
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 
 .boton:hover {
-  opacity: 0.9;
+  background-color: #285d40;
+}
+
+/* Caja de info de entrega (label fijo + valor). */
+.infoBox {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-sm);
+  padding: var(--e-lg);
+  background-color: var(--color-crudo);
+  border-radius: var(--radio-caja);
+}
+
+.infoRow {
+  display: flex;
+  gap: var(--e-md);
+  font-size: 13px;
+  color: var(--color-texto);
+}
+
+.infoLabel {
+  flex-shrink: 0;
+  width: 92px;
+  color: var(--color-texto-suave);
+}
+
+.descripcion {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--color-texto-suave);
 }
 
 .noEncontrado {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--espacio-md);
-  padding: var(--espacio-xl);
+  gap: var(--e-md);
+  padding: var(--e-2xl);
   text-align: center;
   color: var(--color-texto-suave);
 }
@@ -126,10 +222,11 @@
 @media (max-width: 768px) {
   .contenido {
     grid-template-columns: 1fr;
-    gap: var(--espacio-md);
+    gap: var(--e-lg);
   }
 
-  .imagen {
-    max-height: 300px;
+  .imagenWrap {
+    height: 320px;
+    padding: var(--e-lg);
   }
 }

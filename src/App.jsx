@@ -7,6 +7,7 @@ import Toast from "./components/Toast.jsx";
 import styles from "./App.module.css";
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
+import EstadoCarga from "./components/EstadoCarga.jsx";
 import { normalizarProductoFakeStore } from "./data/producto.js";
 
 function App() {
@@ -57,10 +58,7 @@ function App() {
   if (cargando) {
     return (
       <div className={styles.app}>
-        <div className={styles.cargando} role="status">
-          <span className={styles.loader} aria-hidden="true"></span>
-          <p>Cargando productos...</p>
-        </div>
+        <EstadoCarga />
       </div>
     );
   }

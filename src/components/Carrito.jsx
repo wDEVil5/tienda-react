@@ -90,11 +90,19 @@ function Carrito({ onCerrar, abierto, productos }) {
   );
   const descuento = subtotalOriginal - total;
   const hayDescuento = descuento > 0;
-  // La frase del estado vacío usa las ofertas que vienen del catálogo actual;
-  // cuando el backend reemplace Fake Store seguirá siendo un valor derivado.
-  const cantidadOfertas = productos.filter(
+  // La tarjeta vacía deriva cantidad y porcentaje desde el catálogo actual;
+  // al reemplazar Fake Store por el backend propio no necesita texto manual.
+  const ofertas = productos.filter(
     (producto) => typeof producto.precioAnterior === "number",
-  ).length;
+  );
+  const cantidadOfertas = ofertas.length;
+  const descuentoMaximo = cantidadOfertas
+    ? Math.max(
+        ...ofertas.map((producto) =>
+          Math.round((1 - producto.precio / producto.precioAnterior) * 100),
+        ),
+      )
+    : null;
 
   return (
     <aside
@@ -122,8 +130,9 @@ function Carrito({ onCerrar, abierto, productos }) {
             <i className={`fa-solid fa-cart-shopping ${styles.vacioIcono}`}></i>
             <p className={styles.vacioTexto}>Tu carrito está vacío</p>
             <p className={styles.vacioSub}>
-              Parte por las ofertas: {cantidadOfertas} productos con descuento esta
-              semana.
+              {cantidadOfertas > 0
+                ? `Parte por las ofertas: ${cantidadOfertas} productos con hasta ${descuentoMaximo}% de descuento esta semana.`
+                : "Explora el catálogo y encuentra productos para tu carrito."}
             </p>
             <div className={styles.vacioAcciones}>
               <Link className={styles.vacioBotonPrimario} to="/#ofertas" onClick={onCerrar}>

@@ -14,6 +14,7 @@
  * @property {string}        nombre        - Nombre visible del producto.
  * @property {number}        precio        - Precio actual (número, sin símbolo).
  * @property {string}        imagen        - URL de la imagen principal.
+ * @property {string[]}      imagenes      - Galería (máximo 5; la primera es principal).
  * @property {string}        categoria     - Categoría a la que pertenece.
  * @property {string}        descripcion   - Descripción larga.
  * @property {number|null}   precioAnterior - Precio previo si está en oferta; null si no.
@@ -30,6 +31,9 @@ export function normalizarProductoFakeStore(p) {
     nombre: p.title,
     precio: p.price,
     imagen: p.image,
+    // Fake Store entrega una sola imagen. El contrato ya usa un arreglo para
+    // que el backend pueda entregar una galería sin cambiar la UI.
+    imagenes: p.image ? [p.image] : [],
     categoria: p.category,
     descripcion: p.description,
     // La Fake Store API no trae ofertas. Simulamos una en los ids pares: el

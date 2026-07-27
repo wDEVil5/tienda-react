@@ -5,12 +5,17 @@ import ImagenProducto from "../components/ImagenProducto.jsx";
 import TarjetaProducto from "../components/TarjetaProducto.jsx";
 import styles from "./ProductoDetalle.module.css";
 
+// Límite de presentación. El backend y el panel admin deberán validar el
+// mismo máximo al guardar imágenes; el frontend se protege por si recibe más.
+const MAXIMO_IMAGENES_PRODUCTO = 5;
+
 function ProductoDetalle({ productos }) {
   // useParams lee las partes variables de la URL. El :id de /producto/:id
   // llega SIEMPRE como string, por eso lo convertimos con Number() para comparar.
   const { id } = useParams();
   const { agregarAlCarrito } = useCarritoContext();
   const [cantidad, setCantidad] = useState(1); // cantidad a agregar
+  const [imagenSeleccionada, setImagenSeleccionada] = useState(null);
 
   const producto = productos.find((p) => p.id === Number(id));
 
@@ -37,6 +42,15 @@ function ProductoDetalle({ productos }) {
     .filter((p) => p.categoria === producto.categoria && p.id !== producto.id)
     .slice(0, 4);
 
+  // Compatibilidad con productos antiguos: si aún no llega `imagenes`, usamos
+  // la imagen principal. Al integrar backend se reciben hasta 5 URLs aquí.
+  const imagenes = (producto.imagenes?.length ? producto.imagenes : [producto.imagen])
+    .filter(Boolean)
+    .slice(0, MAXIMO_IMAGENES_PRODUCTO);
+  const imagenActiva = imagenes.includes(imagenSeleccionada)
+    ? imagenSeleccionada
+    : imagenes[0];
+
   return (
     <section className={styles.detalle}>
       <div className={styles.topBar}>
@@ -60,24 +74,31 @@ function ProductoDetalle({ productos }) {
           <div className={styles.imagenWrap}>
             <ImagenProducto
               className={styles.imagen}
-              src={producto.imagen}
+              src={imagenActiva}
               alt={producto.nombre}
             />
             {enOferta && <span className={styles.badge}>−{descuento}%</span>}
           </div>
 
-          {/* Solo existe una imagen en Fake Store. Los dos espacios restantes
-              dejan preparada la galería para cuando el backend entregue más fotos. */}
+          {/* Fake Store muestra una sola miniatura. El backend podrá enviar
+              imágenes adicionales y el usuario podrá seleccionar cualquiera. */}
           <div className={styles.miniaturas} aria-label="Imágenes del producto">
-            <div className={`${styles.miniatura} ${styles.miniaturaActiva}`}>
-              <ImagenProducto
-                className={styles.miniaturaImagen}
-                src={producto.imagen}
-                alt={`Vista principal de ${producto.nombre}`}
-              />
-            </div>
-            <span className={`${styles.miniatura} ${styles.miniaturaPendiente}`} aria-hidden="true"></span>
-            <span className={`${styles.miniatura} ${styles.miniaturaPendiente}`} aria-hidden="true"></span>
+            {imagenes.map((imagen, indice) => (
+              <button
+                key={`${imagen}-${indice}`}
+                type="button"
+                className={`${styles.miniatura} ${imagenActiva === imagen ? styles.miniaturaActiva : ""}`}
+                onClick={() => setImagenSeleccionada(imagen)}
+                aria-pressed={imagenActiva === imagen}
+                aria-label={`Ver imagen ${indice + 1} de ${producto.nombre}`}
+              >
+                <ImagenProducto
+                  className={styles.miniaturaImagen}
+                  src={imagen}
+                  alt=""
+                />
+              </button>
+            ))}
           </div>
         </div>
 

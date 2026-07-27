@@ -329,6 +329,41 @@
   color: var(--color-oferta);
 }
 
+/* Escritorio: drawer más amplio y filas de producto con mejor jerarquía. */
+@media (min-width: 768px) {
+  .carrito {
+    width: 420px;
+  }
+
+  .cabecera,
+  .pie {
+    padding: 20px var(--e-xl);
+  }
+
+  .lista {
+    padding: 0 var(--e-xl);
+  }
+
+  .item {
+    gap: var(--e-lg);
+    padding: 20px 0;
+  }
+
+  .imagenWrap {
+    flex-basis: 72px;
+    width: 72px;
+    height: 72px;
+  }
+
+  .itemNombre {
+    font-size: 14px;
+  }
+
+  .subtotal {
+    font-size: 21px;
+  }
+}
+
 /* En pantallas ≤480px el carrito ocupa toda la pantalla. */
 @media (max-width: 480px) {
   .carrito {

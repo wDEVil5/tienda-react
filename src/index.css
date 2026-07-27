@@ -65,9 +65,9 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Anillo de foco global (RNF-3). Los componentes pueden afinarlo,
-   pero por defecto todo control enfocado por teclado es visible. */
+/* Anillo de foco global: visible por teclado, pero más sereno que un borde
+   oscuro doble y alineado con el verde del sistema. */
 :focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--color-superficie), 0 0 0 4px var(--color-texto);
+  outline: 2px solid var(--color-acento);
+  outline-offset: 2px;
 }

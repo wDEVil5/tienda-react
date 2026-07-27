@@ -122,6 +122,12 @@
   padding: 5px 5px 5px var(--e-md);
   background-color: var(--color-superficie);
   border-radius: var(--radio-control);
+  transition: box-shadow 0.2s ease;
+}
+
+/* El foco vive en la píldora completa, no en el rectángulo del input. */
+.buscador:focus-within {
+  box-shadow: 0 0 0 3px rgba(143, 199, 168, 0.36);
 }
 
 .lupa {
@@ -138,6 +144,10 @@
   font-family: inherit;
   font-size: 14px;
   color: var(--color-texto);
+}
+
+.buscador input:focus-visible {
+  outline: none;
 }
 
 .btnBuscar {

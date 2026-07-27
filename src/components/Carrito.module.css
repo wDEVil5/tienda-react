@@ -523,4 +523,31 @@
   .accionesSec {
     margin-top: var(--e-sm);
   }
+
+  /* El estado vacío mantiene sus dos destinos visibles sin que la acción
+     secundaria caiga a otra fila en móviles habituales. */
+  .vacio {
+    min-height: 264px;
+    padding: var(--e-xl) var(--e-md);
+  }
+
+  .vacioTexto {
+    font-size: 23px;
+  }
+
+  .vacioSub {
+    max-width: 250px;
+  }
+
+  .vacioAcciones {
+    width: 100%;
+  }
+
+  .vacioBotonPrimario,
+  .vacioBotonSecundario {
+    flex: 1;
+    min-width: 0;
+    padding: 0 var(--e-sm);
+    white-space: nowrap;
+  }
 }

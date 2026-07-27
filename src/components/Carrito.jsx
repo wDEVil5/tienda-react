@@ -126,12 +126,12 @@ function Carrito({ onCerrar, abierto, productos }) {
               semana.
             </p>
             <div className={styles.vacioAcciones}>
-              <a className={styles.vacioBotonPrimario} href="/#ofertas" onClick={onCerrar}>
+              <Link className={styles.vacioBotonPrimario} to="/#ofertas" onClick={onCerrar}>
                 Ver ofertas
-              </a>
-              <a className={styles.vacioBotonSecundario} href="/#catalogo" onClick={onCerrar}>
+              </Link>
+              <Link className={styles.vacioBotonSecundario} to="/#catalogo" onClick={onCerrar}>
                 Ir al catálogo
-              </a>
+              </Link>
             </div>
           </div>
         ) : (

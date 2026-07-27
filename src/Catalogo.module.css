@@ -739,4 +739,30 @@
     .cargarMas {
         width: 100%;
     }
+
+    .sinResultados {
+        min-height: 264px;
+        padding: var(--e-xl) var(--e-md);
+    }
+
+    .sinResultados h3 {
+        font-size: 24px;
+    }
+
+    .sinResultados p {
+        max-width: 290px;
+        font-size: 13px;
+    }
+
+    .sinResultadosAcciones {
+        width: 100%;
+        flex-wrap: nowrap;
+    }
+
+    .sinResultadosAcciones button {
+        flex: 1;
+        min-width: 0;
+        padding: 0 var(--e-sm);
+        white-space: nowrap;
+    }
 }

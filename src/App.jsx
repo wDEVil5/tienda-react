@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Home from "./pages/Home.jsx";
 import ProductoDetalle from "./pages/ProductoDetalle.jsx";
 import Carrito from "./components/Carrito.jsx";
@@ -7,10 +7,10 @@ import Toast from "./components/Toast.jsx";
 import styles from "./App.module.css";
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
-import EstadoCarga from "./components/EstadoCarga.jsx";
 import { normalizarProductoFakeStore } from "./data/producto.js";
 
 function App() {
+  const ubicacion = useLocation();
   const [busqueda, setBusqueda] = useState("");
   // Header y catálogo comparten estos filtros: una sugerencia puede cambiar la
   // categoría y el catálogo la refleja sin depender de un backend todavía.
@@ -48,6 +48,22 @@ function App() {
     cargarProductos();
   }, []);
 
+  // React Router actualiza la URL, pero no desplaza automáticamente al hash.
+  // Esperamos a que el Home esté montado y llevamos el foco visual a la sección.
+  useEffect(() => {
+    if (cargando || !ubicacion.hash) return;
+
+    const id = ubicacion.hash.slice(1);
+    const cuadro = requestAnimationFrame(() => {
+      document.getElementById(id)?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+
+    return () => cancelAnimationFrame(cuadro);
+  }, [cargando, ubicacion.hash]);
+
   const reintentar = () => {
     setCargando(true);
     setError(null);
@@ -58,7 +74,10 @@ function App() {
   if (cargando) {
     return (
       <div className={styles.app}>
-        <EstadoCarga />
+        <div className={styles.cargando} role="status">
+          <span className={styles.loader} aria-hidden="true"></span>
+          <p>Cargando productos...</p>
+        </div>
       </div>
     );
   }

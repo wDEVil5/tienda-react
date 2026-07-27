@@ -168,6 +168,111 @@
   color: #fff;
 }
 
+/* ---- Banda 3: pagos + redes + selector ---- */
+.utilidades {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-lg);
+  flex-wrap: wrap;
+}
+
+.pagos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-sm);
+}
+
+.chipPago {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 var(--e-md);
+  background-color: rgba(255, 255, 255, 0.07);
+  border-radius: var(--radio-badge);
+  font-size: 12px;
+  color: var(--color-sobre-oscuro);
+}
+
+.derecha {
+  display: flex;
+  align-items: center;
+  gap: var(--e-lg);
+}
+
+.redes {
+  display: flex;
+  gap: var(--e-xs);
+}
+
+.redes a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radio-pill);
+  color: var(--color-sobre-oscuro);
+  font-size: 16px;
+  text-decoration: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.redes a:hover {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.selector {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-sm);
+  height: 34px;
+  padding: 0 var(--e-md);
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: var(--radio-control);
+  color: var(--color-sobre-oscuro);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.2s ease;
+}
+
+.selector i {
+  font-size: 9px;
+}
+
+.selector:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ---- Banda 4: legal (sin línea inferior, es la última) ---- */
+.legal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-md);
+  flex-wrap: wrap;
+  padding: var(--e-lg) 0;
+}
+
+.copyright {
+  font-size: 12px;
+  color: var(--color-tenue-oscuro);
+}
+
+.legalLinks {
+  display: flex;
+  gap: var(--e-lg);
+}
+
+.legalLinks .enlace {
+  font-size: 12px;
+  color: var(--color-tenue-oscuro);
+}
+
 /* Responsive básico; los breakpoints definitivos llegan en el paso 6. */
 @media (max-width: 900px) {
   .columnas {

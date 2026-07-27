@@ -1,11 +1,27 @@
+/* Banda full-bleed: rompe el ancho de la columna centrada (.contenido) para
+   que el fondo crudo llegue de borde a borde. Truco: left:50% lleva el borde
+   izquierdo al centro del contenedor y margin-left:-50vw lo empuja al borde
+   del viewport; width:100vw completa hasta el otro borde. */
 .catalogo {
+    position: relative;
+    left: 50%;
+    right: 50%;
+    width: 100vw;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    margin-bottom: var(--e-2xl);
+    padding: var(--e-2xl) 0;
+    background-color: var(--color-crudo);
+}
+
+/* El contenido vuelve a centrarse y a alinear con el resto de la página. */
+.catalogoInner {
     display: flex;
     flex-direction: column;
     gap: var(--e-lg);
-    background-color: var(--color-crudo);
-    border-radius: var(--radio-tarjeta);
-    padding: var(--e-2xl);
-    margin-bottom: var(--e-2xl);
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--e-lg);
 }
 
 /* Encabezado: título + contador a la izquierda, orden a la derecha. */
@@ -551,7 +567,7 @@
    Los precios NO bajan (serif 21px en tarjeta): la regla es no bajar de 19px. */
 @media (max-width: 559px) {
     .catalogo {
-        padding: var(--e-lg);
+        padding: var(--e-xl) 0;
     }
 
     .titulo {

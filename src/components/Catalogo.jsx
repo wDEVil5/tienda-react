@@ -142,6 +142,7 @@ function Catalogo({ productos, busqueda }) {
 
   return (
     <section id="catalogo" className={styles.catalogo}>
+      <div className={styles.catalogoInner}>
       <div className={styles.encabezado}>
         <div>
           <h2 className={styles.titulo}>Todo el catálogo</h2>
@@ -361,6 +362,7 @@ function Catalogo({ productos, busqueda }) {
           </div>
         </>
       )}
+      </div>
     </section>
   );
 }

@@ -291,8 +291,90 @@
   text-decoration: underline;
 }
 
-/* Responsive básico; los 5 breakpoints definitivos llegan en el paso 6. */
-@media (max-width: 600px) {
+/* ---- Menú hamburguesa (móvil) ---- */
+.hamburguesa {
+  display: none; /* oculto en escritorio; se activa por media query */
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--radio-control);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.hamburguesa:hover {
+  background-color: rgba(255, 255, 255, 0.14);
+}
+
+.menuMovil {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--e-sm) var(--e-lg) var(--e-lg);
+  background-color: var(--color-texto);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.menuLink {
+  text-align: left;
+  background: none;
+  border: none;
+  padding: var(--e-md) 0;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--color-sobre-oscuro);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.menuLink:hover,
+.menuLinkActivo {
+  color: #fff;
+}
+
+.menuEntrar {
+  margin-top: var(--e-sm);
+  height: 46px;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radio-control);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.menuEntrar:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ---- Responsive del header ---- */
+/* Tablet: se cae la fila de navegación (queda en el menú si baja más). */
+@media (max-width: 900px) {
+  .navFila {
+    display: none;
+  }
+}
+
+/* Móvil: hamburguesa + logo + buscador (full width) + carrito. */
+@media (max-width: 680px) {
+  .hamburguesa {
+    display: inline-flex;
+  }
+
+  .franja,
+  .categorias,
+  .entrar {
+    display: none;
+  }
+
   .barraPrincipal .contenedor {
     flex-wrap: wrap;
   }
@@ -301,12 +383,11 @@
     order: 3;
     flex-basis: 100%;
   }
+}
 
-  /* Estos vuelven en el paso 6 dentro del menú hamburguesa móvil. */
-  .franja,
-  .categorias,
-  .entrar,
-  .navFila {
+/* Seguridad: si se agranda la ventana con el menú abierto, no lo mostramos. */
+@media (min-width: 681px) {
+  .menuMovil {
     display: none;
   }
 }

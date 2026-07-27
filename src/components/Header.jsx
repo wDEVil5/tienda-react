@@ -1,9 +1,13 @@
+import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import styles from "./Header.module.css";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 
 function Header({ busqueda, onBuscar, onAbrirCarrito }) {
   const { totalItems, carrito } = useCarritoContext();
+  const [menuAbierto, setMenuAbierto] = useState(false); // menú hamburguesa (móvil)
+  const cerrarMenu = () => setMenuAbierto(false);
+
   // Monto total del carrito (estado derivado) para el chip del header.
   const total = carrito.reduce(
     (suma, item) => suma + item.precio * item.cantidad,
@@ -30,6 +34,21 @@ function Header({ busqueda, onBuscar, onAbrirCarrito }) {
           <Link to="/" className={styles.logo}>
             Sumarket<em>Express</em>
           </Link>
+
+          {/* Hamburguesa: solo visible en móvil (CSS). Abre el menú de abajo. */}
+          <button
+            className={styles.hamburguesa}
+            type="button"
+            aria-expanded={menuAbierto}
+            aria-controls="menu-movil"
+            aria-label="Abrir menú"
+            onClick={() => setMenuAbierto((abierto) => !abierto)}
+          >
+            <i
+              className={`fa-solid ${menuAbierto ? "fa-xmark" : "fa-bars"}`}
+              aria-hidden="true"
+            ></i>
+          </button>
 
           {/* Placeholder: abrirá el menú de categorías en un paso futuro. */}
           <button className={styles.categorias} type="button">
@@ -77,6 +96,39 @@ function Header({ busqueda, onBuscar, onAbrirCarrito }) {
           </button>
         </div>
       </div>
+
+      {/* Menú móvil: recupera la navegación y "Entrar" que se ocultan en la
+          barra. Solo se muestra cuando la hamburguesa está abierta. */}
+      {menuAbierto && (
+        <nav id="menu-movil" className={styles.menuMovil} aria-label="Menú">
+          <NavLink
+            to="/"
+            end
+            onClick={cerrarMenu}
+            className={({ isActive }) =>
+              `${styles.menuLink} ${isActive ? styles.menuLinkActivo : ""}`
+            }
+          >
+            Catálogo
+          </NavLink>
+          <button className={styles.menuLink} type="button" onClick={cerrarMenu}>
+            Ofertas
+          </button>
+          <button className={styles.menuLink} type="button" onClick={cerrarMenu}>
+            Cómo comprar
+          </button>
+          <button className={styles.menuLink} type="button" onClick={cerrarMenu}>
+            Nuestra tienda
+          </button>
+          <button
+            className={styles.menuEntrar}
+            type="button"
+            onClick={cerrarMenu}
+          >
+            Entrar
+          </button>
+        </nav>
+      )}
 
       {/* Fila de navegación. Solo "Catálogo" tiene ruta real hoy; el resto
           son placeholders (Ofertas → filtro, secciones del Home futuras). */}

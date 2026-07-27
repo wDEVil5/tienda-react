@@ -275,24 +275,6 @@
   color: var(--color-texto-suave);
 }
 
-.btnBuscar {
-  height: 36px;
-  padding: 0 var(--e-lg);
-  background-color: var(--color-acento);
-  color: #fff;
-  border: none;
-  border-radius: var(--radio-control);
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.btnBuscar:hover {
-  background-color: #285d40; /* verde un paso más oscuro */
-}
-
 /* ---- Carrito (chip claro sobre el header oscuro) ---- */
 .carrito {
   display: flex;
@@ -528,6 +510,9 @@
 
   .hamburguesa {
     display: inline-flex;
+    /* En tablet el menú comparte el extremo derecho con el carrito, en vez de
+       quedar separado por el buscador. */
+    order: 3;
   }
 
   .entrar {
@@ -536,6 +521,11 @@
 
   .logo {
     font-size: 24px;
+    order: 1;
+  }
+
+  .buscador {
+    order: 2;
   }
 
   .carritoTexto {
@@ -544,6 +534,7 @@
 
   .carrito {
     position: relative;
+    order: 4;
     width: 46px;
     padding: 0;
     justify-content: center;

@@ -130,10 +130,6 @@ function Header({
                 <i className="fa-solid fa-xmark" aria-hidden="true"></i>
               </button>
             )}
-            <button type="submit" className={styles.btnBuscar}>
-              Buscar
-            </button>
-
             {sugerenciasAbiertas && (
               <div
                 id="sugerencias-busqueda"

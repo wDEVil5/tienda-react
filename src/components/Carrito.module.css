@@ -138,8 +138,16 @@
 }
 
 .precioUnitario {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
   font-size: 11.5px;
   color: var(--color-texto-tenue);
+}
+
+.precioAntes {
+  color: var(--color-texto-tenue);
+  text-decoration: line-through;
 }
 
 .eliminar {
@@ -170,6 +178,8 @@
   flex-shrink: 0;
   font-family: var(--font-display);
   font-size: 19px;
+  letter-spacing: -0.03em;
+  font-variant-numeric: lining-nums proportional-nums;
   color: var(--color-texto);
 }
 
@@ -272,6 +282,8 @@
 .totalMonto {
   font-family: var(--font-display);
   font-size: 27px;
+  letter-spacing: -0.035em;
+  font-variant-numeric: lining-nums proportional-nums;
   color: var(--color-texto);
 }
 

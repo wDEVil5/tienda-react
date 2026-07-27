@@ -168,6 +168,8 @@
   font-family: var(--font-display);
   font-size: 36px;
   line-height: 1;
+  letter-spacing: -0.035em;
+  font-variant-numeric: lining-nums proportional-nums;
   color: var(--color-texto);
 }
 

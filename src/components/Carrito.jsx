@@ -156,7 +156,12 @@ function Carrito({ onCerrar, abierto }) {
                 </div>
 
                 <span className={styles.precioUnitario}>
-                  ${item.precio.toLocaleString("es-CL")} c/u
+  {typeof item.precioAnterior === "number" && (
+                    <span className={styles.precioAntes}>
+                      ${item.precioAnterior.toLocaleString("es-CL")}
+                    </span>
+                  )}
+                  <span>${item.precio.toLocaleString("es-CL")} c/u</span>
                 </span>
 
                 <div className={styles.filaInferior}>

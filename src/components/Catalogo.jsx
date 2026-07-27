@@ -68,6 +68,32 @@ function Catalogo({ productos, busqueda }) {
 
   return (
     <section id="catalogo" className={styles.catalogo}>
+      <div className={styles.encabezado}>
+        <div>
+          <h2 className={styles.titulo}>Todo el catálogo</h2>
+          <p className={styles.subtitulo}>
+            {productosFiltrados.length} productos · precios de hoy
+          </p>
+        </div>
+
+        <div className={styles.barraOrden}>
+          <label htmlFor="orden" className={styles.ordenLabel}>
+            Ordenar
+          </label>
+          <select
+            id="orden"
+            className={styles.ordenSelect}
+            value={orden}
+            onChange={(e) => setOrden(e.target.value)}
+          >
+            <option value="relevancia">Relevancia</option>
+            <option value="precio-asc">Precio: menor a mayor</option>
+            <option value="precio-desc">Precio: mayor a menor</option>
+            <option value="alfabetico">Nombre: A - Z</option>
+          </select>
+        </div>
+      </div>
+
       <div className={styles.controles}>
         {/* Botones de categoria */}
         <button
@@ -146,23 +172,6 @@ function Catalogo({ productos, busqueda }) {
         </p>
       ) : (
         <>
-          <div className={styles.barraOrden}>
-            <label htmlFor="orden" className={styles.ordenLabel}>
-              Ordenar por
-            </label>
-            <select
-              id="orden"
-              className={styles.ordenSelect}
-              value={orden}
-              onChange={(e) => setOrden(e.target.value)}
-            >
-              <option value="relevancia">Relevancia</option>
-              <option value="precio-asc">Precio: menor a mayor</option>
-              <option value="precio-desc">Precio: mayor a menor</option>
-              <option value="alfabetico">Nombre: A - Z</option>
-            </select>
-          </div>
-
           <div className={styles.grid}>
             {productosVisibles.map((producto) => (
               <TarjetaProducto key={producto.id} producto={producto} />

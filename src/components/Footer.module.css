@@ -17,6 +17,11 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
+/* Marca en el newsletter: solo visible en móvil. */
+.marcaMovil {
+  display: none;
+}
+
 /* ---- Banda 1: Newsletter ---- */
 .newsletter {
   display: flex;
@@ -134,21 +139,32 @@
   flex-shrink: 0;
 }
 
-.col {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 9px;
+/* Columna = <details>. En escritorio es una columna normal; el contenido se
+   fuerza visible más abajo (por media query). Se quita el triángulo nativo. */
+.col > summary {
+  list-style: none;
 }
 
-/* Título de columna en mono mayúsculas (eyebrow). */
-.eyebrow {
+.col > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Título de columna: eyebrow mono en escritorio (no interactivo). */
+.colTitulo {
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--color-tenue-oscuro);
-  margin-bottom: 3px;
+  margin-bottom: 9px;
+  cursor: default;
+}
+
+.colLinks {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px;
 }
 
 .enlace {
@@ -273,19 +289,21 @@
   color: var(--color-tenue-oscuro);
 }
 
-/* Responsive básico; los breakpoints definitivos llegan en el paso 6. */
-@media (max-width: 900px) {
-  .columnas {
-    grid-template-columns: 1fr 1fr;
-    row-gap: var(--e-xl);
+/* Escritorio (≥768): el contenido de cada columna se muestra SIEMPRE. El
+   !important vence a la regla del navegador que oculta el contenido de un
+   <details> cerrado; así el acordeón solo "actúa" en móvil. */
+@media (min-width: 768px) {
+  .colLinks {
+    display: flex !important;
   }
 
-  .colMarca {
-    grid-column: 1 / -1;
+  .colTitulo {
+    pointer-events: none; /* en escritorio el título no es interactivo */
   }
 }
 
-@media (max-width: 600px) {
+/* Móvil (≤767): newsletter apilado y columnas como acordeones de 48px. */
+@media (max-width: 767px) {
   .newsletter {
     flex-direction: column;
     align-items: flex-start;
@@ -296,7 +314,62 @@
     width: 100%;
   }
 
+  /* La marca aparece arriba del newsletter (serif, Express en verde). */
+  .marcaMovil {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 22px;
+    color: #fff;
+    margin-bottom: var(--e-lg);
+  }
+
+  .marcaMovil em {
+    font-style: italic;
+    color: var(--color-acento-claro);
+  }
+
+  /* El bloque de marca/dirección de la banda de columnas se oculta en móvil
+     (la marca ya está arriba; la dirección no va en el footer móvil). */
+  .colMarca {
+    display: none;
+  }
+
   .columnas {
     grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .col {
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  /* La cabecera del acordeón: 48px, texto normal + signo +/−. */
+  .colTitulo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 48px;
+    margin-bottom: 0;
+    font-family: var(--font-ui);
+    font-size: 15px;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--color-sobre-oscuro);
+    cursor: pointer;
+  }
+
+  .colTitulo::after {
+    content: "+";
+    font-size: 18px;
+    color: var(--color-tenue-oscuro);
+  }
+
+  /* Al abrir el <details>, el signo cambia a "−". */
+  .col[open] > .colTitulo::after {
+    content: "−";
+  }
+
+  .colLinks {
+    padding-bottom: var(--e-md);
   }
 }

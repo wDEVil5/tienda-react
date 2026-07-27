@@ -7,14 +7,16 @@ function Footer() {
       <div className={styles.contenedor}>
         {/* Banda 1: Newsletter. El envío real requiere backend (Fase 2). */}
         <div className={styles.banda}>
+          {/* La marca solo se muestra aquí en móvil (en escritorio vive en la
+              columna de marca de la banda de abajo). */}
+          <p className={styles.marcaMovil}>
+            Sumarket<em>Express</em>
+          </p>
+
           <div className={styles.newsletter}>
-            <div>
-              <h2 className={styles.nlTitulo}>Ofertas frescas en tu correo</h2>
-              <p className={styles.nlSub}>
-                Recibe cada semana los productos en oferta y las novedades de la
-                tienda.
-              </p>
-            </div>
+            <h2 className={styles.nlTitulo}>
+              Las ofertas, cada lunes en tu correo
+            </h2>
             <form
               className={styles.nlForm}
               onSubmit={(e) => e.preventDefault()}
@@ -28,8 +30,7 @@ function Footer() {
             </form>
           </div>
           <p className={styles.nlNota}>
-            Al suscribirte aceptas recibir correos comerciales. Puedes cancelar
-            cuando quieras.
+            Una vez por semana · te sales con un clic.
           </p>
         </div>
 
@@ -49,63 +50,73 @@ function Footer() {
             </p>
           </div>
 
-          <nav className={styles.col} aria-label="Comprar">
-            <p className={styles.eyebrow}>Comprar</p>
-            <Link to="/" className={styles.enlace}>
-              Catálogo
-            </Link>
-            <button className={styles.enlace} type="button">
-              Ofertas
-            </button>
-            <button className={styles.enlace} type="button">
-              Categorías
-            </button>
-            <button className={styles.enlace} type="button">
-              Novedades
-            </button>
-          </nav>
+          {/* En escritorio se ven como columnas (contenido forzado visible por
+              CSS); en móvil, <details> los vuelve acordeones nativos de 48px. */}
+          <details className={styles.col}>
+            <summary className={styles.colTitulo}>Comprar</summary>
+            <div className={styles.colLinks}>
+              <Link to="/" className={styles.enlace}>
+                Catálogo
+              </Link>
+              <button className={styles.enlace} type="button">
+                Ofertas
+              </button>
+              <button className={styles.enlace} type="button">
+                Categorías
+              </button>
+              <button className={styles.enlace} type="button">
+                Novedades
+              </button>
+            </div>
+          </details>
 
-          <nav className={styles.col} aria-label="Tu cuenta">
-            <p className={styles.eyebrow}>Tu cuenta</p>
-            <button className={styles.enlace} type="button">
-              Entrar
-            </button>
-            <button className={styles.enlace} type="button">
-              Mis pedidos
-            </button>
-            <button className={styles.enlace} type="button">
-              Mis direcciones
-            </button>
-          </nav>
+          <details className={styles.col}>
+            <summary className={styles.colTitulo}>Tu cuenta</summary>
+            <div className={styles.colLinks}>
+              <button className={styles.enlace} type="button">
+                Entrar
+              </button>
+              <button className={styles.enlace} type="button">
+                Mis pedidos
+              </button>
+              <button className={styles.enlace} type="button">
+                Mis direcciones
+              </button>
+            </div>
+          </details>
 
-          <nav className={styles.col} aria-label="Ayuda">
-            <p className={styles.eyebrow}>Ayuda</p>
-            <button className={styles.enlace} type="button">
-              Cómo comprar
-            </button>
-            <button className={styles.enlace} type="button">
-              Envíos y retiro
-            </button>
-            <button className={styles.enlace} type="button">
-              Devoluciones
-            </button>
-            <button className={styles.enlace} type="button">
-              Contacto
-            </button>
-          </nav>
+          <details className={styles.col}>
+            <summary className={styles.colTitulo}>Ayuda</summary>
+            <div className={styles.colLinks}>
+              <button className={styles.enlace} type="button">
+                Cómo comprar
+              </button>
+              <button className={styles.enlace} type="button">
+                Envíos y retiro
+              </button>
+              <button className={styles.enlace} type="button">
+                Devoluciones
+              </button>
+              <button className={styles.enlace} type="button">
+                Contacto
+              </button>
+            </div>
+          </details>
 
-          <nav className={styles.col} aria-label="La tienda">
-            <p className={styles.eyebrow}>La tienda</p>
-            <button className={styles.enlace} type="button">
-              Nuestra historia
-            </button>
-            <button className={styles.enlace} type="button">
-              Trabaja con nosotros
-            </button>
-            <button className={styles.enlace} type="button">
-              Términos
-            </button>
-          </nav>
+          <details className={styles.col}>
+            <summary className={styles.colTitulo}>La tienda</summary>
+            <div className={styles.colLinks}>
+              <button className={styles.enlace} type="button">
+                Nuestra historia
+              </button>
+              <button className={styles.enlace} type="button">
+                Trabaja con nosotros
+              </button>
+              <button className={styles.enlace} type="button">
+                Términos
+              </button>
+            </div>
+          </details>
         </div>
 
         {/* Banda 3: medios de pago + redes + selector de moneda/idioma. */}

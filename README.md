@@ -14,6 +14,8 @@ Los productos se obtienen en tiempo real desde una API externa pública y se nor
 
 ![Vista del carrito de compras](./src/assets/vistaCarrito.png)
 
+![Vista detalle de producto](./src/assets/vistaDetalle.png)
+
 ## 🛠️ Tecnologías
 
 - **React 19** — Hooks (`useState`, `useEffect`, `useReducer`, `useContext`) y **custom hooks**
@@ -36,7 +38,9 @@ Los productos se obtienen en tiempo real desde una API externa pública y se nor
 - **Normalización de datos**: la respuesta de la API se transforma al formato propio de la app, desacoplando la UI de la estructura externa.
 - **Enrutamiento SPA con React Router**: rutas para el catálogo (`/`) y el **detalle de cada producto** (`/producto/:id`), con navegación por URL y botón "atrás" del navegador. Los *deep links* y el refresco funcionan en GitHub Pages gracias a un `404.html` (técnica spa-github-pages).
 - **Buscador en tiempo real** mediante un input controlado.
+- **Sugerencias de búsqueda** con productos y categorías; al llegar al catálogo, el término activo queda visible como chip removible.
 - **Filtros por categoría** generados dinámicamente con `Set` (sin hardcodear), con el overflow agrupado en un desplegable "Explorar X más".
+- **Ofertas reales derivadas** de `precioAnterior`: título con descuento máximo, filtro compartido entre CTA y catálogo, precio anterior tachado y tarjetas enlazadas a la ficha.
 - **Paginación tipo "cargar más"** en tandas, indicando cuántos productos quedan.
 - **Imágenes con red de seguridad**: un componente reutilizable muestra un placeholder elegante si la imagen externa falla (`onError`).
 
@@ -50,16 +54,18 @@ Los productos se obtienen en tiempo real desde una API externa pública y se nor
 - **Contador de ítems** en el ícono del header y en el título del panel.
 - **Cada ítem enlaza a su página de producto** y cierra el panel al navegar.
 - **UX del drawer**: se cierra con la tecla **Escape**, bloquea el scroll del fondo mientras está abierto, trunca nombres largos con elipsis y muestra un **estado vacío** con ícono y llamada a la acción.
+- **Estado vacío útil**: los CTA del drawer llevan al catálogo completo o al catálogo filtrado por ofertas reales.
 
 ### Arquitectura, calidad y diseño
 
 - **Estado global con Context API** (`CarritoProvider` + hook consumidor `useCarritoContext`), eliminando el *prop drilling*.
 - **Lógica del carrito centralizada con `useReducer`** dentro de un **custom hook `useCarrito`** (acciones `AGREGAR`, `ELIMINAR`, `CAMBIAR_CANTIDAD`, `VACIAR`).
 - **Tests unitarios con Vitest + React Testing Library** sobre el reducer del carrito.
-- **Diseño responsive** para móvil, tablet y escritorio: grid adaptable (4 / 3 / 2 / 1 columnas) y header reorganizado en pantallas pequeñas.
+- **Diseño responsive** para móvil, tablet y escritorio: grid adaptable (5 / 4 / 3 / 2 columnas) y header reorganizado en pantallas pequeñas.
 - **Accesibilidad (ARIA)**: `aria-expanded`, `aria-controls`, `aria-label`, `role` de estado/alerta y respeto por `prefers-reduced-motion`.
 - **Sistema de diseño propio** basado en design tokens (variables CSS para colores, espaciado y tipografía), con una estética minimalista y sobria.
-- **Footer con navegación e identidad del proyecto**: enlaces por ancla a las secciones principales y a redes sociales.
+- **Footer con navegación e identidad del proyecto**: enlaces por ancla, ofertas y hasta cuatro categorías reales derivadas del catálogo.
+- **Marcas en góndola preparadas para assets locales**: los logos futuros vivirán en `public/marcas/` y su orden/visibilidad en `src/data/marcas.js`; no requieren backend ni panel de administración por ahora.
 
 ## 📚 Lo que aprendí
 
@@ -96,7 +102,7 @@ Este proyecto es mi campo de práctica para consolidar React y buenas prácticas
 
 SumarketExpress es un proyecto **full-stack en construcción**, desarrollado por fases (una a la vez) para convertirse en una **tienda completa**:
 
-- ✅ **Frontend profesional**  — React con hooks, `useReducer`, Context, React Router y tests unitarios.
+- ✅ **Frontend estructurado**  — React con hooks, `useReducer`, Context, React Router y tests unitarios.
 - 🔜 **Backend propio** — API REST con **Node.js + Express** y base de datos **PostgreSQL + Prisma** (reemplaza a la API externa).
 - 🔒 **Autenticación** — cuentas de usuario con **JWT** y contraseñas hasheadas con **bcrypt**; roles usuario/admin.
 - 💳 **Pagos reales** — checkout con **Stripe / Mercado Pago** (modo test).

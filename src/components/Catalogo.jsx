@@ -15,6 +15,8 @@ function Catalogo({
   onBuscar,
   categoria,
   onSeleccionarCategoria,
+  soloOfertas,
+  onCambiarSoloOfertas,
 }) {
   // `categoria` vive en App para que también pueda cambiarse desde las
   // sugerencias del Header; este componente solo notifica la intención.
@@ -24,7 +26,6 @@ function Catalogo({
   const [masCategoriasAbierto, setMasCategoriasAbierto] = useState(false);
   const [limiteProductos, setLimiteProductos] = useState(PRODUCTOS_POR_CARGA);
   const [orden, setOrden] = useState("relevancia"); // criterio de ordenamiento
-  const [soloOfertas, setSoloOfertas] = useState(false); // filtrar solo ofertas
   const [filtrosAbiertos, setFiltrosAbiertos] = useState(false); // hoja de filtros (móvil)
   // Rango de precio: null = sin límite (usa el extremo del catálogo).
   const [precioMin, setPrecioMin] = useState(null);
@@ -85,7 +86,7 @@ function Catalogo({
   const limpiarFiltros = () => {
     onBuscar("");
     onSeleccionarCategoria("todas");
-    setSoloOfertas(false);
+    onCambiarSoloOfertas(false);
     setPrecioMin(null);
     setPrecioMax(null);
     setMasCategoriasAbierto(false);
@@ -334,7 +335,7 @@ function Catalogo({
               type="checkbox"
               className={styles.switchInput}
               checked={soloOfertas}
-              onChange={(e) => setSoloOfertas(e.target.checked)}
+              onChange={(e) => onCambiarSoloOfertas(e.target.checked)}
             />
             <span className={styles.switchTrack} aria-hidden="true"></span>
           </label>

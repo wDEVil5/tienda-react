@@ -13,13 +13,21 @@ function Home({
   onBuscar,
   categoria,
   onSeleccionarCategoria,
+  soloOfertas,
+  onCambiarSoloOfertas,
+  onVerOfertas,
+  onVerCatalogo,
 }) {
   return (
     <>
-      <Hero productos={productos} />
+      <Hero
+        productos={productos}
+        onVerOfertas={onVerOfertas}
+        onVerCatalogo={onVerCatalogo}
+      />
       <TiraConfianza />
       <Categorias productos={productos} />
-      <BandaOfertas productos={productos} />
+      <BandaOfertas productos={productos} onVerOfertas={onVerOfertas} />
       <ComoComprar />
       <Catalogo
         productos={productos}
@@ -27,6 +35,8 @@ function Home({
         onBuscar={onBuscar}
         categoria={categoria}
         onSeleccionarCategoria={onSeleccionarCategoria}
+        soloOfertas={soloOfertas}
+        onCambiarSoloOfertas={onCambiarSoloOfertas}
       />
       <MarcasGondola />
     </>

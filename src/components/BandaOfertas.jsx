@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 // Banda de ofertas del Home. Deriva las ofertas reales (las que tienen
 // precioAnterior) para el conteo y las mini-tarjetas.
-function BandaOfertas({ productos }) {
+function BandaOfertas({ productos, onVerOfertas }) {
   const ofertas = productos.filter((p) => p.precioAnterior !== null);
   if (ofertas.length === 0) return null;
 
@@ -59,7 +59,7 @@ function BandaOfertas({ productos }) {
           )}
         </div>
 
-        <Link to="/#catalogo" className={styles.boton}>
+        <Link to="/#catalogo" className={styles.boton} onClick={onVerOfertas}>
           Ver ofertas
           <i className="fa-solid fa-arrow-right" aria-hidden="true"></i>
         </Link>

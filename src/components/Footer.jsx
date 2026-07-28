@@ -29,7 +29,14 @@ function AcordeonCol({ titulo, children }) {
   );
 }
 
-function Footer({ productos, onBuscar, onSeleccionarCategoria }) {
+function Footer({
+  productos,
+  onBuscar,
+  onSeleccionarCategoria,
+  onCambiarSoloOfertas,
+  onVerOfertas,
+  onVerCatalogo,
+}) {
   // La lista se deriva del catálogo disponible. Cuando la API propia entregue
   // categorías, el footer las reflejará sin mantener una segunda lista manual.
   const categorias = [...new Set(productos.map((producto) => producto.categoria))].slice(
@@ -40,6 +47,7 @@ function Footer({ productos, onBuscar, onSeleccionarCategoria }) {
   const seleccionarCategoria = (categoria) => {
     onBuscar("");
     onSeleccionarCategoria(categoria);
+    onCambiarSoloOfertas(false);
   };
 
   return (
@@ -104,10 +112,10 @@ function Footer({ productos, onBuscar, onSeleccionarCategoria }) {
 
           {/* En escritorio se ven como columnas; en móvil son acordeones. */}
           <AcordeonCol titulo="Comprar">
-            <Link to="/#catalogo" className={styles.enlace}>
+            <Link to="/#catalogo" className={styles.enlace} onClick={onVerCatalogo}>
               Todo el catálogo
             </Link>
-            <Link to="/#ofertas" className={styles.enlace}>
+            <Link to="/#catalogo" className={styles.enlace} onClick={onVerOfertas}>
               Ofertas de la semana
             </Link>
             {categorias.map((categoria) => (

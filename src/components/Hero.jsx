@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 // Sección héroe del Home. La imagen de fondo es un placeholder a rayas (aún no
 // hay foto real; el handoff pide 1 foto de héroe 1280×520 con tratamiento cálido).
-function Hero({ productos }) {
+function Hero({ productos, onVerOfertas, onVerCatalogo }) {
   const accesos = [...new Set(productos.map((producto) => producto.categoria))].slice(0, 4);
 
   return (
@@ -21,10 +21,10 @@ function Hero({ productos }) {
           Retira hoy o recíbelo mañana.
         </p>
         <div className={styles.acciones}>
-          <Link to="/#catalogo" className={styles.btnPrimario}>
+          <Link to="/#catalogo" className={styles.btnPrimario} onClick={onVerCatalogo}>
             Ver el catálogo
           </Link>
-          <Link to="/#ofertas" className={styles.btnSecundario}>
+          <Link to="/#catalogo" className={styles.btnSecundario} onClick={onVerOfertas}>
             Ofertas de la semana
           </Link>
         </div>

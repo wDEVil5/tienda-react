@@ -5,7 +5,7 @@ import ImagenProducto from "./ImagenProducto.jsx";
 import ControlCantidad from "./ControlCantidad.jsx";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 
-function Carrito({ onCerrar, abierto, productos }) {
+function Carrito({ onCerrar, abierto, productos, onVerOfertas, onVerCatalogo }) {
   const {
     carrito,
     totalItems,
@@ -135,10 +135,24 @@ function Carrito({ onCerrar, abierto, productos }) {
                 : "Explora el catálogo y encuentra productos para tu carrito."}
             </p>
             <div className={styles.vacioAcciones}>
-              <Link className={styles.vacioBotonPrimario} to="/#ofertas" onClick={onCerrar}>
+              <Link
+                className={styles.vacioBotonPrimario}
+                to="/#catalogo"
+                onClick={() => {
+                  onVerOfertas();
+                  onCerrar();
+                }}
+              >
                 Ver ofertas
               </Link>
-              <Link className={styles.vacioBotonSecundario} to="/#catalogo" onClick={onCerrar}>
+              <Link
+                className={styles.vacioBotonSecundario}
+                to="/#catalogo"
+                onClick={() => {
+                  onVerCatalogo();
+                  onCerrar();
+                }}
+              >
                 Ir al catálogo
               </Link>
             </div>

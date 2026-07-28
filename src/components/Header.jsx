@@ -9,6 +9,9 @@ function Header({
   onBuscar,
   productos,
   onSeleccionarCategoria,
+  onCambiarSoloOfertas,
+  onVerOfertas,
+  onVerCatalogo,
   onAbrirCarrito,
 }) {
   const { totalItems, carrito } = useCarritoContext();
@@ -34,6 +37,7 @@ function Header({
     // La búsqueda se ejecuta en el catálogo completo, no dentro de una
     // categoría que hubiese quedado seleccionada anteriormente.
     onSeleccionarCategoria("todas");
+    onCambiarSoloOfertas(false);
     setSugerenciasAbiertas(false);
     navegar("/#catalogo");
   };
@@ -43,6 +47,7 @@ function Header({
     // resultado vacío causado por dos filtros que el usuario no ve juntos.
     onBuscar(valor);
     onSeleccionarCategoria("todas");
+    onCambiarSoloOfertas(false);
     setSugerenciasAbiertas(Boolean(valor.trim()));
   };
 
@@ -51,6 +56,7 @@ function Header({
     // que consume Catalogo.jsx antes de llevar al usuario a esa sección.
     onBuscar("");
     onSeleccionarCategoria(categoria);
+    onCambiarSoloOfertas(false);
     setSugerenciasAbiertas(false);
     navegar("/#catalogo");
   };
@@ -231,10 +237,24 @@ function Header({
           barra. Solo se muestra cuando la hamburguesa está abierta. */}
       {menuAbierto && (
         <nav id="menu-movil" className={styles.menuMovil} aria-label="Menú">
-          <Link to="/#catalogo" onClick={cerrarMenu} className={styles.menuLink}>
+          <Link
+            to="/#catalogo"
+            onClick={() => {
+              onVerCatalogo();
+              cerrarMenu();
+            }}
+            className={styles.menuLink}
+          >
             Catálogo
           </Link>
-          <Link to="/#ofertas" onClick={cerrarMenu} className={styles.menuLink}>
+          <Link
+            to="/#catalogo"
+            onClick={() => {
+              onVerOfertas();
+              cerrarMenu();
+            }}
+            className={styles.menuLink}
+          >
             Ofertas
           </Link>
           <Link to="/#como-comprar" onClick={cerrarMenu} className={styles.menuLink}>
@@ -257,10 +277,10 @@ function Header({
           navega desde una ficha de producto (App se encarga del scroll). */}
       <nav className={styles.navFila} aria-label="Navegación principal">
         <div className={styles.contenedor}>
-          <Link to="/#catalogo" className={styles.navLink}>
+          <Link to="/#catalogo" className={styles.navLink} onClick={onVerCatalogo}>
             Catálogo
           </Link>
-          <Link to="/#ofertas" className={styles.navLink}>
+          <Link to="/#catalogo" className={styles.navLink} onClick={onVerOfertas}>
             Ofertas
           </Link>
           <Link to="/#como-comprar" className={styles.navLink}>

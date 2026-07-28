@@ -16,6 +16,7 @@ function App() {
   // Header y catálogo comparten estos filtros: una sugerencia puede cambiar la
   // categoría y el catálogo la refleja sin depender de un backend todavía.
   const [categoria, setCategoria] = useState("todas");
+  const [soloOfertas, setSoloOfertas] = useState(false);
   const [productos, setProductos] = useState([]); //empieza vacia, los datos llegan despues
   const [cargando, setCargando] = useState(true); // ¿esta cargando?
   const [error, setError] = useState(null); // null = sin error, string = mensaje a mostrar
@@ -73,6 +74,20 @@ function App() {
     cargarProductos();
   };
 
+  // Accesos globales: todos los CTA que hablan de ofertas aplican el mismo
+  // filtro real. Así no depende de qué sección originó la navegación.
+  const verOfertas = () => {
+    setBusqueda("");
+    setCategoria("todas");
+    setSoloOfertas(true);
+  };
+
+  const verCatalogo = () => {
+    setBusqueda("");
+    setCategoria("todas");
+    setSoloOfertas(false);
+  };
+
   //early return
   if (cargando) {
     return (
@@ -105,6 +120,9 @@ function App() {
         onBuscar={setBusqueda}
         productos={productos}
         onSeleccionarCategoria={setCategoria}
+        onCambiarSoloOfertas={setSoloOfertas}
+        onVerOfertas={verOfertas}
+        onVerCatalogo={verCatalogo}
         onAbrirCarrito={() => setCarritoAbierto(true)}
       />
 
@@ -121,6 +139,10 @@ function App() {
                 onBuscar={setBusqueda}
                 categoria={categoria}
                 onSeleccionarCategoria={setCategoria}
+                soloOfertas={soloOfertas}
+                onCambiarSoloOfertas={setSoloOfertas}
+                onVerOfertas={verOfertas}
+                onVerCatalogo={verCatalogo}
               />
             }
           />
@@ -144,6 +166,8 @@ function App() {
         onCerrar={() => setCarritoAbierto(false)}
         abierto={carritoAbierto}
         productos={productos}
+        onVerOfertas={verOfertas}
+        onVerCatalogo={verCatalogo}
       />
 
       {/* Aviso flotante que aparece al agregar y se va solo */}
@@ -153,6 +177,9 @@ function App() {
         productos={productos}
         onBuscar={setBusqueda}
         onSeleccionarCategoria={setCategoria}
+        onCambiarSoloOfertas={setSoloOfertas}
+        onVerOfertas={verOfertas}
+        onVerCatalogo={verCatalogo}
       />
     </div>
   );

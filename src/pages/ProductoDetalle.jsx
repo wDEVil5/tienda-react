@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 import ImagenProducto from "../components/ImagenProducto.jsx";
@@ -18,6 +18,13 @@ function ProductoDetalle({ productos }) {
   const [imagenSeleccionada, setImagenSeleccionada] = useState(null);
 
   const producto = productos.find((p) => p.id === Number(id));
+
+  // React Router conserva la posición previa del documento al cambiar de ruta.
+  // Cada detalle debe comenzar arriba, también al abrir un relacionado desde
+  // esta misma página (en ese caso el componente no se desmonta: solo cambia :id).
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
 
   // La URL podría apuntar a un id que no existe (link viejo, id inventado).
   if (!producto) {

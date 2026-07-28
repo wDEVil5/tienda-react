@@ -59,7 +59,7 @@ function ProductoDetalle({ productos }) {
     : imagenes[0];
 
   return (
-    <section className={styles.detalle}>
+    <section key={id} className={styles.detalle}>
       <div className={styles.topBar}>
         <nav className={styles.miga} aria-label="Ruta de navegación">
           <Link to="/">Tienda</Link>

@@ -157,6 +157,21 @@
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-tarjeta);
   box-shadow: 0 16px 32px rgba(28, 27, 24, 0.16);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-6px);
+  visibility: hidden;
+  will-change: opacity, transform;
+  transition: opacity 0.16s ease, transform 0.2s ease,
+    visibility 0s linear 0.2s;
+}
+
+.sugerenciasAbiertas {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  visibility: visible;
+  transition-delay: 0s;
 }
 
 .sugerenciasTitulo {
@@ -456,9 +471,30 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: var(--e-sm) var(--e-lg) var(--e-lg);
+  max-height: 0;
+  overflow: hidden;
+  padding: 0 var(--e-lg);
   background-color: var(--color-texto);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid transparent;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-8px);
+  visibility: hidden;
+  will-change: max-height, opacity, transform;
+  transition: max-height 0.24s ease, padding 0.24s ease,
+    border-color 0.2s ease, opacity 0.16s ease, transform 0.24s ease,
+    visibility 0s linear 0.24s;
+}
+
+.menuAbierto {
+  max-height: 340px;
+  padding: var(--e-sm) var(--e-lg) var(--e-lg);
+  border-top-color: rgba(255, 255, 255, 0.1);
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  visibility: visible;
+  transition-delay: 0s;
 }
 
 .menuLink {
@@ -641,5 +677,13 @@
 @media (min-width: 1024px) {
   .menuMovil {
     display: none;
+  }
+}
+
+/* La interfaz sigue siendo usable sin movimiento para quien lo solicite. */
+@media (prefers-reduced-motion: reduce) {
+  .sugerencias,
+  .menuMovil {
+    transition: none;
   }
 }

@@ -393,13 +393,31 @@
     content: "−";
   }
 
-  /* Enlaces ocultos por defecto; se muestran solo con la clase "abierto". */
+  /* Enlaces plegados: se conserva la caja para poder animar tanto la apertura
+     como el cierre, sin afectar las columnas estáticas de escritorio. */
   .colLinks {
-    display: none;
-    padding-bottom: var(--e-md);
+    max-height: 0;
+    overflow: hidden;
+    padding-bottom: 0;
+    opacity: 0;
+    transform: translateY(-4px);
+    visibility: hidden;
+    transition: max-height 0.22s ease, padding 0.22s ease, opacity 0.16s ease,
+      transform 0.22s ease, visibility 0s linear 0.22s;
   }
 
   .colAbierto {
-    display: flex;
+    max-height: 360px;
+    padding-bottom: var(--e-md);
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+    transition-delay: 0s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .colLinks {
+    transition: none;
   }
 }

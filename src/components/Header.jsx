@@ -136,11 +136,13 @@ function Header({
                 <i className="fa-solid fa-xmark" aria-hidden="true"></i>
               </button>
             )}
-            {sugerenciasAbiertas && (
+            {termino && (
               <div
                 id="sugerencias-busqueda"
-                className={styles.sugerencias}
+                className={`${styles.sugerencias} ${sugerenciasAbiertas ? styles.sugerenciasAbiertas : ""}`}
                 onMouseDown={(e) => e.preventDefault()}
+                aria-hidden={!sugerenciasAbiertas}
+                inert={!sugerenciasAbiertas}
               >
                 {sugerenciasProductos.length > 0 ? (
                   <>
@@ -235,8 +237,13 @@ function Header({
 
       {/* Menú móvil: recupera la navegación y "Entrar" que se ocultan en la
           barra. Solo se muestra cuando la hamburguesa está abierta. */}
-      {menuAbierto && (
-        <nav id="menu-movil" className={styles.menuMovil} aria-label="Menú">
+      <nav
+        id="menu-movil"
+        className={`${styles.menuMovil} ${menuAbierto ? styles.menuAbierto : ""}`}
+        aria-label="Menú"
+        aria-hidden={!menuAbierto}
+        inert={!menuAbierto}
+      >
           <Link
             to="/#catalogo"
             onClick={() => {
@@ -270,8 +277,7 @@ function Header({
           >
             Entrar
           </button>
-        </nav>
-      )}
+      </nav>
 
       {/* Navegación por secciones del Home. Los hashes también funcionan si se
           navega desde una ficha de producto (App se encarga del scroll). */}

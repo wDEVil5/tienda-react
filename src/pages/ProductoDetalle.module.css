@@ -3,6 +3,20 @@
   flex-direction: column;
   gap: var(--e-lg);
   margin-bottom: var(--e-2xl);
+  animation: entradaDetalle 0.2s ease-out both;
+}
+
+/* Transición breve al navegar a una ficha: acompaña el cambio de contexto
+   sin retrasar la lectura ni competir con el scroll que vuelve al inicio. */
+@keyframes entradaDetalle {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ---- Barra superior: miga + volver ---- */
@@ -54,6 +68,12 @@
 
 .volver:hover {
   color: var(--color-acento);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .detalle {
+    animation: none;
+  }
 }
 
 /* ---- Cuerpo: 2 columnas ---- */

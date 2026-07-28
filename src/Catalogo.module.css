@@ -674,12 +674,19 @@
         content: "";
         position: fixed;
         right: 0;
-        bottom: calc(48px + max(var(--e-lg), env(safe-area-inset-bottom)));
+        bottom: 0;
         left: 0;
         z-index: 1000;
-        height: 24px;
+        /* Cubre también el área detrás de las esquinas redondeadas del CTA.
+           Así el contenido desplazable nunca asoma alrededor del botón. */
+        height: calc(40px + 48px + max(var(--e-lg), env(safe-area-inset-bottom)));
         pointer-events: none;
-        background: linear-gradient(to bottom, transparent, var(--color-fondo));
+        background: linear-gradient(
+            to bottom,
+            transparent 0%,
+            var(--color-fondo) 40px,
+            var(--color-fondo) 100%
+        );
     }
 
     .controles.controlesAbierto .verProductos {

@@ -622,7 +622,12 @@
     .controles.controlesAbierto {
         display: flex;
         flex-direction: column;
+        /* .controles usa wrap en escritorio. Aquí debe quedar desactivado:
+           con columna + altura máxima, wrap crearía columnas laterales en vez
+           de habilitar el scroll vertical. */
+        flex-wrap: nowrap;
         align-items: stretch;
+        justify-content: flex-start;
         gap: var(--e-md);
         position: fixed;
         left: 0;
@@ -635,7 +640,8 @@
         max-height: 70dvh;
         overflow-y: auto;
         padding: var(--e-md) var(--e-lg)
-            calc(48px + var(--e-lg) + env(safe-area-inset-bottom));
+            /* CTA (48px) + degradado (24px): la última opción no queda debajo. */
+            calc(72px + var(--e-lg) + env(safe-area-inset-bottom));
         background-color: var(--color-fondo);
         border: none;
         border-radius: 20px 20px 0 0;
@@ -660,6 +666,20 @@
         border-radius: var(--radio-pill);
         background-color: var(--color-borde-3);
         margin-bottom: var(--e-xs);
+    }
+
+    /* El degradado separa suavemente el contenido desplazable del CTA fijo,
+       sin crear una segunda barra visual dura. */
+    .controles.controlesAbierto::after {
+        content: "";
+        position: fixed;
+        right: 0;
+        bottom: calc(48px + max(var(--e-lg), env(safe-area-inset-bottom)));
+        left: 0;
+        z-index: 1000;
+        height: 24px;
+        pointer-events: none;
+        background: linear-gradient(to bottom, transparent, var(--color-fondo));
     }
 
     .controles.controlesAbierto .verProductos {

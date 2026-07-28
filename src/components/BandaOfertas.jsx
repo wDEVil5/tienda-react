@@ -27,11 +27,15 @@ function BandaOfertas({ productos }) {
       <div className={styles.derecha}>
         <div className={styles.minis}>
           {mostradas.map((p, i) => (
-            <div
+            <Link
               key={p.id}
+              to={`/producto/${p.id}`}
               className={`${styles.mini} ${i === 2 ? styles.miniTercera : ""}`}
             >
               <div className={styles.miniImg}>
+                <span className={styles.descuentoProducto}>
+                  −{Math.round((1 - p.precio / p.precioAnterior) * 100)}%
+                </span>
                 <ImagenProducto
                   src={p.imagen}
                   alt={p.nombre}
@@ -39,10 +43,15 @@ function BandaOfertas({ productos }) {
                 />
               </div>
               <p className={styles.miniNombre}>{p.nombre}</p>
-              <p className={styles.miniPrecio}>
-                ${p.precio.toLocaleString("es-CL")}
-              </p>
-            </div>
+              <div className={styles.miniPrecios}>
+                <span className={styles.miniPrecioAnterior}>
+                  ${p.precioAnterior.toLocaleString("es-CL")}
+                </span>
+                <span className={styles.miniPrecio}>
+                  ${p.precio.toLocaleString("es-CL")}
+                </span>
+              </div>
+            </Link>
           ))}
           {/* Escritorio muestra 3 tarjetas; móvil 2 + esta pastilla "+N". */}
           {ofertas.length > 2 && (

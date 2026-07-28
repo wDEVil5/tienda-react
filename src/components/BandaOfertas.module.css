@@ -41,21 +41,44 @@
 
 /* Mini-tarjeta de producto en oferta (sobre el fondo oscuro). */
 .mini {
+  position: relative;
   flex: 0 0 auto;
   width: 136px;
   padding: var(--e-sm);
   background-color: rgba(255, 255, 255, 0.07);
   border-radius: var(--radio-caja);
+  color: inherit;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.mini:hover {
+  background-color: rgba(255, 255, 255, 0.12);
 }
 
 /* La imagen real se contiene en la superficie oscura para conservar el ritmo
    de las mini-tarjetas aunque los productos tengan proporciones distintas. */
 .miniImg {
+  position: relative;
   aspect-ratio: 4 / 3;
   margin-bottom: var(--e-sm);
   border-radius: var(--radio-campo);
   background-color: rgba(255, 255, 255, 0.09);
   overflow: hidden;
+}
+
+.descuentoProducto {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 1;
+  padding: 2px 5px;
+  border-radius: var(--radio-badge);
+  background-color: var(--color-oferta);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.3;
 }
 
 .miniImagen {
@@ -66,19 +89,34 @@
 }
 
 .miniNombre {
+  display: -webkit-box;
+  min-height: 29px;
   font-size: 11px;
   line-height: 1.3;
   color: var(--color-sobre-oscuro);
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.miniPrecios {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 2px;
 }
 
 .miniPrecio {
-  margin-top: 2px;
   font-family: var(--font-display);
   font-size: 16px;
   color: #fff;
+}
+
+.miniPrecioAnterior {
+  color: var(--color-tenue-oscuro);
+  font-size: 10px;
+  text-decoration: line-through;
 }
 
 /* Pastilla "+N": oculta en escritorio (3 tarjetas), visible en móvil (2 + esta). */

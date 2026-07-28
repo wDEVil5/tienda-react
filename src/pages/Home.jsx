@@ -28,7 +28,6 @@ function Home({
       <TiraConfianza />
       <Categorias productos={productos} />
       <BandaOfertas productos={productos} onVerOfertas={onVerOfertas} />
-      <ComoComprar />
       <Catalogo
         productos={productos}
         busqueda={busqueda}
@@ -38,6 +37,7 @@ function Home({
         soloOfertas={soloOfertas}
         onCambiarSoloOfertas={onCambiarSoloOfertas}
       />
+      <ComoComprar />
       <MarcasGondola />
     </>
   );

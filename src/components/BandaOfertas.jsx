@@ -14,13 +14,14 @@ function BandaOfertas({ productos, onVerOfertas }) {
       Math.round((1 - producto.precio / producto.precioAnterior) * 100)
     )
   );
+  const etiquetaProductos = ofertas.length === 1 ? "producto" : "productos";
 
   return (
     <section id="ofertas" className={styles.banda}>
       <div className={styles.texto}>
         <p className={styles.eyebrow}>Ofertas de la semana</p>
         <h2 className={styles.titulo}>
-          Hasta {descuentoMaximo}% en {ofertas.length} productos
+          Hasta {descuentoMaximo}% en {ofertas.length} {etiquetaProductos}
         </h2>
       </div>
 

@@ -1,23 +1,23 @@
 import styles from "./MarcasGondola.module.css";
+import { marcasActivas } from "../data/marcas.js";
 
-// "Marcas en góndola": marquee de dos filas que se deslizan en sentidos
-// opuestos. Son PLACEHOLDERS "[ logo NN ]" a propósito: . Cuando la
-// tienda tenga permisos, se reemplaza el texto por <img> dentro del mismo tile.
-//
-// Doce espacios temporales, seis por fila. Cada pista duplica su propio set
-// para que el carrusel pueda desplazarse en bucle sin un salto visible.
-const LOGOS = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0"));
-
-function Pista({ logos, direccion }) {
+function Pista({ marcas, direccion }) {
   const claseFila = direccion === "izquierda" ? styles.filaIzq : styles.filaDer;
   return (
     <div className={`${styles.fila} ${claseFila}`}>
-      {/* Set duplicado: [...logos, ...logos]. Las keys llevan un sufijo para
+      {/* Set duplicado: [...marcas, ...marcas]. Las keys llevan un sufijo para
           distinguir el original de la copia. */}
       <div className={styles.track}>
-        {[...logos, ...logos].map((n, i) => (
-          <div key={`${n}-${i}`} className={styles.tile}>
-            [ logo {n} ]
+        {[...marcas, ...marcas].map((marca, i) => (
+          <div
+            key={`${marca.id}-${i}`}
+            className={`${styles.tile} ${marca.logoUrl ? styles.tileConLogo : ""}`}
+          >
+            {marca.logoUrl ? (
+              <img className={styles.logo} src={marca.logoUrl} alt="" />
+            ) : (
+              <span>[ logo {String(marca.id).padStart(2, "0")} ]</span>
+            )}
           </div>
         ))}
       </div>
@@ -25,9 +25,9 @@ function Pista({ logos, direccion }) {
   );
 }
 
-function MarcasGondola() {
-  const filaArriba = LOGOS.slice(0, 7);
-  const filaAbajo = LOGOS.slice(7);
+function MarcasGondola({ marcas = marcasActivas }) {
+  const filaArriba = marcas.slice(0, 7);
+  const filaAbajo = marcas.slice(7);
 
   return (
     <section id="nuestra-tienda" className={styles.marcas}>
@@ -43,10 +43,10 @@ function MarcasGondola() {
         </div>
       </div>
 
-      {/* Decorativo: el lector de pantalla no necesita leer 28 placeholders. */}
+      {/* Decorativo: el lector de pantalla no necesita leer los logos repetidos. */}
       <div className={styles.pistas} aria-hidden="true">
-        <Pista logos={filaArriba} direccion="izquierda" />
-        <Pista logos={filaAbajo} direccion="derecha" />
+        <Pista marcas={filaArriba} direccion="izquierda" />
+        <Pista marcas={filaAbajo} direccion="derecha" />
       </div>
     </section>
   );

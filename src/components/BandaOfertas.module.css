@@ -136,20 +136,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: var(--e-sm);
   flex-shrink: 0;
   height: 46px;
   padding: 0 var(--e-xl);
-  background-color: var(--color-acento);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  background-color: transparent;
   color: #fff;
   border-radius: var(--radio-control);
   font-size: 14px;
   font-weight: 500;
   text-decoration: none;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .boton:hover {
-  background-color: #285d40;
+  border-color: var(--color-acento-claro);
+  background-color: rgba(143, 199, 168, 0.14);
 }
 
 /* Tablet: la oferta conserva sus elementos juntos, pero el bloque de texto

@@ -61,6 +61,7 @@ function BandaOfertas({ productos }) {
 
         <Link to="/#catalogo" className={styles.boton}>
           Ver ofertas
+          <i className="fa-solid fa-arrow-right" aria-hidden="true"></i>
         </Link>
       </div>
     </section>

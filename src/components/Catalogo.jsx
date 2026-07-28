@@ -247,24 +247,21 @@ function Catalogo({
         >
           <span className={styles.sheetHandle} aria-hidden="true"></span>
 
-          {/* En móvil este bloque es el único que se desplaza: el CTA queda
-              siempre disponible al pie de la hoja. En escritorio no crea caja. */}
-          <div className={styles.sheetContenido}>
-            {/* Encabezado de la hoja (solo móvil). */}
-            <div className={styles.sheetHeader}>
-              <span className={styles.sheetTitulo}>Filtrar</span>
-              <button
-                className={styles.limpiar}
-                type="button"
-                onClick={limpiarFiltros}
-              >
-                Limpiar
-              </button>
-            </div>
+          {/* Encabezado de la hoja (solo móvil). */}
+          <div className={styles.sheetHeader}>
+            <span className={styles.sheetTitulo}>Filtrar</span>
+            <button
+              className={styles.limpiar}
+              type="button"
+              onClick={limpiarFiltros}
+            >
+              Limpiar
+            </button>
+          </div>
 
-            <p className={styles.grupoLabel}>Categoría</p>
-            <div className={styles.chips}>
-              {renderChips(categoriasVisibles)}
+          <p className={styles.grupoLabel}>Categoría</p>
+          <div className={styles.chips}>
+            {renderChips(categoriasVisibles)}
 
             {categoriasExtra.length > 0 && (
               <div className={styles.masCategorias}>
@@ -289,11 +286,11 @@ function Catalogo({
                 )}
               </div>
             )}
-            </div>
+          </div>
 
           {/* Rango de precio (slider de dos extremos). */}
-            <p className={styles.grupoLabel}>Precio</p>
-            <div className={styles.precioGrupo}>
+          <p className={styles.grupoLabel}>Precio</p>
+          <div className={styles.precioGrupo}>
             <div className={styles.precioRango}>
               <span className={styles.precioPista} aria-hidden="true"></span>
               <span
@@ -329,10 +326,10 @@ function Catalogo({
               <span>${minActual.toLocaleString("es-CL")}</span>
               <span>${maxActual.toLocaleString("es-CL")}</span>
             </div>
-            </div>
+          </div>
 
-            <p className={styles.grupoLabel}>Filtros</p>
-            <label className={styles.soloOfertas}>
+          <p className={styles.grupoLabel}>Filtros</p>
+          <label className={styles.soloOfertas}>
             Solo ofertas
             <input
               type="checkbox"
@@ -341,21 +338,20 @@ function Catalogo({
               onChange={(e) => onCambiarSoloOfertas(e.target.checked)}
             />
             <span className={styles.switchTrack} aria-hidden="true"></span>
-            </label>
+          </label>
 
           {/* Deshabilitados: dependen de datos que aún no existen (stock / modo
               de entrega). Se muestran para reflejar el diseño; llegan con el backend. */}
-            <label className={`${styles.soloOfertas} ${styles.switchPronto}`}>
+          <label className={`${styles.soloOfertas} ${styles.switchPronto}`}>
             Disponible hoy
             <input type="checkbox" className={styles.switchInput} disabled />
             <span className={styles.switchTrack} aria-hidden="true"></span>
-            </label>
-            <label className={`${styles.soloOfertas} ${styles.switchPronto}`}>
+          </label>
+          <label className={`${styles.soloOfertas} ${styles.switchPronto}`}>
             Retiro en tienda
             <input type="checkbox" className={styles.switchInput} disabled />
             <span className={styles.switchTrack} aria-hidden="true"></span>
-            </label>
-          </div>
+          </label>
 
           {/* Cierra la hoja (solo móvil). */}
           <button

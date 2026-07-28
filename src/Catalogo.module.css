@@ -330,12 +330,6 @@
   justify-content: space-between;
 }
 
-/* En escritorio los hijos continúan participando directamente en .controles.
-   En móvil esta envoltura se convierte en la zona desplazable del drawer. */
-.sheetContenido {
-  display: contents;
-}
-
 .sheetTitulo {
   font-family: var(--font-display);
   font-size: 22px;
@@ -629,19 +623,19 @@
         display: flex;
         flex-direction: column;
         align-items: stretch;
-        gap: var(--e-sm);
+        gap: var(--e-md);
         position: fixed;
         left: 0;
         right: 0;
         bottom: 0;
         z-index: 1000;
-        /* Una altura acotada evita tapar casi toda la pantalla. El contenido
-           central puede desplazarse, pero el CTA permanece en el pie. */
-        height: min(64vh, 590px);
-        height: min(64dvh, 590px);
-        overflow: hidden;
+        /* En pantallas bajas la hoja no invade todo el alto; el contenido
+           conserva scroll y el CTA se ancla visualmente al pie. */
+        max-height: 70vh;
+        max-height: 70dvh;
+        overflow-y: auto;
         padding: var(--e-md) var(--e-lg)
-            max(var(--e-lg), env(safe-area-inset-bottom));
+            calc(48px + var(--e-lg) + env(safe-area-inset-bottom));
         background-color: var(--color-fondo);
         border: none;
         border-radius: 20px 20px 0 0;
@@ -668,25 +662,17 @@
         margin-bottom: var(--e-xs);
     }
 
-    .controles.controlesAbierto .sheetContenido {
-        display: flex;
-        min-height: 0;
-        flex: 1 1 auto;
-        flex-direction: column;
-        gap: var(--e-md);
-        overflow-y: auto;
-        overscroll-behavior: contain;
-        padding: 0 var(--e-xs);
-    }
-
     .controles.controlesAbierto .verProductos {
+        position: fixed;
+        right: var(--e-lg);
+        bottom: max(var(--e-lg), env(safe-area-inset-bottom));
+        left: var(--e-lg);
+        z-index: 1001;
         display: block;
-        align-self: stretch;
-        width: 100%;
-        flex: 0 0 48px;
+        width: auto;
         box-sizing: border-box;
         height: 48px;
-        margin-top: var(--e-xs);
+        margin: 0;
         border: none;
         border-radius: var(--radio-control);
         background-color: var(--color-acento);

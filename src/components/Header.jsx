@@ -136,6 +136,8 @@ function Header({
                 <i className="fa-solid fa-xmark" aria-hidden="true"></i>
               </button>
             )}
+            {/* Se mantiene montado mientras haya término para animar su cierre.
+                `inert` evita que enlaces ocultos entren al orden de tabulación. */}
             {termino && (
               <div
                 id="sugerencias-busqueda"
@@ -235,8 +237,8 @@ function Header({
         </div>
       </div>
 
-      {/* Menú móvil: recupera la navegación y "Entrar" que se ocultan en la
-          barra. Solo se muestra cuando la hamburguesa está abierta. */}
+      {/* Permanece montado para animar apertura/cierre; `inert` lo excluye del
+          teclado y lector de pantalla cuando está plegado. */}
       <nav
         id="menu-movil"
         className={`${styles.menuMovil} ${menuAbierto ? styles.menuAbierto : ""}`}

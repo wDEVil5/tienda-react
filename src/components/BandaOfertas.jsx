@@ -8,6 +8,8 @@ function BandaOfertas({ productos, onVerOfertas }) {
   const ofertas = productos.filter((p) => p.precioAnterior !== null);
   if (ofertas.length === 0) return null;
 
+  // La campaña puede tener muchas ofertas, pero la composición editorial solo
+  // presenta tres; el CTA lleva al catálogo filtrado para ver el conjunto completo.
   const mostradas = ofertas.slice(0, 3);
   const descuentoMaximo = Math.max(
     ...ofertas.map((producto) =>
@@ -37,6 +39,8 @@ function BandaOfertas({ productos, onVerOfertas }) {
 
       <div className={styles.derecha}>
         <div className={styles.ofertasInternas}>
+          {/* El índice define el rol visual (izquierda, principal, derecha),
+              no la prioridad comercial de cada producto. */}
           <div className={styles.minis}>
           {mostradas.map((p, i) => (
             <Link

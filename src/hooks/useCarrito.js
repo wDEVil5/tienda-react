@@ -1,6 +1,6 @@
 import { useReducer, useEffect, useState } from "react";
 
-// Estado inicial: leemos el carrito guardado en localStorage una Unica vez.
+// La inicialización diferida evita leer localStorage en cada render.
 function iniciarCarrito() {
   try {
     const guardado = localStorage.getItem("carrito");
@@ -80,9 +80,8 @@ export function useCarrito() {
   // Estado derivado: se recalcula solo en cada render, no se guarda.
   const totalItems = carrito.reduce((suma, item) => suma + item.cantidad, 0);
 
-  // Aviso flotante (toast). Objeto { mensaje, key, accion }:
-  // - la referencia nueva en cada aviso re-dispara el efecto del Toast (como toBe);
-  // - "accion" es opcional: un botón dentro del toast, p. ej. "Deshacer".
+  // El aviso es efímero: una referencia nueva reinicia su temporizador. La acción
+  // opcional permite restaurar un ítem eliminado sin persistir un historial completo.
   const [aviso, setAviso] = useState(null);
   const descartarAviso = () => setAviso(null);
   const mostrarAviso = (mensaje, accion = null) =>

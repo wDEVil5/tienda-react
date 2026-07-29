@@ -55,7 +55,8 @@ function Catalogo({
     return () => mediaTablet.removeEventListener("change", actualizarTablet);
   }, []);
 
-  const categorias = ["todas", ...new Set(productos.map((p) => p.categoria))]; // version Derivada
+  // La categoría "todas" es una opción de interfaz; las demás llegan del catálogo.
+  const categorias = ["todas", ...new Set(productos.map((p) => p.categoria))];
   const limiteCategorias = esTablet
     ? LIMITE_CATEGORIAS_TABLET
     : LIMITE_CATEGORIAS_VISIBLES;
@@ -132,7 +133,6 @@ function Catalogo({
     const coincidePrecio =
       producto.precio >= minActual && producto.precio <= maxActual;
 
-    //veredicto
     return (
       coincideBusqueda && coincideCategoria && coincideOferta && coincidePrecio
     );

@@ -16,6 +16,9 @@ function Toast({
     !(soloAccion && !aviso.accion) &&
     !(ocultarSiAccion && aviso.accion);
 
+  // App y Carrito montan su propia ubicación del toast. Estas banderas hacen
+  // que un mismo aviso se muestre una sola vez: las eliminaciones van al drawer.
+
   // Un toast con acción ("Deshacer") vive más para dar tiempo a pulsarlo.
   const duracion = aviso?.accion ? DURACION_ACCION_MS : DURACION_MS;
 

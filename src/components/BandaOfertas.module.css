@@ -1,83 +1,153 @@
 .banda {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--e-2xl);
+  position: relative;
+  display: grid;
+  grid-template-columns: 430px minmax(0, 1fr);
+  gap: clamp(var(--e-xl), 3vw, 56px);
+  min-height: 360px;
   margin: var(--e-2xl) 0;
-  padding: var(--e-2xl);
-  background-color: var(--color-texto); /* #1c1b18 */
+  padding: 0;
+  overflow: hidden;
+  isolation: isolate;
+  background-color: var(--color-texto);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radio-tarjeta);
   color: #fff;
+}
+
+/* El verde solo acompaña el bloque editorial: el degradado evita una división
+   rígida con el catálogo de productos y no depende de datos de campaña. */
+.banda::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0 auto 0 0;
+  width: 550px;
+  content: "";
+  background: linear-gradient(90deg, #1f4a38 0, #1f4a38 430px, #1b1b18 550px);
+}
+
+.texto {
+  position: relative;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 360px;
+  padding: 44px 36px;
+  min-width: 0;
+}
+
+/* El porcentaje grande es una pieza editorial derivada del descuento real.
+   No comunica una oferta distinta: replica el valor del título. */
+.numeroDecorativo {
+  position: absolute;
+  z-index: -1;
+  top: 34px;
+  left: -14px;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 300px;
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  line-height: 0.78;
+  color: rgba(255, 255, 255, 0.16);
+  pointer-events: none;
 }
 
 .eyebrow {
   font-family: var(--font-mono);
   font-size: 11px;
-  letter-spacing: 0.12em;
+  font-weight: 500;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--color-acento-claro);
-  margin-bottom: var(--e-sm);
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: var(--e-xl);
 }
 
 .titulo {
-  font-family: var(--font-display);
-  font-size: 30px;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 40px;
   font-weight: 400;
-  line-height: 1.1;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
   color: #fff;
+}
+
+.bajada {
+  max-width: 30ch;
+  margin-top: var(--e-lg);
+  color: rgba(255, 255, 255, 0.78);
+  font-family: "DM Sans", var(--font-ui);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e-md);
+  height: auto;
+  margin-top: var(--e-xl);
+  padding: 13px 24px;
+  border: 1px solid transparent;
+  border-radius: var(--radio-pill);
+  background-color: #141412;
+  color: #f6f5f1;
+  font-family: "DM Sans", var(--font-ui);
+  font-size: 13.5px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.boton:hover {
+  background-color: #000;
+  transform: translateY(-1px);
 }
 
 .derecha {
   display: flex;
   align-items: center;
-  gap: var(--e-lg);
   min-width: 0;
+  padding: 40px 40px 40px 0;
 }
 
 .minis {
-  display: flex;
-  gap: var(--e-sm);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(var(--e-md), 1.7vw, var(--e-xl));
+  width: 100%;
 }
 
-/* Mini-tarjeta de producto en oferta (sobre el fondo oscuro). */
+/* Tarjetas sin caja exterior: la imagen lleva la superficie y bajo ella queda
+   la información legible. Cada tarjeta sigue siendo un enlace a su detalle. */
 .mini {
-  position: relative;
-  flex: 0 0 auto;
-  width: 136px;
-  padding: var(--e-sm);
-  background-color: rgba(255, 255, 255, 0.07);
-  border-radius: var(--radio-caja);
+  display: block;
+  min-width: 0;
   color: inherit;
   text-decoration: none;
-  transition: background-color 0.2s ease;
 }
 
-.mini:hover {
-  background-color: rgba(255, 255, 255, 0.12);
-}
-
-/* La imagen real se contiene en la superficie oscura para conservar el ritmo
-   de las mini-tarjetas aunque los productos tengan proporciones distintas. */
 .miniImg {
   position: relative;
-  aspect-ratio: 4 / 3;
-  margin-bottom: var(--e-sm);
-  border-radius: var(--radio-campo);
-  background-color: rgba(255, 255, 255, 0.09);
+  aspect-ratio: 1 / 1;
+  margin-bottom: var(--e-md);
   overflow: hidden;
+  border-radius: var(--radio-caja);
+  background-color: rgba(255, 255, 255, 0.09);
 }
 
 .descuentoProducto {
   position: absolute;
-  top: 6px;
-  left: 6px;
   z-index: 1;
-  padding: 2px 5px;
+  top: var(--e-md);
+  left: var(--e-md);
+  padding: 6px 10px;
   border-radius: var(--radio-badge);
   background-color: var(--color-oferta);
   color: #fff;
-  font-size: 10px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
   line-height: 1.3;
 }
 
@@ -86,161 +156,147 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
+  transition: transform 0.24s ease;
+}
+
+.mini:hover .miniImagen {
+  transform: scale(1.035);
 }
 
 .miniNombre {
   display: -webkit-box;
-  min-height: 29px;
-  font-size: 11px;
-  line-height: 1.3;
-  color: var(--color-sobre-oscuro);
+  min-height: 43px;
   overflow: hidden;
+  color: #deded9;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.45;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
 
 .miniPrecios {
   display: flex;
-  align-items: baseline;
   flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 2px;
+  align-items: baseline;
+  gap: var(--e-sm);
+  margin-top: var(--e-sm);
 }
 
 .miniPrecio {
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: 26px;
   color: #fff;
 }
 
 .miniPrecioAnterior {
-  color: var(--color-tenue-oscuro);
-  font-size: 10px;
+  color: #77756f;
+  font-size: 12px;
   text-decoration: line-through;
 }
 
-/* Pastilla "+N": oculta en escritorio (3 tarjetas), visible en móvil (2 + esta). */
+/* En desktop se ven tres productos. En móvil se reemplaza el tercero por +N. */
 .masTile {
   display: none;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  background-color: rgba(255, 255, 255, 0.07);
-  border-radius: var(--radio-caja);
-  font-size: 15px;
-  color: var(--color-sobre-oscuro);
 }
 
-.boton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--e-sm);
-  flex-shrink: 0;
-  height: 46px;
-  padding: 0 var(--e-xl);
-  border: 1px solid rgba(255, 255, 255, 0.42);
-  background-color: transparent;
-  color: #fff;
-  border-radius: var(--radio-control);
-  font-size: 14px;
-  font-weight: 500;
-  text-decoration: none;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
-}
-
-.boton:hover {
-  border-color: var(--color-acento-claro);
-  background-color: rgba(143, 199, 168, 0.14);
-}
-
-/* Tablet: la oferta conserva sus elementos juntos, pero el bloque de texto
-   pasa arriba para evitar saltos arbitrarios de una sola tarjeta. */
 @media (max-width: 1023px) {
   .banda {
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--e-lg);
-  }
-
-  .derecha {
-    /* En tablet el título ya ocupa su propia fila; tarjetas y CTA se agrupan
-       para evitar el vacío horizontal que deja el botón en el extremo. */
-    justify-content: flex-start;
-  }
-}
-
-/* Tablet: la banda mantiene la lectura editorial en dos columnas. Las
-   mini-ofertas y el CTA forman un bloque compacto para no dejar un vacío a la
-   derecha ni convertir la sección en una tarjeta excesivamente alta. */
-@media (min-width: 768px) and (max-width: 1023px) {
-  .banda {
-    display: grid;
-    grid-template-columns: minmax(190px, 0.85fr) minmax(0, 1.45fr);
-    align-items: center;
+    grid-template-columns: minmax(220px, 0.78fr) minmax(0, 1.22fr);
     gap: var(--e-xl);
-    padding: var(--e-xl);
+    min-height: 310px;
+    padding: 0;
+  }
+
+  .banda::before {
+    width: 50%;
+    background: linear-gradient(90deg, #1f4a38 0%, #1f4a38 66%, #1b1b18 100%);
+  }
+
+  .texto {
+    min-height: 310px;
+    padding: var(--e-xl) var(--e-lg);
   }
 
   .titulo {
-    font-size: 28px;
+    font-size: 38px;
   }
 
-  .derecha {
-    justify-content: flex-end;
-    gap: var(--e-md);
+  .bajada {
+    font-size: 14px;
   }
 
   .minis {
-    gap: var(--e-xs);
+    gap: var(--e-sm);
   }
 
-  .mini {
-    width: 90px;
-    padding: var(--e-xs);
+  .derecha {
+    padding: var(--e-xl) var(--e-xl) var(--e-xl) 0;
+  }
+
+  .miniNombre {
+    min-height: 38px;
+    font-size: 12px;
+  }
+
+  .miniPrecio {
+    font-size: 21px;
+  }
+}
+
+@media (max-width: 767px) {
+  .banda {
+    display: flex;
+    flex-direction: column;
+    gap: var(--e-xl);
+    min-height: 0;
+    padding: var(--e-xl) var(--e-lg);
+  }
+
+  .banda::before {
+    width: 100%;
+    height: 53%;
+    background: linear-gradient(180deg, #1d543c 0%, #1d543c 72%, transparent 100%);
+  }
+
+  .texto {
+    align-items: flex-start;
+    min-height: 0;
+    padding: 0;
+  }
+
+  .numeroDecorativo {
+    top: 10px;
+    left: -12px;
+    font-size: 190px;
+  }
+
+  .eyebrow {
+    margin-bottom: var(--e-md);
+  }
+
+  .titulo {
+    max-width: 10ch;
+    font-size: 38px;
+  }
+
+  .bajada {
+    margin-top: var(--e-md);
   }
 
   .boton {
-    height: 42px;
-    padding: 0 var(--e-lg);
-  }
-}
-
-/* Móvil: todo apilado; las mini-tarjetas pueden desplazarse en horizontal. */
-@media (max-width: 767px) {
-  .banda {
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--e-lg);
-    padding: var(--e-lg);
-  }
-
-  .titulo {
-    font-size: 24px;
+    width: 100%;
+    margin-top: var(--e-lg);
   }
 
   .derecha {
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--e-lg);
     width: 100%;
-    min-width: 0;
+    padding: 0;
   }
 
-  /* Grid en vez de flex: minmax(0,1fr) fuerza a las columnas a poder encogerse
-     (el mismo arreglo del grid del catálogo). Dos tarjetas + la pastilla "+N". */
   .minis {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 56px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 54px;
     gap: var(--e-sm);
-    width: 100%;
-    min-width: 0;
-  }
-
-  .mini {
-    width: auto;
-    min-width: 0;
   }
 
   .miniTercera {
@@ -248,28 +304,39 @@
   }
 
   .masTile {
-    display: flex;
-    width: auto; /* la columna de 56px del grid ya fija su ancho */
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: var(--radio-caja);
+    color: #d7d7d1;
+    font-family: var(--font-display);
+    font-size: 23px;
   }
 
-  .boton {
-    width: 100%;
+  .miniNombre {
+    min-height: 35px;
+    font-size: 11.5px;
+  }
+
+  .miniPrecio {
+    font-size: 20px;
   }
 }
 
-/* Teléfonos compactos: se preserva la estructura de dos productos y el
-   contador, reduciendo solo el espacio que desperdician los extremos. */
 @media (max-width: 374px) {
   .banda {
-    padding: var(--e-md);
+    padding: var(--e-lg) var(--e-md);
   }
 
   .minis {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 48px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 46px;
     gap: var(--e-xs);
   }
+}
 
-  .mini {
-    padding: var(--e-xs);
+@media (prefers-reduced-motion: reduce) {
+  .boton,
+  .miniImagen {
+    transition: none;
   }
 }

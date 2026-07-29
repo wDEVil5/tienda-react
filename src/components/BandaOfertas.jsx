@@ -19,10 +19,20 @@ function BandaOfertas({ productos, onVerOfertas }) {
   return (
     <section id="ofertas" className={styles.banda}>
       <div className={styles.texto}>
+        <span className={styles.numeroDecorativo} aria-hidden="true">
+          {descuentoMaximo}
+        </span>
         <p className={styles.eyebrow}>Ofertas de la semana</p>
         <h2 className={styles.titulo}>
-          Hasta {descuentoMaximo}% en {ofertas.length} {etiquetaProductos}
+          Hasta {descuentoMaximo}% menos
+          <br />
+          en {ofertas.length} {etiquetaProductos}
         </h2>
+        <p className={styles.bajada}>Descuentos aplicados directamente al precio.</p>
+        <Link to="/#catalogo" className={styles.boton} onClick={onVerOfertas}>
+          Ver ofertas
+          <i className="fa-solid fa-arrow-right" aria-hidden="true"></i>
+        </Link>
       </div>
 
       <div className={styles.derecha}>
@@ -59,11 +69,6 @@ function BandaOfertas({ productos, onVerOfertas }) {
             <div className={styles.masTile}>+{ofertas.length - 2}</div>
           )}
         </div>
-
-        <Link to="/#catalogo" className={styles.boton} onClick={onVerOfertas}>
-          Ver ofertas
-          <i className="fa-solid fa-arrow-right" aria-hidden="true"></i>
-        </Link>
       </div>
     </section>
   );

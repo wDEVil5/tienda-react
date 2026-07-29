@@ -40,7 +40,9 @@
   display: flex;
   align-items: flex-end;
   aspect-ratio: 16 / 10;
+  width: 100%; /* llena la celda del grid (un button no se estira solo) */
   padding: var(--e-lg);
+  border: none; /* reset: el button trae borde de sistema */
   border-radius: var(--radio-tarjeta);
   background-image: repeating-linear-gradient(
     135deg,
@@ -48,7 +50,9 @@
     #f6f4ed 9px 18px
   );
   color: inherit;
-  text-decoration: none;
+  font: inherit; /* reset: hereda la tipografía en vez de la del button */
+  text-align: left; /* reset: el button centra el texto */
+  cursor: pointer;
   transition: transform 0.2s ease;
 }
 

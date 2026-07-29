@@ -26,7 +26,12 @@ function Home({
         onVerCatalogo={onVerCatalogo}
       />
       <TiraConfianza />
-      <Categorias productos={productos} />
+      <Categorias
+        productos={productos}
+        onBuscar={onBuscar}
+        onSeleccionarCategoria={onSeleccionarCategoria}
+        onCambiarSoloOfertas={onCambiarSoloOfertas}
+      />
       <BandaOfertas productos={productos} onVerOfertas={onVerOfertas} />
       <Catalogo
         productos={productos}

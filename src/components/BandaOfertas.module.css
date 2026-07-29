@@ -4,7 +4,9 @@
   grid-template-columns: 430px minmax(0, 1fr);
   gap: clamp(var(--e-xl), 3vw, 56px);
   min-height: 360px;
-  margin: var(--e-2xl) 0;
+  width: 100%;
+  max-width: 1180px;
+  margin: var(--e-2xl) auto;
   padding: 0;
   overflow: hidden;
   isolation: isolate;
@@ -108,45 +110,86 @@
 .derecha {
   display: flex;
   align-items: center;
+  justify-content: center;
   min-width: 0;
-  padding: 40px 40px 40px 0;
+  padding: 40px 44px;
+}
+
+.ofertasInternas {
+  width: min(100%, 568px);
 }
 
 .minis {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(var(--e-md), 1.7vw, var(--e-xl));
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
 }
 
-/* Tarjetas sin caja exterior: la imagen lleva la superficie y bajo ella queda
-   la información legible. Cada tarjeta sigue siendo un enlace a su detalle. */
+/* La baraja replica la jerarquía de una pieza publicitaria: la oferta central
+   domina y las laterales sostienen el ritmo. Los datos siguen siendo reales. */
 .mini {
   display: block;
+  position: relative;
+  z-index: 1;
+  width: 196px;
   min-width: 0;
   color: inherit;
   text-decoration: none;
+  transform: rotate(-2.2deg) translateY(12px);
+  transition: transform 0.25s ease;
+}
+
+.miniCentral {
+  z-index: 2;
+  width: 212px;
+  margin: 0 -18px;
+  transform: translateY(-10px);
+}
+
+.miniDerecha {
+  transform: rotate(2.2deg) translateY(12px);
+}
+
+.mini:hover {
+  transform: rotate(-2.2deg) translateY(2px);
+}
+
+.miniCentral:hover {
+  transform: translateY(-20px);
+}
+
+.miniDerecha:hover {
+  transform: rotate(2.2deg) translateY(2px);
 }
 
 .miniImg {
   position: relative;
-  aspect-ratio: 1 / 1;
-  margin-bottom: var(--e-md);
+  width: 100%;
+  height: 204px;
   overflow: hidden;
   border-radius: var(--radio-caja);
-  background-color: rgba(255, 255, 255, 0.09);
+  background-color: #33332f;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+}
+
+.miniCentral .miniImg {
+  height: 228px;
+  background-color: #3a3a35;
+  box-shadow: 0 24px 52px rgba(0, 0, 0, 0.55);
 }
 
 .descuentoProducto {
   position: absolute;
   z-index: 1;
-  top: var(--e-md);
-  left: var(--e-md);
-  padding: 6px 10px;
+  top: 10px;
+  left: 10px;
+  padding: 5px 9px;
   border-radius: var(--radio-badge);
-  background-color: var(--color-oferta);
+  background-color: #c0472c;
   color: #fff;
-  font-size: 12px;
+  font-family: "DM Sans", var(--font-ui);
+  font-size: 11px;
   font-weight: 700;
   line-height: 1.3;
 }
@@ -156,21 +199,30 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  transition: transform 0.24s ease;
 }
 
-.mini:hover .miniImagen {
-  transform: scale(1.035);
+.pies {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.pie {
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
 }
 
 .miniNombre {
   display: -webkit-box;
-  min-height: 43px;
+  min-height: 34px;
   overflow: hidden;
-  color: #deded9;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.75);
+  font-family: "DM Sans", var(--font-ui);
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.35;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
@@ -179,25 +231,23 @@
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: var(--e-sm);
-  margin-top: var(--e-sm);
+  gap: 7px;
+  margin-top: 4px;
 }
 
 .miniPrecio {
-  font-family: var(--font-display);
-  font-size: 26px;
-  color: #fff;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 19px;
+  font-weight: 400;
+  color: #f6f5f1;
 }
 
 .miniPrecioAnterior {
-  color: #77756f;
-  font-size: 12px;
+  color: rgba(255, 255, 255, 0.35);
+  font-family: "DM Sans", var(--font-ui);
+  font-size: 11.5px;
+  font-weight: 400;
   text-decoration: line-through;
-}
-
-/* En desktop se ven tres productos. En móvil se reemplaza el tercero por +N. */
-.masTile {
-  display: none;
 }
 
 @media (max-width: 1023px) {
@@ -295,22 +345,41 @@
   }
 
   .minis {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 54px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: var(--e-sm);
   }
 
-  .miniTercera {
+  .mini,
+  .miniCentral,
+  .miniDerecha {
+    width: auto;
+    margin: 0;
+    transform: none;
+  }
+
+  .mini:hover,
+  .miniCentral:hover,
+  .miniDerecha:hover {
+    transform: none;
+  }
+
+  .miniDerecha,
+  .pie:nth-child(3) {
     display: none;
   }
 
-  .masTile {
-    display: grid;
-    place-items: center;
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    border-radius: var(--radio-caja);
-    color: #d7d7d1;
-    font-family: var(--font-display);
-    font-size: 23px;
+  .miniImg,
+  .miniCentral .miniImg {
+    height: auto;
+    aspect-ratio: 1 / 1;
+    box-shadow: none;
+  }
+
+  .pies {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--e-sm);
+    margin-top: var(--e-md);
   }
 
   .miniNombre {
@@ -329,7 +398,6 @@
   }
 
   .minis {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 46px;
     gap: var(--e-xs);
   }
 }

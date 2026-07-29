@@ -36,12 +36,14 @@ function BandaOfertas({ productos, onVerOfertas }) {
       </div>
 
       <div className={styles.derecha}>
-        <div className={styles.minis}>
+        <div className={styles.ofertasInternas}>
+          <div className={styles.minis}>
           {mostradas.map((p, i) => (
             <Link
               key={p.id}
               to={`/producto/${p.id}`}
-              className={`${styles.mini} ${i === 2 ? styles.miniTercera : ""}`}
+              className={`${styles.mini} ${i === 0 ? styles.miniIzquierda : ""} ${i === 1 ? styles.miniCentral : ""} ${i === 2 ? styles.miniDerecha : ""}`}
+              aria-label={`Ver ${p.nombre}`}
             >
               <div className={styles.miniImg}>
                 <span className={styles.descuentoProducto}>
@@ -53,21 +55,25 @@ function BandaOfertas({ productos, onVerOfertas }) {
                   className={styles.miniImagen}
                 />
               </div>
+            </Link>
+          ))}
+        </div>
+
+        <div className={styles.pies}>
+          {mostradas.map((p) => (
+            <Link key={p.id} to={`/producto/${p.id}`} className={styles.pie}>
               <p className={styles.miniNombre}>{p.nombre}</p>
               <div className={styles.miniPrecios}>
-                <span className={styles.miniPrecioAnterior}>
-                  ${p.precioAnterior.toLocaleString("es-CL")}
-                </span>
                 <span className={styles.miniPrecio}>
                   ${p.precio.toLocaleString("es-CL")}
+                </span>
+                <span className={styles.miniPrecioAnterior}>
+                  ${p.precioAnterior.toLocaleString("es-CL")}
                 </span>
               </div>
             </Link>
           ))}
-          {/* Escritorio muestra 3 tarjetas; móvil 2 + esta pastilla "+N". */}
-          {ofertas.length > 2 && (
-            <div className={styles.masTile}>+{ofertas.length - 2}</div>
-          )}
+        </div>
         </div>
       </div>
     </section>

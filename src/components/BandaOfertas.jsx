@@ -76,6 +76,17 @@ function BandaOfertas({ productos, onVerOfertas }) {
         </div>
         </div>
       </div>
+
+      {/* En móvil el CTA baja después de la baraja; en escritorio permanece
+          dentro del panel editorial izquierdo. */}
+      <Link
+        to="/#catalogo"
+        className={styles.botonMovil}
+        onClick={onVerOfertas}
+      >
+        Ver las {ofertas.length} ofertas
+        <i className="fa-solid fa-arrow-right" aria-hidden="true"></i>
+      </Link>
     </section>
   );
 }

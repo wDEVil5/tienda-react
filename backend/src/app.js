@@ -3,6 +3,15 @@ import express from 'express'
 // La aplicación se exporta separada del servidor para probar rutas sin abrir un puerto.
 const app = express()
 
+// Cada respuesta incluye un identificador para poder rastrear una petición en logs futuros.
+app.use((_request, response, next) => {
+  const requestId = crypto.randomUUID()
+
+  response.locals.requestId = requestId
+  response.setHeader('X-Request-Id', requestId)
+  next()
+})
+
 app.get('/api/health', (_request, response) => {
   response.json({ ok: true })
 })

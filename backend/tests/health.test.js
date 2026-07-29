@@ -9,3 +9,15 @@ test('GET /api/health responde que la API está disponible', async () => {
   assert.equal(response.status, 200)
   assert.deepEqual(response.body, { ok: true })
 })
+
+test('una ruta inexistente responde un error 404 legible', async () => {
+  const response = await request(app).get('/api/no-existe')
+
+  assert.equal(response.status, 404)
+  assert.deepEqual(response.body, {
+    error: {
+      code: 'NOT_FOUND',
+      message: 'No existe GET /api/no-existe',
+    },
+  })
+})

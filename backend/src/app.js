@@ -7,4 +7,32 @@ app.get('/api/health', (_request, response) => {
   response.json({ ok: true })
 })
 
+// Debe ir después de las rutas: responde de forma predecible cuando la API no reconoce una URL.
+app.use((request, response) => {
+  response.status(404).json({
+    error: {
+      code: 'NOT_FOUND',
+      message: `No existe ${request.method} ${request.originalUrl}`,
+    },
+  })
+})
+
+// Punto único para errores inesperados; nunca se envían detalles internos al cliente.
+/** @type {import('express').ErrorRequestHandler} */
+const handleUnexpectedError = (error, _request, response, next) => {
+  if (response.headersSent) {
+    return next(error)
+  }
+
+  console.error(error)
+  response.status(500).json({
+    error: {
+      code: 'INTERNAL_ERROR',
+      message: 'Ocurrió un error inesperado.',
+    },
+  })
+}
+
+app.use(handleUnexpectedError)
+
 export default app

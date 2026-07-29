@@ -18,4 +18,11 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
+  {
+    // La API corre en Node: process, console y otras globals no existen en el navegador.
+    files: ['backend/**/*.js'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
 ])

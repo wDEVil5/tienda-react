@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 import ImagenProducto from "../components/ImagenProducto.jsx";
 import TarjetaProducto from "../components/TarjetaProducto.jsx";
+import ControlCantidad from "../components/ControlCantidad.jsx";
 import styles from "./ProductoDetalle.module.css";
 
 // Límite de presentación. El backend y el panel admin deberán validar el
@@ -139,23 +140,13 @@ function ProductoDetalle({ productos }) {
           </p>
 
           <div className={styles.compra}>
-            <div className={styles.cantidad}>
-              <button
-                type="button"
-                onClick={() => setCantidad((c) => Math.max(1, c - 1))}
-                aria-label="Quitar una unidad"
-              >
-                −
-              </button>
-              <span aria-live="polite">{cantidad}</span>
-              <button
-                type="button"
-                onClick={() => setCantidad((c) => c + 1)}
-                aria-label="Agregar una unidad"
-              >
-                +
-              </button>
-            </div>
+            <ControlCantidad
+              grande
+              cantidad={cantidad}
+              onDisminuir={() => setCantidad((c) => Math.max(1, c - 1))}
+              onAumentar={() => setCantidad((c) => c + 1)}
+              onFijar={setCantidad}
+            />
 
             <button
               className={styles.boton}

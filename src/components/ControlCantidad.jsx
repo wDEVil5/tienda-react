@@ -4,7 +4,13 @@ import styles from "./ControlCantidad.module.css";
 // Control de cantidad editable: botones − / + y un input donde se puede escribir.
 // Es su PROPIO componente porque cada fila del carrito necesita su estado local
 // de edición, y los hooks no pueden llamarse dentro de un .map().
-function ControlCantidad({ cantidad, onDisminuir, onAumentar, onFijar }) {
+function ControlCantidad({
+  cantidad,
+  onDisminuir,
+  onAumentar,
+  onFijar,
+  grande = false,
+}) {
   // Estado local del texto del input. Permite valores intermedios mientras se
   // escribe (incluido el campo vacío). La verdad final sigue viviendo en el carrito.
   const [valor, setValor] = useState(String(cantidad));
@@ -30,7 +36,7 @@ function ControlCantidad({ cantidad, onDisminuir, onAumentar, onFijar }) {
   };
 
   return (
-    <div className={styles.control}>
+    <div className={`${styles.control} ${grande ? styles.controlGrande : ""}`}>
       <button
         className={styles.boton}
         onClick={onDisminuir}

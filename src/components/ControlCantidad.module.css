@@ -46,3 +46,19 @@
   outline: none;
   background-color: var(--color-crudo);
 }
+
+/* La ficha de producto usa el mismo comportamiento editable, pero con la
+   escala del CTA principal. Evitamos duplicar la lógica de validación. */
+.controlGrande {
+  height: 48px;
+}
+
+.controlGrande .boton {
+  width: 42px;
+  font-size: 18px;
+}
+
+.controlGrande .input {
+  width: 40px;
+  font-size: 15px;
+}

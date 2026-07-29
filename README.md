@@ -28,6 +28,22 @@ Los productos se obtienen en tiempo real desde una API externa pública y se nor
 - **Font Awesome** para iconografía
 - **Git** y **GitHub**
 - **GitHub Pages** + **gh-pages** para el despliegue
+- **Node.js + Express 5** para la API propia en construcción
+- **Supertest** + `node:test` para pruebas de la API
+
+## 🧩 Backend — en progreso
+
+La API vive en `backend/` y se ejecuta como un proceso independiente del frontend. Esta separación permite evolucionar desde Fake Store hacia una fuente de datos propia sin reescribir la interfaz.
+
+La base actual incluye:
+
+- **Express 5** con `GET /api/health` para comprobar disponibilidad.
+- Respuesta JSON consistente para rutas inexistentes (`404`) y un manejador central para errores inesperados (`500`).
+- Encabezado `X-Request-Id` único por respuesta, preparado para trazabilidad y logs futuros.
+- Configuración local con `.env` y plantilla segura `.env.example`; los valores locales no se suben al repositorio.
+- Separación entre `src/app.js` (configura rutas y middlewares) y `src/server.js` (inicia el servidor), lo que permite probar la API de forma aislada.
+
+> Aún no hay conexión a PostgreSQL ni endpoints de productos. Fake Store continúa siendo la fuente de datos del frontend mientras se construye el contrato de la API.
 
 ## ✨ Características
 
@@ -41,6 +57,7 @@ Los productos se obtienen en tiempo real desde una API externa pública y se nor
 - **Sugerencias de búsqueda** con productos y categorías; al llegar al catálogo, el término activo queda visible como chip removible.
 - **Filtros por categoría** generados dinámicamente con `Set` (sin hardcodear), con el overflow agrupado en un desplegable "Explorar X más".
 - **Ofertas reales derivadas** de `precioAnterior`: título con descuento máximo, filtro compartido entre CTA y catálogo, precio anterior tachado y tarjetas enlazadas a la ficha.
+- **Banda de ofertas editorial y responsive**: el porcentaje y número de productos se derivan de los datos disponibles, con una composición adaptada para escritorio y móvil.
 - **Paginación tipo "cargar más"** en tandas, indicando cuántos productos quedan.
 - **Imágenes con red de seguridad**: un componente reutilizable muestra un placeholder elegante si la imagen externa falla (`onError`).
 
@@ -48,11 +65,13 @@ Los productos se obtienen en tiempo real desde una API externa pública y se nor
 
 - **Agregar productos** (si ya existe, aumenta la cantidad en vez de duplicar la fila), con un **aviso flotante (toast)** de confirmación que se descarta solo.
 - **Eliminar** productos y **ajustar cantidades** con `+` / `−` (mínimo 1 unidad).
+- **Deshacer al eliminar**: el drawer conserva temporalmente el producto retirado y permite restaurarlo mediante un toast contextual.
 - **Vaciar el carrito** con confirmación previa.
 - **Subtotal por producto** y **total** calculados en tiempo real como **estado derivado**, sin duplicar información.
 - **Persistencia en `localStorage`** (inicialización perezosa) para que el carrito sobreviva a un refresco de página.
 - **Contador de ítems** en el ícono del header y en el título del panel.
 - **Cada ítem enlaza a su página de producto** y cierra el panel al navegar.
+- **Control de cantidad reutilizable** en el drawer y en el detalle de producto, con entrada manual validada.
 - **UX del drawer**: se cierra con la tecla **Escape**, bloquea el scroll del fondo mientras está abierto, trunca nombres largos con elipsis y muestra un **estado vacío** con ícono y llamada a la acción.
 - **Estado vacío útil**: los CTA del drawer llevan al catálogo completo o al catálogo filtrado por ofertas reales.
 
@@ -81,7 +100,7 @@ Este proyecto es mi campo de práctica para consolidar React y buenas prácticas
 - **Renderizado condicional** con `&&` y el ternario (incluido el *gotcha* de `0 &&` en JSX).
 - Manejo de **inputs controlados** y encapsulamiento de estilos con **CSS Modules**.
 
-**Patrones avanzados (esta etapa)**
+**Patrones avanzados**
 
 - **Custom hooks** para encapsular lógica con estado (`useCarrito`).
 - **`useReducer`** para centralizar las transiciones de estado por acciones, testeable como función pura.
@@ -103,7 +122,8 @@ Este proyecto es mi campo de práctica para consolidar React y buenas prácticas
 SumarketExpress es un proyecto **full-stack en construcción**, desarrollado por fases (una a la vez) para convertirse en una **tienda completa**:
 
 - ✅ **Frontend estructurado**  — React con hooks, `useReducer`, Context, React Router y tests unitarios.
-- 🔜 **Backend propio** — API REST con **Node.js + Express** y base de datos **PostgreSQL + Prisma** (reemplaza a la API externa).
+- 🟡 **Base del backend propio** — API REST con **Node.js + Express**, health check, errores, configuración local y pruebas iniciales.
+- 🔜 **Datos propios** — contrato de productos, persistencia en **PostgreSQL** y decisión entre acceso directo con `pg` o un ORM (reemplaza a la API externa).
 - 🔒 **Autenticación** — cuentas de usuario con **JWT** y contraseñas hasheadas con **bcrypt**; roles usuario/admin.
 - 💳 **Pagos reales** — checkout con **Stripe / Mercado Pago** (modo test).
 - 🛠️ **Panel de administración** — gestión de productos (con imágenes), pedidos e inventario de la tienda.
@@ -123,14 +143,41 @@ cd tienda-react
 # Instalar las dependencias
 npm install
 
-# Levantar el servidor de desarrollo
+# Levantar el frontend
 npm run dev
 
-# Ejecutar los tests
+# Ejecutar los tests del frontend
 npm test
 ```
 
 La aplicación quedará disponible en `http://localhost:5173/tienda-react/` (el proyecto usa un `base` propio, `/tienda-react/`, para el despliegue en GitHub Pages).
+
+### API local
+
+En una segunda terminal:
+
+```bash
+# Entrar a la API
+cd backend
+
+# Crear la configuración local una sola vez
+cp .env.example .env
+
+# Instalar dependencias de la API
+npm install
+
+# Iniciar la API en modo desarrollo
+npm run dev
+
+# Ejecutar sus pruebas
+npm test
+```
+
+La API queda disponible en `http://localhost:3000`. Para comprobarla, abre `http://localhost:3000/api/health` y recibirás:
+
+```json
+{ "ok": true }
+```
 
 ## 🚀 Cómo desplegarlo
 

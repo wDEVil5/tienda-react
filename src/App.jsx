@@ -170,8 +170,9 @@ function App() {
         onVerCatalogo={verCatalogo}
       />
 
-      {/* Aviso flotante que aparece al agregar y se va solo */}
-      <Toast />
+      {/* Los avisos normales siguen flotando siempre. Al borrar dentro del
+          drawer, solo el aviso con "Deshacer" se mueve al carrito. */}
+      <Toast ocultarSiAccion={carritoAbierto} />
 
       <Footer
         productos={productos}

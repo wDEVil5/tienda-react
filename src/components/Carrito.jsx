@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import styles from "./Carrito.module.css";
 import ImagenProducto from "./ImagenProducto.jsx";
 import ControlCantidad from "./ControlCantidad.jsx";
+import Toast from "./Toast.jsx";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 
 function Carrito({ onCerrar, abierto, productos, onVerOfertas, onVerCatalogo }) {
@@ -214,6 +215,10 @@ function Carrito({ onCerrar, abierto, productos, onVerOfertas, onVerCatalogo }) 
           ))
         )}
       </div>
+
+      {/* Dentro del drawer el aviso queda entre la lista y el resumen: no tapa
+          controles y el usuario puede deshacer sin abandonar el carrito. */}
+      {abierto && <Toast ubicacion="carrito" soloAccion />}
 
       {/* Zona 3: total + acciones fijo (solo si hay items) */}
       {carrito.length > 0 && (

@@ -62,6 +62,34 @@
   font-weight: 600;
 }
 
+/* En el drawer el toast participa del flujo entre productos y resumen. Así no
+   flota sobre cantidades, precios ni el botón de pago. */
+.toastCarrito {
+  position: static;
+  width: auto;
+  min-height: 50px;
+  margin: var(--e-md) var(--e-lg) 0;
+  padding: var(--e-md) var(--e-lg);
+  border-radius: var(--radio-control);
+  box-shadow: none;
+  flex-shrink: 0;
+}
+
+.toastCarrito .texto {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.toastCarrito .accion {
+  margin-left: auto;
+  flex-shrink: 0;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 13.5px;
+}
+
 /* Respetar a quien prefiere menos movimiento. */
 @media (prefers-reduced-motion: reduce) {
   .toast {

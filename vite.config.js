@@ -5,6 +5,8 @@ export default defineConfig({
   plugins: [react()],
   base: '/tienda-react/',
   test: {
+    // El backend usa node:test desde backend/; Vitest solo debe descubrir pruebas de React.
+    include: ['src/**/*.{test,spec}.{js,jsx}'],
     environment: 'jsdom',
     setupFiles: './src/test/setup.js',
   },

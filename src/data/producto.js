@@ -18,6 +18,8 @@
  * @property {string}        categoria     - Categoría a la que pertenece.
  * @property {string}        descripcion   - Descripción larga.
  * @property {number|null}   precioAnterior - Precio previo si está en oferta; null si no.
+ * @property {string}        sku           - Código visible para inventario y administración.
+ * @property {number}        stock         - Unidades disponibles informadas por la API.
  */
 
 /**
@@ -41,5 +43,35 @@ export function normalizarProductoFakeStore(p) {
     // (backend propio) este valor llegará como dato real.
     precioAnterior:
       p.id % 2 === 0 ? Math.round((p.price / 0.75) * 100) / 100 : null,
+  };
+}
+
+/**
+ * Traduce la respuesta de la API propia al contrato que ya consume la UI.
+ * La API entrega objetos para categoría e imágenes; los componentes actuales
+ * mantienen nombres simples y un arreglo de URLs para evitar una migración masiva.
+ * @param {Object} producto - Producto público recibido desde GET /api/productos.
+ * @returns {Producto}
+ */
+export function normalizarProductoApi(producto) {
+  // Se copia antes de ordenar para no modificar la respuesta recibida de la API.
+  const imagenes = [...producto.imagenes]
+    .sort((imagenA, imagenB) => imagenA.orden - imagenB.orden)
+    .map((imagen) => imagen.url)
+    .filter(Boolean);
+
+  return {
+    id: producto.id,
+    nombre: producto.nombre,
+    precio: producto.precio,
+    imagen: imagenes[0] ?? '',
+    imagenes,
+    categoria: producto.categoria.nombre,
+    descripcion: producto.descripcion,
+    precioAnterior: producto.precioAnterior,
+    // La API incorporará SKU explícito antes de persistir productos; este
+    // fallback mantiene la ficha usable mientras uso datos temporales.
+    sku: producto.sku ?? producto.id,
+    stock: producto.stock,
   };
 }

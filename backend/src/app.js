@@ -1,4 +1,5 @@
 import express from 'express'
+import categoriasRouter from './modules/categorias/categorias.routes.js'
 import productosRouter from './modules/productos/productos.routes.js'
 
 // La aplicación se exporta separada del servidor para probar rutas sin abrir un puerto.
@@ -18,6 +19,7 @@ app.get('/api/health', (_request, response) => {
 })
 
 app.use('/api/productos', productosRouter)
+app.use('/api/categorias', categoriasRouter)
 
 // Debe ir después de las rutas: responde de forma predecible cuando la API no reconoce una URL.
 app.use((request, response) => {

@@ -11,6 +11,15 @@ test('GET /api/productos devuelve productos publicados', async () => {
   assert.equal(response.body.data.every((producto) => !('activo' in producto)), true)
 })
 
+test('GET /api/productos permite solicitudes del frontend local', async () => {
+  const response = await request(app)
+    .get('/api/productos')
+    .set('Origin', 'http://localhost:5173')
+
+  assert.equal(response.status, 200)
+  assert.equal(response.headers['access-control-allow-origin'], 'http://localhost:5173')
+})
+
 test('GET /api/productos filtra por búsqueda', async () => {
   const response = await request(app).get('/api/productos?q=detergente')
 

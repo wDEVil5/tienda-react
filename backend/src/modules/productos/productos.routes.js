@@ -3,8 +3,10 @@ import { listarProductos, obtenerProductoPorSlug } from './productos.service.js'
 
 const productosRouter = Router()
 
-productosRouter.get('/', (_request, response) => {
-  response.json({ data: listarProductos() })
+productosRouter.get('/', (request, response) => {
+  const query = typeof request.query.q === 'string' ? request.query.q : ''
+
+  response.json({ data: listarProductos({ query }) })
 })
 
 productosRouter.get('/:slug', (request, response) => {

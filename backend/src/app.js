@@ -36,6 +36,7 @@ const handleUnexpectedError = (error, _request, response, next) => {
     return next(error)
   }
 
+  //error inesperado del servidor 
   console.error(error)
   response.status(500).json({
     error: {

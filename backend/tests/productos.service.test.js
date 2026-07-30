@@ -13,6 +13,13 @@ test('listarProductos excluye productos inactivos', () => {
   assert.equal(resultado.every((producto) => !('activo' in producto)), true)
 })
 
+test('listarProductos busca sin distinguir mayúsculas ni acentos', () => {
+  const resultado = listarProductos({ query: 'CAFÉ' })
+
+  assert.equal(resultado.length, 1)
+  assert.equal(resultado[0].slug, 'cafe-de-grano-tostado-250-g')
+})
+
 test('listarProductos devuelve copias seguras de los datos', () => {
   const primerResultado = listarProductos()
   primerResultado[0].categoria.nombre = 'Categoría modificada'

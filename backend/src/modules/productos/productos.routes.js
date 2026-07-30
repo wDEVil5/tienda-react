@@ -5,8 +5,10 @@ const productosRouter = Router()
 
 productosRouter.get('/', (request, response) => {
   const query = typeof request.query.q === 'string' ? request.query.q : ''
+  const categoria =
+    typeof request.query.categoria === 'string' ? request.query.categoria : ''
 
-  response.json({ data: listarProductos({ query }) })
+  response.json({ data: listarProductos({ query, categoria }) })
 })
 
 productosRouter.get('/:slug', (request, response) => {

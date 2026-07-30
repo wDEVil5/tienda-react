@@ -22,14 +22,18 @@ function crearProductoPublico(producto) {
 }
 
 // La tienda solo expone productos publicados y nunca entrega referencias mutables de la fuente.
-export function listarProductos({ query = '' } = {}) {
+export function listarProductos({ query = '', categoria = '' } = {}) {
   const textoBusqueda = normalizarTexto(query)
+  const categoriaFiltrada = normalizarTexto(categoria)
 
   return productos
     .filter((producto) => producto.activo)
     .filter(
       (producto) =>
         !textoBusqueda || normalizarTexto(producto.nombre).includes(textoBusqueda),
+    )
+    .filter(
+      (producto) => !categoriaFiltrada || producto.categoria.slug === categoriaFiltrada,
     )
     .map(crearProductoPublico)
 }

@@ -20,6 +20,13 @@ test('listarProductos busca sin distinguir mayúsculas ni acentos', () => {
   assert.equal(resultado[0].slug, 'cafe-de-grano-tostado-250-g')
 })
 
+test('listarProductos filtra y combina categorías por slug', () => {
+  const resultado = listarProductos({ query: 'leche', categoria: 'LÁCTEOS' })
+
+  assert.equal(resultado.length, 1)
+  assert.equal(resultado[0].slug, 'leche-entera-1-l')
+})
+
 test('listarProductos devuelve copias seguras de los datos', () => {
   const primerResultado = listarProductos()
   primerResultado[0].categoria.nombre = 'Categoría modificada'

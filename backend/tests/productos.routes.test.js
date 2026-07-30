@@ -19,6 +19,14 @@ test('GET /api/productos filtra por búsqueda', async () => {
   assert.equal(response.body.data[0].slug, 'detergente-liquido-concentrado-3-l')
 })
 
+test('GET /api/productos filtra por categoría', async () => {
+  const response = await request(app).get('/api/productos?categoria=lacteos')
+
+  assert.equal(response.status, 200)
+  assert.equal(response.body.data.length, 2)
+  assert.equal(response.body.data.every((producto) => producto.categoria.slug === 'lacteos'), true)
+})
+
 test('GET /api/productos/:slug devuelve el detalle publicado', async () => {
   const response = await request(app).get('/api/productos/aceite-oliva-extra-virgen-500-ml')
 

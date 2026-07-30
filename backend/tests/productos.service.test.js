@@ -6,7 +6,7 @@ import {
 } from '../src/modules/productos/productos.service.js'
 
 test('listarProductos excluye productos inactivos', () => {
-  const resultado = listarProductos()
+  const { data: resultado } = listarProductos()
 
   assert.equal(resultado.length, 5)
   assert.equal(resultado.some((producto) => producto.slug === 'mermelada-de-frutilla-250-g'), false)
@@ -14,33 +14,45 @@ test('listarProductos excluye productos inactivos', () => {
 })
 
 test('listarProductos busca sin distinguir mayúsculas ni acentos', () => {
-  const resultado = listarProductos({ query: 'CAFÉ' })
+  const { data: resultado } = listarProductos({ query: 'CAFÉ' })
 
   assert.equal(resultado.length, 1)
   assert.equal(resultado[0].slug, 'cafe-de-grano-tostado-250-g')
 })
 
 test('listarProductos filtra y combina categorías por slug', () => {
-  const resultado = listarProductos({ query: 'leche', categoria: 'LÁCTEOS' })
+  const { data: resultado } = listarProductos({ query: 'leche', categoria: 'LÁCTEOS' })
 
   assert.equal(resultado.length, 1)
   assert.equal(resultado[0].slug, 'leche-entera-1-l')
 })
 
 test('listarProductos filtra productos con oferta vigente', () => {
-  const resultado = listarProductos({ soloOfertas: true })
+  const { data: resultado } = listarProductos({ soloOfertas: true })
 
   assert.equal(resultado.length, 2)
   assert.equal(resultado.every((producto) => producto.precioAnterior !== null), true)
 })
 
 test('listarProductos devuelve copias seguras de los datos', () => {
-  const primerResultado = listarProductos()
+  const { data: primerResultado } = listarProductos()
   primerResultado[0].categoria.nombre = 'Categoría modificada'
 
-  const segundoResultado = listarProductos()
+  const { data: segundoResultado } = listarProductos()
 
   assert.equal(segundoResultado[0].categoria.nombre, 'Despensa')
+})
+
+test('listarProductos pagina después de aplicar filtros', () => {
+  const resultado = listarProductos({ page: 2, limit: 2 })
+
+  assert.equal(resultado.data.length, 2)
+  assert.deepEqual(resultado.meta, {
+    page: 2,
+    limit: 2,
+    total: 5,
+    totalPages: 3,
+  })
 })
 
 test('obtenerProductoPorSlug devuelve solo productos publicados', () => {

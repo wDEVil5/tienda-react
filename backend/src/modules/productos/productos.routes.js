@@ -1,7 +1,22 @@
 import { Router } from 'express'
-import { listarProductos, obtenerProductoPorSlug } from './productos.service.js'
+import {
+  LIMITE_MAXIMO_POR_PAGINA,
+  PAGINACION_PREDETERMINADA,
+  listarProductos,
+  obtenerProductoPorSlug,
+} from './productos.service.js'
 
 const productosRouter = Router()
+
+function leerEnteroPositivo(valor, valorPredeterminado, limiteMaximo = Infinity) {
+  if (valor === undefined) {
+    return valorPredeterminado
+  }
+
+  const numero = typeof valor === 'string' ? Number(valor) : Number.NaN
+
+  return Number.isInteger(numero) && numero > 0 && numero <= limiteMaximo ? numero : null
+}
 
 productosRouter.get('/', (request, response) => {
   // La ruta traduce parámetros HTTP; el servicio recibe valores simples y no conoce Express.
@@ -9,8 +24,28 @@ productosRouter.get('/', (request, response) => {
   const categoria =
     typeof request.query.categoria === 'string' ? request.query.categoria : ''
   const soloOfertas = request.query.ofertas === 'true'
+  const page = leerEnteroPositivo(
+    request.query.page,
+    PAGINACION_PREDETERMINADA.page,
+  )
+  const limit = leerEnteroPositivo(
+    request.query.limit,
+    PAGINACION_PREDETERMINADA.limit,
+    LIMITE_MAXIMO_POR_PAGINA,
+  )
 
-  response.json({ data: listarProductos({ query, categoria, soloOfertas }) })
+  if (page === null || limit === null) {
+    return response.status(400).json({
+      error: {
+        code: 'INVALID_QUERY_PARAM',
+        message: `page debe ser un entero positivo y limit debe estar entre 1 y ${LIMITE_MAXIMO_POR_PAGINA}.`,
+      },
+    })
+  }
+
+  return response.json(
+    listarProductos({ query, categoria, soloOfertas, page, limit }),
+  )
 })
 
 productosRouter.get('/:slug', (request, response) => {

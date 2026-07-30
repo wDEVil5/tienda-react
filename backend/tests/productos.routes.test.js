@@ -35,6 +35,26 @@ test('GET /api/productos filtra ofertas vigentes', async () => {
   assert.equal(response.body.data.every((producto) => producto.precioAnterior !== null), true)
 })
 
+test('GET /api/productos devuelve metadatos de paginación', async () => {
+  const response = await request(app).get('/api/productos?page=2&limit=2')
+
+  assert.equal(response.status, 200)
+  assert.equal(response.body.data.length, 2)
+  assert.deepEqual(response.body.meta, {
+    page: 2,
+    limit: 2,
+    total: 5,
+    totalPages: 3,
+  })
+})
+
+test('GET /api/productos rechaza valores de paginación inválidos', async () => {
+  const response = await request(app).get('/api/productos?page=hola')
+
+  assert.equal(response.status, 400)
+  assert.equal(response.body.error.code, 'INVALID_QUERY_PARAM')
+})
+
 test('GET /api/productos/:slug devuelve el detalle publicado', async () => {
   const response = await request(app).get('/api/productos/aceite-oliva-extra-virgen-500-ml')
 

@@ -42,8 +42,10 @@ La base actual incluye:
 - Encabezado `X-Request-Id` único por respuesta, preparado para trazabilidad y logs futuros.
 - Configuración local con `.env` y plantilla segura `.env.example`; los valores locales no se suben al repositorio.
 - Separación entre `src/app.js` (configura rutas y middlewares) y `src/server.js` (inicia el servidor), lo que permite probar la API de forma aislada.
+- Módulo inicial de productos con datos temporales en memoria, reglas de publicación y respuestas públicas seguras.
+- `GET /api/productos` con búsqueda (`q`), categoría (`categoria`), ofertas (`ofertas=true`) y paginación (`page` / `limit`), además de `GET /api/productos/:slug` para detalle.
 
-> Aún no hay conexión a PostgreSQL ni endpoints de productos. Fake Store continúa siendo la fuente de datos del frontend mientras se construye el contrato de la API.
+> Aún no hay conexión a PostgreSQL ni integración entre React y la API. Fake Store continúa siendo la fuente de datos del frontend mientras se construye y valida el contrato propio.
 
 ## ✨ Características
 

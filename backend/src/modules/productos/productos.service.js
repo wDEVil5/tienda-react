@@ -1,5 +1,8 @@
 import { productos } from './productos.data.js'
 
+export const PAGINACION_PREDETERMINADA = { page: 1, limit: 12 }
+export const LIMITE_MAXIMO_POR_PAGINA = 24
+
 function normalizarTexto(texto) {
   // NFD separa letras y tildes; así "café" y "cafe" se comparan igual.
   return texto
@@ -23,12 +26,18 @@ function crearProductoPublico(producto) {
 }
 
 // La tienda solo expone productos publicados y nunca entrega referencias mutables de la fuente.
-export function listarProductos({ query = '', categoria = '', soloOfertas = false } = {}) {
+export function listarProductos({
+  query = '',
+  categoria = '',
+  soloOfertas = false,
+  page = PAGINACION_PREDETERMINADA.page,
+  limit = PAGINACION_PREDETERMINADA.limit,
+} = {}) {
   const textoBusqueda = normalizarTexto(query)
   const categoriaFiltrada = normalizarTexto(categoria)
 
   // Cada filtro vacío se omite, por lo que las condiciones se pueden combinar.
-  return productos
+  const productosFiltrados = productos
     .filter((producto) => producto.activo)
     .filter(
       (producto) =>
@@ -40,6 +49,19 @@ export function listarProductos({ query = '', categoria = '', soloOfertas = fals
     // Hasta tener promociones persistidas, precioAnterior representa una oferta vigente.
     .filter((producto) => !soloOfertas || producto.precioAnterior !== null)
     .map(crearProductoPublico)
+
+  const total = productosFiltrados.length
+  const inicio = (page - 1) * limit
+
+  return {
+    data: productosFiltrados.slice(inicio, inicio + limit),
+    meta: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  }
 }
 
 export function obtenerProductoPorSlug(slug) {

@@ -1,6 +1,7 @@
 import { productos } from './productos.data.js'
 
 function normalizarTexto(texto) {
+  // NFD separa letras y tildes; así "café" y "cafe" se comparan igual.
   return texto
     .normalize('NFD')
     .replace(/\p{Diacritic}/gu, '')
@@ -22,10 +23,11 @@ function crearProductoPublico(producto) {
 }
 
 // La tienda solo expone productos publicados y nunca entrega referencias mutables de la fuente.
-export function listarProductos({ query = '', categoria = '' } = {}) {
+export function listarProductos({ query = '', categoria = '', soloOfertas = false } = {}) {
   const textoBusqueda = normalizarTexto(query)
   const categoriaFiltrada = normalizarTexto(categoria)
 
+  // Cada filtro vacío se omite, por lo que las condiciones se pueden combinar.
   return productos
     .filter((producto) => producto.activo)
     .filter(
@@ -35,10 +37,13 @@ export function listarProductos({ query = '', categoria = '' } = {}) {
     .filter(
       (producto) => !categoriaFiltrada || producto.categoria.slug === categoriaFiltrada,
     )
+    // Hasta tener promociones persistidas, precioAnterior representa una oferta vigente.
+    .filter((producto) => !soloOfertas || producto.precioAnterior !== null)
     .map(crearProductoPublico)
 }
 
 export function obtenerProductoPorSlug(slug) {
+  // Un producto inactivo se comporta como inexistente para visitantes de la tienda.
   const producto = productos.find(
     (productoActual) => productoActual.activo && productoActual.slug === slug,
   )

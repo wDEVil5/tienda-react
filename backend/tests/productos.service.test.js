@@ -27,6 +27,13 @@ test('listarProductos filtra y combina categorías por slug', () => {
   assert.equal(resultado[0].slug, 'leche-entera-1-l')
 })
 
+test('listarProductos filtra productos con oferta vigente', () => {
+  const resultado = listarProductos({ soloOfertas: true })
+
+  assert.equal(resultado.length, 2)
+  assert.equal(resultado.every((producto) => producto.precioAnterior !== null), true)
+})
+
 test('listarProductos devuelve copias seguras de los datos', () => {
   const primerResultado = listarProductos()
   primerResultado[0].categoria.nombre = 'Categoría modificada'

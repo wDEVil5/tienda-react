@@ -27,6 +27,14 @@ test('GET /api/productos filtra por categoría', async () => {
   assert.equal(response.body.data.every((producto) => producto.categoria.slug === 'lacteos'), true)
 })
 
+test('GET /api/productos filtra ofertas vigentes', async () => {
+  const response = await request(app).get('/api/productos?ofertas=true')
+
+  assert.equal(response.status, 200)
+  assert.equal(response.body.data.length, 2)
+  assert.equal(response.body.data.every((producto) => producto.precioAnterior !== null), true)
+})
+
 test('GET /api/productos/:slug devuelve el detalle publicado', async () => {
   const response = await request(app).get('/api/productos/aceite-oliva-extra-virgen-500-ml')
 

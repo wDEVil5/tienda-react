@@ -1,0 +1,118 @@
+// Fuente temporal para desarrollar la API antes de incorporar PostgreSQL.
+// Los servicios leerán estos datos igual que luego leerán un repositorio real.
+export const productos = [
+  {
+    id: 'prod_aceite_oliva_500',
+    slug: 'aceite-oliva-extra-virgen-500-ml',
+    nombre: 'Aceite de oliva extra virgen 500 ml',
+    descripcion: 'Aceite prensado en frío, ideal para ensaladas y preparaciones.',
+    precio: 7990,
+    precioAnterior: 9990,
+    categoria: { id: 'cat_despensa', nombre: 'Despensa', slug: 'despensa' },
+    marca: { id: 'marca_valle_oliva', nombre: 'Valle Oliva' },
+    stock: 12,
+    activo: true,
+    imagenes: [
+      {
+        url: 'https://placehold.co/600x600/f3f0ea/1b1b18?text=Aceite+de+oliva',
+        alt: 'Aceite de oliva extra virgen de 500 ml',
+        orden: 1,
+      },
+    ],
+  },
+  {
+    id: 'prod_cafe_grano_250',
+    slug: 'cafe-de-grano-tostado-250-g',
+    nombre: 'Café de grano tostado 250 g',
+    descripcion: 'Café de tueste medio, en grano, con notas de chocolate.',
+    precio: 5490,
+    precioAnterior: null,
+    categoria: { id: 'cat_despensa', nombre: 'Despensa', slug: 'despensa' },
+    marca: { id: 'marca_cafe_barrio', nombre: 'Café del Barrio' },
+    stock: 25,
+    activo: true,
+    imagenes: [
+      {
+        url: 'https://placehold.co/600x600/f3f0ea/1b1b18?text=Cafe+en+grano',
+        alt: 'Bolsa de café de grano tostado de 250 g',
+        orden: 1,
+      },
+    ],
+  },
+  {
+    id: 'prod_leche_entera_1l',
+    slug: 'leche-entera-1-l',
+    nombre: 'Leche entera 1 L',
+    descripcion: 'Leche entera larga vida, ideal para el consumo diario.',
+    precio: 4290,
+    precioAnterior: 4990,
+    categoria: { id: 'cat_lacteos', nombre: 'Lácteos', slug: 'lacteos' },
+    marca: { id: 'marca_campo_sur', nombre: 'Campo Sur' },
+    stock: 8,
+    activo: true,
+    imagenes: [
+      {
+        url: 'https://placehold.co/600x600/f3f0ea/1b1b18?text=Leche+entera',
+        alt: 'Caja de leche entera de un litro',
+        orden: 1,
+      },
+    ],
+  },
+  {
+    id: 'prod_detergente_liquido_3l',
+    slug: 'detergente-liquido-concentrado-3-l',
+    nombre: 'Detergente líquido concentrado 3 L',
+    descripcion: 'Detergente concentrado para ropa, rendimiento aproximado de 50 lavados.',
+    precio: 8990,
+    precioAnterior: null,
+    categoria: { id: 'cat_limpieza', nombre: 'Limpieza', slug: 'limpieza' },
+    marca: { id: 'marca_hogar_claro', nombre: 'Hogar Claro' },
+    stock: 5,
+    activo: true,
+    imagenes: [
+      {
+        url: 'https://placehold.co/600x600/f3f0ea/1b1b18?text=Detergente',
+        alt: 'Envase de detergente líquido concentrado de tres litros',
+        orden: 1,
+      },
+    ],
+  },
+  {
+    id: 'prod_queso_mantecoso_250',
+    slug: 'queso-mantecoso-laminado-250-g',
+    nombre: 'Queso mantecoso laminado 250 g',
+    descripcion: 'Queso mantecoso laminado para sandwiches y preparaciones.',
+    precio: 3690,
+    precioAnterior: null,
+    categoria: { id: 'cat_lacteos', nombre: 'Lácteos', slug: 'lacteos' },
+    marca: { id: 'marca_campo_sur', nombre: 'Campo Sur' },
+    stock: 0,
+    activo: true,
+    imagenes: [
+      {
+        url: 'https://placehold.co/600x600/f3f0ea/1b1b18?text=Queso+mantecoso',
+        alt: 'Queso mantecoso laminado de 250 g',
+        orden: 1,
+      },
+    ],
+  },
+  {
+    id: 'prod_mermelada_frutilla_250',
+    slug: 'mermelada-de-frutilla-250-g',
+    nombre: 'Mermelada de frutilla 250 g',
+    descripcion: 'Mermelada de frutilla para desayunos y repostería.',
+    precio: 2990,
+    precioAnterior: null,
+    categoria: { id: 'cat_despensa', nombre: 'Despensa', slug: 'despensa' },
+    marca: { id: 'marca_dulce_casa', nombre: 'Dulce Casa' },
+    stock: 16,
+    activo: false,
+    imagenes: [
+      {
+        url: 'https://placehold.co/600x600/f3f0ea/1b1b18?text=Mermelada',
+        alt: 'Frasco de mermelada de frutilla de 250 g',
+        orden: 1,
+      },
+    ],
+  },
+]

@@ -1,4 +1,5 @@
 import express from 'express'
+import productosRouter from './modules/productos/productos.routes.js'
 
 // La aplicación se exporta separada del servidor para probar rutas sin abrir un puerto.
 const app = express()
@@ -15,6 +16,8 @@ app.use((_request, response, next) => {
 app.get('/api/health', (_request, response) => {
   response.json({ ok: true })
 })
+
+app.use('/api/productos', productosRouter)
 
 // Debe ir después de las rutas: responde de forma predecible cuando la API no reconoce una URL.
 app.use((request, response) => {

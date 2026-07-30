@@ -19,3 +19,11 @@ export function listarProductos() {
     .filter((producto) => producto.activo)
     .map(crearProductoPublico)
 }
+
+export function obtenerProductoPorSlug(slug) {
+  const producto = productos.find(
+    (productoActual) => productoActual.activo && productoActual.slug === slug,
+  )
+
+  return producto ? crearProductoPublico(producto) : null
+}

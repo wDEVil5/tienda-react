@@ -1,6 +1,9 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { listarProductos } from '../src/modules/productos/productos.service.js'
+import {
+  listarProductos,
+  obtenerProductoPorSlug,
+} from '../src/modules/productos/productos.service.js'
 
 test('listarProductos excluye productos inactivos', () => {
   const resultado = listarProductos()
@@ -17,4 +20,12 @@ test('listarProductos devuelve copias seguras de los datos', () => {
   const segundoResultado = listarProductos()
 
   assert.equal(segundoResultado[0].categoria.nombre, 'Despensa')
+})
+
+test('obtenerProductoPorSlug devuelve solo productos publicados', () => {
+  const producto = obtenerProductoPorSlug('aceite-oliva-extra-virgen-500-ml')
+  const productoInactivo = obtenerProductoPorSlug('mermelada-de-frutilla-250-g')
+
+  assert.equal(producto?.nombre, 'Aceite de oliva extra virgen 500 ml')
+  assert.equal(productoInactivo, null)
 })

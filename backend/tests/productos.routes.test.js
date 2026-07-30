@@ -55,6 +55,20 @@ test('GET /api/productos rechaza valores de paginación inválidos', async () =>
   assert.equal(response.body.error.code, 'INVALID_QUERY_PARAM')
 })
 
+test('GET /api/productos ordena el catálogo', async () => {
+  const response = await request(app).get('/api/productos?orden=precio-asc&limit=1')
+
+  assert.equal(response.status, 200)
+  assert.equal(response.body.data[0].slug, 'queso-mantecoso-laminado-250-g')
+})
+
+test('GET /api/productos rechaza criterios de orden desconocidos', async () => {
+  const response = await request(app).get('/api/productos?orden=stock-desc')
+
+  assert.equal(response.status, 400)
+  assert.equal(response.body.error.code, 'INVALID_QUERY_PARAM')
+})
+
 test('GET /api/productos/:slug devuelve el detalle publicado', async () => {
   const response = await request(app).get('/api/productos/aceite-oliva-extra-virgen-500-ml')
 

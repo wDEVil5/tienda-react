@@ -1,6 +1,8 @@
 import { Router } from 'express'
 import {
   LIMITE_MAXIMO_POR_PAGINA,
+  ORDEN_PREDETERMINADO,
+  ORDENES_PERMITIDOS,
   PAGINACION_PREDETERMINADA,
   listarProductos,
   obtenerProductoPorSlug,
@@ -24,6 +26,8 @@ productosRouter.get('/', (request, response) => {
   const categoria =
     typeof request.query.categoria === 'string' ? request.query.categoria : ''
   const soloOfertas = request.query.ofertas === 'true'
+  const orden =
+    typeof request.query.orden === 'string' ? request.query.orden : ORDEN_PREDETERMINADO
   const page = leerEnteroPositivo(
     request.query.page,
     PAGINACION_PREDETERMINADA.page,
@@ -43,8 +47,17 @@ productosRouter.get('/', (request, response) => {
     })
   }
 
+  if (!ORDENES_PERMITIDOS.has(orden)) {
+    return response.status(400).json({
+      error: {
+        code: 'INVALID_QUERY_PARAM',
+        message: 'orden debe ser relevancia, precio-asc, precio-desc o nombre-asc.',
+      },
+    })
+  }
+
   return response.json(
-    listarProductos({ query, categoria, soloOfertas, page, limit }),
+    listarProductos({ query, categoria, soloOfertas, page, limit, orden }),
   )
 })
 

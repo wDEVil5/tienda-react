@@ -55,6 +55,15 @@ test('listarProductos pagina después de aplicar filtros', () => {
   })
 })
 
+test('listarProductos ordena antes de paginar', () => {
+  const resultado = listarProductos({ orden: 'precio-desc', page: 1, limit: 2 })
+
+  assert.deepEqual(
+    resultado.data.map((producto) => producto.slug),
+    ['detergente-liquido-concentrado-3-l', 'aceite-oliva-extra-virgen-500-ml'],
+  )
+})
+
 test('obtenerProductoPorSlug devuelve solo productos publicados', () => {
   const producto = obtenerProductoPorSlug('aceite-oliva-extra-virgen-500-ml')
   const productoInactivo = obtenerProductoPorSlug('mermelada-de-frutilla-250-g')

@@ -475,7 +475,9 @@
 
   .compra {
     display: grid;
-    grid-template-columns: 108px minmax(0, 1fr);
+    /* El control grande mide 124 px. max-content evita que invada el gap y
+       deje el CTA visualmente pegado cuando el ancho móvil es reducido. */
+    grid-template-columns: max-content minmax(0, 1fr);
     width: 100%;
     flex-wrap: nowrap;
   }

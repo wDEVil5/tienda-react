@@ -21,6 +21,7 @@ export async function obtenerProductos({
   orden = "relevancia",
   busqueda = "",
   categoria,
+  soloOfertas = false,
 } = {}) {
   if (apiUrl) {
     try {
@@ -33,6 +34,10 @@ export async function obtenerProductos({
 
       if (categoria) {
         parametros.set("categoria", categoria);
+      }
+
+      if (soloOfertas) {
+        parametros.set("ofertas", "true");
       }
 
       const respuestaApi = await fetchImpl(

@@ -85,6 +85,23 @@ describe("obtenerProductos", () => {
     );
   });
 
+  it("solicita solo ofertas cuando el filtro está activo", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: [productoApi] }),
+    });
+
+    await obtenerProductos({
+      fetchImpl,
+      apiUrl: "http://localhost:3000/api",
+      soloOfertas: true,
+    });
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "http://localhost:3000/api/productos?limit=24&orden=relevancia&ofertas=true",
+    );
+  });
+
   it("usa Fake Store como respaldo si la API local no está disponible", async () => {
     const fetchImpl = vi
       .fn()

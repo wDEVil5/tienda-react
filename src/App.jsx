@@ -49,6 +49,7 @@ function App() {
       orden,
       busqueda: busquedaParaApi,
       categoria: categoriaParaApi,
+      soloOfertas,
     })
       .then((catalogo) => {
         setProductosCatalogo(catalogo);
@@ -65,7 +66,7 @@ function App() {
       .finally(() => {
         setCargando(false);
       });
-  }, [busquedaParaApi, categoriaParaApi, orden]);
+  }, [busquedaParaApi, categoriaParaApi, orden, soloOfertas]);
 
   useEffect(() => {
     // Si el usuario aún está escribiendo, esperamos al término diferido. Así

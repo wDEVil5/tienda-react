@@ -68,6 +68,23 @@ describe("obtenerProductos", () => {
     );
   });
 
+  it("envía el slug de categoría sin depender de su nombre visible", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: [productoApi] }),
+    });
+
+    await obtenerProductos({
+      fetchImpl,
+      apiUrl: "http://localhost:3000/api",
+      categoria: "despensa",
+    });
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "http://localhost:3000/api/productos?limit=24&orden=relevancia&categoria=despensa",
+    );
+  });
+
   it("usa Fake Store como respaldo si la API local no está disponible", async () => {
     const fetchImpl = vi
       .fn()

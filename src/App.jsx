@@ -36,8 +36,20 @@ function App() {
     return () => window.clearTimeout(espera);
   }, [busqueda]);
 
+  // La interfaz muestra el nombre, pero la API filtra con el slug estable. No
+  // derivamos el slug desde el texto: lo conservamos en el contrato de datos.
+  const categoriaParaApi =
+    categoria === "todas"
+      ? undefined
+      : productos.find((producto) => producto.categoria === categoria)
+          ?.categoriaSlug;
+
   const cargarProductos = useCallback(() => {
-    obtenerProductos({ orden, busqueda: busquedaParaApi })
+    obtenerProductos({
+      orden,
+      busqueda: busquedaParaApi,
+      categoria: categoriaParaApi,
+    })
       .then((catalogo) => {
         setProductosCatalogo(catalogo);
 
@@ -53,11 +65,15 @@ function App() {
       .finally(() => {
         setCargando(false);
       });
-  }, [busquedaParaApi, orden]);
+  }, [busquedaParaApi, categoriaParaApi, orden]);
 
   useEffect(() => {
+    // Si el usuario aún está escribiendo, esperamos al término diferido. Así
+    // no combinamos una categoría nueva con la búsqueda anterior por 250 ms.
+    if (busqueda !== busquedaParaApi) return;
+
     cargarProductos();
-  }, [cargarProductos]);
+  }, [busqueda, busquedaParaApi, cargarProductos]);
 
   // React Router actualiza la URL, pero no desplaza automáticamente al hash.
   // Tras llegar a la sección limpiamos el hash: al recargar, la tienda vuelve

@@ -16,6 +16,7 @@
  * @property {string}        imagen        - URL de la imagen principal.
  * @property {string[]}      imagenes      - Galería (máximo 5; la primera es principal).
  * @property {string}        categoria     - Categoría a la que pertenece.
+ * @property {string}        categoriaSlug - Identificador estable de la categoría para la API.
  * @property {string}        descripcion   - Descripción larga.
  * @property {number|null}   precioAnterior - Precio previo si está en oferta; null si no.
  * @property {string}        sku           - Código visible para inventario y administración.
@@ -37,6 +38,7 @@ export function normalizarProductoFakeStore(p) {
     // que el backend pueda entregar una galería sin cambiar la UI.
     imagenes: p.image ? [p.image] : [],
     categoria: p.category,
+    categoriaSlug: p.category,
     descripcion: p.description,
     // La Fake Store API no trae ofertas. Simulamos una en los ids pares: el
     // precio anterior deja el actual con 25% de descuento. En la Fase 2
@@ -67,6 +69,7 @@ export function normalizarProductoApi(producto) {
     imagen: imagenes[0] ?? '',
     imagenes,
     categoria: producto.categoria.nombre,
+    categoriaSlug: producto.categoria.slug,
     descripcion: producto.descripcion,
     precioAnterior: producto.precioAnterior,
     // La API incorporará SKU explícito antes de persistir productos; este

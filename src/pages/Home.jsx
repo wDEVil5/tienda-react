@@ -38,6 +38,7 @@ function Home({
       <BandaOfertas productos={productos} onVerOfertas={onVerOfertas} />
       <Catalogo
         productos={productosCatalogo}
+        productosBase={productos}
         busqueda={busqueda}
         onBuscar={onBuscar}
         categoria={categoria}

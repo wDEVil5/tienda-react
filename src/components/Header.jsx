@@ -21,9 +21,8 @@ function Header({
   const cerrarMenu = () => setMenuAbierto(false);
   const termino = busqueda.trim();
 
-  // Por ahora filtramos el catálogo ya cargado en memoria. Cuando exista la
-  // API propia, este bloque se reemplaza por una consulta debounced a
-  // GET /api/productos?busqueda=..., manteniendo el mismo formato de salida.
+  // Las sugerencias usan el catálogo base en memoria para responder al instante.
+  // En paralelo, App consulta la API local con debounce para el catálogo completo.
   const normalizar = (texto) => texto.toLocaleLowerCase("es-CL");
   const coincideBusqueda = (producto) =>
     normalizar(producto.nombre).includes(normalizar(termino));

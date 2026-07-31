@@ -20,6 +20,7 @@ export async function obtenerProductos({
   apiUrl = import.meta.env.DEV ? import.meta.env.VITE_API_URL : undefined,
   orden = "relevancia",
   busqueda = "",
+  categoria,
 } = {}) {
   if (apiUrl) {
     try {
@@ -28,6 +29,10 @@ export async function obtenerProductos({
 
       if (termino) {
         parametros.set("q", termino);
+      }
+
+      if (categoria) {
+        parametros.set("categoria", categoria);
       }
 
       const respuestaApi = await fetchImpl(

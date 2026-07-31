@@ -20,6 +20,7 @@ describe('normalizarProductoApi', () => {
     expect(producto).toMatchObject({
       id: 'prod_aceite_oliva_500',
       categoria: 'Despensa',
+      categoriaSlug: 'despensa',
       imagen: 'https://ejemplo.cl/frontal.jpg',
       imagenes: [
         'https://ejemplo.cl/frontal.jpg',

@@ -11,6 +11,7 @@ const PRODUCTOS_POR_CARGA = 10;
 
 function Catalogo({
   productos,
+  productosBase,
   busqueda,
   onBuscar,
   categoria,
@@ -56,8 +57,9 @@ function Catalogo({
     return () => mediaTablet.removeEventListener("change", actualizarTablet);
   }, []);
 
-  // La categoría "todas" es una opción de interfaz; las demás llegan del catálogo.
-  const categorias = ["todas", ...new Set(productos.map((p) => p.categoria))];
+  // Las categorías se derivan de la colección base, no del resultado filtrado.
+  // Así los chips no desaparecen al pedir una sola categoría al servidor.
+  const categorias = ["todas", ...new Set(productosBase.map((p) => p.categoria))];
   const limiteCategorias = esTablet
     ? LIMITE_CATEGORIAS_TABLET
     : LIMITE_CATEGORIAS_VISIBLES;
@@ -65,12 +67,12 @@ function Catalogo({
   const categoriasExtra = categorias.slice(limiteCategorias);
 
   // Conteo de productos por categoría (derivado) para el número de cada chip.
-  const conteos = productos.reduce((acc, p) => {
+  const conteos = productosBase.reduce((acc, p) => {
     acc[p.categoria] = (acc[p.categoria] || 0) + 1;
     return acc;
   }, {});
   const contarCategoria = (cat) =>
-    cat === "todas" ? productos.length : conteos[cat] ?? 0;
+    cat === "todas" ? productosBase.length : conteos[cat] ?? 0;
 
   // Límites de precio del catálogo (derivados) para el slider de rango.
   const precios = productos.map((p) => p.precio);

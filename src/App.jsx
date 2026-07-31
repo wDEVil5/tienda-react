@@ -7,7 +7,7 @@ import Toast from "./components/Toast.jsx";
 import styles from "./App.module.css";
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
-import { normalizarProductoFakeStore } from "./data/producto.js";
+import { obtenerProductos } from "./services/productosApi.js";
 
 function App() {
   const ubicacion = useLocation();
@@ -24,19 +24,9 @@ function App() {
   const [carritoAbierto, setCarritoAbierto] = useState(false);
 
   const cargarProductos = () => {
-    fetch("https://fakestoreapi.com/products")
-      .then((respuesta) => {
-        if (!respuesta.ok) {
-          // fetch no rechaza por errores HTTP (404, 500..), tengo que revisarlo yo (manual)
-          throw new Error("El servidor respondió con un error.");
-        }
-        return respuesta.json();
-      })
-      .then((datos) => {
-        // La UI solo conoce el contrato de datos; la traducción vive en un solo
-        // lugar (src/data/producto.js). Cambiar de fuente = cambiar de normalizador.
-        const traducidos = datos.map(normalizarProductoFakeStore);
-        setProductos(traducidos);
+    obtenerProductos()
+      .then((catalogo) => {
+        setProductos(catalogo);
       })
       .catch(() => {
         setError("No se pudo cargar el catálogo. Revisa tu conexión e intenta de nuevo.");

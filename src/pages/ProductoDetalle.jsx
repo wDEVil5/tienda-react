@@ -11,14 +11,14 @@ import styles from "./ProductoDetalle.module.css";
 const MAXIMO_IMAGENES_PRODUCTO = 5;
 
 function ProductoDetalle({ productos }) {
-  // useParams lee las partes variables de la URL. El :id de /producto/:id
-  // llega SIEMPRE como string, por eso lo convertimos con Number() para comparar.
+  // useParams entrega strings. La API propia usa IDs legibles (prod_...),
+  // mientras Fake Store usa números: convertir ambos a texto soporta las dos fuentes.
   const { id } = useParams();
   const { agregarAlCarrito } = useCarritoContext();
   const [cantidad, setCantidad] = useState(1); // cantidad a agregar
   const [imagenSeleccionada, setImagenSeleccionada] = useState(null);
 
-  const producto = productos.find((p) => p.id === Number(id));
+  const producto = productos.find((p) => String(p.id) === id);
 
   // React Router conserva la posición previa del documento al cambiar de ruta.
   // Cada detalle debe comenzar arriba, también al abrir un relacionado desde
@@ -113,7 +113,7 @@ function ProductoDetalle({ productos }) {
         {/* Columna derecha: info */}
         <div className={styles.info}>
           <p className={styles.eyebrow}>
-            {producto.categoria} · SKU {producto.id}
+            {producto.categoria} · SKU {producto.sku ?? producto.id}
           </p>
           <h1 className={styles.nombre}>{producto.nombre}</h1>
 

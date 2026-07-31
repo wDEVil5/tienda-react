@@ -156,3 +156,29 @@ export async function obtenerProductoDetalle({
       .find((producto) => producto.slug === slug || String(producto.id) === slug) ?? null
   );
 }
+
+/**
+ * Recupera categorías completas para no depender de la página visible del
+ * catálogo. Sin API propia devuelve null y la UI usa su derivación temporal.
+ */
+export async function obtenerCategorias({
+  fetchImpl = fetch,
+  apiUrl = import.meta.env.DEV ? import.meta.env.VITE_API_URL : undefined,
+} = {}) {
+  if (!apiUrl) return null;
+
+  try {
+    const respuestaApi = await fetchImpl(
+      `${apiUrl.replace(/\/$/, "")}/categorias`,
+    );
+
+    if (!respuestaApi.ok) {
+      throw new Error("La API propia no respondió correctamente.");
+    }
+
+    const cuerpo = await respuestaApi.json();
+    return Array.isArray(cuerpo.data) ? cuerpo.data : null;
+  } catch {
+    return null;
+  }
+}

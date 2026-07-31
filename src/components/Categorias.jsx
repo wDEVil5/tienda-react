@@ -7,13 +7,20 @@ import styles from "./Categorias.module.css";
 // luego navega a la sección del catálogo, donde App hace el scroll.
 function Categorias({
   productos,
+  categorias,
   onBuscar,
   onSeleccionarCategoria,
   onCambiarSoloOfertas,
 }) {
   const navegar = useNavigate();
-  const categorias = [...new Set(productos.map((p) => p.categoria))];
-  const conteo = (cat) => productos.filter((p) => p.categoria === cat).length;
+  const categoriasMostradas = categorias.length
+    ? categorias
+    : [...new Set(productos.map((p) => p.categoria))].map((nombre) => ({
+        id: nombre,
+        nombre,
+        slug: nombre,
+        productCount: productos.filter((producto) => producto.categoria === nombre).length,
+      }));
 
   // Mismo gesto que la sugerencia de categoría del Header: limpia la búsqueda,
   // apaga "solo ofertas" y fija la categoría antes de llevar al catálogo. El
@@ -30,21 +37,21 @@ function Categorias({
       <div className={styles.header}>
         <h2 className={styles.titulo}>Compra por categoría</h2>
         <a href="#catalogo" className={styles.verTodas}>
-          Ver las {categorias.length} categorías
+          Ver las {categoriasMostradas.length} categorías
         </a>
       </div>
 
       <div className={styles.grid}>
-        {categorias.map((cat) => (
+        {categoriasMostradas.map((cat) => (
           <button
-            key={cat}
+            key={cat.id}
             type="button"
             className={styles.tile}
-            onClick={() => seleccionar(cat)}
+            onClick={() => seleccionar(cat.nombre)}
           >
             <div className={styles.info}>
-              <p className={styles.nombre}>{cat}</p>
-              <p className={styles.conteo}>{conteo(cat)} productos</p>
+              <p className={styles.nombre}>{cat.nombre}</p>
+              <p className={styles.conteo}>{cat.productCount} productos</p>
             </div>
           </button>
         ))}

@@ -7,7 +7,7 @@ import Toast from "./components/Toast.jsx";
 import styles from "./App.module.css";
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
-import { obtenerCatalogo } from "./services/productosApi.js";
+import { obtenerCatalogo, obtenerCategorias } from "./services/productosApi.js";
 
 const PRODUCTOS_POR_PAGINA = 10;
 
@@ -23,6 +23,7 @@ function App() {
   const [precioMin, setPrecioMin] = useState(null);
   const [precioMax, setPrecioMax] = useState(null);
   const [productos, setProductos] = useState([]); // base: hero, detalle, sugerencias y footer
+  const [categoriasDisponibles, setCategoriasDisponibles] = useState([]);
   const [productosCatalogo, setProductosCatalogo] = useState([]); // resultado de la consulta actual
   const [metaCatalogo, setMetaCatalogo] = useState(null);
   const [fuenteCatalogo, setFuenteCatalogo] = useState(null);
@@ -43,13 +44,20 @@ function App() {
     return () => window.clearTimeout(espera);
   }, [busqueda]);
 
+  useEffect(() => {
+    obtenerCategorias().then((categorias) => {
+      if (categorias) setCategoriasDisponibles(categorias);
+    });
+  }, []);
+
   // La interfaz muestra el nombre, pero la API filtra con el slug estable. No
   // derivamos el slug desde el texto: lo conservamos en el contrato de datos.
   const categoriaParaApi =
     categoria === "todas"
       ? undefined
-      : productos.find((producto) => producto.categoria === categoria)
-          ?.categoriaSlug;
+      : categoriasDisponibles.find((categoriaActual) => categoriaActual.nombre === categoria)
+          ?.slug ??
+        productos.find((producto) => producto.categoria === categoria)?.categoriaSlug;
 
   const cargarProductos = useCallback(({ page = 1, agregar = false } = {}) => {
     obtenerCatalogo({
@@ -68,6 +76,22 @@ function App() {
         );
         setMetaCatalogo(resultado.meta);
         setFuenteCatalogo(resultado.fuente);
+
+        // En GitHub Pages no existe /categorias. Fake Store llega completo, por
+        // lo que podemos conservar una lista temporal con el mismo contrato.
+        if (resultado.fuente === "fallback") {
+          const conteos = new Map();
+          resultado.productos.forEach((producto) => {
+            const existente = conteos.get(producto.categoriaSlug);
+            conteos.set(producto.categoriaSlug, {
+              id: existente?.id ?? producto.categoriaSlug,
+              nombre: producto.categoria,
+              slug: producto.categoriaSlug,
+              productCount: (existente?.productCount ?? 0) + 1,
+            });
+          });
+          setCategoriasDisponibles([...conteos.values()]);
+        }
 
         // El Home conserva una base independiente. Acumulamos los productos ya
         // vistos para que un enlace de la página 2 siga encontrando su ficha.
@@ -208,6 +232,7 @@ function App() {
                 orden={orden}
                 onOrdenar={setOrden}
                 productosCatalogo={productosCatalogo}
+                categorias={categoriasDisponibles}
                 metaCatalogo={metaCatalogo}
                 usaPaginacionServidor={fuenteCatalogo === "api"}
                 cargandoMas={cargandoMas}

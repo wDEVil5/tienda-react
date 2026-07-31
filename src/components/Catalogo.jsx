@@ -12,6 +12,7 @@ const PRODUCTOS_POR_CARGA = 10;
 function Catalogo({
   productos,
   productosBase,
+  categorias,
   busqueda,
   onBuscar,
   categoria,
@@ -62,22 +63,32 @@ function Catalogo({
     return () => mediaTablet.removeEventListener("change", actualizarTablet);
   }, []);
 
-  // Las categorías se derivan de la colección base, no del resultado filtrado.
-  // Así los chips no desaparecen al pedir una sola categoría al servidor.
-  const categorias = ["todas", ...new Set(productosBase.map((p) => p.categoria))];
+  // La API entrega categorías y conteos completos. Fake Store usa la colección
+  // base como respaldo durante la transición.
+  const categoriasBase = categorias.length
+    ? categorias
+    : [...new Set(productosBase.map((producto) => producto.categoria))].map(
+        (nombre) => ({
+          id: nombre,
+          nombre,
+          productCount: productosBase.filter((producto) => producto.categoria === nombre).length,
+        }),
+      );
+  const nombresCategorias = ["todas", ...categoriasBase.map((categoria) => categoria.nombre)];
   const limiteCategorias = esTablet
     ? LIMITE_CATEGORIAS_TABLET
     : LIMITE_CATEGORIAS_VISIBLES;
-  const categoriasVisibles = categorias.slice(0, limiteCategorias);
-  const categoriasExtra = categorias.slice(limiteCategorias);
+  const categoriasVisibles = nombresCategorias.slice(0, limiteCategorias);
+  const categoriasExtra = nombresCategorias.slice(limiteCategorias);
 
   // Conteo de productos por categoría (derivado) para el número de cada chip.
-  const conteos = productosBase.reduce((acc, p) => {
-    acc[p.categoria] = (acc[p.categoria] || 0) + 1;
-    return acc;
-  }, {});
+  const conteos = new Map(
+    categoriasBase.map((categoria) => [categoria.nombre, categoria.productCount]),
+  );
   const contarCategoria = (cat) =>
-    cat === "todas" ? productosBase.length : conteos[cat] ?? 0;
+    cat === "todas"
+      ? categoriasBase.reduce((total, categoria) => total + categoria.productCount, 0)
+      : conteos.get(cat) ?? 0;
 
   // Los extremos salen de la colección base para que el slider mantenga su
   // escala aun cuando la API devuelva solo un rango filtrado.

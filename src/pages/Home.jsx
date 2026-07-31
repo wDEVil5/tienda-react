@@ -22,6 +22,7 @@ function Home({
   orden,
   onOrdenar,
   productosCatalogo,
+  categorias,
   metaCatalogo,
   usaPaginacionServidor,
   cargandoMas,
@@ -39,6 +40,7 @@ function Home({
       <TiraConfianza />
       <Categorias
         productos={productos}
+        categorias={categorias}
         onBuscar={onBuscar}
         onSeleccionarCategoria={onSeleccionarCategoria}
         onCambiarSoloOfertas={onCambiarSoloOfertas}
@@ -47,6 +49,7 @@ function Home({
       <Catalogo
         productos={productosCatalogo}
         productosBase={productos}
+        categorias={categorias}
         busqueda={busqueda}
         onBuscar={onBuscar}
         categoria={categoria}

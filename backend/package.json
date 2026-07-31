@@ -9,10 +9,12 @@
     "test": "node --test"
   },
   "dependencies": {
+    "@prisma/client": "^7.9.1",
     "cors": "^2.8.6",
     "express": "^5.1.0"
   },
   "devDependencies": {
+    "prisma": "^7.9.1",
     "supertest": "^7.1.1"
   }
 }

@@ -25,13 +25,30 @@ describe("obtenerProductos", () => {
     });
 
     expect(fetchImpl).toHaveBeenCalledWith(
-      "http://localhost:3000/api/productos?limit=24",
+      "http://localhost:3000/api/productos?limit=24&orden=relevancia",
     );
     expect(productos[0]).toMatchObject({
       id: "prod_aceite_oliva_500",
       categoria: "Despensa",
       imagen: "https://ejemplo.cl/aceite.jpg",
     });
+  });
+
+  it("envía el criterio de ordenamiento a la API propia", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: [productoApi] }),
+    });
+
+    await obtenerProductos({
+      fetchImpl,
+      apiUrl: "http://localhost:3000/api",
+      orden: "precio-desc",
+    });
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "http://localhost:3000/api/productos?limit=24&orden=precio-desc",
+    );
   });
 
   it("usa Fake Store como respaldo si la API local no está disponible", async () => {

@@ -15,6 +15,8 @@ function Home({
   onSeleccionarCategoria,
   soloOfertas,
   onCambiarSoloOfertas,
+  orden,
+  onOrdenar,
   onVerOfertas,
   onVerCatalogo,
 }) {
@@ -41,6 +43,8 @@ function Home({
         onSeleccionarCategoria={onSeleccionarCategoria}
         soloOfertas={soloOfertas}
         onCambiarSoloOfertas={onCambiarSoloOfertas}
+        orden={orden}
+        onOrdenar={onOrdenar}
       />
       <ComoComprar />
       <MarcasGondola />

@@ -17,6 +17,8 @@ function Catalogo({
   onSeleccionarCategoria,
   soloOfertas,
   onCambiarSoloOfertas,
+  orden,
+  onOrdenar,
 }) {
   // `categoria` vive en App para que también pueda cambiarse desde las
   // sugerencias del Header; este componente solo notifica la intención.
@@ -25,7 +27,6 @@ function Catalogo({
   );
   const [masCategoriasAbierto, setMasCategoriasAbierto] = useState(false);
   const [limiteProductos, setLimiteProductos] = useState(PRODUCTOS_POR_CARGA);
-  const [orden, setOrden] = useState("relevancia"); // criterio de ordenamiento
   const [filtrosAbiertos, setFiltrosAbiertos] = useState(false); // hoja de filtros (móvil)
   // Rango de precio: null = sin límite (usa el extremo del catálogo).
   const [precioMin, setPrecioMin] = useState(null);
@@ -138,14 +139,15 @@ function Catalogo({
     );
   });
 
-  // Ordenamiento derivado. .sort() MUTA el array, así que copiamos primero con
-  // [...] para no alterar productosFiltrados (ni, por ende, la prop productos).
+  // En desarrollo `orden` también se envía a Express. Mantenemos este orden
+  // derivado durante la transición: GitHub Pages aún usa Fake Store y necesita
+  // ofrecer el mismo control aunque no tenga API propia desplegada.
   const productosOrdenados = [...productosFiltrados];
   if (orden === "precio-asc") {
     productosOrdenados.sort((a, b) => a.precio - b.precio);
   } else if (orden === "precio-desc") {
     productosOrdenados.sort((a, b) => b.precio - a.precio);
-  } else if (orden === "alfabetico") {
+  } else if (orden === "nombre-asc") {
     productosOrdenados.sort((a, b) => a.nombre.localeCompare(b.nombre));
   }
 
@@ -190,12 +192,12 @@ function Catalogo({
               id="orden"
               className={styles.ordenSelect}
               value={orden}
-              onChange={(e) => setOrden(e.target.value)}
+              onChange={(e) => onOrdenar(e.target.value)}
             >
               <option value="relevancia">Relevancia</option>
               <option value="precio-asc">Precio: menor a mayor</option>
               <option value="precio-desc">Precio: mayor a menor</option>
-              <option value="alfabetico">Nombre: A - Z</option>
+              <option value="nombre-asc">Nombre: A - Z</option>
             </select>
           </div>
         </div>
@@ -219,13 +221,13 @@ function Catalogo({
           <select
             className={styles.ordenSelect}
             value={orden}
-            onChange={(e) => setOrden(e.target.value)}
+            onChange={(e) => onOrdenar(e.target.value)}
             aria-label="Ordenar"
           >
             <option value="relevancia">Relevancia</option>
             <option value="precio-asc">Precio: menor a mayor</option>
             <option value="precio-desc">Precio: mayor a menor</option>
-            <option value="alfabetico">Nombre: A - Z</option>
+            <option value="nombre-asc">Nombre: A - Z</option>
           </select>
 
           <span className={styles.conteoMovil}>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import Home from "./pages/Home.jsx";
 import ProductoDetalle from "./pages/ProductoDetalle.jsx";
@@ -17,14 +17,15 @@ function App() {
   // categoría y el catálogo la refleja sin depender de un backend todavía.
   const [categoria, setCategoria] = useState("todas");
   const [soloOfertas, setSoloOfertas] = useState(false);
+  const [orden, setOrden] = useState("relevancia");
   const [productos, setProductos] = useState([]); //empieza vacia, los datos llegan despues
   const [cargando, setCargando] = useState(true); // ¿esta cargando?
   const [error, setError] = useState(null); // null = sin error, string = mensaje a mostrar
 
   const [carritoAbierto, setCarritoAbierto] = useState(false);
 
-  const cargarProductos = () => {
-    obtenerProductos()
+  const cargarProductos = useCallback(() => {
+    obtenerProductos({ orden })
       .then((catalogo) => {
         setProductos(catalogo);
       })
@@ -34,11 +35,11 @@ function App() {
       .finally(() => {
         setCargando(false);
       });
-  };
+  }, [orden]);
 
   useEffect(() => {
     cargarProductos();
-  }, []);
+  }, [cargarProductos]);
 
   // React Router actualiza la URL, pero no desplaza automáticamente al hash.
   // Tras llegar a la sección limpiamos el hash: al recargar, la tienda vuelve
@@ -131,6 +132,8 @@ function App() {
                 onSeleccionarCategoria={setCategoria}
                 soloOfertas={soloOfertas}
                 onCambiarSoloOfertas={setSoloOfertas}
+                orden={orden}
+                onOrdenar={setOrden}
                 onVerOfertas={verOfertas}
                 onVerCatalogo={verCatalogo}
               />

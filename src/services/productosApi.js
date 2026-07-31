@@ -18,10 +18,14 @@ export async function obtenerProductos({
   // desarrollo: el bundle de GitHub Pages debe iniciar directamente con el
   // respaldo hasta que exista una API pública.
   apiUrl = import.meta.env.DEV ? import.meta.env.VITE_API_URL : undefined,
+  orden = "relevancia",
 } = {}) {
   if (apiUrl) {
     try {
-      const respuestaApi = await fetchImpl(`${apiUrl.replace(/\/$/, "")}/productos?limit=24`);
+      const parametros = new URLSearchParams({ limit: "24", orden });
+      const respuestaApi = await fetchImpl(
+        `${apiUrl.replace(/\/$/, "")}/productos?${parametros}`,
+      );
 
       if (!respuestaApi.ok) {
         throw new Error("La API propia no respondió correctamente.");

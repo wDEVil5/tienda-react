@@ -18,6 +18,8 @@ function App() {
   const [categoria, setCategoria] = useState("todas");
   const [soloOfertas, setSoloOfertas] = useState(false);
   const [orden, setOrden] = useState("relevancia");
+  const [precioMin, setPrecioMin] = useState(null);
+  const [precioMax, setPrecioMax] = useState(null);
   const [productos, setProductos] = useState([]); // base: hero, detalle, sugerencias y footer
   const [productosCatalogo, setProductosCatalogo] = useState([]); // resultado de la consulta actual
   const [cargando, setCargando] = useState(true); // ¿esta cargando?
@@ -50,6 +52,8 @@ function App() {
       busqueda: busquedaParaApi,
       categoria: categoriaParaApi,
       soloOfertas,
+      precioMin,
+      precioMax,
     })
       .then((catalogo) => {
         setProductosCatalogo(catalogo);
@@ -66,7 +70,14 @@ function App() {
       .finally(() => {
         setCargando(false);
       });
-  }, [busquedaParaApi, categoriaParaApi, orden, soloOfertas]);
+  }, [
+    busquedaParaApi,
+    categoriaParaApi,
+    orden,
+    soloOfertas,
+    precioMin,
+    precioMax,
+  ]);
 
   useEffect(() => {
     // Si el usuario aún está escribiendo, esperamos al término diferido. Así
@@ -167,6 +178,10 @@ function App() {
                 onSeleccionarCategoria={setCategoria}
                 soloOfertas={soloOfertas}
                 onCambiarSoloOfertas={setSoloOfertas}
+                precioMin={precioMin}
+                precioMax={precioMax}
+                onCambiarPrecioMin={setPrecioMin}
+                onCambiarPrecioMax={setPrecioMax}
                 orden={orden}
                 onOrdenar={setOrden}
                 productosCatalogo={productosCatalogo}

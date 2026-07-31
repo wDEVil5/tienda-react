@@ -102,6 +102,24 @@ describe("obtenerProductos", () => {
     );
   });
 
+  it("envía los extremos de precio solo cuando el usuario los define", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: [productoApi] }),
+    });
+
+    await obtenerProductos({
+      fetchImpl,
+      apiUrl: "http://localhost:3000/api",
+      precioMin: 4000,
+      precioMax: 6000,
+    });
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "http://localhost:3000/api/productos?limit=24&orden=relevancia&precioMin=4000&precioMax=6000",
+    );
+  });
+
   it("usa Fake Store como respaldo si la API local no está disponible", async () => {
     const fetchImpl = vi
       .fn()

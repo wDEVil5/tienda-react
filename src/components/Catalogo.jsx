@@ -18,6 +18,10 @@ function Catalogo({
   onSeleccionarCategoria,
   soloOfertas,
   onCambiarSoloOfertas,
+  precioMin,
+  precioMax,
+  onCambiarPrecioMin,
+  onCambiarPrecioMax,
   orden,
   onOrdenar,
 }) {
@@ -29,9 +33,6 @@ function Catalogo({
   const [masCategoriasAbierto, setMasCategoriasAbierto] = useState(false);
   const [limiteProductos, setLimiteProductos] = useState(PRODUCTOS_POR_CARGA);
   const [filtrosAbiertos, setFiltrosAbiertos] = useState(false); // hoja de filtros (móvil)
-  // Rango de precio: null = sin límite (usa el extremo del catálogo).
-  const [precioMin, setPrecioMin] = useState(null);
-  const [precioMax, setPrecioMax] = useState(null);
 
   // Mientras la hoja de filtros está abierta (solo móvil): cerrar con Escape y
   // bloquear el scroll del fondo. Mismo patrón que el drawer del carrito.
@@ -74,8 +75,9 @@ function Catalogo({
   const contarCategoria = (cat) =>
     cat === "todas" ? productosBase.length : conteos[cat] ?? 0;
 
-  // Límites de precio del catálogo (derivados) para el slider de rango.
-  const precios = productos.map((p) => p.precio);
+  // Los extremos salen de la colección base para que el slider mantenga su
+  // escala aun cuando la API devuelva solo un rango filtrado.
+  const precios = productosBase.map((p) => p.precio);
   const precioPiso = precios.length ? Math.floor(Math.min(...precios)) : 0;
   const precioTope = precios.length ? Math.ceil(Math.max(...precios)) : 0;
   const minActual = precioMin ?? precioPiso;
@@ -91,8 +93,8 @@ function Catalogo({
     onBuscar("");
     onSeleccionarCategoria("todas");
     onCambiarSoloOfertas(false);
-    setPrecioMin(null);
-    setPrecioMax(null);
+    onCambiarPrecioMin(null);
+    onCambiarPrecioMax(null);
     setMasCategoriasAbierto(false);
   };
 
@@ -311,7 +313,9 @@ function Catalogo({
                 max={precioTope}
                 value={minActual}
                 onChange={(e) =>
-                  setPrecioMin(Math.min(Number(e.target.value), maxActual))
+                  onCambiarPrecioMin(
+                    Math.min(Number(e.target.value), maxActual),
+                  )
                 }
                 aria-label="Precio mínimo"
               />
@@ -321,7 +325,9 @@ function Catalogo({
                 max={precioTope}
                 value={maxActual}
                 onChange={(e) =>
-                  setPrecioMax(Math.max(Number(e.target.value), minActual))
+                  onCambiarPrecioMax(
+                    Math.max(Number(e.target.value), minActual),
+                  )
                 }
                 aria-label="Precio máximo"
               />

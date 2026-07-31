@@ -22,6 +22,8 @@ export async function obtenerProductos({
   busqueda = "",
   categoria,
   soloOfertas = false,
+  precioMin,
+  precioMax,
 } = {}) {
   if (apiUrl) {
     try {
@@ -38,6 +40,14 @@ export async function obtenerProductos({
 
       if (soloOfertas) {
         parametros.set("ofertas", "true");
+      }
+
+      if (Number.isFinite(precioMin) && precioMin >= 0) {
+        parametros.set("precioMin", String(precioMin));
+      }
+
+      if (Number.isFinite(precioMax) && precioMax >= 0) {
+        parametros.set("precioMax", String(precioMax));
       }
 
       const respuestaApi = await fetchImpl(

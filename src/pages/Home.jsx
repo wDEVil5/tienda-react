@@ -15,6 +15,10 @@ function Home({
   onSeleccionarCategoria,
   soloOfertas,
   onCambiarSoloOfertas,
+  precioMin,
+  precioMax,
+  onCambiarPrecioMin,
+  onCambiarPrecioMax,
   orden,
   onOrdenar,
   productosCatalogo,
@@ -45,6 +49,10 @@ function Home({
         onSeleccionarCategoria={onSeleccionarCategoria}
         soloOfertas={soloOfertas}
         onCambiarSoloOfertas={onCambiarSoloOfertas}
+        precioMin={precioMin}
+        precioMax={precioMax}
+        onCambiarPrecioMin={onCambiarPrecioMin}
+        onCambiarPrecioMax={onCambiarPrecioMax}
         orden={orden}
         onOrdenar={onOrdenar}
       />

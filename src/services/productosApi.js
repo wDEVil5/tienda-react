@@ -14,7 +14,10 @@ const URL_FAKE_STORE = "https://fakestoreapi.com/products";
  */
 export async function obtenerProductos({
   fetchImpl = fetch,
-  apiUrl = import.meta.env.VITE_API_URL,
+  // Vite reemplaza estas variables al compilar. Solo usamos la URL local en
+  // desarrollo: el bundle de GitHub Pages debe iniciar directamente con el
+  // respaldo hasta que exista una API pública.
+  apiUrl = import.meta.env.DEV ? import.meta.env.VITE_API_URL : undefined,
 } = {}) {
   if (apiUrl) {
     try {

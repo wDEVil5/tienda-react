@@ -34,6 +34,15 @@ test('listarProductos filtra productos con oferta vigente', () => {
   assert.equal(resultado.every((producto) => producto.precioAnterior !== null), true)
 })
 
+test('listarProductos filtra por un rango de precio inclusivo', () => {
+  const { data: resultado } = listarProductos({ precioMin: 4000, precioMax: 6000 })
+
+  assert.deepEqual(
+    resultado.map((producto) => producto.slug),
+    ['cafe-de-grano-tostado-250-g', 'leche-entera-1-l'],
+  )
+})
+
 test('listarProductos devuelve copias seguras de los datos', () => {
   const { data: primerResultado } = listarProductos()
   primerResultado[0].categoria.nombre = 'Categoría modificada'

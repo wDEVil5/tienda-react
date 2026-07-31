@@ -56,6 +56,8 @@ export function listarProductos({
   query = '',
   categoria = '',
   soloOfertas = false,
+  precioMin = 0,
+  precioMax = Infinity,
   page = PAGINACION_PREDETERMINADA.page,
   limit = PAGINACION_PREDETERMINADA.limit,
   orden = ORDEN_PREDETERMINADO,
@@ -75,6 +77,11 @@ export function listarProductos({
     )
     // Hasta tener promociones persistidas, precioAnterior representa una oferta vigente.
     .filter((producto) => !soloOfertas || producto.precioAnterior !== null)
+    // Los límites se aplican antes de ordenar y paginar: el meta.total siempre
+    // representa los productos que realmente cumplen todos los filtros.
+    .filter(
+      (producto) => producto.precio >= precioMin && producto.precio <= precioMax,
+    )
     .map(crearProductoPublico)
 
   const productosOrdenados = ordenarProductos(productosFiltrados, orden)

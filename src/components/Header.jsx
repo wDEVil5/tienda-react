@@ -152,7 +152,7 @@ function Header({
                       {sugerenciasProductos.map((producto) => (
                         <Link
                           key={producto.id}
-                          to={`/producto/${producto.id}`}
+                          to={`/producto/${producto.slug ?? producto.id}`}
                           className={styles.sugerenciaProducto}
                           onClick={() => setSugerenciasAbiertas(false)}
                         >

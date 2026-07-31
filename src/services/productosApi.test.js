@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { obtenerCatalogo } from "./productosApi.js";
+import { obtenerCatalogo, obtenerProductoDetalle } from "./productosApi.js";
 
 const productoApi = {
   id: "prod_aceite_oliva_500",
@@ -56,6 +56,24 @@ describe("obtenerCatalogo", () => {
     expect(fetchImpl).toHaveBeenCalledWith(
       "http://localhost:3000/api/productos?page=2&limit=10&orden=relevancia",
     );
+  });
+
+  it("consulta el detalle por slug sin depender de la página del catálogo", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: { ...productoApi, slug: "aceite-oliva-500" } }),
+    });
+
+    const producto = await obtenerProductoDetalle({
+      fetchImpl,
+      apiUrl: "http://localhost:3000/api",
+      slug: "aceite-oliva-500",
+    });
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "http://localhost:3000/api/productos/aceite-oliva-500",
+    );
+    expect(producto.slug).toBe("aceite-oliva-500");
   });
 
   it("envía el criterio de ordenamiento a la API propia", async () => {

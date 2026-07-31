@@ -162,7 +162,7 @@ function Carrito({ onCerrar, abierto, productos, onVerOfertas, onVerCatalogo }) 
           carrito.map((item) => (
             <div key={item.id} className={styles.item}>
               <div className={styles.imagenWrap}>
-                <Link to={`/producto/${item.id}`} onClick={onCerrar}>
+                <Link to={`/producto/${item.slug ?? item.id}`} onClick={onCerrar}>
                   <ImagenProducto
                     className={styles.imagen}
                     src={item.imagen}
@@ -174,7 +174,7 @@ function Carrito({ onCerrar, abierto, productos, onVerOfertas, onVerCatalogo }) 
               <div className={styles.info}>
                 <div className={styles.filaSuperior}>
                   <Link
-                    to={`/producto/${item.id}`}
+                    to={`/producto/${item.slug ?? item.id}`}
                     onClick={onCerrar}
                     className={styles.itemNombre}
                   >

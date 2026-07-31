@@ -11,6 +11,7 @@
  * Un producto tal como lo consume la aplicación.
  * @typedef {Object} Producto
  * @property {number|string} id            - Identificador único.
+ * @property {string}        slug          - Identificador legible usado en URLs públicas.
  * @property {string}        nombre        - Nombre visible del producto.
  * @property {number}        precio        - Precio actual (número, sin símbolo).
  * @property {string}        imagen        - URL de la imagen principal.
@@ -31,6 +32,9 @@
 export function normalizarProductoFakeStore(p) {
   return {
     id: p.id,
+    // Fake Store no entrega slug. Lo construimos de forma estable para que el
+    // router mantenga la misma URL pública al cambiar de fuente de datos.
+    slug: `producto-${p.id}`,
     nombre: p.title,
     precio: p.price,
     imagen: p.image,
@@ -64,6 +68,7 @@ export function normalizarProductoApi(producto) {
 
   return {
     id: producto.id,
+    slug: producto.slug,
     nombre: producto.nombre,
     precio: producto.precio,
     imagen: imagenes[0] ?? '',

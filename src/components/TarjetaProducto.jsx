@@ -14,7 +14,7 @@ function TarjetaProducto({ producto }) {
     return (
         <article className={styles.tarjeta}>
             <div className={styles.imagenWrap}>
-                <Link to={`/producto/${producto.id}`}>
+                <Link to={`/producto/${producto.slug ?? producto.id}`}>
                     <ImagenProducto
                         className={styles.imagen}
                         src={producto.imagen}
@@ -25,7 +25,7 @@ function TarjetaProducto({ producto }) {
             </div>
 
             <h3 className={styles.nombre}>
-                <Link to={`/producto/${producto.id}`}>{producto.nombre}</Link>
+                <Link to={`/producto/${producto.slug ?? producto.id}`}>{producto.nombre}</Link>
             </h3>
 
             <div className={styles.pie}>

@@ -218,7 +218,7 @@ function App() {
             }
           />
           <Route
-            path="/producto/:id"
+            path="/producto/:slug"
             element={<ProductoDetalle productos={productos} />}
           />
         </Routes>

@@ -106,3 +106,53 @@ export async function obtenerCatalogo({
     fuente: "fallback",
   };
 }
+
+/**
+ * Obtiene una ficha por su slug. La ficha no depende de que el producto esté
+ * en la página actual del catálogo, por ejemplo tras abrir un enlace directo.
+ */
+export async function obtenerProductoDetalle({
+  slug,
+  fetchImpl = fetch,
+  apiUrl = import.meta.env.DEV ? import.meta.env.VITE_API_URL : undefined,
+} = {}) {
+  if (apiUrl) {
+    try {
+      const respuestaApi = await fetchImpl(
+        `${apiUrl.replace(/\/$/, "")}/productos/${encodeURIComponent(slug)}`,
+      );
+
+      if (!respuestaApi.ok) {
+        throw new Error("La API propia no respondió correctamente.");
+      }
+
+      const cuerpo = await respuestaApi.json();
+
+      if (!cuerpo.data) {
+        throw new Error("La API propia devolvió una ficha inválida.");
+      }
+
+      return normalizarProductoApi(cuerpo.data);
+    } catch {
+      // La demo pública no tiene endpoint de detalle propio todavía.
+    }
+  }
+
+  const respuestaFakeStore = await fetchImpl(URL_FAKE_STORE);
+
+  if (!respuestaFakeStore.ok) {
+    throw new Error("No se pudo cargar el producto.");
+  }
+
+  const productos = await respuestaFakeStore.json();
+
+  if (!Array.isArray(productos)) {
+    throw new Error("Fake Store devolvió un catálogo inválido.");
+  }
+
+  return (
+    productos
+      .map(normalizarProductoFakeStore)
+      .find((producto) => producto.slug === slug || String(producto.id) === slug) ?? null
+  );
+}

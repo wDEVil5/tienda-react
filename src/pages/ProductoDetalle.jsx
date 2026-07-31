@@ -1,9 +1,10 @@
-import { useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 import ImagenProducto from "../components/ImagenProducto.jsx";
 import TarjetaProducto from "../components/TarjetaProducto.jsx";
 import ControlCantidad from "../components/ControlCantidad.jsx";
+import { obtenerProductoDetalle } from "../services/productosApi.js";
 import styles from "./ProductoDetalle.module.css";
 
 // Límite de presentación. El backend y el panel admin deberán validar el
@@ -11,21 +12,65 @@ import styles from "./ProductoDetalle.module.css";
 const MAXIMO_IMAGENES_PRODUCTO = 5;
 
 function ProductoDetalle({ productos }) {
-  // useParams entrega strings. La API propia usa IDs legibles (prod_...),
-  // mientras Fake Store usa números: convertir ambos a texto soporta las dos fuentes.
-  const { id } = useParams();
+  const { slug } = useParams();
   const { agregarAlCarrito } = useCarritoContext();
   const [cantidad, setCantidad] = useState(1); // cantidad a agregar
   const [imagenSeleccionada, setImagenSeleccionada] = useState(null);
 
-  const producto = productos.find((p) => String(p.id) === id);
+  // La colección actual resuelve navegación interna. Si se abre una URL directa
+  // de una página aún no cargada, el efecto consulta su ficha al backend.
+  const productoLocal = productos.find(
+    (productoActual) =>
+      productoActual.slug === slug || String(productoActual.id) === slug,
+  );
+  const [detalleRemoto, setDetalleRemoto] = useState({
+    slug: null,
+    producto: null,
+    terminado: false,
+  });
+
+  useEffect(() => {
+    if (productoLocal) return undefined;
+
+    let vigente = true;
+
+    obtenerProductoDetalle({ slug })
+      .then((producto) => {
+        if (vigente) {
+          setDetalleRemoto({ slug, producto, terminado: true });
+        }
+      })
+      .catch(() => {
+        if (vigente) {
+          setDetalleRemoto({ slug, producto: null, terminado: true });
+        }
+      });
+
+    return () => {
+      vigente = false;
+    };
+  }, [productoLocal, slug]);
+
+  const producto =
+    productoLocal ?? (detalleRemoto.slug === slug ? detalleRemoto.producto : null);
+  const cargandoProducto =
+    !productoLocal &&
+    (detalleRemoto.slug !== slug || !detalleRemoto.terminado);
 
   // React Router conserva la posición previa del documento al cambiar de ruta.
   // Cada detalle debe comenzar arriba, también al abrir un relacionado desde
   // esta misma página (en ese caso el componente no se desmonta: solo cambia :id).
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
-  }, [id]);
+  }, [slug]);
+
+  if (cargandoProducto) {
+    return (
+      <section className={styles.noEncontrado} role="status">
+        <p>Cargando producto...</p>
+      </section>
+    );
+  }
 
   // La URL podría apuntar a un id que no existe (link viejo, id inventado).
   if (!producto) {
@@ -60,7 +105,7 @@ function ProductoDetalle({ productos }) {
     : imagenes[0];
 
   return (
-    <section key={id} className={styles.detalle}>
+    <section key={slug} className={styles.detalle}>
       <div className={styles.topBar}>
         <nav className={styles.miga} aria-label="Ruta de navegación">
           <Link to="/">Tienda</Link>

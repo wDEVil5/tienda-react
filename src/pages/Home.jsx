@@ -22,6 +22,10 @@ function Home({
   orden,
   onOrdenar,
   productosCatalogo,
+  metaCatalogo,
+  usaPaginacionServidor,
+  cargandoMas,
+  onCargarMas,
   onVerOfertas,
   onVerCatalogo,
 }) {
@@ -55,6 +59,10 @@ function Home({
         onCambiarPrecioMax={onCambiarPrecioMax}
         orden={orden}
         onOrdenar={onOrdenar}
+        metaCatalogo={metaCatalogo}
+        usaPaginacionServidor={usaPaginacionServidor}
+        cargandoMas={cargandoMas}
+        onCargarMas={onCargarMas}
       />
       <ComoComprar />
       <MarcasGondola />

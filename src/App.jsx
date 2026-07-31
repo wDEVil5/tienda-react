@@ -7,7 +7,9 @@ import Toast from "./components/Toast.jsx";
 import styles from "./App.module.css";
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
-import { obtenerProductos } from "./services/productosApi.js";
+import { obtenerCatalogo } from "./services/productosApi.js";
+
+const PRODUCTOS_POR_PAGINA = 10;
 
 function App() {
   const ubicacion = useLocation();
@@ -22,6 +24,9 @@ function App() {
   const [precioMax, setPrecioMax] = useState(null);
   const [productos, setProductos] = useState([]); // base: hero, detalle, sugerencias y footer
   const [productosCatalogo, setProductosCatalogo] = useState([]); // resultado de la consulta actual
+  const [metaCatalogo, setMetaCatalogo] = useState(null);
+  const [fuenteCatalogo, setFuenteCatalogo] = useState(null);
+  const [cargandoMas, setCargandoMas] = useState(false);
   const [cargando, setCargando] = useState(true); // ¿esta cargando?
   const [error, setError] = useState(null); // null = sin error, string = mensaje a mostrar
 
@@ -46,29 +51,38 @@ function App() {
       : productos.find((producto) => producto.categoria === categoria)
           ?.categoriaSlug;
 
-  const cargarProductos = useCallback(() => {
-    obtenerProductos({
+  const cargarProductos = useCallback(({ page = 1, agregar = false } = {}) => {
+    obtenerCatalogo({
       orden,
       busqueda: busquedaParaApi,
       categoria: categoriaParaApi,
       soloOfertas,
       precioMin,
       precioMax,
+      page,
+      limit: PRODUCTOS_POR_PAGINA,
     })
-      .then((catalogo) => {
-        setProductosCatalogo(catalogo);
+      .then((resultado) => {
+        setProductosCatalogo((actuales) =>
+          agregar ? [...actuales, ...resultado.productos] : resultado.productos,
+        );
+        setMetaCatalogo(resultado.meta);
+        setFuenteCatalogo(resultado.fuente);
 
-        // Los bloques fuera del catálogo no deben cambiar al buscar u ordenar.
-        // La primera consulta sin filtros establece su catálogo base.
-        if (!busquedaParaApi && orden === "relevancia") {
-          setProductos(catalogo);
-        }
+        // El Home conserva una base independiente. Acumulamos los productos ya
+        // vistos para que un enlace de la página 2 siga encontrando su ficha.
+        setProductos((actuales) => {
+          const porId = new Map(actuales.map((producto) => [producto.id, producto]));
+          resultado.productos.forEach((producto) => porId.set(producto.id, producto));
+          return [...porId.values()];
+        });
       })
       .catch(() => {
         setError("No se pudo cargar el catálogo. Revisa tu conexión e intenta de nuevo.");
       })
       .finally(() => {
         setCargando(false);
+        setCargandoMas(false);
       });
   }, [
     busquedaParaApi,
@@ -109,6 +123,15 @@ function App() {
     setCargando(true);
     setError(null);
     cargarProductos();
+  };
+
+  const cargarMasProductos = () => {
+    if (!metaCatalogo || cargandoMas || metaCatalogo.page >= metaCatalogo.totalPages) {
+      return;
+    }
+
+    setCargandoMas(true);
+    cargarProductos({ page: metaCatalogo.page + 1, agregar: true });
   };
 
   // Accesos globales: todos los CTA que hablan de ofertas aplican el mismo
@@ -185,6 +208,10 @@ function App() {
                 orden={orden}
                 onOrdenar={setOrden}
                 productosCatalogo={productosCatalogo}
+                metaCatalogo={metaCatalogo}
+                usaPaginacionServidor={fuenteCatalogo === "api"}
+                cargandoMas={cargandoMas}
+                onCargarMas={cargarMasProductos}
                 onVerOfertas={verOfertas}
                 onVerCatalogo={verCatalogo}
               />

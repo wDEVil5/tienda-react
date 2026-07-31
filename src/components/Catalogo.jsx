@@ -24,6 +24,10 @@ function Catalogo({
   onCambiarPrecioMax,
   orden,
   onOrdenar,
+  metaCatalogo,
+  usaPaginacionServidor,
+  cargandoMas,
+  onCargarMas,
 }) {
   // `categoria` vive en App para que también pueda cambiarse desde las
   // sugerencias del Header; este componente solo notifica la intención.
@@ -155,8 +159,15 @@ function Catalogo({
     productosOrdenados.sort((a, b) => a.nombre.localeCompare(b.nombre));
   }
 
-  const productosVisibles = productosOrdenados.slice(0, limiteProductos);
-  const hayMasProductos = limiteProductos < productosFiltrados.length;
+  const totalProductos = usaPaginacionServidor
+    ? (metaCatalogo?.total ?? productosFiltrados.length)
+    : productosFiltrados.length;
+  const productosVisibles = usaPaginacionServidor
+    ? productosOrdenados
+    : productosOrdenados.slice(0, limiteProductos);
+  const hayMasProductos = usaPaginacionServidor
+    ? (metaCatalogo?.page ?? 1) < (metaCatalogo?.totalPages ?? 1)
+    : limiteProductos < productosFiltrados.length;
 
   // Chips de categoría (se reutilizan en la fila de escritorio y en la hoja).
   const renderChips = (lista) =>
@@ -180,7 +191,7 @@ function Catalogo({
           <div className={styles.tituloFila}>
             <h2 className={styles.titulo}>Todo el catálogo</h2>
             <p className={styles.subtitulo}>
-              <span>{productosFiltrados.length}</span>
+              <span>{totalProductos}</span>
               <span className={styles.subtituloDetalle}>
                 {" "}
                 productos · precios de hoy
@@ -235,7 +246,7 @@ function Catalogo({
           </select>
 
           <span className={styles.conteoMovil}>
-            {productosVisibles.length} de {productosFiltrados.length}
+            {productosVisibles.length} de {totalProductos}
           </span>
         </div>
 
@@ -369,7 +380,7 @@ function Catalogo({
             type="button"
             onClick={() => setFiltrosAbiertos(false)}
           >
-            Ver {productosFiltrados.length} productos
+            Ver {totalProductos} productos
           </button>
         </div>
 
@@ -403,17 +414,21 @@ function Catalogo({
 
             <div className={styles.pie}>
               <p className={styles.conteoTotal}>
-                {productosVisibles.length} de {productosFiltrados.length}
+                {productosVisibles.length} de {totalProductos}
               </p>
               {hayMasProductos && (
                 <button
                   className={styles.cargarMas}
                   type="button"
-                  onClick={() =>
-                    setLimiteProductos((limite) => limite + PRODUCTOS_POR_CARGA)
+                  onClick={
+                    usaPaginacionServidor
+                      ? onCargarMas
+                      : () =>
+                          setLimiteProductos((limite) => limite + PRODUCTOS_POR_CARGA)
                   }
+                  disabled={cargandoMas}
                 >
-                  Cargar más
+                  {cargandoMas ? "Cargando..." : "Cargar más"}
                 </button>
               )}
             </div>

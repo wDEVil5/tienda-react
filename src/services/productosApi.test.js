@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { obtenerProductos } from "./productosApi.js";
+import { obtenerCatalogo } from "./productosApi.js";
 
 const productoApi = {
   id: "prod_aceite_oliva_500",
@@ -12,26 +12,50 @@ const productoApi = {
   imagenes: [{ url: "https://ejemplo.cl/aceite.jpg", orden: 1 }],
 };
 
-describe("obtenerProductos", () => {
+describe("obtenerCatalogo", () => {
   it("prioriza la API propia y normaliza su respuesta paginada", async () => {
     const fetchImpl = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ data: [productoApi] }),
     });
 
-    const productos = await obtenerProductos({
+    const resultado = await obtenerCatalogo({
       fetchImpl,
       apiUrl: "http://localhost:3000/api",
     });
 
     expect(fetchImpl).toHaveBeenCalledWith(
-      "http://localhost:3000/api/productos?limit=24&orden=relevancia",
+      "http://localhost:3000/api/productos?page=1&limit=10&orden=relevancia",
     );
-    expect(productos[0]).toMatchObject({
+    expect(resultado.productos[0]).toMatchObject({
       id: "prod_aceite_oliva_500",
       categoria: "Despensa",
       imagen: "https://ejemplo.cl/aceite.jpg",
     });
+  });
+
+  it("conserva los metadatos de paginación de la API propia", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: [productoApi],
+        meta: { page: 2, limit: 10, total: 21, totalPages: 3 },
+      }),
+    });
+
+    const resultado = await obtenerCatalogo({
+      fetchImpl,
+      apiUrl: "http://localhost:3000/api",
+      page: 2,
+    });
+
+    expect(resultado).toMatchObject({
+      fuente: "api",
+      meta: { page: 2, limit: 10, total: 21, totalPages: 3 },
+    });
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "http://localhost:3000/api/productos?page=2&limit=10&orden=relevancia",
+    );
   });
 
   it("envía el criterio de ordenamiento a la API propia", async () => {
@@ -40,14 +64,14 @@ describe("obtenerProductos", () => {
       json: async () => ({ data: [productoApi] }),
     });
 
-    await obtenerProductos({
+    await obtenerCatalogo({
       fetchImpl,
       apiUrl: "http://localhost:3000/api",
       orden: "precio-desc",
     });
 
     expect(fetchImpl).toHaveBeenCalledWith(
-      "http://localhost:3000/api/productos?limit=24&orden=precio-desc",
+      "http://localhost:3000/api/productos?page=1&limit=10&orden=precio-desc",
     );
   });
 
@@ -57,14 +81,14 @@ describe("obtenerProductos", () => {
       json: async () => ({ data: [productoApi] }),
     });
 
-    await obtenerProductos({
+    await obtenerCatalogo({
       fetchImpl,
       apiUrl: "http://localhost:3000/api",
       busqueda: "aceite oliva",
     });
 
     expect(fetchImpl).toHaveBeenCalledWith(
-      "http://localhost:3000/api/productos?limit=24&orden=relevancia&q=aceite+oliva",
+      "http://localhost:3000/api/productos?page=1&limit=10&orden=relevancia&q=aceite+oliva",
     );
   });
 
@@ -74,14 +98,14 @@ describe("obtenerProductos", () => {
       json: async () => ({ data: [productoApi] }),
     });
 
-    await obtenerProductos({
+    await obtenerCatalogo({
       fetchImpl,
       apiUrl: "http://localhost:3000/api",
       categoria: "despensa",
     });
 
     expect(fetchImpl).toHaveBeenCalledWith(
-      "http://localhost:3000/api/productos?limit=24&orden=relevancia&categoria=despensa",
+      "http://localhost:3000/api/productos?page=1&limit=10&orden=relevancia&categoria=despensa",
     );
   });
 
@@ -91,14 +115,14 @@ describe("obtenerProductos", () => {
       json: async () => ({ data: [productoApi] }),
     });
 
-    await obtenerProductos({
+    await obtenerCatalogo({
       fetchImpl,
       apiUrl: "http://localhost:3000/api",
       soloOfertas: true,
     });
 
     expect(fetchImpl).toHaveBeenCalledWith(
-      "http://localhost:3000/api/productos?limit=24&orden=relevancia&ofertas=true",
+      "http://localhost:3000/api/productos?page=1&limit=10&orden=relevancia&ofertas=true",
     );
   });
 
@@ -108,7 +132,7 @@ describe("obtenerProductos", () => {
       json: async () => ({ data: [productoApi] }),
     });
 
-    await obtenerProductos({
+    await obtenerCatalogo({
       fetchImpl,
       apiUrl: "http://localhost:3000/api",
       precioMin: 4000,
@@ -116,7 +140,7 @@ describe("obtenerProductos", () => {
     });
 
     expect(fetchImpl).toHaveBeenCalledWith(
-      "http://localhost:3000/api/productos?limit=24&orden=relevancia&precioMin=4000&precioMax=6000",
+      "http://localhost:3000/api/productos?page=1&limit=10&orden=relevancia&precioMin=4000&precioMax=6000",
     );
   });
 
@@ -138,7 +162,7 @@ describe("obtenerProductos", () => {
         ],
       });
 
-    const productos = await obtenerProductos({
+    const resultado = await obtenerCatalogo({
       fetchImpl,
       apiUrl: "http://localhost:3000/api",
     });
@@ -147,6 +171,6 @@ describe("obtenerProductos", () => {
       2,
       "https://fakestoreapi.com/products",
     );
-    expect(productos[0].nombre).toBe("Producto de respaldo");
+    expect(resultado.productos[0].nombre).toBe("Producto de respaldo");
   });
 });

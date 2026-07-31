@@ -6,13 +6,13 @@ import {
 const URL_FAKE_STORE = "https://fakestoreapi.com/products";
 
 /**
- * Obtiene el catálogo sin exponer a la UI cuál es la fuente de datos.
+ * Obtiene una página de catálogo sin exponer a la UI cuál es la fuente de datos.
  *
  * En local, VITE_API_URL apunta a la API propia. La demo de GitHub Pages no
  * tiene backend desplegado todavía, por eso conserva Fake Store como respaldo
  * temporal. Cuando la API se publique, este fallback se podrá retirar aquí.
  */
-export async function obtenerProductos({
+export async function obtenerCatalogo({
   fetchImpl = fetch,
   // Vite reemplaza estas variables al compilar. Solo usamos la URL local en
   // desarrollo: el bundle de GitHub Pages debe iniciar directamente con el
@@ -24,10 +24,16 @@ export async function obtenerProductos({
   soloOfertas = false,
   precioMin,
   precioMax,
+  page = 1,
+  limit = 10,
 } = {}) {
   if (apiUrl) {
     try {
-      const parametros = new URLSearchParams({ limit: "24", orden });
+      const parametros = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+        orden,
+      });
       const termino = busqueda.trim();
 
       if (termino) {
@@ -64,7 +70,11 @@ export async function obtenerProductos({
         throw new Error("La API propia devolvió un catálogo inválido.");
       }
 
-      return cuerpo.data.map(normalizarProductoApi);
+      return {
+        productos: cuerpo.data.map(normalizarProductoApi),
+        meta: cuerpo.meta,
+        fuente: "api",
+      };
     } catch {
       // El respaldo permite seguir desarrollando el frontend si la API local
       // está detenida. No se muestra este detalle al cliente final.
@@ -83,5 +93,16 @@ export async function obtenerProductos({
     throw new Error("Fake Store devolvió un catálogo inválido.");
   }
 
-  return productos.map(normalizarProductoFakeStore);
+  return {
+    productos: productos.map(normalizarProductoFakeStore),
+    // Fake Store no pagina en el servidor. Esta metadata permite que el
+    // catálogo mantenga su botón local "Cargar más" durante la transición.
+    meta: {
+      page: 1,
+      limit: productos.length,
+      total: productos.length,
+      totalPages: 1,
+    },
+    fuente: "fallback",
+  };
 }

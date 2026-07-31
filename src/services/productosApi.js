@@ -19,10 +19,17 @@ export async function obtenerProductos({
   // respaldo hasta que exista una API pública.
   apiUrl = import.meta.env.DEV ? import.meta.env.VITE_API_URL : undefined,
   orden = "relevancia",
+  busqueda = "",
 } = {}) {
   if (apiUrl) {
     try {
       const parametros = new URLSearchParams({ limit: "24", orden });
+      const termino = busqueda.trim();
+
+      if (termino) {
+        parametros.set("q", termino);
+      }
+
       const respuestaApi = await fetchImpl(
         `${apiUrl.replace(/\/$/, "")}/productos?${parametros}`,
       );

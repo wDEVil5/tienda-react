@@ -17,6 +17,7 @@ function Home({
   onCambiarSoloOfertas,
   orden,
   onOrdenar,
+  productosCatalogo,
   onVerOfertas,
   onVerCatalogo,
 }) {
@@ -36,7 +37,7 @@ function Home({
       />
       <BandaOfertas productos={productos} onVerOfertas={onVerOfertas} />
       <Catalogo
-        productos={productos}
+        productos={productosCatalogo}
         busqueda={busqueda}
         onBuscar={onBuscar}
         categoria={categoria}

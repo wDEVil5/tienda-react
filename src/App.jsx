@@ -18,16 +18,34 @@ function App() {
   const [categoria, setCategoria] = useState("todas");
   const [soloOfertas, setSoloOfertas] = useState(false);
   const [orden, setOrden] = useState("relevancia");
-  const [productos, setProductos] = useState([]); //empieza vacia, los datos llegan despues
+  const [productos, setProductos] = useState([]); // base: hero, detalle, sugerencias y footer
+  const [productosCatalogo, setProductosCatalogo] = useState([]); // resultado de la consulta actual
   const [cargando, setCargando] = useState(true); // ¿esta cargando?
   const [error, setError] = useState(null); // null = sin error, string = mensaje a mostrar
 
   const [carritoAbierto, setCarritoAbierto] = useState(false);
 
+  // La búsqueda espera un instante antes de consultar. Esto evita una petición
+  // por cada tecla y mantiene la respuesta del servidor como fuente de verdad.
+  const [busquedaParaApi, setBusquedaParaApi] = useState("");
+  useEffect(() => {
+    const espera = window.setTimeout(() => {
+      setBusquedaParaApi(busqueda);
+    }, 250);
+
+    return () => window.clearTimeout(espera);
+  }, [busqueda]);
+
   const cargarProductos = useCallback(() => {
-    obtenerProductos({ orden })
+    obtenerProductos({ orden, busqueda: busquedaParaApi })
       .then((catalogo) => {
-        setProductos(catalogo);
+        setProductosCatalogo(catalogo);
+
+        // Los bloques fuera del catálogo no deben cambiar al buscar u ordenar.
+        // La primera consulta sin filtros establece su catálogo base.
+        if (!busquedaParaApi && orden === "relevancia") {
+          setProductos(catalogo);
+        }
       })
       .catch(() => {
         setError("No se pudo cargar el catálogo. Revisa tu conexión e intenta de nuevo.");
@@ -35,7 +53,7 @@ function App() {
       .finally(() => {
         setCargando(false);
       });
-  }, [orden]);
+  }, [busquedaParaApi, orden]);
 
   useEffect(() => {
     cargarProductos();
@@ -134,6 +152,7 @@ function App() {
                 onCambiarSoloOfertas={setSoloOfertas}
                 orden={orden}
                 onOrdenar={setOrden}
+                productosCatalogo={productosCatalogo}
                 onVerOfertas={verOfertas}
                 onVerCatalogo={verCatalogo}
               />

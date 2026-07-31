@@ -51,6 +51,23 @@ describe("obtenerProductos", () => {
     );
   });
 
+  it("envía el término de búsqueda usando el contrato q de la API", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: [productoApi] }),
+    });
+
+    await obtenerProductos({
+      fetchImpl,
+      apiUrl: "http://localhost:3000/api",
+      busqueda: "aceite oliva",
+    });
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "http://localhost:3000/api/productos?limit=24&orden=relevancia&q=aceite+oliva",
+    );
+  });
+
   it("usa Fake Store como respaldo si la API local no está disponible", async () => {
     const fetchImpl = vi
       .fn()

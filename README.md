@@ -30,6 +30,7 @@ Los productos se obtienen en tiempo real desde una API externa pública y se nor
 - **GitHub Pages** + **gh-pages** para el despliegue
 - **Node.js + Express 5** para la API propia en construcción
 - **Supertest** + `node:test` para pruebas de la API
+- **PostgreSQL 16 + Prisma 7** preparados para la persistencia local
 
 ## 🧩 Backend — en progreso
 
@@ -43,9 +44,11 @@ La base actual incluye:
 - Configuración local con `.env` y plantilla segura `.env.example`; los valores locales no se suben al repositorio.
 - Separación entre `src/app.js` (configura rutas y middlewares) y `src/server.js` (inicia el servidor), lo que permite probar la API de forma aislada.
 - Módulo inicial de productos con datos temporales en memoria, reglas de publicación y respuestas públicas seguras.
-- `GET /api/productos` con búsqueda (`q`), categoría (`categoria`), ofertas (`ofertas=true`) y paginación (`page` / `limit`), además de `GET /api/productos/:slug` para detalle.
+- `GET /api/productos` con búsqueda, categoría, ofertas, rango de precio, ordenamiento y paginación; `GET /api/productos/:slug` para detalle.
+- React consume esta API en desarrollo y conserva Fake Store como respaldo para la demo pública mientras la API no se despliega.
+- PostgreSQL local y Prisma están inicializados; el modelo y las migraciones del catálogo son el siguiente paso.
 
-> Aún no hay conexión a PostgreSQL ni integración entre React y la API. Fake Store continúa siendo la fuente de datos del frontend mientras se construye y valida el contrato propio.
+> El catálogo propio aún vive temporalmente en memoria. PostgreSQL reemplazará esa fuente al crear el modelo y su primera migración.
 
 ## ✨ Características
 
@@ -124,8 +127,8 @@ Este proyecto es mi campo de práctica para consolidar React y buenas prácticas
 SumarketExpress es un proyecto **full-stack en construcción**, desarrollado por fases (una a la vez) para convertirse en una **tienda completa**:
 
 - ✅ **Frontend estructurado**  — React con hooks, `useReducer`, Context, React Router y tests unitarios.
-- 🟡 **Base del backend propio** — API REST con **Node.js + Express**, health check, errores, configuración local y pruebas iniciales.
-- 🔜 **Datos propios** — contrato de productos, persistencia en **PostgreSQL** y decisión entre acceso directo con `pg` o un ORM (reemplaza a la API externa).
+- 🟡 **Base del backend propio** — API REST con **Node.js + Express**, contrato de catálogo, integración local con React y pruebas.
+- 🟡 **Persistencia propia** — PostgreSQL y Prisma inicializados localmente; faltan el modelo, migraciones y datos de desarrollo.
 - 🔒 **Autenticación** — cuentas de usuario con **JWT** y contraseñas hasheadas con **bcrypt**; roles usuario/admin.
 - 💳 **Pagos reales** — checkout con **Stripe / Mercado Pago** (modo test).
 - 🛠️ **Panel de administración** — gestión de productos (con imágenes), pedidos e inventario de la tienda.

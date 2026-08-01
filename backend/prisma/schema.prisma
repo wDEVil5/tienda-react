@@ -39,6 +39,7 @@ model Producto {
   sku         String  @unique @db.VarChar(80)
   slug        String  @unique @db.VarChar(180)
   nombre      String  @db.VarChar(200)
+  nombreBusqueda String? @map("nombre_busqueda") @db.VarChar(220)
   descripcion String
 
   // CLP no usa fracciones: almacenar pesos como enteros evita errores de float.

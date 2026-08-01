@@ -2,6 +2,7 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { env } from "prisma/config";
 import { PrismaClient } from "../src/generated/prisma/client";
+import { normalizarTextoBusqueda } from "../src/lib/texto.js";
 
 // El seed representa un catálogo mínimo de desarrollo. No es la fuente de
 // verdad del negocio ni reemplaza el futuro panel de administración.
@@ -170,6 +171,7 @@ async function sembrarCatalogo() {
       sku: item.sku,
       slug: item.slug,
       nombre: item.nombre,
+      nombreBusqueda: normalizarTextoBusqueda(item.nombre),
       descripcion: item.descripcion,
       precio: item.precio,
       precioAnterior: item.precioAnterior,

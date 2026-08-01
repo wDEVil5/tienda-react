@@ -1,4 +1,5 @@
 import { repositorioProductos } from './productos.repository.js'
+import { normalizarTextoBusqueda } from '../../lib/texto.js'
 
 export const PAGINACION_PREDETERMINADA = { page: 1, limit: 12 }
 export const LIMITE_MAXIMO_POR_PAGINA = 24
@@ -9,15 +10,6 @@ export const ORDENES_PERMITIDOS = new Set([
   'precio-desc',
   'nombre-asc',
 ])
-
-function normalizarTexto(texto) {
-  // NFD separa letras y tildes; así "café" y "cafe" se comparan igual.
-  return texto
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .toLowerCase()
-    .trim()
-}
 
 function crearProductoPublico(producto) {
   const productoPublico = { ...producto }
@@ -68,15 +60,15 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
       limit = PAGINACION_PREDETERMINADA.limit,
       orden = ORDEN_PREDETERMINADO,
     } = {}) {
-      const textoBusqueda = normalizarTexto(query)
-      const categoriaFiltrada = normalizarTexto(categoria)
+      const textoBusqueda = normalizarTextoBusqueda(query)
+      const categoriaFiltrada = normalizarTextoBusqueda(categoria)
       const productos = await repositorio.listarPublicados()
 
       // Cada filtro vacío se omite, por lo que las condiciones se pueden combinar.
       const productosFiltrados = productos
         .filter(
           (producto) =>
-            !textoBusqueda || normalizarTexto(producto.nombre).includes(textoBusqueda),
+            !textoBusqueda || normalizarTextoBusqueda(producto.nombre).includes(textoBusqueda),
         )
         .filter(
           (producto) => !categoriaFiltrada || producto.categoria.slug === categoriaFiltrada,

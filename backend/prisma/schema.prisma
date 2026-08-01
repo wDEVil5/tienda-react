@@ -1,7 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
+// Esquema de persistencia del catálogo. Las migraciones convertirán este
+// contrato en tablas PostgreSQL; el frontend nunca consulta estas tablas directo.
 
 generator client {
   provider = "prisma-client"
@@ -10,4 +8,84 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+model Categoria {
+  id        String     @id @default(uuid()) @db.Uuid
+  nombre    String     @unique @db.VarChar(100)
+  slug      String     @unique @db.VarChar(120)
+  activa    Boolean    @default(true)
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+  productos Producto[]
+
+  @@map("categorias")
+}
+
+model Marca {
+  id        String     @id @default(uuid()) @db.Uuid
+  nombre    String     @unique @db.VarChar(120)
+  slug      String     @unique @db.VarChar(140)
+  logoUrl   String?    @map("logo_url") @db.VarChar(500)
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+  productos Producto[]
+
+  @@map("marcas")
+}
+
+model Producto {
+  id          String  @id @default(uuid()) @db.Uuid
+  sku         String  @unique @db.VarChar(80)
+  slug        String  @unique @db.VarChar(180)
+  nombre      String  @db.VarChar(200)
+  descripcion String
+
+  // CLP no usa fracciones: almacenar pesos como enteros evita errores de float.
+  precio         Int
+  precioAnterior Int? @map("precio_anterior")
+
+  // Estar publicado y tener stock son estados distintos: un producto agotado
+  // puede seguir visible, mientras que uno inactivo no se expone al catálogo.
+  stock            Int     @default(0)
+  activo           Boolean @default(true)
+  destacado        Boolean @default(false)
+  alertaStockBajo  Int?    @map("alerta_stock_bajo")
+
+  codigoBarras        String?  @unique @map("codigo_barras") @db.VarChar(50)
+  origen              String?  @db.VarChar(120)
+  contenidoCantidad   Decimal? @map("contenido_cantidad") @db.Decimal(10, 3)
+  contenidoUnidad     String?  @map("contenido_unidad") @db.VarChar(20)
+  pesoDespachoGramos  Int?     @map("peso_despacho_gramos")
+
+  categoriaId String    @map("categoria_id") @db.Uuid
+  marcaId     String    @map("marca_id") @db.Uuid
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  categoria Categoria       @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
+  marca     Marca           @relation(fields: [marcaId], references: [id], onDelete: Restrict)
+  imagenes  ProductoImagen[]
+
+  @@index([categoriaId])
+  @@index([marcaId])
+  @@index([activo])
+  @@index([destacado])
+  @@map("productos")
+}
+
+model ProductoImagen {
+  id               String   @id @default(uuid()) @db.Uuid
+  productoId       String   @map("producto_id") @db.Uuid
+  url              String   @db.VarChar(500)
+  textoAlternativo String?  @map("texto_alternativo") @db.VarChar(255)
+  orden            Int      @default(1)
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  producto Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
+
+  // Una galería no puede tener dos imágenes en la misma posición.
+  @@unique([productoId, orden])
+  @@index([productoId])
+  @@map("producto_imagenes")
 }

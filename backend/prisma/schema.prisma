@@ -67,12 +67,46 @@ model Producto {
   categoria Categoria       @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
   marca     Marca           @relation(fields: [marcaId], references: [id], onDelete: Restrict)
   imagenes  ProductoImagen[]
+  promociones PromocionProducto[]
 
   @@index([categoriaId])
   @@index([marcaId])
   @@index([activo])
   @@index([destacado])
   @@map("productos")
+}
+
+// Una promoción describe una campaña reutilizable. La relación intermedia evita
+// duplicar sus fechas y porcentaje en cada producto que participa de ella.
+model Promocion {
+  id                   String              @id @default(uuid()) @db.Uuid
+  nombre               String              @db.VarChar(120)
+  slug                 String              @unique @db.VarChar(140)
+  porcentajeDescuento  Int                 @map("porcentaje_descuento")
+  empiezaEn            DateTime            @map("empieza_en")
+  terminaEn            DateTime            @map("termina_en")
+  activa               Boolean             @default(true)
+  createdAt            DateTime            @default(now()) @map("created_at")
+  updatedAt            DateTime            @updatedAt @map("updated_at")
+  productos            PromocionProducto[]
+
+  @@index([activa, empiezaEn, terminaEn])
+  @@map("promociones")
+}
+
+// Un producto puede participar en distintas campañas a lo largo del tiempo.
+// La clave compuesta impide repetirlo dentro de la misma promoción.
+model PromocionProducto {
+  promocionId String   @map("promocion_id") @db.Uuid
+  productoId  String   @map("producto_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  promocion Promocion @relation(fields: [promocionId], references: [id], onDelete: Cascade)
+  producto  Producto  @relation(fields: [productoId], references: [id], onDelete: Cascade)
+
+  @@id([promocionId, productoId])
+  @@index([productoId])
+  @@map("promocion_productos")
 }
 
 model ProductoImagen {

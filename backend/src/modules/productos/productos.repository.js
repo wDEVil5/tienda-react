@@ -41,13 +41,19 @@ function crearProductoPublico(producto) {
  */
 export function crearRepositorioProductos(cliente = prisma) {
   return {
-    async listarPublicados({ categoria, soloOfertas, precioMin, precioMax } = {}) {
+    async listarPublicados({ query, categoria, soloOfertas, precioMin, precioMax } = {}) {
       const where = { activo: true }
 
       // Solo añadimos condiciones que llegaron desde la capa HTTP. Así Prisma
       // genera una consulta acotada y no cargamos el catálogo completo en Node.
       if (categoria) {
         where.categoria = { slug: categoria }
+      }
+
+      if (query) {
+        // nombreBusqueda ya llega normalizado desde el servicio. El modo
+        // insensitive protege los datos antiguos mientras termina la transición.
+        where.nombreBusqueda = { contains: query, mode: 'insensitive' }
       }
 
       if (soloOfertas) {

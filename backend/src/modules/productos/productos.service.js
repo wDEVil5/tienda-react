@@ -45,8 +45,8 @@ function ordenarProductos(productos, orden) {
 
 /**
  * Conserva las reglas del catálogo independientes de Prisma. El repositorio
- * entrega productos publicados; el servicio aplica filtros de negocio y forma
- * la respuesta que ya conoce la capa HTTP.
+ * entrega los productos que coinciden en base de datos; el servicio forma la
+ * respuesta pública y conserva reglas no persistibles como la paginación.
  */
 export function crearServicioProductos(repositorio = repositorioProductos) {
   return {
@@ -63,22 +63,16 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
       const textoBusqueda = normalizarTextoBusqueda(query)
       const categoriaFiltrada = normalizarTextoBusqueda(categoria)
       const productos = await repositorio.listarPublicados({
+        ...(textoBusqueda ? { query: textoBusqueda } : {}),
         ...(categoriaFiltrada ? { categoria: categoriaFiltrada } : {}),
         ...(soloOfertas ? { soloOfertas: true } : {}),
         ...(precioMin !== 0 ? { precioMin } : {}),
         ...(Number.isFinite(precioMax) ? { precioMax } : {}),
       })
 
-      // La búsqueda queda aquí solo de forma transitoria: el siguiente paso la
-      // trasladará a nombreBusqueda para que PostgreSQL también la resuelva.
-      const productosFiltrados = productos
-        .filter(
-          (producto) =>
-            !textoBusqueda || normalizarTextoBusqueda(producto.nombre).includes(textoBusqueda),
-        )
-        .map(crearProductoPublico)
+      const productosPublicos = productos.map(crearProductoPublico)
 
-      const productosOrdenados = ordenarProductos(productosFiltrados, orden)
+      const productosOrdenados = ordenarProductos(productosPublicos, orden)
       const total = productosOrdenados.length
       const inicio = (page - 1) * limit
 

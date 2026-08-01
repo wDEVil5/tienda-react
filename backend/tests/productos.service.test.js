@@ -1,14 +1,19 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { crearServicioProductos } from '../src/modules/productos/productos.service.js'
+import { normalizarTextoBusqueda } from '../src/lib/texto.js'
 import { productos } from './fixtures/productos.fixture.js'
 
 function crearRepositorioEnMemoria() {
   return {
-    async listarPublicados({ categoria, soloOfertas, precioMin, precioMax } = {}) {
+    async listarPublicados({ query, categoria, soloOfertas, precioMin, precioMax } = {}) {
       // Imita el contrato del repositorio real sin requerir PostgreSQL en estos tests.
       return productos
         .filter((producto) => producto.activo)
+        .filter(
+          (producto) =>
+            !query || normalizarTextoBusqueda(producto.nombre).includes(query),
+        )
         .filter((producto) => !categoria || producto.categoria.slug === categoria)
         .filter((producto) => !soloOfertas || producto.precioAnterior !== null)
         .filter((producto) => precioMin === undefined || producto.precio >= precioMin)

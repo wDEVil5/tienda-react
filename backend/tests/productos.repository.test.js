@@ -35,6 +35,7 @@ test('el repositorio consulta solo productos publicados y adapta sus imágenes',
 
   const repositorio = crearRepositorioProductos(cliente)
   const productos = await repositorio.listarPublicados({
+    query: 'cafe',
     categoria: 'despensa',
     soloOfertas: true,
     precioMin: 500,
@@ -43,6 +44,7 @@ test('el repositorio consulta solo productos publicados y adapta sus imágenes',
 
   assert.deepEqual(consulta.where, {
     activo: true,
+    nombreBusqueda: { contains: 'cafe', mode: 'insensitive' },
     categoria: { slug: 'despensa' },
     precioAnterior: { not: null },
     precio: { gte: 500, lte: 2000 },

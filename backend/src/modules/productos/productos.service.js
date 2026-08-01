@@ -55,9 +55,12 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
         ...(precioMin !== 0 ? { precioMin } : {}),
         ...(Number.isFinite(precioMax) ? { precioMax } : {}),
       }
-      const [productos, total] = await Promise.all([
+      const [productos, total, maxDescuento] = await Promise.all([
         repositorio.listarPublicados({ ...filtros, page, limit, orden }),
         repositorio.contarPublicados(filtros),
+        soloOfertas
+          ? repositorio.obtenerMaximoDescuentoVigente(ahora)
+          : Promise.resolve(null),
       ])
 
       const productosPublicos = productos.map(crearProductoPublico)
@@ -69,6 +72,7 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
           limit,
           total,
           totalPages: Math.ceil(total / limit),
+          ...(soloOfertas ? { maxDescuento } : {}),
         },
       }
     },

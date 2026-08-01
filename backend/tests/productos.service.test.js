@@ -15,6 +15,13 @@ function crearRepositorioEnMemoria() {
     async contarPublicados(filtros = {}) {
       return filtrarProductos(filtros).length
     },
+    async obtenerMaximoDescuentoVigente() {
+      return Math.max(
+        ...productos
+          .filter((producto) => producto.activo && producto.oferta)
+          .map((producto) => producto.oferta.porcentajeDescuento),
+      )
+    },
     async obtenerPublicadoPorSlug(slug) {
       return productos.find(
         (producto) => producto.activo && producto.slug === slug,
@@ -73,10 +80,11 @@ test('listarProductos filtra y combina categorías por slug', async () => {
 })
 
 test('listarProductos filtra productos con oferta vigente', async () => {
-  const { data: resultado } = await servicioEnMemoria.listarProductos({ soloOfertas: true })
+  const { data: resultado, meta } = await servicioEnMemoria.listarProductos({ soloOfertas: true })
 
   assert.equal(resultado.length, 2)
   assert.equal(resultado.every((producto) => producto.oferta !== null), true)
+  assert.equal(meta.maxDescuento, 25)
 })
 
 test('listarProductos filtra por un rango de precio inclusivo', async () => {

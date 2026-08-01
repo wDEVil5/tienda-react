@@ -42,6 +42,7 @@ test('GET /api/productos filtra ofertas vigentes', async () => {
   assert.equal(response.status, 200)
   assert.equal(response.body.data.length, 2)
   assert.equal(response.body.data.every((producto) => producto.oferta?.porcentajeDescuento === 25), true)
+  assert.equal(response.body.meta.maxDescuento, 25)
 })
 
 test('GET /api/productos filtra por rango de precio', async () => {

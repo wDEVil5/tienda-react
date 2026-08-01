@@ -12,30 +12,30 @@ function crearPromocionVigenteDonde(ahora) {
 
 function crearInclusionProductoPublico(ahora) {
   return {
-  categoria: {
-    select: { id: true, nombre: true, slug: true },
-  },
-  marca: {
-    select: { id: true, nombre: true, slug: true, logoUrl: true },
-  },
-  imagenes: {
-    select: { url: true, textoAlternativo: true, orden: true },
-    orderBy: { orden: 'asc' },
-  },
-  promociones: {
-    where: { promocion: crearPromocionVigenteDonde(ahora) },
-    select: {
-      promocion: {
-        select: {
-          id: true,
-          slug: true,
-          nombre: true,
-          porcentajeDescuento: true,
-          terminaEn: true,
+    categoria: {
+      select: { id: true, nombre: true, slug: true },
+    },
+    marca: {
+      select: { id: true, nombre: true, slug: true, logoUrl: true },
+    },
+    imagenes: {
+      select: { url: true, textoAlternativo: true, orden: true },
+      orderBy: { orden: 'asc' },
+    },
+    promociones: {
+      where: { promocion: crearPromocionVigenteDonde(ahora) },
+      select: {
+        promocion: {
+          select: {
+            id: true,
+            slug: true,
+            nombre: true,
+            porcentajeDescuento: true,
+            terminaEn: true,
+          },
         },
       },
     },
-  },
   }
 }
 
@@ -145,6 +145,18 @@ export function crearRepositorioProductos(cliente = prisma) {
 
     async contarPublicados(filtros = {}) {
       return cliente.producto.count({ where: crearFiltrosPublicados(filtros) })
+    },
+
+    async obtenerMaximoDescuentoVigente(ahora = new Date()) {
+      const resumen = await cliente.promocion.aggregate({
+        where: {
+          ...crearPromocionVigenteDonde(ahora),
+          productos: { some: { producto: { activo: true } } },
+        },
+        _max: { porcentajeDescuento: true },
+      })
+
+      return resumen._max.porcentajeDescuento
     },
 
     async obtenerPublicadoPorSlug(slug) {

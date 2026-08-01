@@ -4,6 +4,7 @@ import { crearRepositorioProductos } from '../src/modules/productos/productos.re
 
 test('el repositorio consulta solo productos publicados y adapta sus imágenes', async () => {
   let consulta
+  let consultaResumen
   const cliente = {
     producto: {
       async findMany(argumentos) {
@@ -32,6 +33,12 @@ test('el repositorio consulta solo productos publicados y adapta sus imágenes',
       },
       async count() {
         return 1
+      },
+    },
+    promocion: {
+      async aggregate(argumentos) {
+        consultaResumen = argumentos
+        return { _max: { porcentajeDescuento: 25 } }
       },
     },
   }
@@ -72,4 +79,18 @@ test('el repositorio consulta solo productos publicados y adapta sus imágenes',
     { url: 'https://ejemplo.test/producto.jpg', alt: 'Producto uno', orden: 1 },
   ])
   assert.equal('activo' in productos[0], false)
+
+  const fechaConsulta = new Date('2026-08-01T12:00:00.000Z')
+  const maxDescuento = await repositorio.obtenerMaximoDescuentoVigente(fechaConsulta)
+
+  assert.equal(maxDescuento, 25)
+  assert.deepEqual(consultaResumen, {
+    where: {
+      activa: true,
+      empiezaEn: { lte: fechaConsulta },
+      terminaEn: { gt: fechaConsulta },
+      productos: { some: { producto: { activo: true } } },
+    },
+    _max: { porcentajeDescuento: true },
+  })
 })

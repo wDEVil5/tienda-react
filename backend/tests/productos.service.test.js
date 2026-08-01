@@ -5,8 +5,14 @@ import { productos } from './fixtures/productos.fixture.js'
 
 function crearRepositorioEnMemoria() {
   return {
-    async listarPublicados() {
-      return productos.filter((producto) => producto.activo)
+    async listarPublicados({ categoria, soloOfertas, precioMin, precioMax } = {}) {
+      // Imita el contrato del repositorio real sin requerir PostgreSQL en estos tests.
+      return productos
+        .filter((producto) => producto.activo)
+        .filter((producto) => !categoria || producto.categoria.slug === categoria)
+        .filter((producto) => !soloOfertas || producto.precioAnterior !== null)
+        .filter((producto) => precioMin === undefined || producto.precio >= precioMin)
+        .filter((producto) => precioMax === undefined || producto.precio <= precioMax)
     },
     async obtenerPublicadoPorSlug(slug) {
       return productos.find(

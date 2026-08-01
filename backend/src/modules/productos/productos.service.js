@@ -62,23 +62,19 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
     } = {}) {
       const textoBusqueda = normalizarTextoBusqueda(query)
       const categoriaFiltrada = normalizarTextoBusqueda(categoria)
-      const productos = await repositorio.listarPublicados()
+      const productos = await repositorio.listarPublicados({
+        ...(categoriaFiltrada ? { categoria: categoriaFiltrada } : {}),
+        ...(soloOfertas ? { soloOfertas: true } : {}),
+        ...(precioMin !== 0 ? { precioMin } : {}),
+        ...(Number.isFinite(precioMax) ? { precioMax } : {}),
+      })
 
-      // Cada filtro vacío se omite, por lo que las condiciones se pueden combinar.
+      // La búsqueda queda aquí solo de forma transitoria: el siguiente paso la
+      // trasladará a nombreBusqueda para que PostgreSQL también la resuelva.
       const productosFiltrados = productos
         .filter(
           (producto) =>
             !textoBusqueda || normalizarTextoBusqueda(producto.nombre).includes(textoBusqueda),
-        )
-        .filter(
-          (producto) => !categoriaFiltrada || producto.categoria.slug === categoriaFiltrada,
-        )
-        // Hasta tener promociones persistidas, precioAnterior representa una oferta vigente.
-        .filter((producto) => !soloOfertas || producto.precioAnterior !== null)
-        // Los límites se aplican antes de ordenar y paginar: el meta.total siempre
-        // representa los productos que realmente cumplen todos los filtros.
-        .filter(
-          (producto) => producto.precio >= precioMin && producto.precio <= precioMax,
         )
         .map(crearProductoPublico)
 

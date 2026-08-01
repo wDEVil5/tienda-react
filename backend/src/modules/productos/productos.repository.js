@@ -41,9 +41,30 @@ function crearProductoPublico(producto) {
  */
 export function crearRepositorioProductos(cliente = prisma) {
   return {
-    async listarPublicados() {
+    async listarPublicados({ categoria, soloOfertas, precioMin, precioMax } = {}) {
+      const where = { activo: true }
+
+      // Solo añadimos condiciones que llegaron desde la capa HTTP. Así Prisma
+      // genera una consulta acotada y no cargamos el catálogo completo en Node.
+      if (categoria) {
+        where.categoria = { slug: categoria }
+      }
+
+      if (soloOfertas) {
+        // Por ahora una oferta vigente se representa con un precio anterior.
+        // La futura entidad Promoción reemplazará esta condición sin afectar rutas.
+        where.precioAnterior = { not: null }
+      }
+
+      if (precioMin !== undefined || precioMax !== undefined) {
+        where.precio = {
+          ...(precioMin !== undefined ? { gte: precioMin } : {}),
+          ...(precioMax !== undefined ? { lte: precioMax } : {}),
+        }
+      }
+
       const productos = await cliente.producto.findMany({
-        where: { activo: true },
+        where,
         include: incluirProductoPublico,
         // Mientras no exista un orden editorial persistido, la fecha de alta
         // conserva una relevancia estable para el catálogo.

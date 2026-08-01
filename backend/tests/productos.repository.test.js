@@ -34,9 +34,19 @@ test('el repositorio consulta solo productos publicados y adapta sus imágenes',
   }
 
   const repositorio = crearRepositorioProductos(cliente)
-  const productos = await repositorio.listarPublicados()
+  const productos = await repositorio.listarPublicados({
+    categoria: 'despensa',
+    soloOfertas: true,
+    precioMin: 500,
+    precioMax: 2000,
+  })
 
-  assert.deepEqual(consulta.where, { activo: true })
+  assert.deepEqual(consulta.where, {
+    activo: true,
+    categoria: { slug: 'despensa' },
+    precioAnterior: { not: null },
+    precio: { gte: 500, lte: 2000 },
+  })
   assert.equal(consulta.orderBy.createdAt, 'asc')
   assert.deepEqual(productos[0].imagenes, [
     { url: 'https://ejemplo.test/producto.jpg', alt: 'Producto uno', orden: 1 },

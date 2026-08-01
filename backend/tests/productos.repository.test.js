@@ -30,6 +30,9 @@ test('el repositorio consulta solo productos publicados y adapta sus imágenes',
           },
         ]
       },
+      async count() {
+        return 1
+      },
     },
   }
 
@@ -40,6 +43,9 @@ test('el repositorio consulta solo productos publicados y adapta sus imágenes',
     soloOfertas: true,
     precioMin: 500,
     precioMax: 2000,
+    page: 2,
+    limit: 10,
+    orden: 'precio-desc',
   })
 
   assert.deepEqual(consulta.where, {
@@ -49,7 +55,9 @@ test('el repositorio consulta solo productos publicados y adapta sus imágenes',
     precioAnterior: { not: null },
     precio: { gte: 500, lte: 2000 },
   })
-  assert.equal(consulta.orderBy.createdAt, 'asc')
+  assert.deepEqual(consulta.orderBy, [{ precio: 'desc' }, { id: 'asc' }])
+  assert.equal(consulta.skip, 10)
+  assert.equal(consulta.take, 10)
   assert.deepEqual(productos[0].imagenes, [
     { url: 'https://ejemplo.test/producto.jpg', alt: 'Producto uno', orden: 1 },
   ])

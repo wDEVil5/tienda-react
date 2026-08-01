@@ -6,18 +6,14 @@ import { productos } from './fixtures/productos.fixture.js'
 
 function crearRepositorioEnMemoria() {
   return {
-    async listarPublicados({ query, categoria, soloOfertas, precioMin, precioMax } = {}) {
-      // Imita el contrato del repositorio real sin requerir PostgreSQL en estos tests.
-      return productos
-        .filter((producto) => producto.activo)
-        .filter(
-          (producto) =>
-            !query || normalizarTextoBusqueda(producto.nombre).includes(query),
-        )
-        .filter((producto) => !categoria || producto.categoria.slug === categoria)
-        .filter((producto) => !soloOfertas || producto.precioAnterior !== null)
-        .filter((producto) => precioMin === undefined || producto.precio >= precioMin)
-        .filter((producto) => precioMax === undefined || producto.precio <= precioMax)
+    async listarPublicados({ page = 1, limit = 12, orden = 'relevancia', ...filtros } = {}) {
+      const productosFiltrados = filtrarProductos(filtros)
+      const productosOrdenados = ordenarProductos(productosFiltrados, orden)
+
+      return productosOrdenados.slice((page - 1) * limit, page * limit)
+    },
+    async contarPublicados(filtros = {}) {
+      return filtrarProductos(filtros).length
     },
     async obtenerPublicadoPorSlug(slug) {
       return productos.find(
@@ -25,6 +21,31 @@ function crearRepositorioEnMemoria() {
       ) ?? null
     },
   }
+}
+
+function filtrarProductos({ query, categoria, soloOfertas, precioMin, precioMax } = {}) {
+  // Imita el contrato del repositorio real sin requerir PostgreSQL en estos tests.
+  return productos
+    .filter((producto) => producto.activo)
+    .filter(
+      (producto) => !query || normalizarTextoBusqueda(producto.nombre).includes(query),
+    )
+    .filter((producto) => !categoria || producto.categoria.slug === categoria)
+    .filter((producto) => !soloOfertas || producto.precioAnterior !== null)
+    .filter((producto) => precioMin === undefined || producto.precio >= precioMin)
+    .filter((producto) => precioMax === undefined || producto.precio <= precioMax)
+}
+
+function ordenarProductos(productosParaOrdenar, orden) {
+  if (orden === 'relevancia') {
+    return productosParaOrdenar
+  }
+
+  return [...productosParaOrdenar].sort((productoA, productoB) => {
+    if (orden === 'precio-asc') return productoA.precio - productoB.precio
+    if (orden === 'precio-desc') return productoB.precio - productoA.precio
+    return productoA.nombre.localeCompare(productoB.nombre, 'es')
+  })
 }
 
 const servicioEnMemoria = crearServicioProductos(crearRepositorioEnMemoria())

@@ -35,49 +35,72 @@ function crearProductoPublico(producto) {
   }
 }
 
+function crearFiltrosPublicados({ query, categoria, soloOfertas, precioMin, precioMax } = {}) {
+  const where = { activo: true }
+
+  // Solo añadimos condiciones que llegaron desde la capa HTTP. Así Prisma
+  // genera una consulta acotada y no cargamos el catálogo completo en Node.
+  if (categoria) {
+    where.categoria = { slug: categoria }
+  }
+
+  if (query) {
+    // nombreBusqueda ya llega normalizado desde el servicio. El modo
+    // insensitive protege los datos antiguos mientras termina la transición.
+    where.nombreBusqueda = { contains: query, mode: 'insensitive' }
+  }
+
+  if (soloOfertas) {
+    // Por ahora una oferta vigente se representa con un precio anterior.
+    // La futura entidad Promoción reemplazará esta condición sin afectar rutas.
+    where.precioAnterior = { not: null }
+  }
+
+  if (precioMin !== undefined || precioMax !== undefined) {
+    where.precio = {
+      ...(precioMin !== undefined ? { gte: precioMin } : {}),
+      ...(precioMax !== undefined ? { lte: precioMax } : {}),
+    }
+  }
+
+  return where
+}
+
+function crearOrdenPersistido(orden) {
+  const ordenPrincipal = {
+    'precio-asc': { precio: 'asc' },
+    'precio-desc': { precio: 'desc' },
+    'nombre-asc': { nombre: 'asc' },
+    // Mientras no exista un orden editorial persistido, la fecha de alta
+    // conserva una relevancia estable para el catálogo.
+    relevancia: { createdAt: 'asc' },
+  }[orden] ?? { createdAt: 'asc' }
+
+  // El id evita que dos productos con el mismo valor cambien de página entre consultas.
+  return [ordenPrincipal, { id: 'asc' }]
+}
+
 /**
  * Aísla Prisma del servicio de productos. Recibe el cliente como dependencia
  * para que la lógica de consulta se pueda probar sin abrir PostgreSQL.
  */
 export function crearRepositorioProductos(cliente = prisma) {
   return {
-    async listarPublicados({ query, categoria, soloOfertas, precioMin, precioMax } = {}) {
-      const where = { activo: true }
-
-      // Solo añadimos condiciones que llegaron desde la capa HTTP. Así Prisma
-      // genera una consulta acotada y no cargamos el catálogo completo en Node.
-      if (categoria) {
-        where.categoria = { slug: categoria }
-      }
-
-      if (query) {
-        // nombreBusqueda ya llega normalizado desde el servicio. El modo
-        // insensitive protege los datos antiguos mientras termina la transición.
-        where.nombreBusqueda = { contains: query, mode: 'insensitive' }
-      }
-
-      if (soloOfertas) {
-        // Por ahora una oferta vigente se representa con un precio anterior.
-        // La futura entidad Promoción reemplazará esta condición sin afectar rutas.
-        where.precioAnterior = { not: null }
-      }
-
-      if (precioMin !== undefined || precioMax !== undefined) {
-        where.precio = {
-          ...(precioMin !== undefined ? { gte: precioMin } : {}),
-          ...(precioMax !== undefined ? { lte: precioMax } : {}),
-        }
-      }
-
+    async listarPublicados({ page = 1, limit = 12, orden = 'relevancia', ...filtros } = {}) {
+      const where = crearFiltrosPublicados(filtros)
       const productos = await cliente.producto.findMany({
         where,
         include: incluirProductoPublico,
-        // Mientras no exista un orden editorial persistido, la fecha de alta
-        // conserva una relevancia estable para el catálogo.
-        orderBy: { createdAt: 'asc' },
+        orderBy: crearOrdenPersistido(orden),
+        skip: (page - 1) * limit,
+        take: limit,
       })
 
       return productos.map(crearProductoPublico)
+    },
+
+    async contarPublicados(filtros = {}) {
+      return cliente.producto.count({ where: crearFiltrosPublicados(filtros) })
     },
 
     async obtenerPublicadoPorSlug(slug) {

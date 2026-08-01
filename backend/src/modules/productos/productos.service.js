@@ -24,29 +24,10 @@ function crearProductoPublico(producto) {
   }
 }
 
-function ordenarProductos(productos, orden) {
-  // La relevancia conserva el orden editorial definido por la fuente de datos.
-  if (orden === ORDEN_PREDETERMINADO) {
-    return productos
-  }
-
-  return [...productos].sort((productoA, productoB) => {
-    if (orden === 'precio-asc') {
-      return productoA.precio - productoB.precio
-    }
-
-    if (orden === 'precio-desc') {
-      return productoB.precio - productoA.precio
-    }
-
-    return productoA.nombre.localeCompare(productoB.nombre, 'es')
-  })
-}
-
 /**
  * Conserva las reglas del catálogo independientes de Prisma. El repositorio
  * entrega los productos que coinciden en base de datos; el servicio forma la
- * respuesta pública y conserva reglas no persistibles como la paginación.
+ * respuesta pública y sus metadatos de paginación.
  */
 export function crearServicioProductos(repositorio = repositorioProductos) {
   return {
@@ -62,22 +43,22 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
     } = {}) {
       const textoBusqueda = normalizarTextoBusqueda(query)
       const categoriaFiltrada = normalizarTextoBusqueda(categoria)
-      const productos = await repositorio.listarPublicados({
+      const filtros = {
         ...(textoBusqueda ? { query: textoBusqueda } : {}),
         ...(categoriaFiltrada ? { categoria: categoriaFiltrada } : {}),
         ...(soloOfertas ? { soloOfertas: true } : {}),
         ...(precioMin !== 0 ? { precioMin } : {}),
         ...(Number.isFinite(precioMax) ? { precioMax } : {}),
-      })
+      }
+      const [productos, total] = await Promise.all([
+        repositorio.listarPublicados({ ...filtros, page, limit, orden }),
+        repositorio.contarPublicados(filtros),
+      ])
 
       const productosPublicos = productos.map(crearProductoPublico)
 
-      const productosOrdenados = ordenarProductos(productosPublicos, orden)
-      const total = productosOrdenados.length
-      const inicio = (page - 1) * limit
-
       return {
-        data: productosOrdenados.slice(inicio, inicio + limit),
+        data: productosPublicos,
         meta: {
           page,
           limit,

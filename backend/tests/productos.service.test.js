@@ -31,7 +31,7 @@ function filtrarProductos({ query, categoria, soloOfertas, precioMin, precioMax 
       (producto) => !query || normalizarTextoBusqueda(producto.nombre).includes(query),
     )
     .filter((producto) => !categoria || producto.categoria.slug === categoria)
-    .filter((producto) => !soloOfertas || producto.precioAnterior !== null)
+    .filter((producto) => !soloOfertas || producto.oferta !== null)
     .filter((producto) => precioMin === undefined || producto.precio >= precioMin)
     .filter((producto) => precioMax === undefined || producto.precio <= precioMax)
 }
@@ -76,7 +76,7 @@ test('listarProductos filtra productos con oferta vigente', async () => {
   const { data: resultado } = await servicioEnMemoria.listarProductos({ soloOfertas: true })
 
   assert.equal(resultado.length, 2)
-  assert.equal(resultado.every((producto) => producto.precioAnterior !== null), true)
+  assert.equal(resultado.every((producto) => producto.oferta !== null), true)
 })
 
 test('listarProductos filtra por un rango de precio inclusivo', async () => {

@@ -20,6 +20,7 @@ function crearProductoPublico(producto) {
     ...productoPublico,
     categoria: { ...producto.categoria },
     marca: { ...producto.marca },
+    oferta: producto.oferta ? { ...producto.oferta } : null,
     imagenes: producto.imagenes.map((imagen) => ({ ...imagen })),
   }
 }
@@ -43,7 +44,11 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
     } = {}) {
       const textoBusqueda = normalizarTextoBusqueda(query)
       const categoriaFiltrada = normalizarTextoBusqueda(categoria)
+      // Una sola hora por petición evita que la lista y el total discrepen al
+      // cruzar el límite temporal de una promoción.
+      const ahora = new Date()
       const filtros = {
+        ahora,
         ...(textoBusqueda ? { query: textoBusqueda } : {}),
         ...(categoriaFiltrada ? { categoria: categoriaFiltrada } : {}),
         ...(soloOfertas ? { soloOfertas: true } : {}),

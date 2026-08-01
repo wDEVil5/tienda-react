@@ -41,7 +41,7 @@ test('GET /api/productos filtra ofertas vigentes', async () => {
 
   assert.equal(response.status, 200)
   assert.equal(response.body.data.length, 2)
-  assert.equal(response.body.data.every((producto) => producto.precioAnterior !== null), true)
+  assert.equal(response.body.data.every((producto) => producto.oferta?.porcentajeDescuento === 25), true)
 })
 
 test('GET /api/productos filtra por rango de precio', async () => {
@@ -98,6 +98,9 @@ test('GET /api/productos/:slug devuelve el detalle publicado', async () => {
 
   assert.equal(response.status, 200)
   assert.equal(response.body.data.slug, 'aceite-oliva-extra-virgen-500-ml')
+  assert.equal(response.body.data.precio, 7990)
+  assert.equal(response.body.data.precioAnterior, 10653)
+  assert.equal(response.body.data.oferta?.porcentajeDescuento, 25)
 })
 
 test('GET /api/productos/:slug responde 404 cuando el producto no está publicado', async () => {

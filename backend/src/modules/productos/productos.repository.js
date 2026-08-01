@@ -2,7 +2,16 @@ import { prisma } from '../../lib/prisma.js'
 
 // Seleccionamos y traducimos solo el contrato público que ya consume React.
 // Así los campos internos de PostgreSQL no se filtran por accidente a la API.
-const incluirProductoPublico = {
+function crearPromocionVigenteDonde(ahora) {
+  return {
+    activa: true,
+    empiezaEn: { lte: ahora },
+    terminaEn: { gt: ahora },
+  }
+}
+
+function crearInclusionProductoPublico(ahora) {
+  return {
   categoria: {
     select: { id: true, nombre: true, slug: true },
   },
@@ -13,9 +22,34 @@ const incluirProductoPublico = {
     select: { url: true, textoAlternativo: true, orden: true },
     orderBy: { orden: 'asc' },
   },
+  promociones: {
+    where: { promocion: crearPromocionVigenteDonde(ahora) },
+    select: {
+      promocion: {
+        select: {
+          id: true,
+          slug: true,
+          nombre: true,
+          porcentajeDescuento: true,
+          terminaEn: true,
+        },
+      },
+    },
+  },
+  }
 }
 
 function crearProductoPublico(producto) {
+  // Si una mala carga deja campañas solapadas, se muestra la de mayor beneficio.
+  // El panel de administración impedirá ese caso antes de llegar a producción.
+  const promocion = (producto.promociones ?? []).reduce((mejorPromocion, enlace) => {
+    if (!mejorPromocion || enlace.promocion.porcentajeDescuento > mejorPromocion.porcentajeDescuento) {
+      return enlace.promocion
+    }
+
+    return mejorPromocion
+  }, null)
+
   return {
     id: producto.id,
     sku: producto.sku,
@@ -24,6 +58,15 @@ function crearProductoPublico(producto) {
     descripcion: producto.descripcion,
     precio: producto.precio,
     precioAnterior: producto.precioAnterior,
+    oferta: promocion
+      ? {
+          id: promocion.id,
+          slug: promocion.slug,
+          nombre: promocion.nombre,
+          porcentajeDescuento: promocion.porcentajeDescuento,
+          terminaEn: promocion.terminaEn,
+        }
+      : null,
     stock: producto.stock,
     categoria: producto.categoria,
     marca: producto.marca,
@@ -35,7 +78,7 @@ function crearProductoPublico(producto) {
   }
 }
 
-function crearFiltrosPublicados({ query, categoria, soloOfertas, precioMin, precioMax } = {}) {
+function crearFiltrosPublicados({ query, categoria, soloOfertas, precioMin, precioMax, ahora } = {}) {
   const where = { activo: true }
 
   // Solo añadimos condiciones que llegaron desde la capa HTTP. Así Prisma
@@ -51,9 +94,9 @@ function crearFiltrosPublicados({ query, categoria, soloOfertas, precioMin, prec
   }
 
   if (soloOfertas) {
-    // Por ahora una oferta vigente se representa con un precio anterior.
-    // La futura entidad Promoción reemplazará esta condición sin afectar rutas.
-    where.precioAnterior = { not: null }
+    where.promociones = {
+      some: { promocion: crearPromocionVigenteDonde(ahora) },
+    }
   }
 
   if (precioMin !== undefined || precioMax !== undefined) {
@@ -87,10 +130,11 @@ function crearOrdenPersistido(orden) {
 export function crearRepositorioProductos(cliente = prisma) {
   return {
     async listarPublicados({ page = 1, limit = 12, orden = 'relevancia', ...filtros } = {}) {
+      const ahora = filtros.ahora ?? new Date()
       const where = crearFiltrosPublicados(filtros)
       const productos = await cliente.producto.findMany({
         where,
-        include: incluirProductoPublico,
+        include: crearInclusionProductoPublico(ahora),
         orderBy: crearOrdenPersistido(orden),
         skip: (page - 1) * limit,
         take: limit,
@@ -104,9 +148,10 @@ export function crearRepositorioProductos(cliente = prisma) {
     },
 
     async obtenerPublicadoPorSlug(slug) {
+      const ahora = new Date()
       const producto = await cliente.producto.findFirst({
         where: { activo: true, slug },
-        include: incluirProductoPublico,
+        include: crearInclusionProductoPublico(ahora),
       })
 
       return producto ? crearProductoPublico(producto) : null

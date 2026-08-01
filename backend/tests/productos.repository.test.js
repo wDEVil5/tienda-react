@@ -38,6 +38,7 @@ test('el repositorio consulta solo productos publicados y adapta sus imágenes',
 
   const repositorio = crearRepositorioProductos(cliente)
   const productos = await repositorio.listarPublicados({
+    ahora: new Date('2026-08-01T12:00:00.000Z'),
     query: 'cafe',
     categoria: 'despensa',
     soloOfertas: true,
@@ -52,12 +53,21 @@ test('el repositorio consulta solo productos publicados y adapta sus imágenes',
     activo: true,
     nombreBusqueda: { contains: 'cafe', mode: 'insensitive' },
     categoria: { slug: 'despensa' },
-    precioAnterior: { not: null },
+    promociones: {
+      some: {
+        promocion: {
+          activa: true,
+          empiezaEn: { lte: new Date('2026-08-01T12:00:00.000Z') },
+          terminaEn: { gt: new Date('2026-08-01T12:00:00.000Z') },
+        },
+      },
+    },
     precio: { gte: 500, lte: 2000 },
   })
   assert.deepEqual(consulta.orderBy, [{ precio: 'desc' }, { id: 'asc' }])
   assert.equal(consulta.skip, 10)
   assert.equal(consulta.take, 10)
+  assert.equal(productos[0].oferta, null)
   assert.deepEqual(productos[0].imagenes, [
     { url: 'https://ejemplo.test/producto.jpg', alt: 'Producto uno', orden: 1 },
   ])

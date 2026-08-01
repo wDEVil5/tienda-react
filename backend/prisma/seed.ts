@@ -150,6 +150,13 @@ const catalogoInicial = [
   },
 ];
 
+const ofertaSemanalDesarrollo = {
+  slug: "ofertas-semana-desarrollo",
+  nombre: "Ofertas de la semana",
+  porcentajeDescuento: 25,
+  productosSku: ["ACE-OLIVA-500", "LECHE-ENTERA-1L"],
+};
+
 const adapter = new PrismaPg({ connectionString: env("DATABASE_URL") });
 const prisma = new PrismaClient({ adapter });
 
@@ -205,8 +212,54 @@ async function sembrarCatalogo() {
   }
 }
 
+async function sembrarOfertaSemanal() {
+  const ahora = new Date();
+  const empiezaEn = new Date(ahora);
+  const terminaEn = new Date(ahora);
+
+  // El rango móvil mantiene disponible esta campaña únicamente en desarrollo.
+  empiezaEn.setUTCDate(empiezaEn.getUTCDate() - 1);
+  terminaEn.setUTCDate(terminaEn.getUTCDate() + 7);
+
+  const promocion = await prisma.promocion.upsert({
+    where: { slug: ofertaSemanalDesarrollo.slug },
+    update: {
+      nombre: ofertaSemanalDesarrollo.nombre,
+      porcentajeDescuento: ofertaSemanalDesarrollo.porcentajeDescuento,
+      empiezaEn,
+      terminaEn,
+      activa: true,
+    },
+    create: {
+      nombre: ofertaSemanalDesarrollo.nombre,
+      slug: ofertaSemanalDesarrollo.slug,
+      porcentajeDescuento: ofertaSemanalDesarrollo.porcentajeDescuento,
+      empiezaEn,
+      terminaEn,
+    },
+  });
+
+  const productosEnOferta = await prisma.producto.findMany({
+    where: { sku: { in: ofertaSemanalDesarrollo.productosSku } },
+    select: { id: true },
+  });
+
+  // El seed es una fuente controlada de desarrollo: sincroniza exactamente la
+  // selección declarada, sin afectar la futura administración de producción.
+  await prisma.promocionProducto.deleteMany({
+    where: { promocionId: promocion.id },
+  });
+  await prisma.promocionProducto.createMany({
+    data: productosEnOferta.map((producto) => ({
+      promocionId: promocion.id,
+      productoId: producto.id,
+    })),
+  });
+}
+
 try {
   await sembrarCatalogo();
+  await sembrarOfertaSemanal();
   console.info(`Seed completado: ${catalogoInicial.length} productos procesados.`);
 } finally {
   await prisma.$disconnect();

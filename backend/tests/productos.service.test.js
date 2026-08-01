@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { crearServicioProductos } from '../src/modules/productos/productos.service.js'
-import { productos } from '../src/modules/productos/productos.data.js'
+import { productos } from './fixtures/productos.fixture.js'
 
 function crearRepositorioEnMemoria() {
   return {

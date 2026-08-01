@@ -1,9 +1,20 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { listarMarcas } from '../src/modules/marcas/marcas.service.js'
+import { crearServicioMarcas } from '../src/modules/marcas/marcas.service.js'
 
-test('listarMarcas deriva marcas de productos publicados', () => {
-  const resultado = listarMarcas()
+test('listarMarcas adapta marcas y cuenta productos publicados', async () => {
+  const repositorio = {
+    async listarConProductosPublicados() {
+      return [
+        { id: 'marca_cafe_barrio', nombre: 'Café del Barrio', slug: 'cafe-del-barrio', logoUrl: null, _count: { productos: 1 } },
+        { id: 'marca_campo_sur', nombre: 'Campo Sur', slug: 'campo-sur', logoUrl: null, _count: { productos: 2 } },
+        { id: 'marca_hogar_claro', nombre: 'Hogar Claro', slug: 'hogar-claro', logoUrl: null, _count: { productos: 1 } },
+        { id: 'marca_valle_oliva', nombre: 'Valle Oliva', slug: 'valle-oliva', logoUrl: null, _count: { productos: 1 } },
+      ]
+    },
+  }
+  const servicio = crearServicioMarcas(repositorio)
+  const resultado = await servicio.listarMarcas()
 
   assert.deepEqual(resultado, [
     {

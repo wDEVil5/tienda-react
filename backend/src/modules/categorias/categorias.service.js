@@ -1,28 +1,24 @@
-import { productos } from '../productos/productos.data.js'
+import { repositorioCategorias } from './categorias.repository.js'
 
-// Temporalmente se derivan de productos publicados; PostgreSQL las persistirá como entidad propia.
-export function listarCategorias() {
-  const categoriasPorSlug = new Map()
+export function crearServicioCategorias(repositorio = repositorioCategorias) {
+  return {
+    async listarCategorias() {
+      const categorias = await repositorio.listarConProductosPublicados()
 
-  for (const producto of productos) {
-    if (!producto.activo) {
-      continue
-    }
-
-    const categoriaExistente = categoriasPorSlug.get(producto.categoria.slug)
-
-    if (categoriaExistente) {
-      categoriaExistente.productCount += 1
-      continue
-    }
-
-    categoriasPorSlug.set(producto.categoria.slug, {
-      ...producto.categoria,
-      productCount: 1,
-    })
+      return categorias
+        .map(({ _count, ...categoria }) => ({
+          ...categoria,
+          productCount: _count.productos,
+        }))
+        // La colación de PostgreSQL puede variar entre sistemas; la API conserva
+        // el orden español que ya presentaba el catálogo antes de persistirlo.
+        .sort((categoriaA, categoriaB) =>
+          categoriaA.nombre.localeCompare(categoriaB.nombre, 'es'),
+        )
+    },
   }
-
-  return [...categoriasPorSlug.values()].sort((categoriaA, categoriaB) =>
-    categoriaA.nombre.localeCompare(categoriaB.nombre, 'es'),
-  )
 }
+
+const servicioCategorias = crearServicioCategorias()
+
+export const listarCategorias = servicioCategorias.listarCategorias

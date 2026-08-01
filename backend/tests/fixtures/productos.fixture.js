@@ -1,5 +1,4 @@
-// Fuente temporal para desarrollar la API antes de incorporar PostgreSQL.
-// Los servicios leerán estos datos igual que luego leerán un repositorio real.
+// Datos controlados para probar reglas del servicio sin depender de PostgreSQL.
 export const productos = [
   {
     id: 'prod_aceite_oliva_500',
@@ -12,13 +11,7 @@ export const productos = [
     marca: { id: 'marca_valle_oliva', nombre: 'Valle Oliva' },
     stock: 12,
     activo: true,
-    imagenes: [
-      {
-        url: 'https://placehold.co/600x600/f3f0ea/1b1b18?text=Aceite+de+oliva',
-        alt: 'Aceite de oliva extra virgen de 500 ml',
-        orden: 1,
-      },
-    ],
+    imagenes: [{ url: 'https://ejemplo.test/aceite.jpg', alt: 'Aceite de oliva extra virgen de 500 ml', orden: 1 }],
   },
   {
     id: 'prod_cafe_grano_250',
@@ -31,13 +24,7 @@ export const productos = [
     marca: { id: 'marca_cafe_barrio', nombre: 'Café del Barrio' },
     stock: 25,
     activo: true,
-    imagenes: [
-      {
-        url: 'https://placehold.co/600x600/f3f0ea/1b1b18?text=Cafe+en+grano',
-        alt: 'Bolsa de café de grano tostado de 250 g',
-        orden: 1,
-      },
-    ],
+    imagenes: [{ url: 'https://ejemplo.test/cafe.jpg', alt: 'Bolsa de café de grano tostado de 250 g', orden: 1 }],
   },
   {
     id: 'prod_leche_entera_1l',
@@ -50,13 +37,7 @@ export const productos = [
     marca: { id: 'marca_campo_sur', nombre: 'Campo Sur' },
     stock: 8,
     activo: true,
-    imagenes: [
-      {
-        url: 'https://placehold.co/600x600/f3f0ea/1b1b18?text=Leche+entera',
-        alt: 'Caja de leche entera de un litro',
-        orden: 1,
-      },
-    ],
+    imagenes: [{ url: 'https://ejemplo.test/leche.jpg', alt: 'Caja de leche entera de un litro', orden: 1 }],
   },
   {
     id: 'prod_detergente_liquido_3l',
@@ -69,13 +50,7 @@ export const productos = [
     marca: { id: 'marca_hogar_claro', nombre: 'Hogar Claro' },
     stock: 5,
     activo: true,
-    imagenes: [
-      {
-        url: 'https://placehold.co/600x600/f3f0ea/1b1b18?text=Detergente',
-        alt: 'Envase de detergente líquido concentrado de tres litros',
-        orden: 1,
-      },
-    ],
+    imagenes: [{ url: 'https://ejemplo.test/detergente.jpg', alt: 'Envase de detergente líquido concentrado de tres litros', orden: 1 }],
   },
   {
     id: 'prod_queso_mantecoso_250',
@@ -88,13 +63,7 @@ export const productos = [
     marca: { id: 'marca_campo_sur', nombre: 'Campo Sur' },
     stock: 0,
     activo: true,
-    imagenes: [
-      {
-        url: 'https://placehold.co/600x600/f3f0ea/1b1b18?text=Queso+mantecoso',
-        alt: 'Queso mantecoso laminado de 250 g',
-        orden: 1,
-      },
-    ],
+    imagenes: [{ url: 'https://ejemplo.test/queso.jpg', alt: 'Queso mantecoso laminado de 250 g', orden: 1 }],
   },
   {
     id: 'prod_mermelada_frutilla_250',
@@ -107,12 +76,6 @@ export const productos = [
     marca: { id: 'marca_dulce_casa', nombre: 'Dulce Casa' },
     stock: 16,
     activo: false,
-    imagenes: [
-      {
-        url: 'https://placehold.co/600x600/f3f0ea/1b1b18?text=Mermelada',
-        alt: 'Frasco de mermelada de frutilla de 250 g',
-        orden: 1,
-      },
-    ],
+    imagenes: [{ url: 'https://ejemplo.test/mermelada.jpg', alt: 'Frasco de mermelada de frutilla de 250 g', orden: 1 }],
   },
 ]

@@ -1,29 +1,22 @@
-import { productos } from '../productos/productos.data.js'
+import { repositorioMarcas } from './marcas.repository.js'
 
-// Temporalmente se derivan de productos publicados; luego tendrán logo y orden persistidos.
-export function listarMarcas() {
-  const marcasPorId = new Map()
+export function crearServicioMarcas(repositorio = repositorioMarcas) {
+  return {
+    async listarMarcas() {
+      const marcas = await repositorio.listarConProductosPublicados()
 
-  for (const producto of productos) {
-    if (!producto.activo) {
-      continue
-    }
-
-    const marcaExistente = marcasPorId.get(producto.marca.id)
-
-    if (marcaExistente) {
-      marcaExistente.productCount += 1
-      continue
-    }
-
-    marcasPorId.set(producto.marca.id, {
-      ...producto.marca,
-      logoUrl: null,
-      productCount: 1,
-    })
+      return marcas
+        .map(({ id, nombre, logoUrl, _count }) => ({
+          id,
+          nombre,
+          logoUrl,
+          productCount: _count.productos,
+        }))
+        .sort((marcaA, marcaB) => marcaA.nombre.localeCompare(marcaB.nombre, 'es'))
+    },
   }
-
-  return [...marcasPorId.values()].sort((marcaA, marcaB) =>
-    marcaA.nombre.localeCompare(marcaB.nombre, 'es'),
-  )
 }
+
+const servicioMarcas = crearServicioMarcas()
+
+export const listarMarcas = servicioMarcas.listarMarcas

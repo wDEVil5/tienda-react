@@ -1,4 +1,4 @@
-import { productos } from './productos.data.js'
+import { repositorioProductos } from './productos.repository.js'
 
 export const PAGINACION_PREDETERMINADA = { page: 1, limit: 12 }
 export const LIMITE_MAXIMO_POR_PAGINA = 24
@@ -51,59 +51,70 @@ function ordenarProductos(productos, orden) {
   })
 }
 
-// La tienda solo expone productos publicados y nunca entrega referencias mutables de la fuente.
-export function listarProductos({
-  query = '',
-  categoria = '',
-  soloOfertas = false,
-  precioMin = 0,
-  precioMax = Infinity,
-  page = PAGINACION_PREDETERMINADA.page,
-  limit = PAGINACION_PREDETERMINADA.limit,
-  orden = ORDEN_PREDETERMINADO,
-} = {}) {
-  const textoBusqueda = normalizarTexto(query)
-  const categoriaFiltrada = normalizarTexto(categoria)
-
-  // Cada filtro vacío se omite, por lo que las condiciones se pueden combinar.
-  const productosFiltrados = productos
-    .filter((producto) => producto.activo)
-    .filter(
-      (producto) =>
-        !textoBusqueda || normalizarTexto(producto.nombre).includes(textoBusqueda),
-    )
-    .filter(
-      (producto) => !categoriaFiltrada || producto.categoria.slug === categoriaFiltrada,
-    )
-    // Hasta tener promociones persistidas, precioAnterior representa una oferta vigente.
-    .filter((producto) => !soloOfertas || producto.precioAnterior !== null)
-    // Los límites se aplican antes de ordenar y paginar: el meta.total siempre
-    // representa los productos que realmente cumplen todos los filtros.
-    .filter(
-      (producto) => producto.precio >= precioMin && producto.precio <= precioMax,
-    )
-    .map(crearProductoPublico)
-
-  const productosOrdenados = ordenarProductos(productosFiltrados, orden)
-  const total = productosOrdenados.length
-  const inicio = (page - 1) * limit
-
+/**
+ * Conserva las reglas del catálogo independientes de Prisma. El repositorio
+ * entrega productos publicados; el servicio aplica filtros de negocio y forma
+ * la respuesta que ya conoce la capa HTTP.
+ */
+export function crearServicioProductos(repositorio = repositorioProductos) {
   return {
-    data: productosOrdenados.slice(inicio, inicio + limit),
-    meta: {
-      page,
-      limit,
-      total,
-      totalPages: Math.ceil(total / limit),
+    async listarProductos({
+      query = '',
+      categoria = '',
+      soloOfertas = false,
+      precioMin = 0,
+      precioMax = Infinity,
+      page = PAGINACION_PREDETERMINADA.page,
+      limit = PAGINACION_PREDETERMINADA.limit,
+      orden = ORDEN_PREDETERMINADO,
+    } = {}) {
+      const textoBusqueda = normalizarTexto(query)
+      const categoriaFiltrada = normalizarTexto(categoria)
+      const productos = await repositorio.listarPublicados()
+
+      // Cada filtro vacío se omite, por lo que las condiciones se pueden combinar.
+      const productosFiltrados = productos
+        .filter(
+          (producto) =>
+            !textoBusqueda || normalizarTexto(producto.nombre).includes(textoBusqueda),
+        )
+        .filter(
+          (producto) => !categoriaFiltrada || producto.categoria.slug === categoriaFiltrada,
+        )
+        // Hasta tener promociones persistidas, precioAnterior representa una oferta vigente.
+        .filter((producto) => !soloOfertas || producto.precioAnterior !== null)
+        // Los límites se aplican antes de ordenar y paginar: el meta.total siempre
+        // representa los productos que realmente cumplen todos los filtros.
+        .filter(
+          (producto) => producto.precio >= precioMin && producto.precio <= precioMax,
+        )
+        .map(crearProductoPublico)
+
+      const productosOrdenados = ordenarProductos(productosFiltrados, orden)
+      const total = productosOrdenados.length
+      const inicio = (page - 1) * limit
+
+      return {
+        data: productosOrdenados.slice(inicio, inicio + limit),
+        meta: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      }
+    },
+
+    async obtenerProductoPorSlug(slug) {
+      // El repositorio ya restringe la búsqueda a productos publicados.
+      const producto = await repositorio.obtenerPublicadoPorSlug(slug)
+
+      return producto ? crearProductoPublico(producto) : null
     },
   }
 }
 
-export function obtenerProductoPorSlug(slug) {
-  // Un producto inactivo se comporta como inexistente para visitantes de la tienda.
-  const producto = productos.find(
-    (productoActual) => productoActual.activo && productoActual.slug === slug,
-  )
+const servicioProductos = crearServicioProductos()
 
-  return producto ? crearProductoPublico(producto) : null
-}
+export const listarProductos = servicioProductos.listarProductos
+export const obtenerProductoPorSlug = servicioProductos.obtenerProductoPorSlug

@@ -30,7 +30,7 @@ function leerNumeroNoNegativo(valor) {
   return Number.isFinite(numero) && numero >= 0 ? numero : null
 }
 
-productosRouter.get('/', (request, response) => {
+productosRouter.get('/', async (request, response, next) => {
   // La ruta traduce parámetros HTTP; el servicio recibe valores simples y no conoce Express.
   const query = typeof request.query.q === 'string' ? request.query.q : ''
   const categoria =
@@ -74,8 +74,8 @@ productosRouter.get('/', (request, response) => {
     })
   }
 
-  return response.json(
-    listarProductos({
+  try {
+    const catalogo = await listarProductos({
       query,
       categoria,
       soloOfertas,
@@ -84,13 +84,23 @@ productosRouter.get('/', (request, response) => {
       page,
       limit,
       orden,
-    }),
-  )
+    })
+
+    return response.json(catalogo)
+  } catch (error) {
+    return next(error)
+  }
 })
 
-productosRouter.get('/:slug', (request, response) => {
+productosRouter.get('/:slug', async (request, response, next) => {
   // El slug identifica el recurso público que aparece en la URL del detalle.
-  const producto = obtenerProductoPorSlug(request.params.slug)
+  let producto
+
+  try {
+    producto = await obtenerProductoPorSlug(request.params.slug)
+  } catch (error) {
+    return next(error)
+  }
 
   if (!producto) {
     return response.status(404).json({

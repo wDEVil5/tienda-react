@@ -64,7 +64,7 @@ test('el repositorio consulta solo productos publicados y adapta sus imágenes',
   })
 
   assert.deepEqual(consulta.where, {
-    activo: true,
+    estado: 'PUBLICADO',
     nombreBusqueda: { contains: 'cafe', mode: 'insensitive' },
     categoria: { slug: 'despensa' },
     promociones: {
@@ -88,7 +88,7 @@ test('el repositorio consulta solo productos publicados y adapta sus imágenes',
   assert.deepEqual(productos[0].imagenes, [
     { url: 'https://ejemplo.test/producto.jpg', alt: 'Producto uno', orden: 1 },
   ])
-  assert.equal('activo' in productos[0], false)
+  assert.equal('estado' in productos[0], false)
 
   const fechaConsulta = new Date('2026-08-01T12:00:00.000Z')
   const maxDescuento = await repositorio.obtenerMaximoDescuentoVigente(fechaConsulta)
@@ -99,7 +99,7 @@ test('el repositorio consulta solo productos publicados y adapta sus imágenes',
       activa: true,
       empiezaEn: { lte: fechaConsulta },
       terminaEn: { gt: fechaConsulta },
-      productos: { some: { producto: { activo: true } } },
+      productos: { some: { producto: { estado: 'PUBLICADO' } } },
     },
     _max: { porcentajeDescuento: true },
   })

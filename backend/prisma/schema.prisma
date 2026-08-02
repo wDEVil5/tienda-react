@@ -17,6 +17,14 @@ enum RolUsuario {
   OPERADOR
 }
 
+// El estado editorial evita confundir un borrador con una baja lógica. Solo
+// PUBLICADO se expone en la tienda; ARCHIVADO se conserva para trazabilidad.
+enum EstadoProducto {
+  BORRADOR
+  PUBLICADO
+  ARCHIVADO
+}
+
 model Usuario {
   id           String     @id @default(uuid()) @db.Uuid
   nombre       String     @db.VarChar(120)
@@ -86,9 +94,9 @@ model Producto {
   precioAnterior Int? @map("precio_anterior")
 
   // Estar publicado y tener stock son estados distintos: un producto agotado
-  // puede seguir visible, mientras que uno inactivo no se expone al catálogo.
+  // puede seguir visible, mientras que su estado editorial controla exposición.
   stock            Int     @default(0)
-  activo           Boolean @default(true)
+  estado           EstadoProducto @default(BORRADOR)
   destacado        Boolean @default(false)
   alertaStockBajo  Int?    @map("alerta_stock_bajo")
 
@@ -112,7 +120,7 @@ model Producto {
 
   @@index([categoriaId])
   @@index([marcaId])
-  @@index([activo])
+  @@index([estado])
   @@index([destacado])
   @@map("productos")
 }

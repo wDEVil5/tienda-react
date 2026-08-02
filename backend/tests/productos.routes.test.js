@@ -8,7 +8,7 @@ test('GET /api/productos devuelve productos publicados', async () => {
 
   assert.equal(response.status, 200)
   assert.equal(response.body.data.length, 5)
-  assert.equal(response.body.data.every((producto) => !('activo' in producto)), true)
+  assert.equal(response.body.data.every((producto) => !('estado' in producto)), true)
 })
 
 test('GET /api/productos permite solicitudes del frontend local', async () => {

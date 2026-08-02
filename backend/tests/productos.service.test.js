@@ -18,13 +18,13 @@ function crearRepositorioEnMemoria() {
     async obtenerMaximoDescuentoVigente() {
       return Math.max(
         ...productos
-          .filter((producto) => producto.activo && producto.oferta)
+          .filter((producto) => producto.estado === 'PUBLICADO' && producto.oferta)
           .map((producto) => producto.oferta.porcentajeDescuento),
       )
     },
     async obtenerPublicadoPorSlug(slug) {
       return productos.find(
-        (producto) => producto.activo && producto.slug === slug,
+        (producto) => producto.estado === 'PUBLICADO' && producto.slug === slug,
       ) ?? null
     },
   }
@@ -33,7 +33,7 @@ function crearRepositorioEnMemoria() {
 function filtrarProductos({ query, categoria, soloOfertas, precioMin, precioMax } = {}) {
   // Imita el contrato del repositorio real sin requerir PostgreSQL en estos tests.
   return productos
-    .filter((producto) => producto.activo)
+    .filter((producto) => producto.estado === 'PUBLICADO')
     .filter(
       (producto) => !query || normalizarTextoBusqueda(producto.nombre).includes(query),
     )
@@ -57,12 +57,12 @@ function ordenarProductos(productosParaOrdenar, orden) {
 
 const servicioEnMemoria = crearServicioProductos(crearRepositorioEnMemoria())
 
-test('listarProductos excluye productos inactivos', async () => {
+test('listarProductos excluye productos que no están publicados', async () => {
   const { data: resultado } = await servicioEnMemoria.listarProductos()
 
   assert.equal(resultado.length, 5)
   assert.equal(resultado.some((producto) => producto.slug === 'mermelada-de-frutilla-250-g'), false)
-  assert.equal(resultado.every((producto) => !('activo' in producto)), true)
+  assert.equal(resultado.every((producto) => !('estado' in producto)), true)
 })
 
 test('listarProductos busca sin distinguir mayúsculas ni acentos', async () => {

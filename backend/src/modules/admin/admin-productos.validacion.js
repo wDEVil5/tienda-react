@@ -13,7 +13,7 @@ export const esquemaCambiosProductoAdmin = z.object({
   precio: z.number().int().nonnegative().optional(),
   precioAnterior: z.number().int().nonnegative().nullable().optional(),
   stock: z.number().int().nonnegative().optional(),
-  activo: z.boolean().optional(),
+  estado: z.enum(['BORRADOR', 'PUBLICADO', 'ARCHIVADO']).optional(),
   destacado: z.boolean().optional(),
   alertaStockBajo: z.number().int().positive().nullable().optional(),
   codigoBarras: textoOpcional(50),

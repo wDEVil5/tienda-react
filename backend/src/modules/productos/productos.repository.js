@@ -115,7 +115,7 @@ function crearProductoPublico(producto) {
 }
 
 function crearFiltrosPublicados({ query, categoria, soloOfertas, precioMin, precioMax, ahora } = {}) {
-  const where = { activo: true }
+  const where = { estado: 'PUBLICADO' }
 
   // Solo añadimos condiciones que llegaron desde la capa HTTP. Así Prisma
   // genera una consulta acotada y no cargamos el catálogo completo en Node.
@@ -187,7 +187,7 @@ export function crearRepositorioProductos(cliente = prisma) {
       const resumen = await cliente.promocion.aggregate({
         where: {
           ...crearPromocionVigenteDonde(ahora),
-          productos: { some: { producto: { activo: true } } },
+          productos: { some: { producto: { estado: 'PUBLICADO' } } },
         },
         _max: { porcentajeDescuento: true },
       })
@@ -198,7 +198,7 @@ export function crearRepositorioProductos(cliente = prisma) {
     async obtenerPublicadoPorSlug(slug) {
       const ahora = new Date()
       const producto = await cliente.producto.findFirst({
-        where: { activo: true, slug },
+        where: { estado: 'PUBLICADO', slug },
         include: crearInclusionProductoPublico(ahora),
       })
 

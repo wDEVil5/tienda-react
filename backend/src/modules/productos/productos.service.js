@@ -14,7 +14,7 @@ export const ORDENES_PERMITIDOS = new Set([
 function crearProductoPublico(producto) {
   const productoPublico = { ...producto }
 
-  delete productoPublico.activo
+  delete productoPublico.estado
 
   return {
     ...productoPublico,

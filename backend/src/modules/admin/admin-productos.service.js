@@ -34,7 +34,7 @@ function crearProductoParaEdicion(producto) {
     precio: producto.precio,
     precioAnterior: producto.precioAnterior,
     stock: producto.stock,
-    activo: producto.activo,
+    estado: producto.estado,
     destacado: producto.destacado,
     alertaStockBajo: producto.alertaStockBajo,
     codigoBarras: producto.codigoBarras,
@@ -79,7 +79,7 @@ function crearResumenProductoAdmin(producto) {
     nombre: producto.nombre,
     precio: producto.precio,
     stock: producto.stock,
-    activo: producto.activo,
+    estado: producto.estado,
     destacado: producto.destacado,
     categoria: producto.categoria,
     marca: producto.marca,
@@ -181,7 +181,7 @@ export function crearServicioProductosAdmin(
         )
       }
 
-      if (cambios.activo === true && productoActual.imagenes.length === 0) {
+      if (cambios.estado === 'PUBLICADO' && productoActual.imagenes.length === 0) {
         throw new ErrorProductoAdmin(
           'PRODUCT_IMAGE_REQUIRED',
           'Debes asignar al menos una imagen antes de publicar el producto.',
@@ -204,7 +204,7 @@ export function crearServicioProductosAdmin(
         ...construirDatosActualizacion({ ...datos, slug }),
         // La galería se administra en un flujo separado: un producto nuevo se
         // mantiene fuera del catálogo hasta que tenga al menos una imagen.
-        activo: false,
+        estado: 'BORRADOR',
       })
 
       return crearProductoParaEdicion(producto)
@@ -215,8 +215,8 @@ export function crearServicioProductosAdmin(
       if (!producto) return false
 
       // La baja lógica permite recuperar el producto y preserva referencias
-      // futuras de pedidos; un producto inactivo tampoco puede destacarse.
-      await repositorio.actualizarPorId(id, { activo: false, destacado: false })
+      // futuras de pedidos; un producto archivado tampoco puede destacarse.
+      await repositorio.actualizarPorId(id, { estado: 'ARCHIVADO', destacado: false })
       return true
     },
 

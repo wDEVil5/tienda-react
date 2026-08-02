@@ -11,7 +11,7 @@ export const productos = [
     categoria: { id: 'cat_despensa', nombre: 'Despensa', slug: 'despensa' },
     marca: { id: 'marca_valle_oliva', nombre: 'Valle Oliva' },
     stock: 12,
-    activo: true,
+    estado: 'PUBLICADO',
     imagenes: [{ url: 'https://ejemplo.test/aceite.jpg', alt: 'Aceite de oliva extra virgen de 500 ml', orden: 1 }],
   },
   {
@@ -25,7 +25,7 @@ export const productos = [
     categoria: { id: 'cat_despensa', nombre: 'Despensa', slug: 'despensa' },
     marca: { id: 'marca_cafe_barrio', nombre: 'Café del Barrio' },
     stock: 25,
-    activo: true,
+    estado: 'PUBLICADO',
     imagenes: [{ url: 'https://ejemplo.test/cafe.jpg', alt: 'Bolsa de café de grano tostado de 250 g', orden: 1 }],
   },
   {
@@ -39,7 +39,7 @@ export const productos = [
     categoria: { id: 'cat_lacteos', nombre: 'Lácteos', slug: 'lacteos' },
     marca: { id: 'marca_campo_sur', nombre: 'Campo Sur' },
     stock: 8,
-    activo: true,
+    estado: 'PUBLICADO',
     imagenes: [{ url: 'https://ejemplo.test/leche.jpg', alt: 'Caja de leche entera de un litro', orden: 1 }],
   },
   {
@@ -53,7 +53,7 @@ export const productos = [
     categoria: { id: 'cat_limpieza', nombre: 'Limpieza', slug: 'limpieza' },
     marca: { id: 'marca_hogar_claro', nombre: 'Hogar Claro' },
     stock: 5,
-    activo: true,
+    estado: 'PUBLICADO',
     imagenes: [{ url: 'https://ejemplo.test/detergente.jpg', alt: 'Envase de detergente líquido concentrado de tres litros', orden: 1 }],
   },
   {
@@ -67,7 +67,7 @@ export const productos = [
     categoria: { id: 'cat_lacteos', nombre: 'Lácteos', slug: 'lacteos' },
     marca: { id: 'marca_campo_sur', nombre: 'Campo Sur' },
     stock: 0,
-    activo: true,
+    estado: 'PUBLICADO',
     imagenes: [{ url: 'https://ejemplo.test/queso.jpg', alt: 'Queso mantecoso laminado de 250 g', orden: 1 }],
   },
   {
@@ -81,7 +81,7 @@ export const productos = [
     categoria: { id: 'cat_despensa', nombre: 'Despensa', slug: 'despensa' },
     marca: { id: 'marca_dulce_casa', nombre: 'Dulce Casa' },
     stock: 16,
-    activo: false,
+    estado: 'BORRADOR',
     imagenes: [{ url: 'https://ejemplo.test/mermelada.jpg', alt: 'Frasco de mermelada de frutilla de 250 g', orden: 1 }],
   },
 ]

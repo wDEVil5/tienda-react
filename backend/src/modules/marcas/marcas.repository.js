@@ -5,7 +5,7 @@ export function crearRepositorioMarcas(cliente = prisma) {
     async listarConProductosPublicados() {
       return cliente.marca.findMany({
         where: {
-          productos: { some: { activo: true } },
+          productos: { some: { estado: 'PUBLICADO' } },
         },
         select: {
           id: true,
@@ -13,7 +13,7 @@ export function crearRepositorioMarcas(cliente = prisma) {
           logoUrl: true,
           _count: {
             select: {
-              productos: { where: { activo: true } },
+              productos: { where: { estado: 'PUBLICADO' } },
             },
           },
         },

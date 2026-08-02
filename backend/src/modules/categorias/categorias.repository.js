@@ -6,7 +6,7 @@ export function crearRepositorioCategorias(cliente = prisma) {
       return cliente.categoria.findMany({
         where: {
           activa: true,
-          productos: { some: { activo: true } },
+          productos: { some: { estado: 'PUBLICADO' } },
         },
         select: {
           id: true,
@@ -14,7 +14,7 @@ export function crearRepositorioCategorias(cliente = prisma) {
           slug: true,
           _count: {
             select: {
-              productos: { where: { activo: true } },
+              productos: { where: { estado: 'PUBLICADO' } },
             },
           },
         },

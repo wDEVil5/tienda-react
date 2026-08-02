@@ -18,11 +18,11 @@ function crearAppAdmin({ producto = null, rol = 'ADMIN' } = {}) {
 }
 
 test('GET /api/admin/productos/:id entrega datos para edición a un administrador', async () => {
-  const response = await request(crearAppAdmin({ producto: { id: 'producto-1', activo: false } }))
+  const response = await request(crearAppAdmin({ producto: { id: 'producto-1', estado: 'BORRADOR' } }))
     .get('/api/admin/productos/producto-1')
 
   assert.equal(response.status, 200)
-  assert.deepEqual(response.body, { data: { id: 'producto-1', activo: false } })
+  assert.deepEqual(response.body, { data: { id: 'producto-1', estado: 'BORRADOR' } })
 })
 
 test('GET /api/admin/productos/:id informa cuando no existe', async () => {
@@ -61,7 +61,7 @@ test('GET /api/admin/productos devuelve el listado administrativo paginado', asy
     },
     servicio: {
       async listarProductosAdmin({ page, limit }) {
-        return { data: [{ id: 'producto-1', activo: false }], meta: { page, limit, total: 1, totalPages: 1 } }
+        return { data: [{ id: 'producto-1', estado: 'ARCHIVADO' }], meta: { page, limit, total: 1, totalPages: 1 } }
       },
     },
   }))
@@ -70,7 +70,7 @@ test('GET /api/admin/productos devuelve el listado administrativo paginado', asy
 
   assert.equal(response.status, 200)
   assert.deepEqual(response.body.meta, { page: 2, limit: 10, total: 1, totalPages: 1 })
-  assert.equal(response.body.data[0].activo, false)
+  assert.equal(response.body.data[0].estado, 'ARCHIVADO')
 })
 
 test('GET /api/admin/productos rechaza paginación inválida', async () => {
@@ -92,7 +92,7 @@ test('POST /api/admin/productos crea un producto validado sin publicarlo', async
     servicio: {
       async crearProducto(datos) {
         datosRecibidos = datos
-        return { id: 'producto-1', nombre: datos.nombre, activo: false }
+        return { id: 'producto-1', nombre: datos.nombre, estado: 'BORRADOR' }
       },
     },
   }))
@@ -108,7 +108,7 @@ test('POST /api/admin/productos crea un producto validado sin publicarlo', async
 
   assert.equal(response.status, 201)
   assert.equal(datosRecibidos.sku, 'TE-VERDE-250')
-  assert.equal(response.body.data.activo, false)
+  assert.equal(response.body.data.estado, 'BORRADOR')
 })
 
 test('PATCH /api/admin/productos/:id valida y entrega el producto actualizado', async () => {

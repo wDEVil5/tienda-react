@@ -2,12 +2,12 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { crearServicioProductosAdmin } from '../src/modules/admin/admin-productos.service.js'
 
-test('listarProductos entrega un resumen paginado que incluye productos inactivos', async () => {
+test('listarProductos entrega un resumen paginado que incluye borradores', async () => {
   const repositorio = {
     async listar() {
       return [{
         id: 'producto-1', sku: 'ACE-001', slug: 'aceite', nombre: 'Aceite', precio: 7990,
-        stock: 0, activo: false, destacado: false,
+        stock: 0, estado: 'BORRADOR', destacado: false,
         categoria: { id: 'cat-1', nombre: 'Despensa', slug: 'despensa' },
         marca: { id: 'marca-1', nombre: 'Marca' },
         imagenes: [{ url: 'https://ejemplo.test/aceite.webp', textoAlternativo: 'Aceite' }],
@@ -20,7 +20,7 @@ test('listarProductos entrega un resumen paginado que incluye productos inactivo
   const resultado = await servicio.listarProductos({ page: 1, limit: 20 })
 
   assert.deepEqual(resultado.meta, { page: 1, limit: 20, total: 1, totalPages: 1 })
-  assert.equal(resultado.data[0].activo, false)
+  assert.equal(resultado.data[0].estado, 'BORRADOR')
   assert.deepEqual(resultado.data[0].imagen, {
     url: 'https://ejemplo.test/aceite.webp', alt: 'Aceite',
   })
@@ -38,7 +38,7 @@ test('obtenerProductoParaEdicion expone los datos que necesita el editor', async
         precio: 7990,
         precioAnterior: 9990,
         stock: 12,
-        activo: true,
+        estado: 'PUBLICADO',
         destacado: true,
         alertaStockBajo: 3,
         codigoBarras: '1234567890',
@@ -58,7 +58,7 @@ test('obtenerProductoParaEdicion expone los datos que necesita el editor', async
 
   const producto = await servicio.obtenerProductoParaEdicion('producto-1')
 
-  assert.equal(producto.activo, true)
+  assert.equal(producto.estado, 'PUBLICADO')
   assert.equal(producto.destacado, true)
   assert.equal(producto.contenidoCantidad, 500)
   assert.equal(producto.marca.nombre, 'Valle Oliva')
@@ -73,7 +73,7 @@ test('actualizarProducto deriva la clave de búsqueda al cambiar el nombre', asy
   const producto = {
     id: 'producto-1',
     sku: 'ACE-001', slug: 'aceite-oliva', nombre: 'Aceite', descripcion: 'Descripción',
-    precio: 7990, precioAnterior: 9990, stock: 12, activo: true, destacado: false,
+    precio: 7990, precioAnterior: 9990, stock: 12, estado: 'PUBLICADO', destacado: false,
     alertaStockBajo: null, codigoBarras: null, origen: null, contenidoCantidad: null,
     contenidoUnidad: null, pesoDespachoGramos: null, fechaVencimiento: null,
     categoria: { id: 'cat-1', nombre: 'Despensa', slug: 'despensa' },
@@ -102,7 +102,7 @@ test('reemplazarImagenesProducto delega una galería completa al repositorio', a
   const clavesEliminadas = []
   const producto = {
     id: 'producto-1', sku: 'ACE-001', slug: 'aceite', nombre: 'Aceite', descripcion: 'Descripción',
-    precio: 7990, precioAnterior: null, stock: 12, activo: true, destacado: false,
+    precio: 7990, precioAnterior: null, stock: 12, estado: 'PUBLICADO', destacado: false,
     alertaStockBajo: null, codigoBarras: null, origen: null, contenidoCantidad: null,
     contenidoUnidad: null, pesoDespachoGramos: null, fechaVencimiento: null,
     categoria: { id: 'cat-1', nombre: 'Despensa', slug: 'despensa' },
@@ -139,7 +139,7 @@ test('crearProducto genera slug, búsqueda y lo deja sin publicar', async () => 
   const productoCreado = {
     id: 'producto-1', sku: 'TE-VERDE-250', slug: 'te-verde', nombre: 'Té verde',
     descripcion: 'Té de hoja.', precio: 3490, precioAnterior: null, stock: 10,
-    activo: false, destacado: false, alertaStockBajo: null, codigoBarras: null,
+    estado: 'BORRADOR', destacado: false, alertaStockBajo: null, codigoBarras: null,
     origen: null, contenidoCantidad: null, contenidoUnidad: null, pesoDespachoGramos: null,
     fechaVencimiento: null, categoria: { id: 'cat-1', nombre: 'Despensa', slug: 'despensa' },
     marca: { id: 'marca-1', nombre: 'Marca', slug: 'marca', logoUrl: null },
@@ -162,8 +162,8 @@ test('crearProducto genera slug, búsqueda y lo deja sin publicar', async () => 
 
   assert.equal(datosCreacion.slug, 'te-verde')
   assert.equal(datosCreacion.nombreBusqueda, 'te verde')
-  assert.equal(datosCreacion.activo, false)
-  assert.equal(creado.activo, false)
+  assert.equal(datosCreacion.estado, 'BORRADOR')
+  assert.equal(creado.estado, 'BORRADOR')
 })
 
 test('desactivarProducto conserva el registro y quita su destacado', async () => {
@@ -177,5 +177,5 @@ test('desactivarProducto conserva el registro y quita su destacado', async () =>
   const resultado = await servicio.desactivarProducto('producto-1')
 
   assert.equal(resultado, true)
-  assert.deepEqual(datosActualizacion, { activo: false, destacado: false })
+  assert.deepEqual(datosActualizacion, { estado: 'ARCHIVADO', destacado: false })
 })

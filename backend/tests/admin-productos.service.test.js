@@ -75,6 +75,7 @@ test('actualizarProducto deriva la clave de búsqueda al cambiar el nombre', asy
 
 test('reemplazarImagenesProducto delega una galería completa al repositorio', async () => {
   let imagenesRecibidas
+  const clavesEliminadas = []
   const producto = {
     id: 'producto-1', sku: 'ACE-001', slug: 'aceite', nombre: 'Aceite', descripcion: 'Descripción',
     precio: 7990, precioAnterior: null, stock: 12, activo: true, destacado: false,
@@ -83,19 +84,28 @@ test('reemplazarImagenesProducto delega una galería completa al repositorio', a
     categoria: { id: 'cat-1', nombre: 'Despensa', slug: 'despensa' },
     marca: { id: 'marca-1', nombre: 'Marca', slug: 'marca', logoUrl: null },
     etiquetas: [],
-    imagenes: [{ id: 'imagen-1', url: 'https://ejemplo.test/aceite.webp', textoAlternativo: 'Aceite', orden: 1 }],
+    imagenes: [{ id: 'imagen-1', url: 'https://ejemplo.test/aceite.webp', storageKey: 'sumarket/productos/aceite-anterior', textoAlternativo: 'Aceite', orden: 1 }],
   }
   const repositorio = {
+    async obtenerPorId() { return producto },
     async reemplazarImagenesPorProducto(_id, imagenes) {
       imagenesRecibidas = imagenes
       return producto
     },
   }
-  const servicio = crearServicioProductosAdmin(repositorio)
-  const imagenes = [{ url: 'https://ejemplo.test/aceite.webp', textoAlternativo: 'Aceite' }]
+  const almacenamiento = {
+    async eliminarImagenProducto(storageKey) { clavesEliminadas.push(storageKey) },
+  }
+  const servicio = crearServicioProductosAdmin(repositorio, almacenamiento)
+  const imagenes = [{
+    url: 'https://ejemplo.test/aceite.webp',
+    storageKey: 'sumarket/productos/aceite-nuevo',
+    textoAlternativo: 'Aceite',
+  }]
 
   const actualizado = await servicio.reemplazarImagenesProducto('producto-1', imagenes)
 
   assert.equal(imagenesRecibidas, imagenes)
   assert.equal(actualizado.imagenes[0].orden, 1)
+  assert.deepEqual(clavesEliminadas, ['sumarket/productos/aceite-anterior'])
 })

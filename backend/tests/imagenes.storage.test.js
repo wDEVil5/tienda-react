@@ -43,3 +43,24 @@ test('subirImagenProducto adapta la respuesta de Cloudinary al contrato interno'
     formato: 'webp',
   })
 })
+
+test('eliminarImagenProducto invalida la imagen entregada por Cloudinary', async () => {
+  let opcionesRecibidas
+  let claveRecibida
+  const cliente = {
+    uploader: {
+      async destroy(storageKey, opciones) {
+        claveRecibida = storageKey
+        opcionesRecibidas = opciones
+        return { result: 'ok' }
+      },
+    },
+  }
+  const almacenamiento = crearAlmacenamientoImagenes(() => cliente)
+
+  const resultado = await almacenamiento.eliminarImagenProducto('sumarket/productos/aceite')
+
+  assert.equal(resultado, 'ok')
+  assert.equal(claveRecibida, 'sumarket/productos/aceite')
+  assert.deepEqual(opcionesRecibidas, { resource_type: 'image', invalidate: true })
+})

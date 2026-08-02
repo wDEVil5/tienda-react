@@ -27,6 +27,16 @@ export function crearAlmacenamientoImagenes(obtenerCliente = obtenerClienteCloud
         carga.end(buffer)
       })
     },
+
+    async eliminarImagenProducto(storageKey) {
+      const cliente = obtenerCliente()
+      const resultado = await cliente.uploader.destroy(storageKey, {
+        resource_type: 'image',
+        invalidate: true,
+      })
+
+      return resultado.result
+    },
   }
 }
 

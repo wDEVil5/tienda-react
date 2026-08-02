@@ -1,5 +1,6 @@
 import { repositorioProductosAdmin } from './admin-productos.repository.js'
 import { normalizarTextoBusqueda } from '../../lib/texto.js'
+import { almacenamientoImagenes } from '../imagenes/imagenes.storage.js'
 
 export class ErrorProductoAdmin extends Error {
   constructor(code, message) {
@@ -89,7 +90,10 @@ function construirDatosActualizacion(cambios) {
   return datos
 }
 
-export function crearServicioProductosAdmin(repositorio = repositorioProductosAdmin) {
+export function crearServicioProductosAdmin(
+  repositorio = repositorioProductosAdmin,
+  almacenamiento = almacenamientoImagenes,
+) {
   return {
     async obtenerProductoParaEdicion(id) {
       const producto = await repositorio.obtenerPorId(id)
@@ -135,8 +139,31 @@ export function crearServicioProductosAdmin(repositorio = repositorioProductosAd
     },
 
     async reemplazarImagenesProducto(id, imagenes) {
+      const productoActual = await repositorio.obtenerPorId(id)
+      if (!productoActual) return null
+
+      const clavesNuevas = new Set(
+        imagenes.map((imagen) => imagen.storageKey).filter(Boolean),
+      )
+      const clavesEliminadas = productoActual.imagenes
+        .map((imagen) => imagen.storageKey)
+        .filter((storageKey) => storageKey && !clavesNuevas.has(storageKey))
+
       const producto = await repositorio.reemplazarImagenesPorProducto(id, imagenes)
-      return producto ? crearProductoParaEdicion(producto) : null
+
+      // Primero persiste la nueva galería: si Cloudinary falla al limpiar un
+      // archivo ya no referenciado, el catálogo sigue consistente y se puede
+      // reintentar la limpieza sin restaurar una galería antigua.
+      const eliminaciones = await Promise.allSettled(
+        clavesEliminadas.map((storageKey) => almacenamiento.eliminarImagenProducto(storageKey)),
+      )
+      eliminaciones.forEach((resultado, indice) => {
+        if (resultado.status === 'rejected') {
+          console.error(`No se pudo eliminar la imagen ${clavesEliminadas[indice]} de Cloudinary.`)
+        }
+      })
+
+      return crearProductoParaEdicion(producto)
     },
   }
 }

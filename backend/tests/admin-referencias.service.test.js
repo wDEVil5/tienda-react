@@ -1,0 +1,25 @@
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import { crearServicioReferenciasAdmin } from '../src/modules/admin/admin-referencias.service.js'
+
+test('listarOpcionesProducto reúne las referencias necesarias para el editor', async () => {
+  const servicio = crearServicioReferenciasAdmin({
+    async listarCategoriasActivas() {
+      return [{ id: 'cat-1', nombre: 'Despensa', slug: 'despensa' }]
+    },
+    async listarMarcas() {
+      return [{ id: 'marca-1', nombre: 'Olivos', slug: 'olivos', logoUrl: null }]
+    },
+    async listarEtiquetas() {
+      return [{ id: 'etiqueta-1', nombre: 'Vegano', slug: 'vegano' }]
+    },
+  })
+
+  const resultado = await servicio.listarOpcionesProducto()
+
+  assert.deepEqual(resultado.data.categorias, [
+    { id: 'cat-1', nombre: 'Despensa', slug: 'despensa' },
+  ])
+  assert.equal(resultado.data.marcas[0].nombre, 'Olivos')
+  assert.equal(resultado.data.etiquetas[0].slug, 'vegano')
+})

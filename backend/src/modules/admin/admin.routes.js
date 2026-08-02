@@ -16,6 +16,7 @@ import {
 import { validarImagenesProductoAdmin } from './admin-imagenes.validacion.js'
 import { ErrorImagen, subirImagenProducto } from '../imagenes/imagenes.service.js'
 import { recibirImagenProducto } from '../imagenes/imagenes.middleware.js'
+import { listarOpcionesProductoAdmin } from './admin-referencias.service.js'
 
 export function crearRouterAdmin({
   servicio = {
@@ -26,10 +27,24 @@ export function crearRouterAdmin({
     desactivarProducto,
     reemplazarImagenesProducto,
     subirImagenProducto,
+    listarOpcionesProductoAdmin,
   },
   middlewareSesion = requerirSesion,
 } = {}) {
   const adminRouter = Router()
+
+  adminRouter.get(
+    '/referencias/producto',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (_request, response, next) => {
+      try {
+        return response.json(await servicio.listarOpcionesProductoAdmin())
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
 
   adminRouter.get(
     '/productos',

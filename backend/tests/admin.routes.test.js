@@ -32,6 +32,26 @@ test('GET /api/admin/productos/:id informa cuando no existe', async () => {
   assert.equal(response.body.error.code, 'ADMIN_PRODUCT_NOT_FOUND')
 })
 
+test('GET /api/admin/referencias/producto entrega opciones para el editor', async () => {
+  const app = express()
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'OPERADOR' }
+      next()
+    },
+    servicio: {
+      async listarOpcionesProductoAdmin() {
+        return { data: { categorias: [], marcas: [], etiquetas: [] } }
+      },
+    },
+  }))
+
+  const response = await request(app).get('/api/admin/referencias/producto')
+
+  assert.equal(response.status, 200)
+  assert.deepEqual(response.body, { data: { categorias: [], marcas: [], etiquetas: [] } })
+})
+
 test('GET /api/admin/productos devuelve el listado administrativo paginado', async () => {
   const app = express()
   app.use('/api/admin', crearRouterAdmin({

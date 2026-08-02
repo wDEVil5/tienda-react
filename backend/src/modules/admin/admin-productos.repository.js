@@ -21,8 +21,11 @@ const incluirResumenProductoAdmin = {
 
 export function crearRepositorioProductosAdmin(cliente = prisma) {
   return {
-    listar({ page, limit }) {
+    listar({ page, limit, query, estado }) {
+      const where = crearFiltrosListado({ query, estado })
+
       return cliente.producto.findMany({
+        where,
         include: incluirResumenProductoAdmin,
         orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }],
         skip: (page - 1) * limit,
@@ -30,8 +33,8 @@ export function crearRepositorioProductosAdmin(cliente = prisma) {
       })
     },
 
-    contar() {
-      return cliente.producto.count()
+    contar({ query, estado }) {
+      return cliente.producto.count({ where: crearFiltrosListado({ query, estado }) })
     },
 
     obtenerPorId(id) {
@@ -95,6 +98,20 @@ export function crearRepositorioProductosAdmin(cliente = prisma) {
         })
       })
     },
+  }
+}
+
+function crearFiltrosListado({ query, estado }) {
+  return {
+    ...(estado ? { estado } : {}),
+    ...(query
+      ? {
+          OR: [
+            { nombreBusqueda: { contains: query, mode: 'insensitive' } },
+            { sku: { contains: query, mode: 'insensitive' } },
+          ],
+        }
+      : {}),
   }
 }
 

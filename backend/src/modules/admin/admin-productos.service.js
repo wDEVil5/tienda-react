@@ -146,10 +146,17 @@ export function crearServicioProductosAdmin(
   almacenamiento = almacenamientoImagenes,
 ) {
   return {
-    async listarProductos({ page = 1, limit = 20 } = {}) {
+    async listarProductos({ page = 1, limit = 20, query = '', estado } = {}) {
+      const textoBusqueda = normalizarTextoBusqueda(query)
+      const filtros = {
+        page,
+        limit,
+        ...(textoBusqueda ? { query: textoBusqueda } : {}),
+        ...(estado ? { estado } : {}),
+      }
       const [productos, total] = await Promise.all([
-        repositorio.listar({ page, limit }),
-        repositorio.contar(),
+        repositorio.listar(filtros),
+        repositorio.contar(filtros),
       ])
 
       return {

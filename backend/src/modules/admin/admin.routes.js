@@ -53,18 +53,24 @@ export function crearRouterAdmin({
     async (request, response, next) => {
       const page = leerEnteroPositivo(request.query.page, 1)
       const limit = leerEnteroPositivo(request.query.limit, 20, 100)
+      const estado = typeof request.query.estado === 'string' ? request.query.estado : undefined
+      const query = typeof request.query.q === 'string' ? request.query.q : ''
 
-      if (page === null || limit === null) {
+      if (
+        page === null ||
+        limit === null ||
+        (estado !== undefined && !['BORRADOR', 'PUBLICADO', 'ARCHIVADO'].includes(estado))
+      ) {
         return response.status(400).json({
           error: {
             code: 'INVALID_QUERY_PARAM',
-            message: 'page debe ser positivo y limit debe estar entre 1 y 100.',
+            message: 'page debe ser positivo, limit debe estar entre 1 y 100 y estado debe ser válido.',
           },
         })
       }
 
       try {
-        return response.json(await servicio.listarProductosAdmin({ page, limit }))
+        return response.json(await servicio.listarProductosAdmin({ page, limit, query, estado }))
       } catch (error) {
         return next(error)
       }

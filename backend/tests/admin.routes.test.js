@@ -60,21 +60,29 @@ test('GET /api/admin/productos devuelve el listado administrativo paginado', asy
       next()
     },
     servicio: {
-      async listarProductosAdmin({ page, limit }) {
-        return { data: [{ id: 'producto-1', estado: 'ARCHIVADO' }], meta: { page, limit, total: 1, totalPages: 1 } }
+      async listarProductosAdmin({ page, limit, query, estado }) {
+        return { data: [{ id: 'producto-1', estado, query }], meta: { page, limit, total: 1, totalPages: 1 } }
       },
     },
   }))
 
-  const response = await request(app).get('/api/admin/productos?page=2&limit=10')
+  const response = await request(app).get('/api/admin/productos?page=2&limit=10&q=cafe&estado=ARCHIVADO')
 
   assert.equal(response.status, 200)
   assert.deepEqual(response.body.meta, { page: 2, limit: 10, total: 1, totalPages: 1 })
   assert.equal(response.body.data[0].estado, 'ARCHIVADO')
+  assert.equal(response.body.data[0].query, 'cafe')
 })
 
 test('GET /api/admin/productos rechaza paginación inválida', async () => {
   const response = await request(crearAppAdmin()).get('/api/admin/productos?limit=0')
+
+  assert.equal(response.status, 400)
+  assert.equal(response.body.error.code, 'INVALID_QUERY_PARAM')
+})
+
+test('GET /api/admin/productos rechaza un estado desconocido', async () => {
+  const response = await request(crearAppAdmin()).get('/api/admin/productos?estado=ELIMINADO')
 
   assert.equal(response.status, 400)
   assert.equal(response.body.error.code, 'INVALID_QUERY_PARAM')

@@ -3,8 +3,10 @@ import assert from 'node:assert/strict'
 import { crearServicioProductosAdmin } from '../src/modules/admin/admin-productos.service.js'
 
 test('listarProductos entrega un resumen paginado que incluye borradores', async () => {
+  let filtrosRecibidos
   const repositorio = {
-    async listar() {
+    async listar(filtros) {
+      filtrosRecibidos = filtros
       return [{
         id: 'producto-1', sku: 'ACE-001', slug: 'aceite', nombre: 'Aceite', precio: 7990,
         stock: 0, estado: 'BORRADOR', destacado: false,
@@ -23,6 +25,21 @@ test('listarProductos entrega un resumen paginado que incluye borradores', async
   assert.equal(resultado.data[0].estado, 'BORRADOR')
   assert.deepEqual(resultado.data[0].imagen, {
     url: 'https://ejemplo.test/aceite.webp', alt: 'Aceite',
+  })
+  assert.deepEqual(filtrosRecibidos, { page: 1, limit: 20 })
+})
+
+test('listarProductos normaliza la búsqueda y filtra por estado editorial', async () => {
+  let filtrosRecibidos
+  const servicio = crearServicioProductosAdmin({
+    async listar(filtros) { filtrosRecibidos = filtros; return [] },
+    async contar() { return 0 },
+  })
+
+  await servicio.listarProductos({ query: '  CAFÉ  ', estado: 'BORRADOR' })
+
+  assert.deepEqual(filtrosRecibidos, {
+    page: 1, limit: 20, query: 'cafe', estado: 'BORRADOR',
   })
 })
 

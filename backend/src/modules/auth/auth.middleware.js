@@ -44,3 +44,20 @@ export function crearRequerirSesion(servicio = { obtenerSesionActiva }) {
 }
 
 export const requerirSesion = crearRequerirSesion()
+
+// Este middleware siempre se usa después de requerirSesion: el rol viene de
+// la sesión validada en PostgreSQL, nunca de un campo enviado por el cliente.
+export function requerirRoles(...rolesPermitidos) {
+  return (request, response, next) => {
+    if (!request.usuario || !rolesPermitidos.includes(request.usuario.rol)) {
+      return response.status(403).json({
+        error: {
+          code: 'FORBIDDEN',
+          message: 'No tienes permisos para realizar esta acción.',
+        },
+      })
+    }
+
+    return next()
+  }
+}

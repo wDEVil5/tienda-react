@@ -23,6 +23,7 @@
  * @property {Object|null}   oferta         - Promoción vigente cuando la fuente la conoce.
  * @property {string}        sku           - Código visible para inventario y administración.
  * @property {number}        stock         - Unidades disponibles informadas por la API.
+ * @property {string|null}   fechaVencimiento - Fecha ISO para productos perecibles.
  */
 
 /**
@@ -82,5 +83,6 @@ export function normalizarProductoApi(producto) {
     oferta: producto.oferta ?? null,
     sku: producto.sku ?? producto.id,
     stock: producto.stock,
+    fechaVencimiento: producto.fechaVencimiento ?? null,
   };
 }

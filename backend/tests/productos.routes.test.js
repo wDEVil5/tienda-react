@@ -102,6 +102,7 @@ test('GET /api/productos/:slug devuelve el detalle publicado', async () => {
   assert.equal(response.body.data.precio, 7990)
   assert.equal(response.body.data.precioAnterior, 10653)
   assert.equal(response.body.data.oferta?.porcentajeDescuento, 25)
+  assert.equal(response.body.data.fechaVencimiento, "2027-01-31T00:00:00.000Z")
 })
 
 test('GET /api/productos/:slug responde 404 cuando el producto no está publicado', async () => {

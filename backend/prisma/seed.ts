@@ -21,6 +21,7 @@ const catalogoInicial = [
     contenidoCantidad: 500,
     contenidoUnidad: "ml",
     pesoDespachoGramos: 700,
+    fechaVencimiento: new Date("2027-01-31T00:00:00.000Z"),
     categoria: { nombre: "Despensa", slug: "despensa" },
     marca: { nombre: "Valle Oliva", slug: "valle-oliva" },
     imagenes: [
@@ -44,6 +45,7 @@ const catalogoInicial = [
     contenidoCantidad: 250,
     contenidoUnidad: "g",
     pesoDespachoGramos: 300,
+    fechaVencimiento: new Date("2027-03-31T00:00:00.000Z"),
     categoria: { nombre: "Despensa", slug: "despensa" },
     marca: { nombre: "Café del Barrio", slug: "cafe-del-barrio" },
     imagenes: [
@@ -67,6 +69,7 @@ const catalogoInicial = [
     contenidoCantidad: 1,
     contenidoUnidad: "L",
     pesoDespachoGramos: 1100,
+    fechaVencimiento: new Date("2026-10-15T00:00:00.000Z"),
     categoria: { nombre: "Lácteos", slug: "lacteos" },
     marca: { nombre: "Campo Sur", slug: "campo-sur" },
     imagenes: [
@@ -115,6 +118,7 @@ const catalogoInicial = [
     contenidoUnidad: "g",
     pesoDespachoGramos: 300,
     alertaStockBajo: 4,
+    fechaVencimiento: new Date("2026-08-20T00:00:00.000Z"),
     categoria: { nombre: "Lácteos", slug: "lacteos" },
     marca: { nombre: "Campo Sur", slug: "campo-sur" },
     imagenes: [
@@ -190,6 +194,7 @@ async function sembrarCatalogo() {
       contenidoCantidad: item.contenidoCantidad,
       contenidoUnidad: item.contenidoUnidad,
       pesoDespachoGramos: item.pesoDespachoGramos,
+      fechaVencimiento: item.fechaVencimiento ?? null,
       categoria: { connect: { slug: item.categoria.slug } },
       marca: { connect: { slug: item.marca.slug } },
     };

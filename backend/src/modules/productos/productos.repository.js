@@ -68,6 +68,7 @@ function crearProductoPublico(producto) {
         }
       : null,
     stock: producto.stock,
+    fechaVencimiento: producto.fechaVencimiento,
     categoria: producto.categoria,
     marca: producto.marca,
     imagenes: producto.imagenes.map((imagen) => ({

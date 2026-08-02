@@ -58,6 +58,7 @@ model Producto {
   contenidoCantidad   Decimal? @map("contenido_cantidad") @db.Decimal(10, 3)
   contenidoUnidad     String?  @map("contenido_unidad") @db.VarChar(20)
   pesoDespachoGramos  Int?     @map("peso_despacho_gramos")
+  fechaVencimiento    DateTime? @map("fecha_vencimiento") @db.Date
 
   categoriaId String    @map("categoria_id") @db.Uuid
   marcaId     String    @map("marca_id") @db.Uuid

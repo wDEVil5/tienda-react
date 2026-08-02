@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { cerrarSesion, iniciarSesion, obtenerSesionActiva } from './auth.service.js'
 import { crearRequerirSesion } from './auth.middleware.js'
+import { crearLimitadorIntentosLogin } from './limite-intentos.js'
 
 const DURACION_COOKIE_SESION_MS = 7 * 24 * 60 * 60 * 1000
 
@@ -15,11 +16,11 @@ export function crearRouterAuth(servicio = {
   iniciarSesion,
   obtenerSesionActiva,
   cerrarSesion,
-}) {
+}, { limitarLogin = crearLimitadorIntentosLogin() } = {}) {
   const authRouter = Router()
   const requerirSesion = crearRequerirSesion(servicio)
 
-  authRouter.post('/login', async (request, response, next) => {
+  authRouter.post('/login', limitarLogin, async (request, response, next) => {
     const { email, contrasena } = leerCredenciales(request.body)
 
     if (!email || !contrasena || email.length > 255) {

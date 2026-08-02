@@ -51,6 +51,36 @@ test('POST /api/pedidos crea el pedido y responde 201 con su contrato', async ()
   assert.equal(recibido.modalidad, 'RETIRO')
 })
 
+test('POST /api/pedidos/cotizar responde 200 con los totales', async () => {
+  const app = crearApp({
+    async cotizarPedido() {
+      return {
+        items: [{ nombre: 'Café', sku: 'CAFE', cantidad: 1, precioNormal: 5490, precioFinal: 5490, subtotal: 5490 }],
+        subtotal: 5490, descuento: 0, costoEnvio: 2990, total: 8480,
+      }
+    },
+  })
+
+  const response = await request(app)
+    .post('/api/pedidos/cotizar')
+    .send({ modalidad: 'DESPACHO', comuna: 'Providencia', items: [{ productoId, cantidad: 1 }] })
+
+  assert.equal(response.status, 200)
+  assert.equal(response.body.data.total, 8480)
+  assert.equal(response.body.data.costoEnvio, 2990)
+})
+
+test('POST /api/pedidos/cotizar responde 422 ante datos inválidos', async () => {
+  const app = crearApp({ async cotizarPedido() { throw new Error('no debería llamarse') } })
+
+  const response = await request(app)
+    .post('/api/pedidos/cotizar')
+    .send({ modalidad: 'RETIRO', items: [] })
+
+  assert.equal(response.status, 422)
+  assert.equal(response.body.error.code, 'INVALID_QUOTE_DATA')
+})
+
 test('POST /api/pedidos responde 422 ante datos inválidos', async () => {
   const app = crearApp({
     async crearPedido() {

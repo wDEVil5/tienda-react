@@ -1,6 +1,6 @@
 import { Router } from 'express'
-import { crearPedido, ErrorPedido } from './pedidos.service.js'
-import { validarPedidoNuevo } from './pedidos.validacion.js'
+import { crearPedido, cotizarPedido, ErrorPedido } from './pedidos.service.js'
+import { validarCotizacion, validarPedidoNuevo } from './pedidos.validacion.js'
 
 // Contrato de SALIDA del pedido recién creado: campos intencionales para la
 // pantalla de confirmación. No se filtran ids internos de ítems ni timestamps
@@ -42,8 +42,35 @@ function formatearPedido(pedido) {
   }
 }
 
-export function crearRouterPedidos({ servicio = { crearPedido } } = {}) {
+export function crearRouterPedidos({ servicio = { crearPedido, cotizarPedido } } = {}) {
   const pedidosRouter = Router()
+
+  // Cotización: montos calculados en el servidor sin crear el pedido. La usa el
+  // resumen del checkout para mostrar el envío antes de confirmar.
+  pedidosRouter.post('/cotizar', async (request, response, next) => {
+    const validacion = validarCotizacion(request.body)
+    if (!validacion.success) {
+      return response.status(422).json({
+        error: {
+          code: 'INVALID_QUOTE_DATA',
+          message: 'Revisa el pedido a cotizar.',
+          fields: validacion.error.issues.map((issue) => issue.path.join('.')),
+        },
+      })
+    }
+
+    try {
+      const cotizacion = await servicio.cotizarPedido(validacion.data)
+      return response.json({ data: cotizacion })
+    } catch (error) {
+      if (error instanceof ErrorPedido) {
+        return response.status(409).json({
+          error: { code: error.code, message: error.message },
+        })
+      }
+      return next(error)
+    }
+  })
 
   pedidosRouter.post('/', async (request, response, next) => {
     const validacion = validarPedidoNuevo(request.body)

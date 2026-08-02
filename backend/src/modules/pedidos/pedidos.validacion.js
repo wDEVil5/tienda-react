@@ -64,6 +64,28 @@ export function validarPedidoNuevo(datos) {
   return esquemaPedidoNuevo.safeParse(datos)
 }
 
+// Cotización: calcula montos sin crear el pedido. Solo necesita qué se compra y,
+// para el envío, la comuna (opcional: sin ella se estima con la tarifa base). No
+// pide datos de contacto ni dirección completa.
+export const esquemaCotizacion = z
+  .object({
+    modalidad: z.enum(['RETIRO', 'DESPACHO']),
+    comuna: z.string().trim().min(2).max(80).optional(),
+    items: z
+      .array(esquemaItem)
+      .min(1)
+      .max(50)
+      .refine(
+        (items) => new Set(items.map((item) => item.productoId)).size === items.length,
+        'No repitas el mismo producto; usa la cantidad.',
+      ),
+  })
+  .strict()
+
+export function validarCotizacion(datos) {
+  return esquemaCotizacion.safeParse(datos)
+}
+
 // Cambio de estado desde el panel: el estado debe ser uno válido; la nota es
 // opcional (queda registrada en el evento). Que la transición sea permitida lo
 // decide el servicio con la máquina de estados, no esta validación de forma.

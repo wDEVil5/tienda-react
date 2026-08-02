@@ -30,6 +30,48 @@ function calcularLinea(producto, cantidad) {
   }
 }
 
+// Construye las líneas a partir de la entrada validada y los productos del
+// repositorio. Valida existencia siempre; el stock solo al crear (una cotización
+// no necesita disponibilidad). Compartido por crearPedido y cotizarPedido.
+function construirLineas(entrada, productos, { validarStock }) {
+  const porId = new Map(productos.map((producto) => [producto.id, producto]))
+
+  return entrada.items.map((item) => {
+    const producto = porId.get(item.productoId)
+    if (!producto) {
+      throw new ErrorPedido(
+        'PRODUCT_NOT_AVAILABLE',
+        'Uno de los productos ya no está disponible.',
+      )
+    }
+
+    if (validarStock) {
+      // Chequeo optimista (la reserva atómica definitiva ocurre en la transacción).
+      const disponible = producto.stock - producto.stockReservado
+      if (item.cantidad > disponible) {
+        throw new ErrorPedido(
+          'INSUFFICIENT_STOCK',
+          `No hay stock suficiente de ${producto.nombre}.`,
+        )
+      }
+    }
+
+    return calcularLinea(producto, item.cantidad)
+  })
+}
+
+// total = subtotal (a precio normal) - descuento + envío. Reproduce el resumen
+// del checkout y garantiza que Σ(item.subtotal) + envío === total.
+function calcularTotales({ modalidad, comuna }, items) {
+  const subtotal = items.reduce((suma, item) => suma + item.precioNormal * item.cantidad, 0)
+  const descuento = items.reduce(
+    (suma, item) => suma + (item.precioNormal - item.precioFinal) * item.cantidad,
+    0,
+  )
+  const costoEnvio = calcularCostoEnvio({ modalidad, comuna, subtotal })
+  return { subtotal, descuento, costoEnvio, total: subtotal - descuento + costoEnvio }
+}
+
 // Resumen para el listado del panel: lo justo para una fila (incluye conteos
 // de productos y unidades, y la comuna solo si es despacho).
 function crearResumenPedido(pedido) {
@@ -94,51 +136,16 @@ function crearDetallePedido(pedido) {
 export function crearServicioPedidos(repositorio = repositorioPedidos) {
   return {
     async crearPedido(entrada, ahora = new Date()) {
-      const ids = entrada.items.map((item) => item.productoId)
-      const productos = await repositorio.obtenerParaPedido(ids, ahora)
-      const porId = new Map(productos.map((producto) => [producto.id, producto]))
-
       // Se recalcula TODO con la verdad del servidor; nada de montos del cliente.
-      const items = entrada.items.map((item) => {
-        const producto = porId.get(item.productoId)
-
-        // El repositorio solo devuelve publicados: si falta, no está disponible.
-        if (!producto) {
-          throw new ErrorPedido(
-            'PRODUCT_NOT_AVAILABLE',
-            'Uno de los productos ya no está disponible.',
-          )
-        }
-
-        // Chequeo optimista de stock (el disponible descuenta lo ya reservado).
-        // La reserva definitiva y atómica ocurre en la transacción del repositorio.
-        const disponible = producto.stock - producto.stockReservado
-        if (item.cantidad > disponible) {
-          throw new ErrorPedido(
-            'INSUFFICIENT_STOCK',
-            `No hay stock suficiente de ${producto.nombre}.`,
-          )
-        }
-
-        return calcularLinea(producto, item.cantidad)
-      })
-
-      // Totales: subtotal a precio normal, descuento acumulado y envío por reglas.
-      // total = subtotal - descuento + envío (reproduce el resumen del checkout).
-      const subtotal = items.reduce(
-        (suma, item) => suma + item.precioNormal * item.cantidad,
-        0,
+      const productos = await repositorio.obtenerParaPedido(
+        entrada.items.map((item) => item.productoId),
+        ahora,
       )
-      const descuento = items.reduce(
-        (suma, item) => suma + (item.precioNormal - item.precioFinal) * item.cantidad,
-        0,
+      const items = construirLineas(entrada, productos, { validarStock: true })
+      const totales = calcularTotales(
+        { modalidad: entrada.modalidad, comuna: entrada.direccion?.comuna },
+        items,
       )
-      const costoEnvio = calcularCostoEnvio({
-        modalidad: entrada.modalidad,
-        comuna: entrada.direccion?.comuna,
-        subtotal,
-      })
-      const total = subtotal - descuento + costoEnvio
 
       const pedido = {
         estado: ESTADO_INICIAL,
@@ -151,13 +158,36 @@ export function crearServicioPedidos(repositorio = repositorioPedidos) {
         dirComuna: entrada.direccion?.comuna ?? null,
         dirRegion: entrada.direccion?.region ?? null,
         dirInstrucciones: entrada.direccion?.instrucciones ?? null,
-        subtotal,
-        descuento,
-        costoEnvio,
-        total,
+        ...totales,
       }
 
       return repositorio.crearPedidoTransaccional({ pedido, items })
+    },
+
+    // Calcula los montos vigentes SIN crear el pedido ni reservar stock. Alimenta
+    // el resumen del checkout, manteniendo al servidor como fuente de la verdad.
+    async cotizarPedido(entrada, ahora = new Date()) {
+      const productos = await repositorio.obtenerParaPedido(
+        entrada.items.map((item) => item.productoId),
+        ahora,
+      )
+      const items = construirLineas(entrada, productos, { validarStock: false })
+      const totales = calcularTotales(
+        { modalidad: entrada.modalidad, comuna: entrada.comuna },
+        items,
+      )
+
+      return {
+        items: items.map((item) => ({
+          nombre: item.nombre,
+          sku: item.sku,
+          cantidad: item.cantidad,
+          precioNormal: item.precioNormal,
+          precioFinal: item.precioFinal,
+          subtotal: item.subtotal,
+        })),
+        ...totales,
+      }
     },
 
     async listarPedidos({ page = 1, limit = 20, estado } = {}) {
@@ -209,6 +239,7 @@ export function crearServicioPedidos(repositorio = repositorioPedidos) {
 const servicioPedidos = crearServicioPedidos()
 
 export const crearPedido = servicioPedidos.crearPedido
+export const cotizarPedido = servicioPedidos.cotizarPedido
 export const listarPedidos = servicioPedidos.listarPedidos
 export const obtenerDetallePedido = servicioPedidos.obtenerDetallePedido
 export const cambiarEstadoPedido = servicioPedidos.cambiarEstadoPedido

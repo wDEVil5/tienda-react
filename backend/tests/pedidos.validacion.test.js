@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { validarPedidoNuevo } from '../src/modules/pedidos/pedidos.validacion.js'
+import { validarCotizacion, validarPedidoNuevo } from '../src/modules/pedidos/pedidos.validacion.js'
 
 const productoId = '550e8400-e29b-41d4-a716-446655440000'
 const otroProductoId = '550e8400-e29b-41d4-a716-446655440001'
@@ -101,4 +101,22 @@ test('rechaza una cantidad no positiva', () => {
   })
 
   assert.equal(resultado.success, false)
+})
+
+test('cotización: acepta despacho con comuna y retiro sin comuna', () => {
+  assert.equal(
+    validarCotizacion({ modalidad: 'DESPACHO', comuna: 'Providencia', items: [{ productoId, cantidad: 1 }] }).success,
+    true,
+  )
+  assert.equal(
+    validarCotizacion({ modalidad: 'RETIRO', items: [{ productoId, cantidad: 1 }] }).success,
+    true,
+  )
+})
+
+test('cotización: no pide contacto y rechaza campos de más', () => {
+  assert.equal(
+    validarCotizacion({ modalidad: 'RETIRO', items: [{ productoId, cantidad: 1 }], total: 1 }).success,
+    false,
+  )
 })

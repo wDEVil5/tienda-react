@@ -126,6 +126,38 @@ test('rechaza si la cantidad supera el stock disponible', async () => {
   )
 })
 
+test('cotizarPedido calcula totales sin validar stock', async () => {
+  const agotado = {
+    id: 'p1', sku: 'LE', nombre: 'Leche', precio: 4290, precioAnterior: 5720,
+    stock: 0, stockReservado: 0, tieneOfertaVigente: true, // sin stock
+  }
+  const { repositorio } = crearRepoFalso([agotado])
+  const servicio = crearServicioPedidos(repositorio)
+
+  // cantidad 1 con stock 0: crear fallaría, pero cotizar solo calcula montos.
+  const cotizacion = await servicio.cotizarPedido({
+    modalidad: 'DESPACHO',
+    comuna: 'Providencia',
+    items: [{ productoId: 'p1', cantidad: 1 }],
+  })
+
+  assert.equal(cotizacion.subtotal, 5720)
+  assert.equal(cotizacion.descuento, 1430)
+  assert.equal(cotizacion.costoEnvio, 2990)
+  assert.equal(cotizacion.total, 7280)
+  assert.equal(cotizacion.items[0].subtotal, 4290)
+})
+
+test('cotizarPedido rechaza un producto no disponible', async () => {
+  const { repositorio } = crearRepoFalso([])
+  const servicio = crearServicioPedidos(repositorio)
+
+  await assert.rejects(
+    servicio.cotizarPedido({ modalidad: 'RETIRO', items: [{ productoId: 'fantasma', cantidad: 1 }] }),
+    (error) => error instanceof ErrorPedido && error.code === 'PRODUCT_NOT_AVAILABLE',
+  )
+})
+
 test('delega la persistencia en una sola transacción y devuelve su resultado', async () => {
   const { repositorio, captura } = crearRepoFalso([CAFE])
   const servicio = crearServicioPedidos(repositorio)

@@ -53,3 +53,29 @@ test('POST /api/auth/login no revela si una credencial es incorrecta', async () 
     },
   })
 })
+
+test('GET /api/auth/me devuelve el usuario de una sesión válida', async () => {
+  const app = crearAppAuth({
+    async obtenerSesionActiva(token) {
+      return token === 'sesion-valida'
+        ? { usuario: { id: 'usuario-1', nombre: 'Wilnes', email: 'wilnes@example.test', rol: 'ADMIN' } }
+        : null
+    },
+  })
+
+  const response = await request(app)
+    .get('/api/auth/me')
+    .set('Cookie', 'sesion_admin=sesion-valida')
+
+  assert.equal(response.status, 200)
+  assert.equal(response.body.data.usuario.rol, 'ADMIN')
+})
+
+test('GET /api/auth/me rechaza una solicitud sin sesión', async () => {
+  const app = crearAppAuth({ async obtenerSesionActiva() { return null } })
+
+  const response = await request(app).get('/api/auth/me')
+
+  assert.equal(response.status, 401)
+  assert.equal(response.body.error.code, 'AUTH_REQUIRED')
+})

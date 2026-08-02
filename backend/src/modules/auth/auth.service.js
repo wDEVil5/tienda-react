@@ -36,9 +36,21 @@ export function crearServicioAuth(repositorio = repositorioAuth) {
 
       return { token, expiraEn, usuario: crearUsuarioPublico(usuario) }
     },
+
+    async obtenerSesionActiva(token, ahora = new Date()) {
+      if (!token) return null
+
+      const sesion = await repositorio.buscarSesionActivaPorHash(
+        hashTokenSesion(token),
+        ahora,
+      )
+
+      return sesion ? { usuario: crearUsuarioPublico(sesion.usuario) } : null
+    },
   }
 }
 
 const servicioAuth = crearServicioAuth()
 
 export const iniciarSesion = servicioAuth.iniciarSesion
+export const obtenerSesionActiva = servicioAuth.obtenerSesionActiva

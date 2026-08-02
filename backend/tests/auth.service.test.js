@@ -64,3 +64,32 @@ test('iniciarSesion no crea sesión con una contraseña incorrecta', async () =>
   assert.equal(resultado, null)
   assert.equal(creoSesion, false)
 })
+
+test('obtenerSesionActiva devuelve solo el usuario de una sesión vigente', async () => {
+  let hashConsultado
+  let fechaConsultada
+  const repositorio = {
+    async buscarSesionActivaPorHash(hash, ahora) {
+      hashConsultado = hash
+      fechaConsultada = ahora
+      return {
+        usuario: {
+          id: 'usuario-1',
+          nombre: 'Wilnes',
+          email: 'wilnes@example.test',
+          rol: 'ADMIN',
+          passwordHash: 'no-debe-salir',
+        },
+      }
+    },
+  }
+  const servicio = crearServicioAuth(repositorio)
+  const ahora = new Date('2026-08-02T12:00:00.000Z')
+
+  const resultado = await servicio.obtenerSesionActiva('token-de-prueba', ahora)
+
+  assert.equal(hashConsultado, hashTokenSesion('token-de-prueba'))
+  assert.equal(fechaConsultada, ahora)
+  assert.equal(resultado.usuario.email, 'wilnes@example.test')
+  assert.equal('passwordHash' in resultado.usuario, false)
+})

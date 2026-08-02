@@ -13,6 +13,18 @@ export function crearRepositorioAuth(cliente = prisma) {
         data: { usuarioId, tokenHash, expiraEn },
       })
     },
+
+    buscarSesionActivaPorHash(tokenHash, ahora) {
+      return cliente.sesion.findFirst({
+        where: {
+          tokenHash,
+          revocadaEn: null,
+          expiraEn: { gt: ahora },
+          usuario: { activo: true },
+        },
+        include: { usuario: true },
+      })
+    },
   }
 }
 

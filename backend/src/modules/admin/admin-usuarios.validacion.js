@@ -9,6 +9,17 @@ export const esquemaUsuarioNuevoAdmin = z.object({
   ),
 }).strict()
 
+export const esquemaContrasenaUsuarioAdmin = z.object({
+  contrasena: z.string().min(12).max(128).refine(
+    (valor) => valor.trim().length > 0,
+    'La contraseña no puede estar vacía.',
+  ),
+}).strict()
+
 export function validarUsuarioNuevoAdmin(datos) {
   return esquemaUsuarioNuevoAdmin.safeParse(datos)
+}
+
+export function validarContrasenaUsuarioAdmin(datos) {
+  return esquemaContrasenaUsuarioAdmin.safeParse(datos)
 }

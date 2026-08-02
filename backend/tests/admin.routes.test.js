@@ -103,6 +103,31 @@ test('PATCH /api/admin/usuarios/:id/activar recupera un operador', async () => {
   assert.equal(response.body.data.activo, true)
 })
 
+test('PATCH /api/admin/usuarios/:id/contrasena restablece la clave de un operador', async () => {
+  let contrasenaRecibida
+  const app = express()
+  app.use(express.json())
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'ADMIN' }
+      next()
+    },
+    servicio: {
+      async restablecerContrasenaUsuarioAdmin(_id, contrasena) {
+        contrasenaRecibida = contrasena
+        return { id: 'usuario-2', activo: true }
+      },
+    },
+  }))
+
+  const response = await request(app)
+    .patch('/api/admin/usuarios/usuario-2/contrasena')
+    .send({ contrasena: 'Una frase segura 2026' })
+
+  assert.equal(response.status, 200)
+  assert.equal(contrasenaRecibida, 'Una frase segura 2026')
+})
+
 test('GET /api/admin/productos/:id informa cuando no existe', async () => {
   const response = await request(crearAppAdmin()).get('/api/admin/productos/producto-1')
 

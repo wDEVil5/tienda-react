@@ -52,8 +52,12 @@ import {
   crearOperadorAdmin,
   desactivarUsuarioAdmin,
   listarUsuariosAdmin,
+  restablecerContrasenaUsuarioAdmin,
 } from './admin-usuarios.service.js'
-import { validarUsuarioNuevoAdmin } from './admin-usuarios.validacion.js'
+import {
+  validarContrasenaUsuarioAdmin,
+  validarUsuarioNuevoAdmin,
+} from './admin-usuarios.validacion.js'
 
 export function crearRouterAdmin({
   servicio = {
@@ -83,6 +87,7 @@ export function crearRouterAdmin({
     listarUsuariosAdmin,
     desactivarUsuarioAdmin,
     activarUsuarioAdmin,
+    restablecerContrasenaUsuarioAdmin,
     desactivarPromocionAdmin,
     obtenerPromocionParaEdicionAdmin,
   },
@@ -158,6 +163,38 @@ export function crearRouterAdmin({
     async (request, response, next) => {
       try {
         const usuario = await servicio.activarUsuarioAdmin(request.params.id)
+        if (!usuario) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_USER_NOT_FOUND', message: 'No encontramos el usuario solicitado.' },
+          })
+        }
+        return response.json({ data: usuario })
+      } catch (error) {
+        if (error instanceof ErrorUsuarioAdmin) {
+          return response.status(422).json({ error: { code: error.code, message: error.message } })
+        }
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.patch(
+    '/usuarios/:id/contrasena',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      const validacion = validarContrasenaUsuarioAdmin(request.body)
+      if (!validacion.success) {
+        return response.status(422).json({
+          error: { code: 'INVALID_PASSWORD_DATA', message: 'Revisa la nueva contraseña.' },
+        })
+      }
+
+      try {
+        const usuario = await servicio.restablecerContrasenaUsuarioAdmin(
+          request.params.id,
+          validacion.data.contrasena,
+        )
         if (!usuario) {
           return response.status(404).json({
             error: { code: 'ADMIN_USER_NOT_FOUND', message: 'No encontramos el usuario solicitado.' },

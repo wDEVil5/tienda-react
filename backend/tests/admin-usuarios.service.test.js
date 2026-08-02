@@ -39,6 +39,23 @@ test('activarUsuario recupera un operador sin restaurar sesiones previas', async
   assert.equal(usuario.activo, true)
 })
 
+test('restablecerContrasena actualiza el hash y revoca sesiones del operador', async () => {
+  let datosActualizacion
+  const servicio = crearServicioUsuariosAdmin({
+    async obtenerPorId() { return { id: 'usuario-2', rol: 'OPERADOR' } },
+    async actualizarContrasenaPorId(...argumentos) {
+      datosActualizacion = argumentos
+      return { id: 'usuario-2', activo: true }
+    },
+  }, async () => 'hash-nuevo')
+
+  await servicio.restablecerContrasena('usuario-2', 'Una frase segura 2026')
+
+  assert.equal(datosActualizacion[0], 'usuario-2')
+  assert.equal(datosActualizacion[1], 'hash-nuevo')
+  assert.ok(datosActualizacion[2] instanceof Date)
+})
+
 test('listarUsuarios no expone hashes ni sesiones', async () => {
   const servicio = crearServicioUsuariosAdmin({
     async listar() {

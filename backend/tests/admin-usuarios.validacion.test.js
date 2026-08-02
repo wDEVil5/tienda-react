@@ -1,6 +1,9 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { validarUsuarioNuevoAdmin } from '../src/modules/admin/admin-usuarios.validacion.js'
+import {
+  validarContrasenaUsuarioAdmin,
+  validarUsuarioNuevoAdmin,
+} from '../src/modules/admin/admin-usuarios.validacion.js'
 
 test('valida un operador nuevo y normaliza su correo', () => {
   const resultado = validarUsuarioNuevoAdmin({
@@ -17,4 +20,9 @@ test('rechaza una contraseña de operador demasiado corta', () => {
   })
 
   assert.equal(resultado.success, false)
+})
+
+test('valida el contrato reducido para restablecer una contraseña', () => {
+  assert.equal(validarContrasenaUsuarioAdmin({ contrasena: 'Una frase segura 2026' }).success, true)
+  assert.equal(validarContrasenaUsuarioAdmin({ contrasena: 'corta-123' }).success, false)
 })

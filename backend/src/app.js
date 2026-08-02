@@ -3,13 +3,15 @@ import express from 'express'
 import categoriasRouter from './modules/categorias/categorias.routes.js'
 import marcasRouter from './modules/marcas/marcas.routes.js'
 import productosRouter from './modules/productos/productos.routes.js'
+import authRouter from './modules/auth/auth.routes.js'
 
 // La aplicación se exporta separada del servidor para probar rutas sin abrir un puerto.
 const app = express()
 const frontendOrigin = process.env.FRONTEND_ORIGIN || 'http://localhost:5173'
 
 // Solo el frontend configurado puede leer respuestas de la API desde el navegador.
-app.use(cors({ origin: frontendOrigin }))
+app.use(cors({ origin: frontendOrigin, credentials: true }))
+app.use(express.json({ limit: '20kb' }))
 
 // Cada respuesta incluye un identificador para poder rastrear una petición en logs futuros.
 app.use((_request, response, next) => {
@@ -27,6 +29,7 @@ app.get('/api/health', (_request, response) => {
 app.use('/api/productos', productosRouter)
 app.use('/api/categorias', categoriasRouter)
 app.use('/api/marcas', marcasRouter)
+app.use('/api/auth', authRouter)
 
 // Debe ir después de las rutas: responde de forma predecible cuando la API no reconoce una URL.
 app.use((request, response) => {

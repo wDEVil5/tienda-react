@@ -10,6 +10,27 @@ datasource db {
   provider = "postgresql"
 }
 
+// El rol se guarda junto al usuario; nunca debe confiarse en un valor enviado
+// por el navegador al solicitar una acción administrativa.
+enum RolUsuario {
+  ADMIN
+  OPERADOR
+}
+
+model Usuario {
+  id           String     @id @default(uuid()) @db.Uuid
+  nombre       String     @db.VarChar(120)
+  email        String     @unique @db.VarChar(255)
+  passwordHash String     @map("password_hash") @db.VarChar(255)
+  rol          RolUsuario @default(OPERADOR)
+  activo       Boolean    @default(true)
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  @@index([activo])
+  @@map("usuarios")
+}
+
 model Categoria {
   id        String     @id @default(uuid()) @db.Uuid
   nombre    String     @unique @db.VarChar(100)

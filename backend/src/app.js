@@ -4,6 +4,7 @@ import categoriasRouter from './modules/categorias/categorias.routes.js'
 import marcasRouter from './modules/marcas/marcas.routes.js'
 import productosRouter from './modules/productos/productos.routes.js'
 import pedidosRouter from './modules/pedidos/pedidos.routes.js'
+import reglasRouter from './modules/reglas/reglas.routes.js'
 import authRouter from './modules/auth/auth.routes.js'
 import adminRouter from './modules/admin/admin.routes.js'
 
@@ -32,6 +33,7 @@ app.use('/api/productos', productosRouter)
 app.use('/api/categorias', categoriasRouter)
 app.use('/api/marcas', marcasRouter)
 app.use('/api/pedidos', pedidosRouter)
+app.use('/api/reglas', reglasRouter)
 app.use('/api/auth', authRouter)
 app.use('/api/admin', adminRouter)
 

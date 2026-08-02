@@ -326,6 +326,10 @@
   font-weight: 600;
 }
 
+.barraEnvio {
+  margin-bottom: var(--e-lg);
+}
+
 .montos {
   display: flex;
   flex-direction: column;
@@ -390,18 +394,72 @@
 .confBotonPrimario { padding: 13px 24px; border: 0; border-radius: var(--radio-control); background: var(--color-acento); color: #fff; cursor: pointer; font: inherit; font-size: 14px; font-weight: 600; }
 .confNota { color: var(--color-texto-tenue); font-size: 12px; line-height: 1.5; }
 
+/* Tablet: por debajo de ~900px ya no caben dos columnas cómodas (el resumen
+   pide 350px y el formulario queda estrecho, con los selects y nombres
+   cortados). Apilamos a una sola columna PERO conservamos el cuadro: sigue
+   siendo una tarjeta centrada. El formulario, ya a ancho completo, deja de
+   apretar los campos de la fila (comuna/región, nombre/teléfono). */
+@media (max-width: 899px) {
+  .layout {
+    grid-template-columns: 1fr;
+    gap: var(--e-xl);
+  }
+  .resumen { position: static; }
+}
+
 @media (max-width: 767px) {
-  .checkout { border-radius: 14px; }
-  .cabecera { min-height: 58px; margin-bottom: var(--e-xl); }
+  /* El cuadro contenedor desaparece: el checkout ocupa todo el ancho y se apoya
+     directo sobre el fondo de la página, sin borde, radio ni sombra. */
+  .checkout {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    overflow: visible;
+    padding-bottom: clamp(28px, 9vw, 40px);
+  }
+
+  /* Cabecera como barra superior: blanca, de borde a borde y con su propio
+     gutter de 16px (el padding externo lo quitamos en App.module.css). */
+  .cabecera {
+    min-height: 56px;
+    margin-bottom: var(--e-lg);
+    padding: 0 16px;
+  }
   .logo { font-size: 17px; }
   .progreso { gap: 7px; }
   .pasoProgreso { gap: 4px; font-size: 11px; }
   .pasoProgreso + .pasoProgreso::before { width: 12px; margin-right: 3px; }
   .pasoNumero { width: 19px; height: 19px; font-size: 10px; }
-  .layout { grid-template-columns: 1fr; }
+
+  /* Una sola columna con gutter propio de 16px. El resumen deja de ser sticky
+     y fluye tras el formulario. */
+  .layout {
+    grid-template-columns: 1fr;
+    gap: var(--e-lg);
+    padding: 0 16px;
+  }
   .resumen { position: static; }
   .opciones,
   .fila2 { grid-template-columns: 1fr; }
+
+  /* Los avisos toman el mismo gutter de 16px; el error de envío vive dentro del
+     resumen, así que solo anula su margen lateral heredado del desktop. */
+  .aviso { margin: 0 16px var(--e-md); }
+  .errorEnvio { margin-left: 0; margin-right: 0; }
+
+  /* Tarjetas y resumen más compactos en pantallas angostas. */
+  .tarjeta,
+  .resumen { padding: 20px 18px; }
+
+  /* Sin scroll anidado: en móvil molesta un scroll dentro del scroll de la
+     página. Dejamos que la lista de productos crezca y se oculta el degradado. */
+  .items {
+    max-height: none;
+    overflow: visible;
+    padding-bottom: 0;
+  }
+  .itemsViewport::after { content: none; }
+
   .itemFila { grid-template-columns: 68px minmax(0, 1fr); gap: 14px; }
   .itemImagen { width: 68px; height: 68px; }
   .itemNombre,

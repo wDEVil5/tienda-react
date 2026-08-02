@@ -4,7 +4,9 @@ import styles from "./Carrito.module.css";
 import ImagenProducto from "./ImagenProducto.jsx";
 import ControlCantidad from "./ControlCantidad.jsx";
 import Toast from "./Toast.jsx";
+import BarraEnvioGratis from "./BarraEnvioGratis.jsx";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
+import { useReglas } from "../context/ReglasContext.jsx";
 
 function Carrito({ onCerrar, abierto, productos, onVerOfertas, onVerCatalogo }) {
   const {
@@ -17,6 +19,7 @@ function Carrito({ onCerrar, abierto, productos, onVerOfertas, onVerCatalogo }) 
   } = useCarritoContext();
 
   const navegar = useNavigate();
+  const { envioGratisDesde } = useReglas();
 
   // Refs: cajas que persisten entre renders sin causar re-render.
   const drawerRef = useRef(null); // handle al <aside> del DOM
@@ -125,6 +128,16 @@ function Carrito({ onCerrar, abierto, productos, onVerOfertas, onVerCatalogo }) 
           <i className="fa-solid fa-xmark"></i>
         </button>
       </div>
+
+      {/* Barra de incentivo: cuánto falta para el despacho gratis. Usa el
+          subtotal a precio normal (subtotalOriginal), igual que la regla del
+          servidor. Solo con ítems en el carrito. */}
+      {carrito.length > 0 && (
+        <BarraEnvioGratis
+          subtotal={subtotalOriginal}
+          umbral={envioGratisDesde}
+        />
+      )}
 
       {/* Zona 2: lista scrolleable */}
       <div className={styles.lista}>
@@ -247,7 +260,14 @@ function Carrito({ onCerrar, abierto, productos, onVerOfertas, onVerCatalogo }) 
             )}
             <div className={styles.filaResumen}>
               <span>Envío</span>
-              <span className={styles.envioGratis}>Gratis</span>
+              {/* Sin modalidad elegida aún: solo afirmamos "Gratis" cuando el
+                  subtotal ya supera el umbral (coincide con la barra de arriba);
+                  si no, el costo real se decide en el checkout. */}
+              {subtotalOriginal >= envioGratisDesde ? (
+                <span className={styles.envioGratis}>Gratis</span>
+              ) : (
+                <span>Se calcula al pagar</span>
+              )}
             </div>
           </div>
 

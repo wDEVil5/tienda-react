@@ -59,3 +59,22 @@ export function calcularCostoEnvio({ modalidad, comuna, subtotal }) {
   // Falla ruidosamente en vez de asumir "gratis" ante un valor inesperado.
   throw new Error(`Modalidad de entrega desconocida: ${modalidad}`)
 }
+
+/**
+ * Forma pública de las reglas comerciales, para que el frontend no las duplique
+ * (barra "te faltan $X para envío gratis", tarifas por comuna, corte de retiro).
+ * Es la fuente de verdad: cambia el valor aquí y la UI lo refleja vía
+ * `GET /api/reglas`. Las tarifas se entregan como lista para ser serializables.
+ */
+export function reglasPublicas() {
+  return {
+    envioGratisDesde: ENVIO_GRATIS_DESDE,
+    tarifaBase: TARIFA_BASE,
+    corteRetiroHoy: CORTE_RETIRO_HOY,
+    preparacionHoras: PREPARACION_HORAS,
+    tarifasComuna: Object.entries(TARIFAS_COMUNA).map(([comuna, valor]) => ({
+      comuna,
+      ...valor,
+    })),
+  }
+}

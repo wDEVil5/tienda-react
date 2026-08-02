@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./Checkout.module.css";
 import ImagenProducto from "../components/ImagenProducto.jsx";
+import BarraEnvioGratis from "../components/BarraEnvioGratis.jsx";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
+import { useReglas } from "../context/ReglasContext.jsx";
 import {
   cotizarPedido,
   crearPedido,
@@ -28,6 +30,7 @@ const DIRECCION_INICIAL = {
 
 function Checkout() {
   const { carrito, vaciarCarrito } = useCarritoContext();
+  const { envioGratisDesde } = useReglas();
   const navegar = useNavigate();
 
   const [contacto, setContacto] = useState(CONTACTO_INICIAL);
@@ -478,6 +481,17 @@ function Checkout() {
             <span>Código de descuento</span>
             <span className={styles.cuponAccion}>Aplicar</span>
           </div>
+
+          {/* Incentivo de envío: solo en despacho (el retiro es gratis siempre).
+              Usa el subtotal a precio normal, igual que la regla del servidor. */}
+          {modalidad === "DESPACHO" && (
+            <BarraEnvioGratis
+              subtotal={resumen.subtotal}
+              umbral={envioGratisDesde}
+              variante="caja"
+              className={styles.barraEnvio}
+            />
+          )}
 
           <div className={styles.montos}>
             <div className={styles.filaMonto}>

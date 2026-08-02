@@ -1,0 +1,48 @@
+.barra {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 20px;
+  background: var(--color-crudo);
+}
+
+/* Banda: ocupa el ancho del contenedor (carrito) y cierra con una hairline. */
+.banda {
+  border-bottom: 1px solid var(--color-borde-2);
+}
+
+/* Caja: tarjeta redondeada para insertarla dentro del resumen del checkout. */
+.caja {
+  border-radius: var(--radio-caja);
+}
+
+.texto {
+  color: var(--color-texto-2);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.texto strong {
+  font-weight: 600;
+}
+
+.pista {
+  height: 6px;
+  border-radius: var(--radio-pill);
+  background: var(--color-borde);
+  overflow: hidden;
+}
+
+.relleno {
+  width: var(--progreso, 0%);
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-acento);
+  transition: width 0.3s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .relleno {
+    transition: none;
+  }
+}

@@ -72,6 +72,26 @@ test('GET /api/admin/promociones entrega campañas al personal autorizado', asyn
   assert.equal(response.body.data[0].productosAsignados, 3)
 })
 
+test('GET /api/admin/promociones/:id entrega una campaña para edición', async () => {
+  const app = express()
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'OPERADOR' }
+      next()
+    },
+    servicio: {
+      async obtenerPromocionParaEdicionAdmin() {
+        return { id: 'promo-1', productoIds: ['producto-1'] }
+      },
+    },
+  }))
+
+  const response = await request(app).get('/api/admin/promociones/promo-1')
+
+  assert.equal(response.status, 200)
+  assert.deepEqual(response.body.data.productoIds, ['producto-1'])
+})
+
 test('POST /api/admin/promociones crea una campaña validada e inactiva', async () => {
   let datosRecibidos
   const app = express()

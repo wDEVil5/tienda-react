@@ -2,6 +2,23 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { crearServicioPromocionesAdmin } from '../src/modules/admin/admin-promociones.service.js'
 
+test('obtenerPromocionParaEdicion incluye sus productos asignados', async () => {
+  const servicio = crearServicioPromocionesAdmin({
+    async obtenerPorId() {
+      return {
+        id: 'promo-1', nombre: 'Ofertas', slug: 'ofertas', porcentajeDescuento: 25,
+        empiezaEn: new Date('2026-08-01T00:00:00.000Z'), terminaEn: new Date('2026-08-08T00:00:00.000Z'),
+        activa: false, productos: [{ productoId: 'producto-1' }, { productoId: 'producto-2' }],
+        _count: { productos: 2 },
+      }
+    },
+  })
+
+  const promocion = await servicio.obtenerPromocionParaEdicion('promo-1')
+
+  assert.deepEqual(promocion.productoIds, ['producto-1', 'producto-2'])
+})
+
 test('activarPromocion publica una campaña sin solapamientos', async () => {
   let datosActualizacion
   const servicio = crearServicioPromocionesAdmin({

@@ -36,8 +36,20 @@ function crearResumenPromocion(promocion) {
   }
 }
 
+function crearPromocionParaEdicion(promocion) {
+  return {
+    ...crearResumenPromocion(promocion),
+    productoIds: promocion.productos.map(({ productoId }) => productoId),
+  }
+}
+
 export function crearServicioPromocionesAdmin(repositorio = repositorioPromocionesAdmin) {
   return {
+    async obtenerPromocionParaEdicion(id) {
+      const promocion = await repositorio.obtenerPorId(id)
+      return promocion ? crearPromocionParaEdicion(promocion) : null
+    },
+
     async desactivarPromocion(id) {
       const promocion = await repositorio.obtenerPorId(id)
       if (!promocion) return null
@@ -104,3 +116,4 @@ export const listarPromocionesAdmin = servicioPromocionesAdmin.listarPromociones
 export const crearPromocionAdmin = servicioPromocionesAdmin.crearPromocion
 export const activarPromocionAdmin = servicioPromocionesAdmin.activarPromocion
 export const desactivarPromocionAdmin = servicioPromocionesAdmin.desactivarPromocion
+export const obtenerPromocionParaEdicionAdmin = servicioPromocionesAdmin.obtenerPromocionParaEdicion

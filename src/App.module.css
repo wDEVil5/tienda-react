@@ -15,6 +15,11 @@
     flex: 1;                    /* empuja el footer hacia abajo */
 }
 
+.contenidoCheckout {
+  max-width: 1400px;
+  padding: clamp(24px, 4vw, 52px);
+}
+
 .cargando {
   flex: 1;
   display: grid;

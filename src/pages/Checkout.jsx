@@ -29,7 +29,7 @@ function Checkout() {
   const navegar = useNavigate();
 
   const [contacto, setContacto] = useState(CONTACTO_INICIAL);
-  const [modalidad, setModalidad] = useState("RETIRO");
+  const [modalidad, setModalidad] = useState("DESPACHO");
   const [direccion, setDireccion] = useState(DIRECCION_INICIAL);
 
   // Cotización del servidor (fuente de verdad de los montos). Mientras no llega
@@ -188,13 +188,14 @@ function Checkout() {
   if (pedidoConfirmado) {
     return (
       <section className={styles.checkout}>
+        <CabeceraCheckout pasoActual={3} />
         <div className={styles.confirmacion}>
           <span className={styles.check} aria-hidden="true">
             <i className="fa-solid fa-check"></i>
           </span>
-          <h1 className={styles.confTitulo}>¡Pedido confirmado!</h1>
+          <h1 className={styles.confTitulo}>Recibimos tu pedido</h1>
           <p className={styles.confSub}>
-            Te enviamos el detalle a{" "}
+            Te enviaremos el detalle a{" "}
             <strong>{pedidoConfirmado.contacto?.email}</strong>.
           </p>
 
@@ -228,7 +229,8 @@ function Checkout() {
             </button>
           </div>
           <p className={styles.confNota}>
-            El pago con pasarela (Mercado Pago / tarjetas) llega en la Fase 4.
+            El pedido quedó pendiente de confirmación. El pago en línea llegará en
+            una etapa posterior.
           </p>
         </div>
       </section>
@@ -239,6 +241,7 @@ function Checkout() {
   if (carrito.length === 0) {
     return (
       <section className={styles.checkout}>
+        <CabeceraCheckout pasoActual={1} />
         <h1 className={styles.titulo}>Finalizar compra</h1>
         <p className={styles.vacio}>Tu carrito está vacío.</p>
         <Link to="/#catalogo" className={styles.volver}>
@@ -251,10 +254,7 @@ function Checkout() {
   // --- Formulario + resumen ---
   return (
     <section className={styles.checkout}>
-      <Link to="/" className={styles.volver}>
-        ← Seguir comprando
-      </Link>
-      <h1 className={styles.titulo}>Finalizar compra</h1>
+      <CabeceraCheckout pasoActual={1} />
 
       {!conApi && (
         <p className={styles.aviso}>
@@ -267,34 +267,22 @@ function Checkout() {
       <div className={styles.layout}>
         {/* Columna izquierda: formulario */}
         <form className={styles.form} onSubmit={manejarEnvio} noValidate>
-          <fieldset className={styles.tarjeta}>
-            <legend className={styles.tarjetaTitulo}>Datos de contacto</legend>
-            <div className={styles.grupo}>
-              <label className={styles.label} htmlFor="nombre">
-                Nombre y apellido
-              </label>
-              <input
-                id="nombre"
-                className={styles.input}
-                type="text"
-                autoComplete="name"
-                value={contacto.nombre}
-                onChange={cambiarContacto("nombre")}
-                required
-              />
-            </div>
+          <section className={styles.tarjeta} aria-labelledby="titulo-contacto">
+            <h2 id="titulo-contacto" className={styles.tarjetaTitulo}>
+              Datos de contacto
+            </h2>
             <div className={styles.fila2}>
               <div className={styles.grupo}>
-                <label className={styles.label} htmlFor="email">
-                  Email
+                <label className={styles.label} htmlFor="nombre">
+                  Nombre y apellido
                 </label>
                 <input
-                  id="email"
+                  id="nombre"
                   className={styles.input}
-                  type="email"
-                  autoComplete="email"
-                  value={contacto.email}
-                  onChange={cambiarContacto("email")}
+                  type="text"
+                  autoComplete="name"
+                  value={contacto.nombre}
+                  onChange={cambiarContacto("nombre")}
                   required
                 />
               </div>
@@ -314,28 +302,27 @@ function Checkout() {
                 />
               </div>
             </div>
-          </fieldset>
-
-          <fieldset className={styles.tarjeta}>
-            <legend className={styles.tarjetaTitulo}>Entrega</legend>
-            <div className={styles.opciones}>
-              <label
-                className={`${styles.opcion} ${
-                  modalidad === "RETIRO" ? styles.opcionActiva : ""
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="modalidad"
-                  value="RETIRO"
-                  checked={modalidad === "RETIRO"}
-                  onChange={() => setModalidad("RETIRO")}
-                />
-                <span className={styles.opcionTexto}>
-                  <span className={styles.opcionNombre}>Retiro en tienda</span>
-                  <span className={styles.opcionDetalle}>Gratis · hoy mismo</span>
-                </span>
+            <div className={styles.grupo}>
+              <label className={styles.label} htmlFor="email">
+                Email
               </label>
+              <input
+                id="email"
+                className={styles.input}
+                type="email"
+                autoComplete="email"
+                value={contacto.email}
+                onChange={cambiarContacto("email")}
+                required
+              />
+            </div>
+          </section>
+
+          <section className={styles.tarjeta} aria-labelledby="titulo-entrega">
+            <h2 id="titulo-entrega" className={styles.tarjetaTitulo}>
+              Entrega
+            </h2>
+            <div className={styles.opciones}>
               <label
                 className={`${styles.opcion} ${
                   modalidad === "DESPACHO" ? styles.opcionActiva : ""
@@ -349,11 +336,30 @@ function Checkout() {
                   onChange={() => setModalidad("DESPACHO")}
                 />
                 <span className={styles.opcionTexto}>
-                  <span className={styles.opcionNombre}>Despacho a domicilio</span>
-                  <span className={styles.opcionDetalle}>
-                    Gratis sobre $20.000
-                  </span>
+                  <span className={styles.opcionNombre}>Despacho a domicilio · 24–48 h</span>
+                  <span className={styles.opcionDetalle}>El plazo se confirma según tu comuna</span>
                 </span>
+                <strong className={styles.opcionValor}>
+                  {cotizando ? "…" : envioTexto}
+                </strong>
+              </label>
+              <label
+                className={`${styles.opcion} ${
+                  modalidad === "RETIRO" ? styles.opcionActiva : ""
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="modalidad"
+                  value="RETIRO"
+                  checked={modalidad === "RETIRO"}
+                  onChange={() => setModalidad("RETIRO")}
+                />
+                <span className={styles.opcionTexto}>
+                  <span className={styles.opcionNombre}>Retiro en tienda · listo en ~2 h</span>
+                  <span className={styles.opcionDetalle}>Av. Matta 980, Santiago</span>
+                </span>
+                <strong className={styles.opcionValor}>Gratis</strong>
               </label>
             </div>
 
@@ -361,13 +367,14 @@ function Checkout() {
               <div className={styles.direccion}>
                 <div className={styles.grupo}>
                   <label className={styles.label} htmlFor="calle">
-                    Calle y número
+                    Dirección
                   </label>
                   <input
                     id="calle"
                     className={styles.input}
                     type="text"
                     autoComplete="address-line1"
+                    placeholder="Av. Providencia 1234, depto 502"
                     value={direccion.calle}
                     onChange={cambiarDireccion("calle")}
                     required
@@ -375,73 +382,65 @@ function Checkout() {
                 </div>
                 <div className={styles.fila2}>
                   <div className={styles.grupo}>
-                    <label className={styles.label} htmlFor="depto">
-                      Depto / casa <span className={styles.opcional}>(opcional)</span>
-                    </label>
-                    <input
-                      id="depto"
-                      className={styles.input}
-                      type="text"
-                      value={direccion.depto}
-                      onChange={cambiarDireccion("depto")}
-                    />
-                  </div>
-                  <div className={styles.grupo}>
                     <label className={styles.label} htmlFor="comuna">
                       Comuna
                     </label>
-                    <input
+                    <select
                       id="comuna"
                       className={styles.input}
-                      type="text"
-                      list="comunas-sugeridas"
                       autoComplete="address-level2"
                       value={direccion.comuna}
                       onChange={cambiarDireccion("comuna")}
                       required
-                    />
-                    <datalist id="comunas-sugeridas">
+                    >
+                      <option value="" disabled>Selecciona comuna</option>
                       {COMUNAS_SUGERIDAS.map((comuna) => (
-                        <option key={comuna} value={comuna} />
+                        <option key={comuna} value={comuna}>
+                          {comuna}
+                        </option>
                       ))}
-                    </datalist>
+                    </select>
+                  </div>
+                  <div className={styles.grupo}>
+                    <label className={styles.label} htmlFor="region">
+                      Región
+                    </label>
+                    <select
+                      id="region"
+                      className={styles.input}
+                      autoComplete="address-level1"
+                      value={direccion.region}
+                      onChange={cambiarDireccion("region")}
+                      required
+                    >
+                      <option value="Región Metropolitana">Región Metropolitana</option>
+                    </select>
                   </div>
                 </div>
                 <div className={styles.grupo}>
-                  <label className={styles.label} htmlFor="region">
-                    Región
-                  </label>
-                  <input
-                    id="region"
-                    className={styles.input}
-                    type="text"
-                    autoComplete="address-level1"
-                    value={direccion.region}
-                    onChange={cambiarDireccion("region")}
-                    required
-                  />
-                </div>
-                <div className={styles.grupo}>
                   <label className={styles.label} htmlFor="instrucciones">
-                    Instrucciones para la entrega{" "}
+                    Instrucciones para el repartidor{" "}
                     <span className={styles.opcional}>(opcional)</span>
                   </label>
-                  <textarea
+                  <input
                     id="instrucciones"
-                    className={styles.textarea}
-                    rows={2}
+                    className={styles.input}
+                    type="text"
+                    placeholder="Dejar en conserjería"
                     value={direccion.instrucciones}
                     onChange={cambiarDireccion("instrucciones")}
                   />
                 </div>
               </div>
             )}
-          </fieldset>
+          </section>
         </form>
 
         {/* Columna derecha: resumen sticky */}
         <aside className={styles.resumen}>
-          <h2 className={styles.resumenTitulo}>Tu pedido</h2>
+          <h2 className={styles.resumenTitulo}>
+            Tu pedido ({carrito.reduce((total, item) => total + item.cantidad, 0)})
+          </h2>
 
           <ul className={styles.items}>
             {carrito.map((item) => (
@@ -452,15 +451,29 @@ function Checkout() {
                   alt={item.nombre}
                 />
                 <div className={styles.itemInfo}>
-                  <span className={styles.itemNombre}>{item.nombre}</span>
-                  <span className={styles.itemCantidad}>× {item.cantidad}</span>
+                  <div className={styles.itemEncabezado}>
+                    <span className={styles.itemNombre} title={item.nombre}>
+                      {item.nombre}
+                    </span>
+                    <span className={styles.itemCantidad}>× {item.cantidad}</span>
+                  </div>
+                  <span className={styles.itemPrecio}>
+                    {clp(item.precio * item.cantidad)}
+                  </span>
                 </div>
-                <span className={styles.itemPrecio}>
-                  {clp(item.precio * item.cantidad)}
-                </span>
               </li>
             ))}
           </ul>
+
+          {/* Presentación del futuro cupón. No es un control interactivo hasta
+              que el backend defina validación, vigencia y efecto en totales. */}
+          <div
+            className={styles.cupon}
+            aria-label="Código de descuento, disponible próximamente"
+          >
+            <span>Código de descuento</span>
+            <span className={styles.cuponAccion}>Aplicar</span>
+          </div>
 
           <div className={styles.montos}>
             <div className={styles.filaMonto}>
@@ -510,7 +523,7 @@ function Checkout() {
             onClick={manejarEnvio}
             disabled={!puedeEnviar}
           >
-            {enviando ? "Confirmando…" : "Confirmar pedido"}
+            {enviando ? "Continuando…" : "Continuar al pago"}
           </button>
 
           <p className={styles.notaServidor}>
@@ -520,6 +533,36 @@ function Checkout() {
         </aside>
       </div>
     </section>
+  );
+}
+
+function CabeceraCheckout({ pasoActual }) {
+  const pasos = ["Envío", "Pago", "Listo"];
+
+  return (
+    <header className={styles.cabecera}>
+      <Link to="/" className={styles.logo} aria-label="Volver a Sumarket Express">
+        Sumarket<em>Express</em>
+      </Link>
+      <ol className={styles.progreso} aria-label={`Paso ${pasoActual} de 3`}>
+        {pasos.map((nombre, indice) => {
+          const numero = indice + 1;
+          const completado = numero < pasoActual;
+          const activo = numero === pasoActual;
+          return (
+            <li
+              key={nombre}
+              className={`${styles.pasoProgreso} ${
+                activo ? styles.pasoActivo : completado ? styles.pasoCompletado : ""
+              }`}
+            >
+              <span className={styles.pasoNumero}>{completado ? "✓" : numero}</span>
+              <span>{nombre}</span>
+            </li>
+          );
+        })}
+      </ol>
+    </header>
   );
 }
 

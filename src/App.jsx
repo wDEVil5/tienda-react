@@ -203,6 +203,7 @@ function App() {
   // effect y descarta datos obsoletos si la fuente vuelve al fallback.
   const ofertasDestacadasVigentes =
     fuenteCatalogo === "api" ? ofertasDestacadas : null;
+  const esCheckout = ubicacion.pathname === "/checkout";
 
   //early return
   if (cargando) {
@@ -231,20 +232,24 @@ function App() {
 
   return (
     <div className={styles.app}>
-      <Header
-        busqueda={busqueda}
-        onBuscar={setBusqueda}
-        productos={productos}
-        onSeleccionarCategoria={setCategoria}
-        onCambiarSoloOfertas={setSoloOfertas}
-        onVerOfertas={verOfertas}
-        onVerCatalogo={verCatalogo}
-        onAbrirCarrito={() => setCarritoAbierto(true)}
-      />
+      {!esCheckout && (
+        <Header
+          busqueda={busqueda}
+          onBuscar={setBusqueda}
+          productos={productos}
+          onSeleccionarCategoria={setCategoria}
+          onCambiarSoloOfertas={setSoloOfertas}
+          onVerOfertas={verOfertas}
+          onVerCatalogo={verCatalogo}
+          onAbrirCarrito={() => setCarritoAbierto(true)}
+        />
+      )}
 
       {/* Contenido centrado: el Header y el Footer viven FUERA de este
           envoltorio para poder ir de borde a borde . */}
-      <main className={styles.contenido}>
+      <main
+        className={`${styles.contenido} ${esCheckout ? styles.contenidoCheckout : ""}`}
+      >
         <Routes>
           <Route
             path="/"
@@ -304,14 +309,16 @@ function App() {
           drawer, solo el aviso con "Deshacer" se mueve al carrito. */}
       <Toast ocultarSiAccion={carritoAbierto} />
 
-      <Footer
-        productos={productos}
-        onBuscar={setBusqueda}
-        onSeleccionarCategoria={setCategoria}
-        onCambiarSoloOfertas={setSoloOfertas}
-        onVerOfertas={verOfertas}
-        onVerCatalogo={verCatalogo}
-      />
+      {!esCheckout && (
+        <Footer
+          productos={productos}
+          onBuscar={setBusqueda}
+          onSeleccionarCategoria={setCategoria}
+          onCambiarSoloOfertas={setSoloOfertas}
+          onVerOfertas={verOfertas}
+          onVerCatalogo={verCatalogo}
+        />
+      )}
     </div>
   );
 }

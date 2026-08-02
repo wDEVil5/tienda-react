@@ -40,6 +40,31 @@ export function crearRepositorioProductosAdmin(cliente = prisma) {
     contarEtiquetas(ids) {
       return cliente.etiqueta.count({ where: { id: { in: ids } } })
     },
+
+    async reemplazarImagenesPorProducto(id, imagenes) {
+      return cliente.$transaction(async (transaccion) => {
+        const producto = await transaccion.producto.findUnique({
+          where: { id },
+          select: { id: true },
+        })
+        if (!producto) return null
+
+        await transaccion.productoImagen.deleteMany({ where: { productoId: id } })
+        await transaccion.productoImagen.createMany({
+          data: imagenes.map((imagen, indice) => ({
+            productoId: id,
+            url: imagen.url,
+            textoAlternativo: imagen.textoAlternativo ?? null,
+            orden: indice + 1,
+          })),
+        })
+
+        return transaccion.producto.findUnique({
+          where: { id },
+          include: incluirProductoAdmin,
+        })
+      })
+    },
   }
 }
 

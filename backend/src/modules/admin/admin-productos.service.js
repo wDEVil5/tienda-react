@@ -132,6 +132,11 @@ export function crearServicioProductosAdmin(repositorio = repositorioProductosAd
       )
       return crearProductoParaEdicion(productoActualizado)
     },
+
+    async reemplazarImagenesProducto(id, imagenes) {
+      const producto = await repositorio.reemplazarImagenesPorProducto(id, imagenes)
+      return producto ? crearProductoParaEdicion(producto) : null
+    },
   }
 }
 
@@ -139,3 +144,4 @@ const servicioProductosAdmin = crearServicioProductosAdmin()
 
 export const obtenerProductoParaEdicion = servicioProductosAdmin.obtenerProductoParaEdicion
 export const actualizarProducto = servicioProductosAdmin.actualizarProducto
+export const reemplazarImagenesProducto = servicioProductosAdmin.reemplazarImagenesProducto

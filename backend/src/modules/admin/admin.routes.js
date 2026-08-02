@@ -4,11 +4,17 @@ import {
   ErrorProductoAdmin,
   actualizarProducto,
   obtenerProductoParaEdicion,
+  reemplazarImagenesProducto,
 } from './admin-productos.service.js'
 import { validarCambiosProductoAdmin } from './admin-productos.validacion.js'
+import { validarImagenesProductoAdmin } from './admin-imagenes.validacion.js'
 
 export function crearRouterAdmin({
-  servicio = { obtenerProductoParaEdicion, actualizarProducto },
+  servicio = {
+    obtenerProductoParaEdicion,
+    actualizarProducto,
+    reemplazarImagenesProducto,
+  },
   middlewareSesion = requerirSesion,
 } = {}) {
   const adminRouter = Router()
@@ -77,6 +83,43 @@ export function crearRouterAdmin({
             error: { code: error.code, message: error.message },
           })
         }
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.put(
+    '/productos/:id/imagenes',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      const validacion = validarImagenesProductoAdmin(request.body)
+      if (!validacion.success) {
+        return response.status(422).json({
+          error: {
+            code: 'INVALID_PRODUCT_IMAGES',
+            message: 'Revisa las imágenes del producto.',
+          },
+        })
+      }
+
+      try {
+        const producto = await servicio.reemplazarImagenesProducto(
+          request.params.id,
+          validacion.data.imagenes,
+        )
+
+        if (!producto) {
+          return response.status(404).json({
+            error: {
+              code: 'ADMIN_PRODUCT_NOT_FOUND',
+              message: 'No encontramos el producto solicitado.',
+            },
+          })
+        }
+
+        return response.json({ data: producto })
+      } catch (error) {
         return next(error)
       }
     },

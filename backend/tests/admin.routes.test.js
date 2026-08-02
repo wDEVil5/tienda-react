@@ -68,3 +68,28 @@ test('PATCH /api/admin/productos/:id rechaza datos inválidos antes de guardar',
   assert.equal(response.status, 422)
   assert.equal(response.body.error.code, 'INVALID_PRODUCT_DATA')
 })
+
+test('PUT /api/admin/productos/:id/imagenes reemplaza la galería validada', async () => {
+  let imagenesRecibidas
+  const app = express()
+  app.use(express.json())
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'ADMIN' }
+      next()
+    },
+    servicio: {
+      async reemplazarImagenesProducto(_id, imagenes) {
+        imagenesRecibidas = imagenes
+        return { id: 'producto-1', imagenes }
+      },
+    },
+  }))
+
+  const response = await request(app)
+    .put('/api/admin/productos/producto-1/imagenes')
+    .send({ imagenes: [{ url: 'https://cdn.ejemplo.test/aceite.webp', textoAlternativo: 'Aceite' }] })
+
+  assert.equal(response.status, 200)
+  assert.equal(imagenesRecibidas.length, 1)
+})

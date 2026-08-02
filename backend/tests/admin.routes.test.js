@@ -52,6 +52,26 @@ test('GET /api/admin/referencias/producto entrega opciones para el editor', asyn
   assert.deepEqual(response.body, { data: { categorias: [], marcas: [], etiquetas: [] } })
 })
 
+test('GET /api/admin/promociones entrega campañas al personal autorizado', async () => {
+  const app = express()
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'OPERADOR' }
+      next()
+    },
+    servicio: {
+      async listarPromocionesAdmin() {
+        return { data: [{ id: 'promo-1', productosAsignados: 3 }] }
+      },
+    },
+  }))
+
+  const response = await request(app).get('/api/admin/promociones')
+
+  assert.equal(response.status, 200)
+  assert.equal(response.body.data[0].productosAsignados, 3)
+})
+
 test('GET /api/admin/productos devuelve el listado administrativo paginado', async () => {
   const app = express()
   app.use('/api/admin', crearRouterAdmin({

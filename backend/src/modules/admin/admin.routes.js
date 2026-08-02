@@ -38,6 +38,8 @@ import { asignarLogoMarcaAdmin } from './admin-marcas.service.js'
 import { recibirLogoMarca } from '../imagenes/imagenes.middleware.js'
 import { subirLogoMarca } from '../imagenes/imagenes.service.js'
 import { eliminarLogoMarca } from '../imagenes/imagenes.storage.js'
+import { ErrorEtiquetaAdmin, crearEtiquetaAdmin } from './admin-etiquetas.service.js'
+import { validarEtiquetaNuevaAdmin } from './admin-etiquetas.validacion.js'
 
 export function crearRouterAdmin({
   servicio = {
@@ -57,6 +59,7 @@ export function crearRouterAdmin({
     crearMarcaAdmin,
     asignarLogoMarcaAdmin,
     subirLogoMarca,
+    crearEtiquetaAdmin,
     desactivarPromocionAdmin,
     obtenerPromocionParaEdicionAdmin,
   },
@@ -142,6 +145,35 @@ export function crearRouterAdmin({
       } catch (error) {
         if (error instanceof ErrorImagen) {
           return response.status(422).json({ error: { code: error.code, message: error.message } })
+        }
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.post(
+    '/etiquetas',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      const validacion = validarEtiquetaNuevaAdmin(request.body)
+      if (!validacion.success) {
+        return response.status(422).json({
+          error: { code: 'INVALID_TAG_DATA', message: 'Revisa los datos de la etiqueta.' },
+        })
+      }
+
+      try {
+        const etiqueta = await servicio.crearEtiquetaAdmin(validacion.data)
+        return response.status(201).json({ data: etiqueta })
+      } catch (error) {
+        if (error instanceof ErrorEtiquetaAdmin) {
+          return response.status(422).json({ error: { code: error.code, message: error.message } })
+        }
+        if (error.code === 'P2002') {
+          return response.status(409).json({
+            error: { code: 'TAG_ALREADY_EXISTS', message: 'El nombre o slug de la etiqueta ya está en uso.' },
+          })
         }
         return next(error)
       }

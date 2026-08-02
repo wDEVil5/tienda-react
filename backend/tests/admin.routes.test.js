@@ -145,6 +145,30 @@ test('POST /api/admin/marcas/:id/logo sube y asigna un logo a la marca', async (
   assert.equal(response.body.data.logoUrl, 'https://cdn.ejemplo.test/logo.webp')
 })
 
+test('POST /api/admin/etiquetas crea una etiqueta reutilizable', async () => {
+  let datosRecibidos
+  const app = express()
+  app.use(express.json())
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'OPERADOR' }
+      next()
+    },
+    servicio: {
+      async crearEtiquetaAdmin(datos) {
+        datosRecibidos = datos
+        return { id: 'etiqueta-1', ...datos }
+      },
+    },
+  }))
+
+  const response = await request(app).post('/api/admin/etiquetas').send({ nombre: 'Vegano' })
+
+  assert.equal(response.status, 201)
+  assert.equal(datosRecibidos.nombre, 'Vegano')
+  assert.equal(response.body.data.id, 'etiqueta-1')
+})
+
 test('GET /api/admin/promociones/:id entrega una campaña para edición', async () => {
   const app = express()
   app.use('/api/admin', crearRouterAdmin({

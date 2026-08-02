@@ -28,6 +28,19 @@ export function crearServicioMarcasAdmin(
   almacenamiento = almacenamientoImagenes,
 ) {
   return {
+    async listarMarcas() {
+      const marcas = await repositorio.listar()
+      return {
+        data: marcas.map((marca) => ({
+          id: marca.id,
+          nombre: marca.nombre,
+          slug: marca.slug,
+          logoUrl: marca.logoUrl,
+          productosAsignados: marca._count.productos,
+        })),
+      }
+    },
+
     async asignarLogoMarca(id, logo) {
       const marcaActual = await repositorio.obtenerPorId(id)
       if (!marcaActual) return null
@@ -60,3 +73,4 @@ const servicioMarcasAdmin = crearServicioMarcasAdmin()
 
 export const crearMarcaAdmin = servicioMarcasAdmin.crearMarca
 export const asignarLogoMarcaAdmin = servicioMarcasAdmin.asignarLogoMarca
+export const listarMarcasAdmin = servicioMarcasAdmin.listarMarcas

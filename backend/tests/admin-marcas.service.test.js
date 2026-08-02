@@ -2,6 +2,23 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { crearServicioMarcasAdmin } from '../src/modules/admin/admin-marcas.service.js'
 
+test('listarMarcas incluye logo y productos asignados', async () => {
+  const servicio = crearServicioMarcasAdmin({
+    async listar() {
+      return [{
+        id: 'marca-1', nombre: 'Café', slug: 'cafe', logoUrl: 'https://cdn.test/logo.webp',
+        logoStorageKey: 'sumarket/marcas/cafe', _count: { productos: 2 },
+      }]
+    },
+  })
+
+  const resultado = await servicio.listarMarcas()
+
+  assert.deepEqual(resultado.data, [{
+    id: 'marca-1', nombre: 'Café', slug: 'cafe', logoUrl: 'https://cdn.test/logo.webp', productosAsignados: 2,
+  }])
+})
+
 test('crearMarca genera slug y no asigna un logo manualmente', async () => {
   let datosCreacion
   const servicio = crearServicioMarcasAdmin({

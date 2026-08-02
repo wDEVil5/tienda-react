@@ -38,7 +38,7 @@ import {
   listarCategoriasAdmin,
 } from './admin-categorias.service.js'
 import { validarCategoriaNuevaAdmin } from './admin-categorias.validacion.js'
-import { ErrorMarcaAdmin, crearMarcaAdmin } from './admin-marcas.service.js'
+import { ErrorMarcaAdmin, crearMarcaAdmin, listarMarcasAdmin } from './admin-marcas.service.js'
 import { validarMarcaNuevaAdmin } from './admin-marcas.validacion.js'
 import { asignarLogoMarcaAdmin } from './admin-marcas.service.js'
 import { recibirLogoMarca } from '../imagenes/imagenes.middleware.js'
@@ -66,6 +66,7 @@ export function crearRouterAdmin({
     desactivarCategoriaAdmin,
     activarCategoriaAdmin,
     crearMarcaAdmin,
+    listarMarcasAdmin,
     asignarLogoMarcaAdmin,
     subirLogoMarca,
     crearEtiquetaAdmin,
@@ -183,6 +184,19 @@ export function crearRouterAdmin({
             error: { code: 'BRAND_ALREADY_EXISTS', message: 'El nombre o slug de la marca ya está en uso.' },
           })
         }
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.get(
+    '/marcas',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (_request, response, next) => {
+      try {
+        return response.json(await servicio.listarMarcasAdmin())
+      } catch (error) {
         return next(error)
       }
     },

@@ -172,6 +172,26 @@ test('POST /api/admin/marcas crea una marca sin logo manual', async () => {
   assert.equal(response.body.data.logoUrl, null)
 })
 
+test('GET /api/admin/marcas incluye marcas aunque no tengan productos públicos', async () => {
+  const app = express()
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'OPERADOR' }
+      next()
+    },
+    servicio: {
+      async listarMarcasAdmin() {
+        return { data: [{ id: 'marca-1', productosAsignados: 0 }] }
+      },
+    },
+  }))
+
+  const response = await request(app).get('/api/admin/marcas')
+
+  assert.equal(response.status, 200)
+  assert.equal(response.body.data[0].productosAsignados, 0)
+})
+
 test('POST /api/admin/marcas/:id/logo sube y asigna un logo a la marca', async () => {
   const app = express()
   app.use('/api/admin', crearRouterAdmin({

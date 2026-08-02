@@ -2,6 +2,20 @@ import { prisma } from '../../lib/prisma.js'
 
 export function crearRepositorioMarcasAdmin(cliente = prisma) {
   return {
+    listar() {
+      return cliente.marca.findMany({
+        select: {
+          id: true,
+          nombre: true,
+          slug: true,
+          logoUrl: true,
+          logoStorageKey: true,
+          _count: { select: { productos: true } },
+        },
+        orderBy: { nombre: 'asc' },
+      })
+    },
+
     crear(datos) {
       return cliente.marca.create({
         data: datos,

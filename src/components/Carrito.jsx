@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import styles from "./Carrito.module.css";
 import ImagenProducto from "./ImagenProducto.jsx";
 import ControlCantidad from "./ControlCantidad.jsx";
@@ -15,6 +15,8 @@ function Carrito({ onCerrar, abierto, productos, onVerOfertas, onVerCatalogo }) 
     fijarCantidad,
     vaciarCarrito,
   } = useCarritoContext();
+
+  const navegar = useNavigate();
 
   // Refs: cajas que persisten entre renders sin causar re-render.
   const drawerRef = useRef(null); // handle al <aside> del DOM
@@ -256,8 +258,17 @@ function Carrito({ onCerrar, abierto, productos, onVerOfertas, onVerCatalogo }) 
             </span>
           </div>
 
-          {/* CTA principal. El checkout real lo hare en la Fase 4 (pagos). */}
-          <button className={styles.pagar}>Ir a pagar</button>
+          {/* Lleva al checkout (contacto → entrega → confirmación) cerrando el
+              drawer. El pago con pasarela llega en la Fase 4. */}
+          <button
+            className={styles.pagar}
+            onClick={() => {
+              onCerrar();
+              navegar("/checkout");
+            }}
+          >
+            Ir a pagar
+          </button>
 
           <div className={styles.accionesSec}>
             <button className={styles.seguir} onClick={onCerrar}>

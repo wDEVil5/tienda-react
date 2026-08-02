@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import Home from "./pages/Home.jsx";
 import ProductoDetalle from "./pages/ProductoDetalle.jsx";
+import Checkout from "./pages/Checkout.jsx";
 import Carrito from "./components/Carrito.jsx";
 import Toast from "./components/Toast.jsx";
 import styles from "./App.module.css";
@@ -272,6 +273,7 @@ function App() {
             path="/producto/:slug"
             element={<ProductoDetalle productos={productos} />}
           />
+          <Route path="/checkout" element={<Checkout />} />
         </Routes>
       </main>
 

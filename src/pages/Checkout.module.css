@@ -1,0 +1,42 @@
+.checkout {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: var(--e-2xl) 0;
+}
+
+.volver {
+  display: inline-block;
+  margin-bottom: var(--e-lg);
+  font-size: 13.5px;
+  color: var(--color-texto-suave);
+  text-decoration: none;
+}
+
+.volver:hover {
+  color: var(--color-texto);
+}
+
+.titulo {
+  font-family: var(--font-display);
+  font-size: 34px;
+  line-height: 1.1;
+  font-weight: 400;
+  color: var(--color-texto);
+  margin-bottom: var(--e-lg);
+}
+
+.vacio,
+.placeholder {
+  color: var(--color-texto-suave);
+  margin-bottom: var(--e-md);
+}
+
+.aviso {
+  padding: var(--e-md);
+  border-radius: var(--radio-caja);
+  background-color: var(--color-aviso-bg);
+  color: var(--color-aviso);
+  font-size: 13.5px;
+  line-height: 1.5;
+  margin-bottom: var(--e-lg);
+}

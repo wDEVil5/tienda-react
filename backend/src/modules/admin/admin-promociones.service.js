@@ -38,6 +38,14 @@ function crearResumenPromocion(promocion) {
 
 export function crearServicioPromocionesAdmin(repositorio = repositorioPromocionesAdmin) {
   return {
+    async desactivarPromocion(id) {
+      const promocion = await repositorio.obtenerPorId(id)
+      if (!promocion) return null
+
+      const actualizada = await repositorio.actualizarPorId(id, { activa: false })
+      return crearResumenPromocion(actualizada)
+    },
+
     async activarPromocion(id) {
       const promocion = await repositorio.obtenerPorId(id)
       if (!promocion) return null
@@ -95,3 +103,4 @@ const servicioPromocionesAdmin = crearServicioPromocionesAdmin()
 export const listarPromocionesAdmin = servicioPromocionesAdmin.listarPromociones
 export const crearPromocionAdmin = servicioPromocionesAdmin.crearPromocion
 export const activarPromocionAdmin = servicioPromocionesAdmin.activarPromocion
+export const desactivarPromocionAdmin = servicioPromocionesAdmin.desactivarPromocion

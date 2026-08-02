@@ -116,6 +116,22 @@ test('PATCH /api/admin/promociones/:id/activar activa una campaña sin conflicto
   assert.equal(response.body.data.activa, true)
 })
 
+test('PATCH /api/admin/promociones/:id/desactivar detiene una campaña existente', async () => {
+  const app = express()
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'ADMIN' }
+      next()
+    },
+    servicio: { async desactivarPromocionAdmin() { return { id: 'promo-1', activa: false } } },
+  }))
+
+  const response = await request(app).patch('/api/admin/promociones/promo-1/desactivar')
+
+  assert.equal(response.status, 200)
+  assert.equal(response.body.data.activa, false)
+})
+
 test('GET /api/admin/productos devuelve el listado administrativo paginado', async () => {
   const app = express()
   app.use('/api/admin', crearRouterAdmin({

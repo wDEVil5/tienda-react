@@ -21,6 +21,7 @@ import {
   ErrorPromocionAdmin,
   activarPromocionAdmin,
   crearPromocionAdmin,
+  desactivarPromocionAdmin,
   listarPromocionesAdmin,
 } from './admin-promociones.service.js'
 import { validarPromocionNuevaAdmin } from './admin-promociones.validacion.js'
@@ -38,6 +39,7 @@ export function crearRouterAdmin({
     listarPromocionesAdmin,
     crearPromocionAdmin,
     activarPromocionAdmin,
+    desactivarPromocionAdmin,
   },
   middlewareSesion = requerirSesion,
 } = {}) {
@@ -106,6 +108,25 @@ export function crearRouterAdmin({
         if (error instanceof ErrorPromocionAdmin) {
           return response.status(422).json({ error: { code: error.code, message: error.message } })
         }
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.patch(
+    '/promociones/:id/desactivar',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      try {
+        const promocion = await servicio.desactivarPromocionAdmin(request.params.id)
+        if (!promocion) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_PROMOTION_NOT_FOUND', message: 'No encontramos la promoción solicitada.' },
+          })
+        }
+        return response.json({ data: promocion })
+      } catch (error) {
         return next(error)
       }
     },

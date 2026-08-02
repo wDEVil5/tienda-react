@@ -29,6 +29,26 @@ test('activarPromocion publica una campaña sin solapamientos', async () => {
   assert.equal(promocion.activa, true)
 })
 
+test('desactivarPromocion conserva la campaña y detiene su efecto', async () => {
+  let datosActualizacion
+  const servicio = crearServicioPromocionesAdmin({
+    async obtenerPorId() { return { id: 'promo-1' } },
+    async actualizarPorId(_id, datos) {
+      datosActualizacion = datos
+      return {
+        id: 'promo-1', nombre: 'Ofertas', slug: 'ofertas', porcentajeDescuento: 25,
+        empiezaEn: new Date('2026-08-01T00:00:00.000Z'), terminaEn: new Date('2026-08-08T00:00:00.000Z'),
+        activa: false, _count: { productos: 1 },
+      }
+    },
+  })
+
+  const promocion = await servicio.desactivarPromocion('promo-1')
+
+  assert.deepEqual(datosActualizacion, { activa: false })
+  assert.equal(promocion.activa, false)
+})
+
 test('activarPromocion rechaza campañas que se solapan', async () => {
   const servicio = crearServicioPromocionesAdmin({
     async obtenerPorId() {

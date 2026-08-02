@@ -1,14 +1,18 @@
 import { Router } from 'express'
-import { reglasPublicas } from '../../lib/reglasTienda.js'
+import { obtenerReglas } from './reglas.service.js'
 
 const reglasRouter = Router()
 
-// Reglas comerciales públicas: umbral de envío gratis, tarifa base, tarifas por
-// comuna y corte de retiro. Fuente única en lib/reglasTienda.js; el frontend las
-// lee para la barra "faltan $X para envío gratis" sin escribir el umbral a mano.
-// Son constantes puras (no tocan la base), por eso la ruta es síncrona.
-reglasRouter.get('/', (_request, response) => {
-  response.json({ data: reglasPublicas() })
+// Reglas comerciales públicas (umbral de envío gratis, tarifa base, tarifas por
+// comuna, corte de retiro). Ahora se leen de la base (editable por el dueño);
+// si no hay configuración aún, el servicio cae en los valores por defecto. El
+// frontend las usa para la barra "faltan $X para envío gratis".
+reglasRouter.get('/', async (_request, response, next) => {
+  try {
+    return response.json({ data: await obtenerReglas() })
+  } catch (error) {
+    return next(error)
+  }
 })
 
 export default reglasRouter

@@ -66,6 +66,8 @@ import {
 } from '../pedidos/pedidos.service.js'
 import { validarCambioEstadoPedido } from '../pedidos/pedidos.validacion.js'
 import { ESTADOS_PEDIDO } from '../pedidos/pedidos.estados.js'
+import { actualizarReglas, obtenerReglas } from '../reglas/reglas.service.js'
+import { validarReglas } from '../reglas/reglas.validacion.js'
 
 export function crearRouterAdmin({
   servicio = {
@@ -101,6 +103,8 @@ export function crearRouterAdmin({
     listarPedidos,
     obtenerDetallePedido,
     cambiarEstadoPedido,
+    obtenerReglas,
+    actualizarReglas,
   },
   middlewareSesion = requerirSesion,
 } = {}) {
@@ -868,6 +872,46 @@ export function crearRouterAdmin({
         if (error instanceof ErrorPedido) {
           return response.status(409).json({ error: { code: error.code, message: error.message } })
         }
+        return next(error)
+      }
+    },
+  )
+
+  // Reglas de la tienda (envío, tarifas por comuna, retiro). Solo ADMIN: es
+  // configuración del negocio, no una tarea operativa del día a día.
+  adminRouter.get(
+    '/reglas',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (_request, response, next) => {
+      try {
+        return response.json({ data: await servicio.obtenerReglas() })
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.put(
+    '/reglas',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      const validacion = validarReglas(request.body)
+      if (!validacion.success) {
+        return response.status(422).json({
+          error: {
+            code: 'INVALID_STORE_RULES',
+            message: 'Revisa las reglas de la tienda.',
+            fields: validacion.error.issues.map((issue) => issue.path.join('.')),
+          },
+        })
+      }
+
+      try {
+        const reglas = await servicio.actualizarReglas(validacion.data)
+        return response.json({ data: reglas })
+      } catch (error) {
         return next(error)
       }
     },

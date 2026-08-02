@@ -1,80 +1,66 @@
 import { normalizarTextoBusqueda } from './texto.js'
 
-// Reglas comerciales de la tienda. Hoy viven como constantes; en la Fase 5
-// (panel del dueño) migrarán a una tabla editable. Mantener la forma de estas
-// exportaciones vuelve ese cambio barato: el servicio de pedidos solo llama a
-// las funciones, nunca lee la fuente. Ver la captura "Reglas de la tienda"
-// (turno 7 del handoff de diseño).
+// Reglas comerciales de la tienda. Desde la Fase 5 son editables por el dueño y
+// viven en la base (ConfiguracionTienda + TarifaComuna). Estas constantes son el
+// VALOR POR DEFECTO: alimentan el seed y sirven de respaldo si la base aún no
+// tiene configuración. Las funciones de cálculo son puras: reciben las reglas
+// vigentes por parámetro, no leen la base ni el módulo. Así el servicio decide
+// de dónde vienen (base o defaults) y la lógica queda 100% testeable.
+// Ver la captura "Reglas de la tienda" (turno 7 del handoff de diseño).
 
-// Sobre este monto (CLP) el despacho es gratis.
-export const ENVIO_GRATIS_DESDE = 20000
-
-// Tarifa que se aplica cuando la comuna no está en la tabla.
-export const TARIFA_BASE = 2990
-
-// Corte y preparación del retiro en tienda. Se usarán para decidir si un pedido
-// "se retira hoy"; el pedido en sí no persiste estos valores.
-export const CORTE_RETIRO_HOY = '19:00'
-export const PREPARACION_HORAS = 2
-
-// Tarifas de despacho por comuna. Las claves van normalizadas (sin tildes, en
-// minúsculas) para poder buscarlas desde el nombre tal como lo escribe el
-// comprador ("Ñuñoa", "LAS CONDES", ...).
-export const TARIFAS_COMUNA = {
-  providencia: { tarifa: 2990, plazoHoras: 24 },
-  nunoa: { tarifa: 2990, plazoHoras: 24 },
-  'las condes': { tarifa: 3990, plazoHoras: 48 },
-  maipu: { tarifa: 4990, plazoHoras: 48 },
+export const REGLAS_POR_DEFECTO = {
+  // Sobre este monto (CLP) el despacho es gratis.
+  envioGratisDesde: 20000,
+  // Tarifa que se aplica cuando la comuna no está en la tabla.
+  tarifaBase: 2990,
+  // Corte y preparación del retiro en tienda: deciden si un pedido "se retira
+  // hoy". El pedido en sí no persiste estos valores.
+  corteRetiroHoy: '19:00',
+  preparacionHoras: 2,
+  // Tarifas de despacho por comuna. `comuna` va normalizada (sin tildes, en
+  // minúsculas) para buscarla desde el nombre tal como lo escribe el comprador
+  // ("Ñuñoa", "LAS CONDES", ...); `nombre` es el rótulo visible.
+  tarifasComuna: [
+    { comuna: 'providencia', nombre: 'Providencia', tarifa: 2990, plazoHoras: 24 },
+    { comuna: 'nunoa', nombre: 'Ñuñoa', tarifa: 2990, plazoHoras: 24 },
+    { comuna: 'las condes', nombre: 'Las Condes', tarifa: 3990, plazoHoras: 48 },
+    { comuna: 'maipu', nombre: 'Maipú', tarifa: 4990, plazoHoras: 48 },
+  ],
 }
 
 /**
- * Devuelve la tarifa y el plazo de una comuna. Si la comuna no está en la
- * tabla, cae en la tarifa base (el plazo queda en null: se confirma al despachar).
- * @param {string} comuna - Nombre de la comuna tal como llega del checkout.
+ * Devuelve la tarifa y el plazo de una comuna según las reglas vigentes. Si la
+ * comuna no está en la tabla, cae en la tarifa base (plazo null: se confirma al
+ * despachar).
+ * @param {string} comuna - Nombre tal como llega del checkout.
+ * @param {typeof REGLAS_POR_DEFECTO} [reglas] - Reglas vigentes (base o defaults).
  */
-export function tarifaDespachoPorComuna(comuna) {
+export function tarifaDespachoPorComuna(comuna, reglas = REGLAS_POR_DEFECTO) {
   const clave = normalizarTextoBusqueda(comuna ?? '')
-  return TARIFAS_COMUNA[clave] ?? { tarifa: TARIFA_BASE, plazoHoras: null }
+  const encontrada = reglas.tarifasComuna.find((tarifa) => tarifa.comuna === clave)
+  return encontrada ?? { tarifa: reglas.tarifaBase, plazoHoras: null }
 }
 
 /**
  * Calcula el costo de envío (CLP entero) de un pedido.
  * - RETIRO: siempre gratis.
- * - DESPACHO: gratis desde ENVIO_GRATIS_DESDE; si no, la tarifa de la comuna.
+ * - DESPACHO: gratis desde `envioGratisDesde`; si no, la tarifa de la comuna.
  * El subtotal llega ya calculado por el servidor, nunca desde el cliente.
  * @param {{ modalidad: string, comuna?: string, subtotal: number }} datos
+ * @param {typeof REGLAS_POR_DEFECTO} [reglas] - Reglas vigentes (base o defaults).
  */
-export function calcularCostoEnvio({ modalidad, comuna, subtotal }) {
+export function calcularCostoEnvio({ modalidad, comuna, subtotal }, reglas = REGLAS_POR_DEFECTO) {
   if (modalidad === 'RETIRO') {
     return 0
   }
 
   if (modalidad === 'DESPACHO') {
-    if (subtotal >= ENVIO_GRATIS_DESDE) {
+    if (subtotal >= reglas.envioGratisDesde) {
       return 0
     }
-    return tarifaDespachoPorComuna(comuna).tarifa
+    return tarifaDespachoPorComuna(comuna, reglas).tarifa
   }
 
   // Falla ruidosamente en vez de asumir "gratis" ante un valor inesperado.
   throw new Error(`Modalidad de entrega desconocida: ${modalidad}`)
-}
-
-/**
- * Forma pública de las reglas comerciales, para que el frontend no las duplique
- * (barra "te faltan $X para envío gratis", tarifas por comuna, corte de retiro).
- * Es la fuente de verdad: cambia el valor aquí y la UI lo refleja vía
- * `GET /api/reglas`. Las tarifas se entregan como lista para ser serializables.
- */
-export function reglasPublicas() {
-  return {
-    envioGratisDesde: ENVIO_GRATIS_DESDE,
-    tarifaBase: TARIFA_BASE,
-    corteRetiroHoy: CORTE_RETIRO_HOY,
-    preparacionHoras: PREPARACION_HORAS,
-    tarifasComuna: Object.entries(TARIFAS_COMUNA).map(([comuna, valor]) => ({
-      comuna,
-      ...valor,
-    })),
-  }
 }

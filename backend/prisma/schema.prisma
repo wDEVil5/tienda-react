@@ -90,25 +90,25 @@ model Categoria {
 }
 
 model Marca {
-  id        String     @id @default(uuid()) @db.Uuid
-  nombre    String     @unique @db.VarChar(120)
-  slug      String     @unique @db.VarChar(140)
-  logoUrl   String?    @map("logo_url") @db.VarChar(500)
-  logoStorageKey String? @map("logo_storage_key") @db.VarChar(300)
-  createdAt DateTime   @default(now()) @map("created_at")
-  updatedAt DateTime   @updatedAt @map("updated_at")
-  productos Producto[]
+  id             String     @id @default(uuid()) @db.Uuid
+  nombre         String     @unique @db.VarChar(120)
+  slug           String     @unique @db.VarChar(140)
+  logoUrl        String?    @map("logo_url") @db.VarChar(500)
+  logoStorageKey String?    @map("logo_storage_key") @db.VarChar(300)
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+  productos      Producto[]
 
   @@map("marcas")
 }
 
 model Producto {
-  id          String  @id @default(uuid()) @db.Uuid
-  sku         String  @unique @db.VarChar(80)
-  slug        String  @unique @db.VarChar(180)
-  nombre      String  @db.VarChar(200)
+  id             String  @id @default(uuid()) @db.Uuid
+  sku            String  @unique @db.VarChar(80)
+  slug           String  @unique @db.VarChar(180)
+  nombre         String  @db.VarChar(200)
   nombreBusqueda String? @map("nombre_busqueda") @db.VarChar(220)
-  descripcion String
+  descripcion    String
 
   // CLP no usa fracciones: almacenar pesos como enteros evita errores de float.
   precio         Int
@@ -116,32 +116,32 @@ model Producto {
 
   // Estar publicado y tener stock son estados distintos: un producto agotado
   // puede seguir visible, mientras que su estado editorial controla exposición.
-  stock            Int     @default(0)
+  stock           Int            @default(0)
   // Unidades comprometidas por pedidos PENDIENTE aún no aceptados. El stock
   // disponible real es (stock - stockReservado): así dos pedidos no venden la
   // misma unidad mientras el dueño no confirma.
-  stockReservado   Int     @default(0) @map("stock_reservado")
-  estado           EstadoProducto @default(BORRADOR)
-  destacado        Boolean @default(false)
-  alertaStockBajo  Int?    @map("alerta_stock_bajo")
+  stockReservado  Int            @default(0) @map("stock_reservado")
+  estado          EstadoProducto @default(BORRADOR)
+  destacado       Boolean        @default(false)
+  alertaStockBajo Int?           @map("alerta_stock_bajo")
 
-  codigoBarras        String?  @unique @map("codigo_barras") @db.VarChar(50)
-  origen              String?  @db.VarChar(120)
-  contenidoCantidad   Decimal? @map("contenido_cantidad") @db.Decimal(10, 3)
-  contenidoUnidad     String?  @map("contenido_unidad") @db.VarChar(20)
-  pesoDespachoGramos  Int?     @map("peso_despacho_gramos")
-  fechaVencimiento    DateTime? @map("fecha_vencimiento") @db.Date
+  codigoBarras       String?   @unique @map("codigo_barras") @db.VarChar(50)
+  origen             String?   @db.VarChar(120)
+  contenidoCantidad  Decimal?  @map("contenido_cantidad") @db.Decimal(10, 3)
+  contenidoUnidad    String?   @map("contenido_unidad") @db.VarChar(20)
+  pesoDespachoGramos Int?      @map("peso_despacho_gramos")
+  fechaVencimiento   DateTime? @map("fecha_vencimiento") @db.Date
 
-  categoriaId String    @map("categoria_id") @db.Uuid
-  marcaId     String    @map("marca_id") @db.Uuid
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  categoriaId String   @map("categoria_id") @db.Uuid
+  marcaId     String   @map("marca_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
-  categoria Categoria       @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
-  marca     Marca           @relation(fields: [marcaId], references: [id], onDelete: Restrict)
-  imagenes  ProductoImagen[]
+  categoria   Categoria           @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
+  marca       Marca               @relation(fields: [marcaId], references: [id], onDelete: Restrict)
+  imagenes    ProductoImagen[]
   promociones PromocionProducto[]
-  etiquetas ProductoEtiqueta[]
+  etiquetas   ProductoEtiqueta[]
   itemsPedido ItemPedido[]
 
   @@index([categoriaId])
@@ -154,16 +154,16 @@ model Producto {
 // Una promoción describe una campaña reutilizable. La relación intermedia evita
 // duplicar sus fechas y porcentaje en cada producto que participa de ella.
 model Promocion {
-  id                   String              @id @default(uuid()) @db.Uuid
-  nombre               String              @db.VarChar(120)
-  slug                 String              @unique @db.VarChar(140)
-  porcentajeDescuento  Int                 @map("porcentaje_descuento")
-  empiezaEn            DateTime            @map("empieza_en")
-  terminaEn            DateTime            @map("termina_en")
-  activa               Boolean             @default(true)
-  createdAt            DateTime            @default(now()) @map("created_at")
-  updatedAt            DateTime            @updatedAt @map("updated_at")
-  productos            PromocionProducto[]
+  id                  String              @id @default(uuid()) @db.Uuid
+  nombre              String              @db.VarChar(120)
+  slug                String              @unique @db.VarChar(140)
+  porcentajeDescuento Int                 @map("porcentaje_descuento")
+  empiezaEn           DateTime            @map("empieza_en")
+  terminaEn           DateTime            @map("termina_en")
+  activa              Boolean             @default(true)
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
+  productos           PromocionProducto[]
 
   @@index([activa, empiezaEn, terminaEn])
   @@map("promociones")
@@ -301,4 +301,35 @@ model EventoPedido {
 
   @@index([pedidoId])
   @@map("eventos_pedido")
+}
+
+// Reglas comerciales editables por el dueño (pantalla "Reglas de la tienda").
+// Fila única (patrón singleton): el id fijo garantiza que solo exista una
+// configuración. Los montos son enteros CLP; el corte de retiro es "HH:MM".
+model ConfiguracionTienda {
+  id               String   @id @default("singleton") @db.VarChar(20)
+  envioGratisDesde Int      @map("envio_gratis_desde")
+  tarifaBase       Int      @map("tarifa_base")
+  corteRetiroHoy   String   @map("corte_retiro_hoy") @db.VarChar(5)
+  preparacionHoras Int      @map("preparacion_horas")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("configuracion_tienda")
+}
+
+// Tarifa de despacho por comuna. `comuna` es la clave normalizada (sin tildes,
+// minúsculas) para buscarla desde el texto que escribe el comprador; `nombre`
+// es el rótulo visible. `plazoHoras` opcional: si es null, se confirma al
+// despachar.
+model TarifaComuna {
+  id         String   @id @default(uuid()) @db.Uuid
+  comuna     String   @unique @db.VarChar(80)
+  nombre     String   @db.VarChar(80)
+  tarifa     Int
+  plazoHoras Int?     @map("plazo_horas")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("tarifas_comuna")
 }

@@ -1,8 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  ENVIO_GRATIS_DESDE,
-  TARIFA_BASE,
+  REGLAS_POR_DEFECTO,
   calcularCostoEnvio,
   tarifaDespachoPorComuna,
 } from '../src/lib/reglasTienda.js'
@@ -16,7 +15,7 @@ test('el despacho es gratis al alcanzar el umbral', () => {
     calcularCostoEnvio({
       modalidad: 'DESPACHO',
       comuna: 'Maipú',
-      subtotal: ENVIO_GRATIS_DESDE,
+      subtotal: REGLAS_POR_DEFECTO.envioGratisDesde,
     }),
     0,
   )
@@ -40,7 +39,7 @@ test('la comuna se reconoce sin importar tildes ni mayúsculas', () => {
 
 test('una comuna fuera de la tabla usa la tarifa base', () => {
   const { tarifa, plazoHoras } = tarifaDespachoPorComuna('Puente Alto')
-  assert.equal(tarifa, TARIFA_BASE)
+  assert.equal(tarifa, REGLAS_POR_DEFECTO.tarifaBase)
   assert.equal(plazoHoras, null)
 })
 
@@ -49,4 +48,21 @@ test('una modalidad desconocida falla en vez de asumir gratis', () => {
     () => calcularCostoEnvio({ modalidad: 'DRON', subtotal: 1000 }),
     /Modalidad de entrega desconocida/,
   )
+})
+
+test('el cálculo honra las reglas que se le pasan, no solo los defaults', () => {
+  const reglas = {
+    envioGratisDesde: 50000,
+    tarifaBase: 5000,
+    tarifasComuna: [{ comuna: 'nunoa', nombre: 'Ñuñoa', tarifa: 1500, plazoHoras: 12 }],
+  }
+
+  // Con umbral 50.000, un subtotal de 20.000 ya no es envío gratis: cobra la
+  // tarifa de la comuna definida en ESAS reglas (no en los defaults).
+  assert.equal(
+    calcularCostoEnvio({ modalidad: 'DESPACHO', comuna: 'Ñuñoa', subtotal: 20000 }, reglas),
+    1500,
+  )
+  // Una comuna fuera de esa tabla usa la tarifa base de esas reglas.
+  assert.equal(tarifaDespachoPorComuna('Maipú', reglas).tarifa, 5000)
 })

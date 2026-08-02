@@ -1,12 +1,17 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { crearServicioPedidos, ErrorPedido } from '../src/modules/pedidos/pedidos.service.js'
+import { REGLAS_POR_DEFECTO } from '../src/lib/reglasTienda.js'
 
 const contacto = {
   nombre: 'Camila R.',
   email: 'camila@correo.cl',
   telefono: '+56 9 8765 4321',
 }
+
+// Cargador de reglas falso: mantiene estos tests como unitarios (sin tocar la
+// base). Usa los valores por defecto, que son los que asumen las aserciones.
+const reglasFalsas = { obtenerReglas: async () => REGLAS_POR_DEFECTO }
 
 // Repo falso: devuelve los productos declarados y captura lo que recibe la
 // transacción, para poder afirmar sobre los montos y snapshots calculados.
@@ -36,7 +41,7 @@ const CAFE = {
 
 test('recalcula precios y totales en el servidor (retiro)', async () => {
   const { repositorio, captura } = crearRepoFalso([ACEITE, CAFE])
-  const servicio = crearServicioPedidos(repositorio)
+  const servicio = crearServicioPedidos(repositorio, reglasFalsas)
 
   await servicio.crearPedido({
     contacto,
@@ -65,7 +70,7 @@ test('no aplica descuento si la oferta no está vigente', async () => {
     stock: 10, stockReservado: 0, tieneOfertaVigente: false,
   }
   const { repositorio, captura } = crearRepoFalso([leche])
-  const servicio = crearServicioPedidos(repositorio)
+  const servicio = crearServicioPedidos(repositorio, reglasFalsas)
 
   await servicio.crearPedido({
     contacto,
@@ -79,7 +84,7 @@ test('no aplica descuento si la oferta no está vigente', async () => {
 
 test('cobra el envío según modalidad y comuna', async () => {
   const { repositorio, captura } = crearRepoFalso([CAFE])
-  const servicio = crearServicioPedidos(repositorio)
+  const servicio = crearServicioPedidos(repositorio, reglasFalsas)
 
   await servicio.crearPedido({
     contacto,
@@ -96,7 +101,7 @@ test('cobra el envío según modalidad y comuna', async () => {
 
 test('rechaza un producto no disponible', async () => {
   const { repositorio } = crearRepoFalso([]) // el repo no devuelve el producto
-  const servicio = crearServicioPedidos(repositorio)
+  const servicio = crearServicioPedidos(repositorio, reglasFalsas)
 
   await assert.rejects(
     servicio.crearPedido({
@@ -114,7 +119,7 @@ test('rechaza si la cantidad supera el stock disponible', async () => {
     stock: 5, stockReservado: 4, tieneOfertaVigente: false, // disponible = 1
   }
   const { repositorio } = crearRepoFalso([casiAgotado])
-  const servicio = crearServicioPedidos(repositorio)
+  const servicio = crearServicioPedidos(repositorio, reglasFalsas)
 
   await assert.rejects(
     servicio.crearPedido({
@@ -132,7 +137,7 @@ test('cotizarPedido calcula totales sin validar stock', async () => {
     stock: 0, stockReservado: 0, tieneOfertaVigente: true, // sin stock
   }
   const { repositorio } = crearRepoFalso([agotado])
-  const servicio = crearServicioPedidos(repositorio)
+  const servicio = crearServicioPedidos(repositorio, reglasFalsas)
 
   // cantidad 1 con stock 0: crear fallaría, pero cotizar solo calcula montos.
   const cotizacion = await servicio.cotizarPedido({
@@ -150,7 +155,7 @@ test('cotizarPedido calcula totales sin validar stock', async () => {
 
 test('cotizarPedido rechaza un producto no disponible', async () => {
   const { repositorio } = crearRepoFalso([])
-  const servicio = crearServicioPedidos(repositorio)
+  const servicio = crearServicioPedidos(repositorio, reglasFalsas)
 
   await assert.rejects(
     servicio.cotizarPedido({ modalidad: 'RETIRO', items: [{ productoId: 'fantasma', cantidad: 1 }] }),
@@ -160,7 +165,7 @@ test('cotizarPedido rechaza un producto no disponible', async () => {
 
 test('delega la persistencia en una sola transacción y devuelve su resultado', async () => {
   const { repositorio, captura } = crearRepoFalso([CAFE])
-  const servicio = crearServicioPedidos(repositorio)
+  const servicio = crearServicioPedidos(repositorio, reglasFalsas)
 
   const creado = await servicio.crearPedido({
     contacto,
@@ -251,7 +256,7 @@ function crearRepoEstado(pedido) {
 
 test('cambiarEstadoPedido acepta una transición válida y consume la reserva', async () => {
   const { repositorio, captura } = crearRepoEstado(PEDIDO_PENDIENTE)
-  const servicio = crearServicioPedidos(repositorio)
+  const servicio = crearServicioPedidos(repositorio, reglasFalsas)
 
   const detalle = await servicio.cambiarEstadoPedido('ped-1', 'PREPARANDO', 'A preparar')
 
@@ -264,7 +269,7 @@ test('cambiarEstadoPedido acepta una transición válida y consume la reserva', 
 
 test('cambiarEstadoPedido rechaza una transición inválida sin tocar el repositorio', async () => {
   const { repositorio, captura } = crearRepoEstado(PEDIDO_PENDIENTE)
-  const servicio = crearServicioPedidos(repositorio)
+  const servicio = crearServicioPedidos(repositorio, reglasFalsas)
 
   await assert.rejects(
     servicio.cambiarEstadoPedido('ped-1', 'ENTREGADO'),
@@ -275,7 +280,7 @@ test('cambiarEstadoPedido rechaza una transición inválida sin tocar el reposit
 
 test('cambiarEstadoPedido cancela un pedido ya aceptado restituyendo stock', async () => {
   const { repositorio, captura } = crearRepoEstado({ ...PEDIDO_PENDIENTE, estado: 'PREPARANDO' })
-  const servicio = crearServicioPedidos(repositorio)
+  const servicio = crearServicioPedidos(repositorio, reglasFalsas)
 
   await servicio.cambiarEstadoPedido('ped-1', 'CANCELADO')
 

@@ -1,5 +1,6 @@
 import { repositorioPedidos } from './pedidos.repository.js'
 import { calcularCostoEnvio } from '../../lib/reglasTienda.js'
+import { obtenerReglas as obtenerReglasVigentes } from '../reglas/reglas.service.js'
 import {
   ESTADO_INICIAL,
   efectoStockTransicion,
@@ -62,13 +63,13 @@ function construirLineas(entrada, productos, { validarStock }) {
 
 // total = subtotal (a precio normal) - descuento + envío. Reproduce el resumen
 // del checkout y garantiza que Σ(item.subtotal) + envío === total.
-function calcularTotales({ modalidad, comuna }, items) {
+function calcularTotales({ modalidad, comuna }, items, reglas) {
   const subtotal = items.reduce((suma, item) => suma + item.precioNormal * item.cantidad, 0)
   const descuento = items.reduce(
     (suma, item) => suma + (item.precioNormal - item.precioFinal) * item.cantidad,
     0,
   )
-  const costoEnvio = calcularCostoEnvio({ modalidad, comuna, subtotal })
+  const costoEnvio = calcularCostoEnvio({ modalidad, comuna, subtotal }, reglas)
   return { subtotal, descuento, costoEnvio, total: subtotal - descuento + costoEnvio }
 }
 
@@ -133,18 +134,27 @@ function crearDetallePedido(pedido) {
   }
 }
 
-export function crearServicioPedidos(repositorio = repositorioPedidos) {
+export function crearServicioPedidos(
+  repositorio = repositorioPedidos,
+  { obtenerReglas = obtenerReglasVigentes } = {},
+) {
   return {
     async crearPedido(entrada, ahora = new Date()) {
       // Se recalcula TODO con la verdad del servidor; nada de montos del cliente.
-      const productos = await repositorio.obtenerParaPedido(
-        entrada.items.map((item) => item.productoId),
-        ahora,
-      )
+      // Las reglas (umbral, tarifas) también vienen del servidor, editables por
+      // el dueño; nunca del cliente.
+      const [productos, reglas] = await Promise.all([
+        repositorio.obtenerParaPedido(
+          entrada.items.map((item) => item.productoId),
+          ahora,
+        ),
+        obtenerReglas(),
+      ])
       const items = construirLineas(entrada, productos, { validarStock: true })
       const totales = calcularTotales(
         { modalidad: entrada.modalidad, comuna: entrada.direccion?.comuna },
         items,
+        reglas,
       )
 
       const pedido = {
@@ -167,14 +177,18 @@ export function crearServicioPedidos(repositorio = repositorioPedidos) {
     // Calcula los montos vigentes SIN crear el pedido ni reservar stock. Alimenta
     // el resumen del checkout, manteniendo al servidor como fuente de la verdad.
     async cotizarPedido(entrada, ahora = new Date()) {
-      const productos = await repositorio.obtenerParaPedido(
-        entrada.items.map((item) => item.productoId),
-        ahora,
-      )
+      const [productos, reglas] = await Promise.all([
+        repositorio.obtenerParaPedido(
+          entrada.items.map((item) => item.productoId),
+          ahora,
+        ),
+        obtenerReglas(),
+      ])
       const items = construirLineas(entrada, productos, { validarStock: false })
       const totales = calcularTotales(
         { modalidad: entrada.modalidad, comuna: entrada.comuna },
         items,
+        reglas,
       )
 
       return {

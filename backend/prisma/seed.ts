@@ -8,7 +8,10 @@ import {
   PrismaClient,
 } from "../src/generated/prisma/client";
 import { normalizarTextoBusqueda } from "../src/lib/texto.js";
-import { calcularCostoEnvio } from "../src/lib/reglasTienda.js";
+import {
+  calcularCostoEnvio,
+  REGLAS_POR_DEFECTO,
+} from "../src/lib/reglasTienda.js";
 
 // El seed representa un catálogo mínimo de desarrollo. No es la fuente de
 // verdad del negocio ni reemplaza el futuro panel de administración.
@@ -437,12 +440,34 @@ async function sembrarPedidos() {
   }
 }
 
+// Reglas comerciales base. En re-seed usa `update: {}` para NO pisar lo que el
+// dueño haya editado desde el panel: el seed solo garantiza que exista una
+// configuración inicial y las comunas por defecto.
+async function sembrarReglas() {
+  const { tarifasComuna, ...configuracion } = REGLAS_POR_DEFECTO;
+
+  await prisma.configuracionTienda.upsert({
+    where: { id: "singleton" },
+    create: { id: "singleton", ...configuracion },
+    update: {},
+  });
+
+  for (const tarifa of tarifasComuna) {
+    await prisma.tarifaComuna.upsert({
+      where: { comuna: tarifa.comuna },
+      create: tarifa,
+      update: {},
+    });
+  }
+}
+
 try {
   await sembrarCatalogo();
   await sembrarOfertaSemanal();
   await sembrarPedidos();
+  await sembrarReglas();
   console.info(
-    `Seed completado: ${catalogoInicial.length} productos y ${pedidosIniciales.length} pedidos procesados.`,
+    `Seed completado: ${catalogoInicial.length} productos, ${pedidosIniciales.length} pedidos y las reglas de la tienda.`,
   );
 } finally {
   await prisma.$disconnect();

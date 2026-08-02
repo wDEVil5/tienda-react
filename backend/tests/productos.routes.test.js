@@ -103,6 +103,7 @@ test('GET /api/productos/:slug devuelve el detalle publicado', async () => {
   assert.equal(response.body.data.precioAnterior, 10653)
   assert.equal(response.body.data.oferta?.porcentajeDescuento, 25)
   assert.equal(response.body.data.fechaVencimiento, "2027-01-31T00:00:00.000Z")
+  assert.deepEqual(response.body.data.precioPorUnidad, { monto: 15980, unidad: "L" })
   assert.deepEqual(
     response.body.data.etiquetas.map((etiqueta) => etiqueta.slug).sort(),
     ["sin-gluten", "vegano"],

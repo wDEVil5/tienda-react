@@ -25,6 +25,7 @@
  * @property {number}        stock         - Unidades disponibles informadas por la API.
  * @property {string|null}   fechaVencimiento - Fecha ISO para productos perecibles.
  * @property {Object[]}      etiquetas       - Etiquetas reutilizables del producto.
+ * @property {Object|null}   precioPorUnidad - Precio normalizado por litro o kilogramo.
  */
 
 /**
@@ -86,5 +87,10 @@ export function normalizarProductoApi(producto) {
     stock: producto.stock,
     fechaVencimiento: producto.fechaVencimiento ?? null,
     etiquetas: producto.etiquetas ?? [],
+    origen: producto.origen ?? null,
+    contenidoCantidad: producto.contenidoCantidad ?? null,
+    contenidoUnidad: producto.contenidoUnidad ?? null,
+    pesoDespachoGramos: producto.pesoDespachoGramos ?? null,
+    precioPorUnidad: producto.precioPorUnidad ?? null,
   };
 }

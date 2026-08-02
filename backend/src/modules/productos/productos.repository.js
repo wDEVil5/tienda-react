@@ -42,6 +42,31 @@ function crearInclusionProductoPublico(ahora) {
   }
 }
 
+function crearPrecioPorUnidad(producto) {
+  const cantidad = Number(producto.contenidoCantidad)
+  const unidad = producto.contenidoUnidad?.toLowerCase()
+
+  if (!Number.isFinite(cantidad) || cantidad <= 0) {
+    return null
+  }
+
+  const referencia = {
+    ml: { factor: 1000, unidad: 'L' },
+    l: { factor: 1, unidad: 'L' },
+    g: { factor: 1000, unidad: 'kg' },
+    kg: { factor: 1, unidad: 'kg' },
+  }[unidad]
+
+  if (!referencia) {
+    return null
+  }
+
+  return {
+    monto: Math.round((producto.precio * referencia.factor) / cantidad),
+    unidad: referencia.unidad,
+  }
+}
+
 function crearProductoPublico(producto) {
   // Si una mala carga deja campañas solapadas, se muestra la de mayor beneficio.
   // El panel de administración impedirá ese caso antes de llegar a producción.
@@ -71,6 +96,12 @@ function crearProductoPublico(producto) {
         }
       : null,
     stock: producto.stock,
+    origen: producto.origen,
+    contenidoCantidad: producto.contenidoCantidad ? Number(producto.contenidoCantidad) : null,
+    contenidoUnidad: producto.contenidoUnidad,
+    pesoDespachoGramos: producto.pesoDespachoGramos,
+    codigoBarras: producto.codigoBarras,
+    precioPorUnidad: crearPrecioPorUnidad(producto),
     fechaVencimiento: producto.fechaVencimiento,
     categoria: producto.categoria,
     marca: producto.marca,

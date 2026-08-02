@@ -19,6 +19,11 @@ test('el repositorio consulta solo productos publicados y adapta sus imágenes',
             precio: 1000,
             precioAnterior: null,
             stock: 3,
+            origen: 'Valle de prueba',
+            contenidoCantidad: 500,
+            contenidoUnidad: 'ml',
+            pesoDespachoGramos: 700,
+            codigoBarras: null,
             fechaVencimiento: null,
             categoria: { id: 'categoria-1', nombre: 'Despensa', slug: 'despensa' },
             marca: { id: 'marca-1', nombre: 'Marca Uno', slug: 'marca-uno', logoUrl: null },
@@ -78,6 +83,7 @@ test('el repositorio consulta solo productos publicados y adapta sus imágenes',
   assert.equal(consulta.take, 10)
   assert.equal(productos[0].oferta, null)
   assert.equal(productos[0].fechaVencimiento, null)
+  assert.deepEqual(productos[0].precioPorUnidad, { monto: 2000, unidad: 'L' })
   assert.deepEqual(productos[0].etiquetas, [])
   assert.deepEqual(productos[0].imagenes, [
     { url: 'https://ejemplo.test/producto.jpg', alt: 'Producto uno', orden: 1 },

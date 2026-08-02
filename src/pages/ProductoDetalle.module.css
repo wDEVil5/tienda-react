@@ -308,6 +308,29 @@
   color: var(--color-texto-suave);
 }
 
+/* Datos opcionales del catálogo: cada campo se omite si no está disponible,
+   por lo que la ficha no reserva espacio para atributos aún no cargados. */
+.detallesProducto {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: 100%;
+  gap: var(--e-md);
+}
+
+.detalleProducto dt {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-texto-tenue);
+}
+
+.detalleProducto dd {
+  margin: 3px 0 0;
+  font-size: 12.5px;
+  color: var(--color-texto-suave);
+}
+
 /* ---- Relacionados ---- */
 .relacionados {
   display: flex;
@@ -519,6 +542,10 @@
 
   .infoLabel {
     width: 82px;
+  }
+
+  .detallesProducto {
+    gap: var(--e-sm);
   }
 
   .relacionados {

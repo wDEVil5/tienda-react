@@ -11,6 +11,21 @@ import styles from "./ProductoDetalle.module.css";
 // mismo máximo al guardar imágenes; el frontend se protege por si recibe más.
 const MAXIMO_IMAGENES_PRODUCTO = 5;
 
+function formatearFechaProducto(fecha) {
+  if (!fecha) return null;
+
+  // La API entrega una fecha sin hora de negocio. Al construirla al mediodía
+  // local evitamos que una zona horaria la presente como el día anterior.
+  const fechaLocal = new Date(`${String(fecha).slice(0, 10)}T12:00:00`);
+  return Number.isNaN(fechaLocal.getTime())
+    ? null
+    : new Intl.DateTimeFormat("es-CL", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      }).format(fechaLocal);
+}
+
 function ProductoDetalle({ productos }) {
   const { slug } = useParams();
   const { agregarAlCarrito, carrito } = useCarritoContext();
@@ -101,6 +116,17 @@ function ProductoDetalle({ productos }) {
       ? "Sin stock"
       : `${producto.stock} ${producto.stock === 1 ? "unidad disponible" : "unidades disponibles"}`
     : "En stock";
+  const contenido =
+    producto.contenidoCantidad !== null && producto.contenidoUnidad
+      ? `${new Intl.NumberFormat("es-CL", { maximumFractionDigits: 3 }).format(
+          producto.contenidoCantidad,
+        )} ${producto.contenidoUnidad}`
+      : null;
+  const detalles = [
+    { etiqueta: "Origen", valor: producto.origen },
+    { etiqueta: "Contenido", valor: contenido },
+    { etiqueta: "Vence", valor: formatearFechaProducto(producto.fechaVencimiento) },
+  ].filter(({ valor }) => Boolean(valor));
 
   // Relacionados: misma categoría, sin incluir el actual, hasta 4.
   const relacionados = productos
@@ -249,6 +275,17 @@ function ProductoDetalle({ productos }) {
             </h2>
             <p className={styles.descripcion}>{producto.descripcion}</p>
           </section>
+
+          {detalles.length > 0 && (
+            <dl className={styles.detallesProducto}>
+              {detalles.map(({ etiqueta, valor }) => (
+                <div key={etiqueta} className={styles.detalleProducto}>
+                  <dt>{etiqueta}</dt>
+                  <dd>{valor}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
         </div>
       </div>
 

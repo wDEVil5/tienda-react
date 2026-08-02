@@ -19,6 +19,7 @@ function BandaOfertas({ productos, ofertasDestacadas, onVerOfertas }) {
   // La campaña puede tener muchas ofertas, pero la composición editorial solo
   // presenta tres; el CTA lleva al catálogo filtrado para ver el conjunto completo.
   const mostradas = ofertas.slice(0, 3);
+  const cantidadMostradas = mostradas.length;
   const descuentoMaximo = usaResumenApi
     ? ofertasDestacadas.meta.maxDescuento
     : Math.max(...ofertas.map(obtenerPorcentajeDescuento));
@@ -45,15 +46,29 @@ function BandaOfertas({ productos, ofertasDestacadas, onVerOfertas }) {
       </div>
 
       <div className={styles.derecha}>
-        <div className={styles.ofertasInternas}>
+        <div
+          className={styles.ofertasInternas}
+          data-cantidad={cantidadMostradas}
+        >
           {/* El índice define el rol visual (izquierda, principal, derecha),
               no la prioridad comercial de cada producto. */}
           <div className={styles.minis}>
-          {mostradas.map((p, i) => (
+          {mostradas.map((p, i) => {
+            // La baraja destacada solo tiene un centro cuando hay tres cartas.
+            // Con una o dos, las reglas CSS las equilibran sin huecos ni solapes.
+            const rolVisual = cantidadMostradas === 3
+              ? i === 1
+                ? styles.miniCentral
+                : i === 2
+                  ? styles.miniDerecha
+                  : styles.miniIzquierda
+              : "";
+
+            return (
             <Link
               key={p.id}
               to={`/producto/${p.id}`}
-              className={`${styles.mini} ${i === 0 ? styles.miniIzquierda : ""} ${i === 1 ? styles.miniCentral : ""} ${i === 2 ? styles.miniDerecha : ""}`}
+              className={`${styles.mini} ${rolVisual}`}
               aria-label={`Ver ${p.nombre}`}
             >
               <div className={styles.miniImg}>
@@ -67,7 +82,8 @@ function BandaOfertas({ productos, ofertasDestacadas, onVerOfertas }) {
                 />
               </div>
             </Link>
-          ))}
+            );
+          })}
         </div>
 
         <div className={styles.pies}>

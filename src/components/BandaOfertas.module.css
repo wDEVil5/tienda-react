@@ -167,6 +167,57 @@
   transform: rotate(2.2deg) translateY(2px);
 }
 
+/* La campaña puede tener menos de tres productos. En esos casos no existe una
+   tarjeta central: repartimos las disponibles sin reservar el tercer espacio. */
+.ofertasInternas[data-cantidad="1"] {
+  width: min(100%, 212px);
+}
+
+.ofertasInternas[data-cantidad="1"] .mini {
+  width: 212px;
+  transform: translateY(-2px);
+}
+
+.ofertasInternas[data-cantidad="1"] .mini:hover {
+  transform: translateY(-10px);
+}
+
+.ofertasInternas[data-cantidad="1"] .miniImg {
+  height: 228px;
+  background-color: #3a3a35;
+  box-shadow: 0 24px 52px rgba(0, 0, 0, 0.55);
+}
+
+.ofertasInternas[data-cantidad="1"] .pies {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.ofertasInternas[data-cantidad="2"] .minis {
+  gap: 18px;
+}
+
+.ofertasInternas[data-cantidad="2"] .mini {
+  width: 196px;
+  transform: rotate(-1.6deg) translateY(6px);
+}
+
+.ofertasInternas[data-cantidad="2"] .mini:nth-child(2) {
+  transform: rotate(1.6deg) translateY(6px);
+}
+
+.ofertasInternas[data-cantidad="2"] .mini:hover {
+  transform: rotate(-1.6deg) translateY(-4px);
+}
+
+.ofertasInternas[data-cantidad="2"] .mini:nth-child(2):hover {
+  transform: rotate(1.6deg) translateY(-4px);
+}
+
+.ofertasInternas[data-cantidad="2"] .pies {
+  grid-template-columns: repeat(2, minmax(0, 196px));
+  justify-content: center;
+}
+
 .miniImg {
   position: relative;
   width: 100%;
@@ -377,6 +428,37 @@
 
   .miniDerecha {
     transform: rotate(2.2deg) translateY(14px);
+  }
+
+  .ofertasInternas[data-cantidad="1"] {
+    width: min(100%, 138px);
+  }
+
+  .ofertasInternas[data-cantidad="1"] .mini {
+    width: 138px;
+    transform: translateY(-6px);
+  }
+
+  .ofertasInternas[data-cantidad="1"] .miniImg {
+    height: 174px;
+  }
+
+  .ofertasInternas[data-cantidad="2"] .minis {
+    gap: 0;
+  }
+
+  .ofertasInternas[data-cantidad="2"] .mini {
+    width: 138px;
+    transform: rotate(-1.6deg) translateY(10px);
+  }
+
+  .ofertasInternas[data-cantidad="2"] .mini:nth-child(2) {
+    transform: rotate(1.6deg) translateY(10px);
+  }
+
+  .ofertasInternas[data-cantidad="2"] .pies {
+    grid-template-columns: repeat(2, minmax(0, 138px));
+    justify-content: center;
   }
 
   .miniImg,

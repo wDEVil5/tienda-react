@@ -103,6 +103,10 @@ test('GET /api/productos/:slug devuelve el detalle publicado', async () => {
   assert.equal(response.body.data.precioAnterior, 10653)
   assert.equal(response.body.data.oferta?.porcentajeDescuento, 25)
   assert.equal(response.body.data.fechaVencimiento, "2027-01-31T00:00:00.000Z")
+  assert.deepEqual(
+    response.body.data.etiquetas.map((etiqueta) => etiqueta.slug).sort(),
+    ["sin-gluten", "vegano"],
+  )
 })
 
 test('GET /api/productos/:slug responde 404 cuando el producto no está publicado', async () => {

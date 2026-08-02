@@ -24,6 +24,7 @@
  * @property {string}        sku           - Código visible para inventario y administración.
  * @property {number}        stock         - Unidades disponibles informadas por la API.
  * @property {string|null}   fechaVencimiento - Fecha ISO para productos perecibles.
+ * @property {Object[]}      etiquetas       - Etiquetas reutilizables del producto.
  */
 
 /**
@@ -84,5 +85,6 @@ export function normalizarProductoApi(producto) {
     sku: producto.sku ?? producto.id,
     stock: producto.stock,
     fechaVencimiento: producto.fechaVencimiento ?? null,
+    etiquetas: producto.etiquetas ?? [],
   };
 }

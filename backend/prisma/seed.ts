@@ -22,6 +22,7 @@ const catalogoInicial = [
     contenidoUnidad: "ml",
     pesoDespachoGramos: 700,
     fechaVencimiento: new Date("2027-01-31T00:00:00.000Z"),
+    etiquetas: ["Vegano", "Sin gluten"],
     categoria: { nombre: "Despensa", slug: "despensa" },
     marca: { nombre: "Valle Oliva", slug: "valle-oliva" },
     imagenes: [
@@ -46,6 +47,7 @@ const catalogoInicial = [
     contenidoUnidad: "g",
     pesoDespachoGramos: 300,
     fechaVencimiento: new Date("2027-03-31T00:00:00.000Z"),
+    etiquetas: ["Vegano"],
     categoria: { nombre: "Despensa", slug: "despensa" },
     marca: { nombre: "Café del Barrio", slug: "cafe-del-barrio" },
     imagenes: [
@@ -70,6 +72,7 @@ const catalogoInicial = [
     contenidoUnidad: "L",
     pesoDespachoGramos: 1100,
     fechaVencimiento: new Date("2026-10-15T00:00:00.000Z"),
+    etiquetas: ["Lácteos"],
     categoria: { nombre: "Lácteos", slug: "lacteos" },
     marca: { nombre: "Campo Sur", slug: "campo-sur" },
     imagenes: [
@@ -94,6 +97,7 @@ const catalogoInicial = [
     contenidoUnidad: "L",
     pesoDespachoGramos: 3200,
     alertaStockBajo: 3,
+    etiquetas: ["Hogar"],
     categoria: { nombre: "Limpieza", slug: "limpieza" },
     marca: { nombre: "Hogar Claro", slug: "hogar-claro" },
     imagenes: [
@@ -119,6 +123,7 @@ const catalogoInicial = [
     pesoDespachoGramos: 300,
     alertaStockBajo: 4,
     fechaVencimiento: new Date("2026-08-20T00:00:00.000Z"),
+    etiquetas: ["Sin gluten"],
     categoria: { nombre: "Lácteos", slug: "lacteos" },
     marca: { nombre: "Campo Sur", slug: "campo-sur" },
     imagenes: [
@@ -142,6 +147,7 @@ const catalogoInicial = [
     contenidoCantidad: 250,
     contenidoUnidad: "g",
     pesoDespachoGramos: 400,
+    etiquetas: ["Vegano", "Sin gluten"],
     categoria: { nombre: "Despensa", slug: "despensa" },
     marca: { nombre: "Dulce Casa", slug: "dulce-casa" },
     imagenes: [
@@ -164,6 +170,12 @@ const ofertaSemanalDesarrollo = {
 const adapter = new PrismaPg({ connectionString: env("DATABASE_URL") });
 const prisma = new PrismaClient({ adapter });
 
+function crearSlugEtiqueta(nombre: string) {
+  return normalizarTextoBusqueda(nombre)
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
 async function sembrarCatalogo() {
   for (const item of catalogoInicial) {
     await prisma.categoria.upsert({
@@ -177,6 +189,22 @@ async function sembrarCatalogo() {
       update: { nombre: item.marca.nombre },
       create: item.marca,
     });
+
+    const conexionesEtiquetas = await Promise.all(
+      item.etiquetas.map(async (nombre) => {
+        const slug = crearSlugEtiqueta(nombre);
+        await prisma.etiqueta.upsert({
+          where: { slug },
+          update: { nombre },
+          create: { nombre, slug },
+        });
+
+        return { slug };
+      }),
+    );
+    const relacionesEtiquetas = conexionesEtiquetas.map((etiqueta) => ({
+      etiqueta: { connect: etiqueta },
+    }));
 
     const datosProducto = {
       sku: item.sku,
@@ -204,6 +232,7 @@ async function sembrarCatalogo() {
       create: {
         ...datosProducto,
         imagenes: { create: item.imagenes },
+        etiquetas: { create: relacionesEtiquetas },
       },
       update: {
         ...datosProducto,
@@ -211,6 +240,10 @@ async function sembrarCatalogo() {
         imagenes: {
           deleteMany: {},
           create: item.imagenes,
+        },
+        etiquetas: {
+          deleteMany: {},
+          create: relacionesEtiquetas,
         },
       },
     });

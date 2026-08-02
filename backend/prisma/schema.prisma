@@ -69,6 +69,7 @@ model Producto {
   marca     Marca           @relation(fields: [marcaId], references: [id], onDelete: Restrict)
   imagenes  ProductoImagen[]
   promociones PromocionProducto[]
+  etiquetas ProductoEtiqueta[]
 
   @@index([categoriaId])
   @@index([marcaId])
@@ -108,6 +109,31 @@ model PromocionProducto {
   @@id([promocionId, productoId])
   @@index([productoId])
   @@map("promocion_productos")
+}
+
+// Las etiquetas son reutilizables; una relación evita depender de texto libre
+// y permite convertirlas en filtros del catálogo cuando el producto lo requiera.
+model Etiqueta {
+  id        String             @id @default(uuid()) @db.Uuid
+  nombre    String             @unique @db.VarChar(60)
+  slug      String             @unique @db.VarChar(70)
+  createdAt DateTime           @default(now()) @map("created_at")
+  productos ProductoEtiqueta[]
+
+  @@map("etiquetas")
+}
+
+model ProductoEtiqueta {
+  productoId String   @map("producto_id") @db.Uuid
+  etiquetaId String   @map("etiqueta_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  producto Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  etiqueta Etiqueta @relation(fields: [etiquetaId], references: [id], onDelete: Cascade)
+
+  @@id([productoId, etiquetaId])
+  @@index([etiquetaId])
+  @@map("producto_etiquetas")
 }
 
 model ProductoImagen {

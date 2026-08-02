@@ -22,6 +22,9 @@ function crearInclusionProductoPublico(ahora) {
       select: { url: true, textoAlternativo: true, orden: true },
       orderBy: { orden: 'asc' },
     },
+    etiquetas: {
+      select: { etiqueta: { select: { id: true, nombre: true, slug: true } } },
+    },
     promociones: {
       where: { promocion: crearPromocionVigenteDonde(ahora) },
       select: {
@@ -71,6 +74,7 @@ function crearProductoPublico(producto) {
     fechaVencimiento: producto.fechaVencimiento,
     categoria: producto.categoria,
     marca: producto.marca,
+    etiquetas: producto.etiquetas.map((enlace) => enlace.etiqueta),
     imagenes: producto.imagenes.map((imagen) => ({
       url: imagen.url,
       alt: imagen.textoAlternativo,

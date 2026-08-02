@@ -20,6 +20,7 @@ function crearProductoPublico(producto) {
     ...productoPublico,
     categoria: { ...producto.categoria },
     marca: { ...producto.marca },
+    etiquetas: (producto.etiquetas ?? []).map((etiqueta) => ({ ...etiqueta })),
     oferta: producto.oferta ? { ...producto.oferta } : null,
     imagenes: producto.imagenes.map((imagen) => ({ ...imagen })),
   }

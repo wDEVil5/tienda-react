@@ -53,10 +53,10 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (fuenteCatalogo !== "api") {
-      setOfertasDestacadas(null);
-      return undefined;
-    }
+    // Sin API propia no hay sección editorial: no consultamos ni tocamos el
+    // estado aquí. La versión mostrada se deriva en render (ver más abajo), así
+    // el effect solo asigna estado en el camino asíncrono del .then().
+    if (fuenteCatalogo !== "api") return undefined;
 
     let vigente = true;
 
@@ -198,6 +198,12 @@ function App() {
     setSoloOfertas(false);
   };
 
+  // Las destacadas solo valen con API propia. Derivarlas aquí (en vez de
+  // resetear el estado dentro del effect) evita un setState síncrono en el
+  // effect y descarta datos obsoletos si la fuente vuelve al fallback.
+  const ofertasDestacadasVigentes =
+    fuenteCatalogo === "api" ? ofertasDestacadas : null;
+
   //early return
   if (cargando) {
     return (
@@ -260,7 +266,7 @@ function App() {
                 productosCatalogo={productosCatalogo}
                 categorias={categoriasDisponibles}
                 metaCatalogo={metaCatalogo}
-                ofertasDestacadas={ofertasDestacadas}
+                ofertasDestacadas={ofertasDestacadasVigentes}
                 usaPaginacionServidor={fuenteCatalogo === "api"}
                 cargandoMas={cargandoMas}
                 onCargarMas={cargarMasProductos}

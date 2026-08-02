@@ -93,3 +93,40 @@ test('PUT /api/admin/productos/:id/imagenes reemplaza la galería validada', asy
   assert.equal(response.status, 200)
   assert.equal(imagenesRecibidas.length, 1)
 })
+
+test('POST /api/admin/imagenes acepta un archivo del editor y devuelve su referencia', async () => {
+  const app = express()
+  app.use(express.json())
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'ADMIN' }
+      next()
+    },
+    servicio: {
+      async subirImagenProducto(archivo) {
+        return { url: `https://cdn.ejemplo.test/${archivo.originalname}`, storageKey: 'sumarket/productos/aceite' }
+      },
+    },
+  }))
+
+  const response = await request(app)
+    .post('/api/admin/imagenes')
+    .attach('imagen', Buffer.from('archivo-simulado'), {
+      filename: 'aceite.webp',
+      contentType: 'image/webp',
+    })
+
+  assert.equal(response.status, 201)
+  assert.equal(response.body.data.storageKey, 'sumarket/productos/aceite')
+})
+
+test('POST /api/admin/imagenes rechaza archivos que no son imágenes permitidas', async () => {
+  const app = crearAppAdmin()
+
+  const response = await request(app)
+    .post('/api/admin/imagenes')
+    .attach('imagen', Buffer.from('texto'), { filename: 'texto.txt', contentType: 'text/plain' })
+
+  assert.equal(response.status, 422)
+  assert.equal(response.body.error.code, 'INVALID_IMAGE_FILE')
+})

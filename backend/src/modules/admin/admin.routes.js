@@ -8,12 +8,15 @@ import {
 } from './admin-productos.service.js'
 import { validarCambiosProductoAdmin } from './admin-productos.validacion.js'
 import { validarImagenesProductoAdmin } from './admin-imagenes.validacion.js'
+import { ErrorImagen, subirImagenProducto } from '../imagenes/imagenes.service.js'
+import { recibirImagenProducto } from '../imagenes/imagenes.middleware.js'
 
 export function crearRouterAdmin({
   servicio = {
     obtenerProductoParaEdicion,
     actualizarProducto,
     reemplazarImagenesProducto,
+    subirImagenProducto,
   },
   middlewareSesion = requerirSesion,
 } = {}) {
@@ -120,6 +123,26 @@ export function crearRouterAdmin({
 
         return response.json({ data: producto })
       } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.post(
+    '/imagenes',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    recibirImagenProducto,
+    async (request, response, next) => {
+      try {
+        const imagen = await servicio.subirImagenProducto(request.file)
+        return response.status(201).json({ data: imagen })
+      } catch (error) {
+        if (error instanceof ErrorImagen) {
+          return response.status(422).json({
+            error: { code: error.code, message: error.message },
+          })
+        }
         return next(error)
       }
     },

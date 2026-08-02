@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { env } from "prisma/config";
-import { PrismaClient } from "../src/generated/prisma/client";
+import { EstadoProducto, PrismaClient } from "../src/generated/prisma/client";
 import { normalizarTextoBusqueda } from "../src/lib/texto.js";
 
 // El seed representa un catálogo mínimo de desarrollo. No es la fuente de
@@ -15,7 +15,7 @@ const catalogoInicial = [
     precio: 7990,
     precioAnterior: 10653,
     stock: 12,
-    estado: "PUBLICADO",
+    estado: EstadoProducto.PUBLICADO,
     destacado: true,
     origen: "Valle de Colchagua",
     contenidoCantidad: 500,
@@ -41,7 +41,7 @@ const catalogoInicial = [
     precio: 5490,
     precioAnterior: null,
     stock: 25,
-    estado: "PUBLICADO",
+    estado: EstadoProducto.PUBLICADO,
     destacado: true,
     contenidoCantidad: 250,
     contenidoUnidad: "g",
@@ -66,7 +66,7 @@ const catalogoInicial = [
     precio: 4290,
     precioAnterior: 5720,
     stock: 8,
-    estado: "PUBLICADO",
+    estado: EstadoProducto.PUBLICADO,
     destacado: false,
     contenidoCantidad: 1,
     contenidoUnidad: "L",
@@ -91,7 +91,7 @@ const catalogoInicial = [
     precio: 8990,
     precioAnterior: null,
     stock: 5,
-    estado: "PUBLICADO",
+    estado: EstadoProducto.PUBLICADO,
     destacado: false,
     contenidoCantidad: 3,
     contenidoUnidad: "L",
@@ -116,7 +116,7 @@ const catalogoInicial = [
     precio: 3690,
     precioAnterior: null,
     stock: 0,
-    estado: "PUBLICADO",
+    estado: EstadoProducto.PUBLICADO,
     destacado: false,
     contenidoCantidad: 250,
     contenidoUnidad: "g",
@@ -142,7 +142,7 @@ const catalogoInicial = [
     precio: 2990,
     precioAnterior: null,
     stock: 16,
-    estado: "BORRADOR",
+    estado: EstadoProducto.BORRADOR,
     destacado: false,
     contenidoCantidad: 250,
     contenidoUnidad: "g",

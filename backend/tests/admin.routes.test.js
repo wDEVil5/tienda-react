@@ -72,6 +72,30 @@ test('GET /api/admin/promociones entrega campañas al personal autorizado', asyn
   assert.equal(response.body.data[0].productosAsignados, 3)
 })
 
+test('POST /api/admin/categorias crea una categoría validada', async () => {
+  let datosRecibidos
+  const app = express()
+  app.use(express.json())
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'OPERADOR' }
+      next()
+    },
+    servicio: {
+      async crearCategoriaAdmin(datos) {
+        datosRecibidos = datos
+        return { id: 'cat-1', ...datos, activa: true }
+      },
+    },
+  }))
+
+  const response = await request(app).post('/api/admin/categorias').send({ nombre: 'Congelados' })
+
+  assert.equal(response.status, 201)
+  assert.equal(datosRecibidos.nombre, 'Congelados')
+  assert.equal(response.body.data.activa, true)
+})
+
 test('GET /api/admin/promociones/:id entrega una campaña para edición', async () => {
   const app = express()
   app.use('/api/admin', crearRouterAdmin({

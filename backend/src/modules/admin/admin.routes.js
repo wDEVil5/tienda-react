@@ -30,6 +30,8 @@ import {
   validarCambiosPromocionAdmin,
   validarPromocionNuevaAdmin,
 } from './admin-promociones.validacion.js'
+import { ErrorCategoriaAdmin, crearCategoriaAdmin } from './admin-categorias.service.js'
+import { validarCategoriaNuevaAdmin } from './admin-categorias.validacion.js'
 
 export function crearRouterAdmin({
   servicio = {
@@ -45,12 +47,42 @@ export function crearRouterAdmin({
     crearPromocionAdmin,
     activarPromocionAdmin,
     actualizarPromocionAdmin,
+    crearCategoriaAdmin,
     desactivarPromocionAdmin,
     obtenerPromocionParaEdicionAdmin,
   },
   middlewareSesion = requerirSesion,
 } = {}) {
   const adminRouter = Router()
+
+  adminRouter.post(
+    '/categorias',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      const validacion = validarCategoriaNuevaAdmin(request.body)
+      if (!validacion.success) {
+        return response.status(422).json({
+          error: { code: 'INVALID_CATEGORY_DATA', message: 'Revisa los datos de la categoría.' },
+        })
+      }
+
+      try {
+        const categoria = await servicio.crearCategoriaAdmin(validacion.data)
+        return response.status(201).json({ data: categoria })
+      } catch (error) {
+        if (error instanceof ErrorCategoriaAdmin) {
+          return response.status(422).json({ error: { code: error.code, message: error.message } })
+        }
+        if (error.code === 'P2002') {
+          return response.status(409).json({
+            error: { code: 'CATEGORY_ALREADY_EXISTS', message: 'El nombre o slug de la categoría ya está en uso.' },
+          })
+        }
+        return next(error)
+      }
+    },
+  )
 
   adminRouter.get(
     '/promociones',

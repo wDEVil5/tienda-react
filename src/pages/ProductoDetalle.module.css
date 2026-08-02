@@ -205,6 +205,14 @@
   color: var(--color-oferta);
 }
 
+/* Lo calcula la API a partir de contenido y precio; no se muestra si la
+   unidad del producto no permite una comparación útil (por ejemplo, unidades). */
+.precioPorUnidad {
+  margin-top: calc(var(--e-sm) * -1);
+  font-size: 12.5px;
+  color: var(--color-texto-suave);
+}
+
 .stock {
   display: inline-flex;
   align-items: center;
@@ -218,6 +226,14 @@
   height: 8px;
   border-radius: var(--radio-pill);
   background-color: var(--color-acento);
+}
+
+.stockAgotado {
+  color: var(--color-oferta);
+}
+
+.stockAgotado .punto {
+  background-color: var(--color-oferta);
 }
 
 /* Fila de compra: selector de cantidad + botón agregar. */
@@ -244,6 +260,11 @@
 
 .boton:hover {
   background-color: #285d40;
+}
+
+.boton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 /* Caja de info de entrega (label fijo + valor). */

@@ -89,6 +89,13 @@ function ProductoDetalle({ productos }) {
     ? Math.round((1 - producto.precio / producto.precioAnterior) * 100)
     : 0;
   const ahorro = enOferta ? producto.precioAnterior - producto.precio : 0;
+  const stockConocido = Number.isInteger(producto.stock) && producto.stock >= 0;
+  const sinStock = stockConocido && producto.stock === 0;
+  const textoStock = stockConocido
+    ? sinStock
+      ? "Sin stock"
+      : `${producto.stock} ${producto.stock === 1 ? "unidad disponible" : "unidades disponibles"}`
+    : "En stock";
 
   // Relacionados: misma categoría, sin incluir el actual, hasta 4.
   const relacionados = productos
@@ -178,10 +185,15 @@ function ProductoDetalle({ productos }) {
             )}
           </div>
 
-          {/* Stock estático por ahora; será dato real con el backend (Fase 2). */}
-          <p className={styles.stock}>
+          {producto.precioPorUnidad && (
+            <p className={styles.precioPorUnidad}>
+              ${producto.precioPorUnidad.monto.toLocaleString("es-CL")} por {producto.precioPorUnidad.unidad}
+            </p>
+          )}
+
+          <p className={`${styles.stock} ${sinStock ? styles.stockAgotado : ""}`}>
             <span className={styles.punto} aria-hidden="true"></span>
-            En stock
+            {textoStock}
           </p>
 
           <div className={styles.compra}>
@@ -196,8 +208,9 @@ function ProductoDetalle({ productos }) {
             <button
               className={styles.boton}
               onClick={() => agregarAlCarrito(producto, cantidad)}
+              disabled={sinStock}
             >
-              Agregar al carrito
+              {sinStock ? "Producto agotado" : "Agregar al carrito"}
             </button>
           </div>
 

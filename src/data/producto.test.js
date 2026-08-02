@@ -11,6 +11,9 @@ describe('normalizarProductoApi', () => {
       categoria: { id: 'cat_despensa', nombre: 'Despensa', slug: 'despensa' },
       descripcion: 'Aceite prensado en frío.',
       stock: 12,
+      contenidoCantidad: 500,
+      contenidoUnidad: 'ml',
+      precioPorUnidad: { monto: 15980, unidad: 'L' },
       imagenes: [
         { url: 'https://ejemplo.cl/lateral.jpg', alt: 'Vista lateral', orden: 2 },
         { url: 'https://ejemplo.cl/frontal.jpg', alt: 'Vista frontal', orden: 1 },
@@ -28,6 +31,9 @@ describe('normalizarProductoApi', () => {
       ],
       sku: 'prod_aceite_oliva_500',
       stock: 12,
+      contenidoCantidad: 500,
+      contenidoUnidad: 'ml',
+      precioPorUnidad: { monto: 15980, unidad: 'L' },
     })
   })
 })

@@ -5,7 +5,7 @@ import { validarImagenesProductoAdmin } from '../src/modules/admin/admin-imagene
 test('acepta hasta cinco imágenes únicas y con texto alternativo', () => {
   const resultado = validarImagenesProductoAdmin({
     imagenes: [
-      { url: 'https://cdn.ejemplo.test/aceite-frontal.webp', textoAlternativo: 'Botella de aceite frontal' },
+      { url: 'https://cdn.ejemplo.test/aceite-frontal.webp', storageKey: 'sumarket/productos/aceite-frontal', textoAlternativo: 'Botella de aceite frontal' },
       { url: 'https://cdn.ejemplo.test/aceite-lateral.webp', textoAlternativo: 'Botella de aceite lateral' },
     ],
   })

@@ -25,7 +25,7 @@ test('obtenerProductoParaEdicion expone los datos que necesita el editor', async
         fechaVencimiento: new Date('2027-01-31T00:00:00.000Z'),
         categoria: { id: 'cat-1', nombre: 'Despensa', slug: 'despensa' },
         marca: { id: 'marca-1', nombre: 'Valle Oliva', slug: 'valle-oliva', logoUrl: null },
-        imagenes: [{ id: 'imagen-1', url: 'https://ejemplo.test/aceite.jpg', textoAlternativo: 'Aceite', orden: 1 }],
+        imagenes: [{ id: 'imagen-1', url: 'https://ejemplo.test/aceite.jpg', storageKey: 'sumarket/productos/aceite', textoAlternativo: 'Aceite', orden: 1 }],
         etiquetas: [{ etiqueta: { id: 'etiqueta-1', nombre: 'Vegano', slug: 'vegano' } }],
       }
     },
@@ -38,6 +38,7 @@ test('obtenerProductoParaEdicion expone los datos que necesita el editor', async
   assert.equal(producto.destacado, true)
   assert.equal(producto.contenidoCantidad, 500)
   assert.equal(producto.marca.nombre, 'Valle Oliva')
+  assert.equal(producto.imagenes[0].storageKey, 'sumarket/productos/aceite')
   assert.deepEqual(producto.etiquetas, [
     { id: 'etiqueta-1', nombre: 'Vegano', slug: 'vegano' },
   ])

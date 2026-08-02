@@ -54,6 +54,7 @@ export function crearRepositorioProductosAdmin(cliente = prisma) {
           data: imagenes.map((imagen, indice) => ({
             productoId: id,
             url: imagen.url,
+            storageKey: imagen.storageKey ?? null,
             textoAlternativo: imagen.textoAlternativo ?? null,
             orden: indice + 1,
           })),

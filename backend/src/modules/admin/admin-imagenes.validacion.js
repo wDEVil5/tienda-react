@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 const esquemaImagen = z.object({
   url: z.string().url().max(500),
+  storageKey: z.string().trim().min(1).max(300).nullable().optional(),
   textoAlternativo: z.string().trim().min(1).max(255).nullable().optional(),
 }).strict()
 

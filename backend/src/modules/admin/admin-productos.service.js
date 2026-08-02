@@ -43,6 +43,7 @@ function crearProductoParaEdicion(producto) {
     imagenes: producto.imagenes.map((imagen) => ({
       id: imagen.id,
       url: imagen.url,
+      storageKey: imagen.storageKey,
       textoAlternativo: imagen.textoAlternativo,
       orden: imagen.orden,
     })),

@@ -30,8 +30,12 @@ import {
   validarCambiosPromocionAdmin,
   validarPromocionNuevaAdmin,
 } from './admin-promociones.validacion.js'
-import { ErrorCategoriaAdmin, crearCategoriaAdmin } from './admin-categorias.service.js'
-import { listarCategoriasAdmin } from './admin-categorias.service.js'
+import {
+  ErrorCategoriaAdmin,
+  crearCategoriaAdmin,
+  desactivarCategoriaAdmin,
+  listarCategoriasAdmin,
+} from './admin-categorias.service.js'
 import { validarCategoriaNuevaAdmin } from './admin-categorias.validacion.js'
 import { ErrorMarcaAdmin, crearMarcaAdmin } from './admin-marcas.service.js'
 import { validarMarcaNuevaAdmin } from './admin-marcas.validacion.js'
@@ -58,6 +62,7 @@ export function crearRouterAdmin({
     actualizarPromocionAdmin,
     crearCategoriaAdmin,
     listarCategoriasAdmin,
+    desactivarCategoriaAdmin,
     crearMarcaAdmin,
     asignarLogoMarcaAdmin,
     subirLogoMarca,
@@ -105,6 +110,28 @@ export function crearRouterAdmin({
           return response.status(409).json({
             error: { code: 'CATEGORY_ALREADY_EXISTS', message: 'El nombre o slug de la categoría ya está en uso.' },
           })
+        }
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.patch(
+    '/categorias/:id/desactivar',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      try {
+        const categoria = await servicio.desactivarCategoriaAdmin(request.params.id)
+        if (!categoria) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_CATEGORY_NOT_FOUND', message: 'No encontramos la categoría solicitada.' },
+          })
+        }
+        return response.json({ data: categoria })
+      } catch (error) {
+        if (error instanceof ErrorCategoriaAdmin) {
+          return response.status(422).json({ error: { code: error.code, message: error.message } })
         }
         return next(error)
       }

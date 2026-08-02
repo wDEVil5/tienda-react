@@ -15,6 +15,21 @@ export function crearRepositorioCategoriasAdmin(cliente = prisma) {
       })
     },
 
+    obtenerPorId(id) {
+      return cliente.categoria.findUnique({
+        where: { id },
+        select: { id: true, nombre: true, activa: true, _count: { select: { productos: true } } },
+      })
+    },
+
+    actualizarPorId(id, datos) {
+      return cliente.categoria.update({
+        where: { id },
+        data: datos,
+        select: { id: true, nombre: true, slug: true, activa: true },
+      })
+    },
+
     crear(datos) {
       return cliente.categoria.create({
         data: datos,

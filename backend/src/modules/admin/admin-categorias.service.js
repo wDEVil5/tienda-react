@@ -24,6 +24,20 @@ function crearSlug(nombre) {
 
 export function crearServicioCategoriasAdmin(repositorio = repositorioCategoriasAdmin) {
   return {
+    async desactivarCategoria(id) {
+      const categoria = await repositorio.obtenerPorId(id)
+      if (!categoria) return null
+
+      if (categoria._count.productos > 0) {
+        throw new ErrorCategoriaAdmin(
+          'CATEGORY_HAS_PRODUCTS',
+          'Reasigna los productos antes de desactivar esta categoría.',
+        )
+      }
+
+      return repositorio.actualizarPorId(id, { activa: false })
+    },
+
     async listarCategorias() {
       const categorias = await repositorio.listar()
       return {
@@ -51,3 +65,4 @@ const servicioCategoriasAdmin = crearServicioCategoriasAdmin()
 
 export const crearCategoriaAdmin = servicioCategoriasAdmin.crearCategoria
 export const listarCategoriasAdmin = servicioCategoriasAdmin.listarCategorias
+export const desactivarCategoriaAdmin = servicioCategoriasAdmin.desactivarCategoria

@@ -1,5 +1,5 @@
 import { prisma } from '../lib/prisma.js'
-import { crearHashContrasena } from '../modules/auth/contrasena.js'
+import { crearHashContrasena, validarContrasenaNueva } from '../modules/auth/contrasena.js'
 
 function obtenerVariableRequerida(nombre) {
   const valor = process.env[nombre]?.trim()
@@ -16,9 +16,7 @@ async function crearAdministradorInicial() {
   const email = obtenerVariableRequerida('ADMIN_EMAIL').toLowerCase()
   const contrasena = obtenerVariableRequerida('ADMIN_PASSWORD')
 
-  if (contrasena.length < 12) {
-    throw new Error('ADMIN_PASSWORD debe tener al menos 12 caracteres.')
-  }
+  validarContrasenaNueva(contrasena)
 
   const passwordHash = await crearHashContrasena(contrasena)
   const usuario = await prisma.usuario.upsert({

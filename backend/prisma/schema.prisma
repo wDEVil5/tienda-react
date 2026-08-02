@@ -26,9 +26,27 @@ model Usuario {
   activo       Boolean    @default(true)
   createdAt    DateTime   @default(now()) @map("created_at")
   updatedAt    DateTime   @updatedAt @map("updated_at")
+  sesiones     Sesion[]
 
   @@index([activo])
   @@map("usuarios")
+}
+
+// La base nunca conserva el token que viaja al navegador, solo su hash. Esto
+// permite expirar o revocar sesiones sin guardar credenciales reutilizables.
+model Sesion {
+  id         String    @id @default(uuid()) @db.Uuid
+  tokenHash  String    @unique @map("token_hash") @db.VarChar(64)
+  expiraEn   DateTime  @map("expira_en")
+  revocadaEn DateTime? @map("revocada_en")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  usuarioId  String    @map("usuario_id") @db.Uuid
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@index([expiraEn])
+  @@map("sesiones")
 }
 
 model Categoria {

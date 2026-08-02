@@ -205,6 +205,9 @@ function Carrito({ onCerrar, abierto, productos, onVerOfertas, onVerCatalogo }) 
                     onDisminuir={() => cambiarCantidad(item.id, -1)}
                     onAumentar={() => cambiarCantidad(item.id, 1)}
                     onFijar={(n) => fijarCantidad(item.id, n)}
+                    puedeAumentar={
+                      !Number.isInteger(item.stock) || item.cantidad < item.stock
+                    }
                   />
                   <span className={styles.subtotal}>
                     ${(item.precio * item.cantidad).toLocaleString("es-CL")}

@@ -49,6 +49,28 @@ describe("carritoReducer", () => {
     expect(resultado[0].cantidad).toBe(5);
   });
 
+  it("AGREGAR: no supera el stock informado por la API", () => {
+    const resultado = carritoReducer(
+      [{ id: 1, cantidad: 2, stock: 3 }],
+      {
+        type: "AGREGAR",
+        producto: { id: 1, nombre: "Plátano", precio: 990, stock: 3 },
+        cantidad: 3,
+      },
+    );
+
+    expect(resultado[0].cantidad).toBe(3);
+  });
+
+  it("AGREGAR: no incorpora productos agotados", () => {
+    const resultado = carritoReducer([], {
+      type: "AGREGAR",
+      producto: { id: 1, nombre: "Plátano", precio: 990, stock: 0 },
+    });
+
+    expect(resultado).toEqual([]);
+  });
+
   it("ELIMINAR: quita el producto con ese id", () => {
     const estado = [
       { id: 1, cantidad: 1 },
@@ -102,6 +124,15 @@ describe("carritoReducer", () => {
     });
 
     expect(resultado[0].cantidad).toBe(1);
+  });
+
+  it("FIJAR_CANTIDAD: no supera el stock informado", () => {
+    const resultado = carritoReducer(
+      [{ id: 1, cantidad: 1, stock: 3 }],
+      { type: "FIJAR_CANTIDAD", id: 1, cantidad: 9 },
+    );
+
+    expect(resultado[0].cantidad).toBe(3);
   });
 
   it("RESTAURAR: reinserta un ítem en su posición original", () => {

@@ -1,5 +1,13 @@
 import { useReducer, useEffect, useState } from "react";
 
+// El stock que llega desde la API acota la experiencia del cliente. Si el
+// producto no lo informa (como Fake Store), el carrito conserva el flujo libre.
+function limitarPorStock(cantidad, stock) {
+  return Number.isInteger(stock) && stock >= 0
+    ? Math.min(cantidad, stock)
+    : cantidad;
+}
+
 // La inicialización diferida evita leer localStorage en cada render.
 function iniciarCarrito() {
   try {
@@ -22,33 +30,47 @@ export function carritoReducer(estado, accion) {
       const cantidad = accion.cantidad ?? 1;
       const itemExistente = estado.find((item) => item.id === accion.producto.id);
       if (itemExistente) {
+        const cantidadFinal = limitarPorStock(
+          itemExistente.cantidad + cantidad,
+          accion.producto.stock,
+        );
+        if (cantidadFinal === itemExistente.cantidad) return estado;
+
         return estado.map((item) =>
           item.id === accion.producto.id
-            ? { ...item, cantidad: item.cantidad + cantidad }
+            // Refrescamos los datos públicos al volver a agregar el producto,
+            // pero su cantidad siempre queda dentro del stock informado.
+            ? { ...item, ...accion.producto, cantidad: cantidadFinal }
             : item,
         );
       }
-      return [...estado, { ...accion.producto, cantidad }];
+      const cantidadFinal = limitarPorStock(cantidad, accion.producto.stock);
+      return cantidadFinal > 0
+        ? [...estado, { ...accion.producto, cantidad: cantidadFinal }]
+        : estado;
     }
 
     case "ELIMINAR":
       return estado.filter((item) => item.id !== accion.id);
 
     case "CAMBIAR_CANTIDAD":
-      return estado.map((item) =>
-        item.id === accion.id
-          ? { ...item, cantidad: Math.max(1, item.cantidad + accion.delta) }
-          : item,
-      );
+      return estado.map((item) => {
+        if (item.id !== accion.id) return item;
+        const cantidad = limitarPorStock(
+          Math.max(1, item.cantidad + accion.delta),
+          item.stock,
+        );
+        return cantidad > 0 ? { ...item, cantidad } : item;
+      });
 
     // Como CAMBIAR_CANTIDAD pero con un valor ABSOLUTO (para el input editable),
     // no un delta. Igual protegemos el mínimo de 1.
     case "FIJAR_CANTIDAD":
-      return estado.map((item) =>
-        item.id === accion.id
-          ? { ...item, cantidad: Math.max(1, accion.cantidad) }
-          : item,
-      );
+      return estado.map((item) => {
+        if (item.id !== accion.id) return item;
+        const cantidad = limitarPorStock(Math.max(1, accion.cantidad), item.stock);
+        return cantidad > 0 ? { ...item, cantidad } : item;
+      });
 
     // Reinserta un ítem previamente eliminado en su posición original (para el
     // "Deshacer"). splice sobre una COPIA para no mutar el estado anterior.
@@ -90,8 +112,24 @@ export function useCarrito() {
   // Funciones "envoltorio" traducen una intención a una acción y la despachan.
   // Quien usa el hook no necesita saber que por dentro hay un reducer.
   const agregarAlCarrito = (producto, cantidad = 1) => {
-    dispatch({ type: "AGREGAR", producto, cantidad });
-    mostrarAviso(`${producto.nombre} se agregó al carrito`);
+    const itemExistente = carrito.find((item) => item.id === producto.id);
+    const cantidadActual = itemExistente?.cantidad ?? 0;
+    const stock = producto.stock;
+    const stockConocido = Number.isInteger(stock) && stock >= 0;
+    const disponible = stockConocido ? stock - cantidadActual : cantidad;
+
+    if (disponible <= 0) {
+      mostrarAviso(`No quedan más unidades de ${producto.nombre}`);
+      return;
+    }
+
+    const cantidadAceptada = stockConocido ? Math.min(cantidad, disponible) : cantidad;
+    dispatch({ type: "AGREGAR", producto, cantidad: cantidadAceptada });
+    mostrarAviso(
+      cantidadAceptada < cantidad
+        ? `Solo quedan ${cantidadAceptada} unidades de ${producto.nombre}`
+        : `${producto.nombre} se agregó al carrito`,
+    );
   };
 
   // Guardamos el ítem y su posición ANTES de borrarlo, para poder devolverlo

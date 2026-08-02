@@ -10,6 +10,7 @@ function ControlCantidad({
   onAumentar,
   onFijar,
   grande = false,
+  puedeAumentar = true,
 }) {
   // Estado local del texto del input. Permite valores intermedios mientras se
   // escribe (incluido el campo vacío). La verdad final sigue viviendo en el carrito.
@@ -60,6 +61,7 @@ function ControlCantidad({
         className={styles.boton}
         onClick={onAumentar}
         aria-label="Aumentar cantidad"
+        disabled={!puedeAumentar}
       >
         +
       </button>

@@ -28,6 +28,11 @@
   background-color: var(--color-crudo);
 }
 
+.boton:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
 .input {
   width: 34px;
   height: 100%;

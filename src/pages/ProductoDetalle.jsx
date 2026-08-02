@@ -13,7 +13,7 @@ const MAXIMO_IMAGENES_PRODUCTO = 5;
 
 function ProductoDetalle({ productos }) {
   const { slug } = useParams();
-  const { agregarAlCarrito } = useCarritoContext();
+  const { agregarAlCarrito, carrito } = useCarritoContext();
   const [cantidad, setCantidad] = useState(1); // cantidad a agregar
   const [imagenSeleccionada, setImagenSeleccionada] = useState(null);
 
@@ -91,6 +91,11 @@ function ProductoDetalle({ productos }) {
   const ahorro = enOferta ? producto.precioAnterior - producto.precio : 0;
   const stockConocido = Number.isInteger(producto.stock) && producto.stock >= 0;
   const sinStock = stockConocido && producto.stock === 0;
+  const cantidadEnCarrito = carrito.find((item) => item.id === producto.id)?.cantidad ?? 0;
+  const disponiblesParaAgregar = stockConocido
+    ? Math.max(0, producto.stock - cantidadEnCarrito)
+    : null;
+  const puedeAgregar = !sinStock && (disponiblesParaAgregar === null || disponiblesParaAgregar > 0);
   const textoStock = stockConocido
     ? sinStock
       ? "Sin stock"
@@ -201,16 +206,25 @@ function ProductoDetalle({ productos }) {
               grande
               cantidad={cantidad}
               onDisminuir={() => setCantidad((c) => Math.max(1, c - 1))}
-              onAumentar={() => setCantidad((c) => c + 1)}
-              onFijar={setCantidad}
+              onAumentar={() =>
+                setCantidad((c) =>
+                  disponiblesParaAgregar === null ? c + 1 : Math.min(c + 1, disponiblesParaAgregar),
+                )
+              }
+              onFijar={(n) =>
+                setCantidad(
+                  disponiblesParaAgregar === null ? n : Math.min(n, disponiblesParaAgregar),
+                )
+              }
+              puedeAumentar={disponiblesParaAgregar === null || cantidad < disponiblesParaAgregar}
             />
 
             <button
               className={styles.boton}
               onClick={() => agregarAlCarrito(producto, cantidad)}
-              disabled={sinStock}
+              disabled={!puedeAgregar}
             >
-              {sinStock ? "Producto agotado" : "Agregar al carrito"}
+              {puedeAgregar ? "Agregar al carrito" : "Stock completo en tu carrito"}
             </button>
           </div>
 

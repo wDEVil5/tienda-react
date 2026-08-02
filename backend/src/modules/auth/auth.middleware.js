@@ -34,6 +34,8 @@ export function crearRequerirSesion(servicio = { obtenerSesionActiva }) {
       }
 
       request.usuario = sesion.usuario
+      // La ruta de logout lo usa para revocar exactamente la misma sesión.
+      request.tokenSesion = token
       return next()
     } catch (error) {
       return next(error)

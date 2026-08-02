@@ -47,6 +47,12 @@ export function crearServicioAuth(repositorio = repositorioAuth) {
 
       return sesion ? { usuario: crearUsuarioPublico(sesion.usuario) } : null
     },
+
+    cerrarSesion(token, ahora = new Date()) {
+      if (!token) return Promise.resolve()
+
+      return repositorio.revocarSesionPorHash(hashTokenSesion(token), ahora)
+    },
   }
 }
 
@@ -54,3 +60,4 @@ const servicioAuth = crearServicioAuth()
 
 export const iniciarSesion = servicioAuth.iniciarSesion
 export const obtenerSesionActiva = servicioAuth.obtenerSesionActiva
+export const cerrarSesion = servicioAuth.cerrarSesion

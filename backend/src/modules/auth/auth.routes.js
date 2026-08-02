@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { iniciarSesion, obtenerSesionActiva } from './auth.service.js'
+import { cerrarSesion, iniciarSesion, obtenerSesionActiva } from './auth.service.js'
 import { crearRequerirSesion } from './auth.middleware.js'
 
 const DURACION_COOKIE_SESION_MS = 7 * 24 * 60 * 60 * 1000
@@ -11,7 +11,11 @@ function leerCredenciales(body) {
   return { email, contrasena }
 }
 
-export function crearRouterAuth(servicio = { iniciarSesion, obtenerSesionActiva }) {
+export function crearRouterAuth(servicio = {
+  iniciarSesion,
+  obtenerSesionActiva,
+  cerrarSesion,
+}) {
   const authRouter = Router()
   const requerirSesion = crearRequerirSesion(servicio)
 
@@ -57,6 +61,21 @@ export function crearRouterAuth(servicio = { iniciarSesion, obtenerSesionActiva 
 
   authRouter.get('/me', requerirSesion, (request, response) => {
     return response.json({ data: { usuario: request.usuario } })
+  })
+
+  authRouter.post('/logout', requerirSesion, async (request, response, next) => {
+    try {
+      await servicio.cerrarSesion(request.tokenSesion)
+      response.clearCookie('sesion_admin', {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        path: '/',
+      })
+      return response.status(204).end()
+    } catch (error) {
+      return next(error)
+    }
   })
 
   return authRouter

@@ -93,3 +93,21 @@ test('obtenerSesionActiva devuelve solo el usuario de una sesión vigente', asyn
   assert.equal(resultado.usuario.email, 'wilnes@example.test')
   assert.equal('passwordHash' in resultado.usuario, false)
 })
+
+test('cerrarSesion revoca solo la sesión asociada al token recibido', async () => {
+  let hashConsultado
+  let fechaConsultada
+  const repositorio = {
+    async revocarSesionPorHash(hash, ahora) {
+      hashConsultado = hash
+      fechaConsultada = ahora
+    },
+  }
+  const servicio = crearServicioAuth(repositorio)
+  const ahora = new Date('2026-08-02T12:00:00.000Z')
+
+  await servicio.cerrarSesion('token-de-prueba', ahora)
+
+  assert.equal(hashConsultado, hashTokenSesion('token-de-prueba'))
+  assert.equal(fechaConsultada, ahora)
+})

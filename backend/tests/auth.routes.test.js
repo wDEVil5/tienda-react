@@ -79,3 +79,23 @@ test('GET /api/auth/me rechaza una solicitud sin sesión', async () => {
   assert.equal(response.status, 401)
   assert.equal(response.body.error.code, 'AUTH_REQUIRED')
 })
+
+test('POST /api/auth/logout revoca la sesión y borra su cookie', async () => {
+  let tokenRevocado
+  const app = crearAppAuth({
+    async obtenerSesionActiva() {
+      return { usuario: { id: 'usuario-1', rol: 'ADMIN' } }
+    },
+    async cerrarSesion(token) {
+      tokenRevocado = token
+    },
+  })
+
+  const response = await request(app)
+    .post('/api/auth/logout')
+    .set('Cookie', 'sesion_admin=sesion-valida')
+
+  assert.equal(response.status, 204)
+  assert.equal(tokenRevocado, 'sesion-valida')
+  assert.match(response.headers['set-cookie'][0], /sesion_admin=;/)
+})

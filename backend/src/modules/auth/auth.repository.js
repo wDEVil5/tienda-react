@@ -25,6 +25,17 @@ export function crearRepositorioAuth(cliente = prisma) {
         include: { usuario: true },
       })
     },
+
+    revocarSesionPorHash(tokenHash, ahora) {
+      return cliente.sesion.updateMany({
+        where: {
+          tokenHash,
+          revocadaEn: null,
+          expiraEn: { gt: ahora },
+        },
+        data: { revocadaEn: ahora },
+      })
+    },
   }
 }
 

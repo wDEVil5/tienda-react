@@ -96,6 +96,26 @@ test('POST /api/admin/categorias crea una categoría validada', async () => {
   assert.equal(response.body.data.activa, true)
 })
 
+test('GET /api/admin/categorias incluye categorías inactivas para el panel', async () => {
+  const app = express()
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'OPERADOR' }
+      next()
+    },
+    servicio: {
+      async listarCategoriasAdmin() {
+        return { data: [{ id: 'cat-1', activa: false, productosAsignados: 3 }] }
+      },
+    },
+  }))
+
+  const response = await request(app).get('/api/admin/categorias')
+
+  assert.equal(response.status, 200)
+  assert.equal(response.body.data[0].activa, false)
+})
+
 test('POST /api/admin/marcas crea una marca sin logo manual', async () => {
   let datosRecibidos
   const app = express()

@@ -31,6 +31,7 @@ import {
   validarPromocionNuevaAdmin,
 } from './admin-promociones.validacion.js'
 import { ErrorCategoriaAdmin, crearCategoriaAdmin } from './admin-categorias.service.js'
+import { listarCategoriasAdmin } from './admin-categorias.service.js'
 import { validarCategoriaNuevaAdmin } from './admin-categorias.validacion.js'
 import { ErrorMarcaAdmin, crearMarcaAdmin } from './admin-marcas.service.js'
 import { validarMarcaNuevaAdmin } from './admin-marcas.validacion.js'
@@ -56,6 +57,7 @@ export function crearRouterAdmin({
     activarPromocionAdmin,
     actualizarPromocionAdmin,
     crearCategoriaAdmin,
+    listarCategoriasAdmin,
     crearMarcaAdmin,
     asignarLogoMarcaAdmin,
     subirLogoMarca,
@@ -66,6 +68,19 @@ export function crearRouterAdmin({
   middlewareSesion = requerirSesion,
 } = {}) {
   const adminRouter = Router()
+
+  adminRouter.get(
+    '/categorias',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (_request, response, next) => {
+      try {
+        return response.json(await servicio.listarCategoriasAdmin())
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
 
   adminRouter.post(
     '/categorias',

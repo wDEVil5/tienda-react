@@ -24,6 +24,19 @@ function crearSlug(nombre) {
 
 export function crearServicioCategoriasAdmin(repositorio = repositorioCategoriasAdmin) {
   return {
+    async listarCategorias() {
+      const categorias = await repositorio.listar()
+      return {
+        data: categorias.map((categoria) => ({
+          id: categoria.id,
+          nombre: categoria.nombre,
+          slug: categoria.slug,
+          activa: categoria.activa,
+          productosAsignados: categoria._count.productos,
+        })),
+      }
+    },
+
     async crearCategoria(datos) {
       return repositorio.crear({
         ...datos,
@@ -37,3 +50,4 @@ export function crearServicioCategoriasAdmin(repositorio = repositorioCategorias
 const servicioCategoriasAdmin = crearServicioCategoriasAdmin()
 
 export const crearCategoriaAdmin = servicioCategoriasAdmin.crearCategoria
+export const listarCategoriasAdmin = servicioCategoriasAdmin.listarCategorias

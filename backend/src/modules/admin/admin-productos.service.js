@@ -71,6 +71,24 @@ function crearProductoParaEdicion(producto) {
   }
 }
 
+function crearResumenProductoAdmin(producto) {
+  return {
+    id: producto.id,
+    sku: producto.sku,
+    slug: producto.slug,
+    nombre: producto.nombre,
+    precio: producto.precio,
+    stock: producto.stock,
+    activo: producto.activo,
+    destacado: producto.destacado,
+    categoria: producto.categoria,
+    marca: producto.marca,
+    imagen: producto.imagenes[0]
+      ? { url: producto.imagenes[0].url, alt: producto.imagenes[0].textoAlternativo }
+      : null,
+  }
+}
+
 function construirDatosActualizacion(cambios) {
   const { categoriaId, marcaId, etiquetaIds, fechaVencimiento, ...campos } = cambios
   const datos = { ...campos }
@@ -128,6 +146,18 @@ export function crearServicioProductosAdmin(
   almacenamiento = almacenamientoImagenes,
 ) {
   return {
+    async listarProductos({ page = 1, limit = 20 } = {}) {
+      const [productos, total] = await Promise.all([
+        repositorio.listar({ page, limit }),
+        repositorio.contar(),
+      ])
+
+      return {
+        data: productos.map(crearResumenProductoAdmin),
+        meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      }
+    },
+
     async obtenerProductoParaEdicion(id) {
       const producto = await repositorio.obtenerPorId(id)
       return producto ? crearProductoParaEdicion(producto) : null
@@ -222,6 +252,7 @@ export function crearServicioProductosAdmin(
 
 const servicioProductosAdmin = crearServicioProductosAdmin()
 
+export const listarProductosAdmin = servicioProductosAdmin.listarProductos
 export const obtenerProductoParaEdicion = servicioProductosAdmin.obtenerProductoParaEdicion
 export const actualizarProducto = servicioProductosAdmin.actualizarProducto
 export const crearProducto = servicioProductosAdmin.crearProducto

@@ -5,6 +5,7 @@ import {
   actualizarProducto,
   crearProducto,
   desactivarProducto,
+  listarProductosAdmin,
   obtenerProductoParaEdicion,
   reemplazarImagenesProducto,
 } from './admin-productos.service.js'
@@ -19,6 +20,7 @@ import { recibirImagenProducto } from '../imagenes/imagenes.middleware.js'
 export function crearRouterAdmin({
   servicio = {
     obtenerProductoParaEdicion,
+    listarProductosAdmin,
     actualizarProducto,
     crearProducto,
     desactivarProducto,
@@ -28,6 +30,31 @@ export function crearRouterAdmin({
   middlewareSesion = requerirSesion,
 } = {}) {
   const adminRouter = Router()
+
+  adminRouter.get(
+    '/productos',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      const page = leerEnteroPositivo(request.query.page, 1)
+      const limit = leerEnteroPositivo(request.query.limit, 20, 100)
+
+      if (page === null || limit === null) {
+        return response.status(400).json({
+          error: {
+            code: 'INVALID_QUERY_PARAM',
+            message: 'page debe ser positivo y limit debe estar entre 1 y 100.',
+          },
+        })
+      }
+
+      try {
+        return response.json(await servicio.listarProductosAdmin({ page, limit }))
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
 
   // Operador podrá gestionar catálogo; las acciones exclusivas de ADMIN se
   // decidirán ruta por ruta cuando se agreguen usuarios y promociones.
@@ -218,6 +245,12 @@ export function crearRouterAdmin({
   )
 
   return adminRouter
+}
+
+function leerEnteroPositivo(valor, predeterminado, maximo = Infinity) {
+  if (valor === undefined) return predeterminado
+  const numero = typeof valor === 'string' ? Number(valor) : Number.NaN
+  return Number.isInteger(numero) && numero > 0 && numero <= maximo ? numero : null
 }
 
 export default crearRouterAdmin()

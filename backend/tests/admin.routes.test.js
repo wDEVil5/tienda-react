@@ -32,6 +32,34 @@ test('GET /api/admin/productos/:id informa cuando no existe', async () => {
   assert.equal(response.body.error.code, 'ADMIN_PRODUCT_NOT_FOUND')
 })
 
+test('GET /api/admin/productos devuelve el listado administrativo paginado', async () => {
+  const app = express()
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'ADMIN' }
+      next()
+    },
+    servicio: {
+      async listarProductosAdmin({ page, limit }) {
+        return { data: [{ id: 'producto-1', activo: false }], meta: { page, limit, total: 1, totalPages: 1 } }
+      },
+    },
+  }))
+
+  const response = await request(app).get('/api/admin/productos?page=2&limit=10')
+
+  assert.equal(response.status, 200)
+  assert.deepEqual(response.body.meta, { page: 2, limit: 10, total: 1, totalPages: 1 })
+  assert.equal(response.body.data[0].activo, false)
+})
+
+test('GET /api/admin/productos rechaza paginación inválida', async () => {
+  const response = await request(crearAppAdmin()).get('/api/admin/productos?limit=0')
+
+  assert.equal(response.status, 400)
+  assert.equal(response.body.error.code, 'INVALID_QUERY_PARAM')
+})
+
 test('POST /api/admin/productos crea un producto validado sin publicarlo', async () => {
   let datosRecibidos
   const app = express()

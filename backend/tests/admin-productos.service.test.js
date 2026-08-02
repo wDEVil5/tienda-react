@@ -2,6 +2,30 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { crearServicioProductosAdmin } from '../src/modules/admin/admin-productos.service.js'
 
+test('listarProductos entrega un resumen paginado que incluye productos inactivos', async () => {
+  const repositorio = {
+    async listar() {
+      return [{
+        id: 'producto-1', sku: 'ACE-001', slug: 'aceite', nombre: 'Aceite', precio: 7990,
+        stock: 0, activo: false, destacado: false,
+        categoria: { id: 'cat-1', nombre: 'Despensa', slug: 'despensa' },
+        marca: { id: 'marca-1', nombre: 'Marca' },
+        imagenes: [{ url: 'https://ejemplo.test/aceite.webp', textoAlternativo: 'Aceite' }],
+      }]
+    },
+    async contar() { return 1 },
+  }
+  const servicio = crearServicioProductosAdmin(repositorio)
+
+  const resultado = await servicio.listarProductos({ page: 1, limit: 20 })
+
+  assert.deepEqual(resultado.meta, { page: 1, limit: 20, total: 1, totalPages: 1 })
+  assert.equal(resultado.data[0].activo, false)
+  assert.deepEqual(resultado.data[0].imagen, {
+    url: 'https://ejemplo.test/aceite.webp', alt: 'Aceite',
+  })
+})
+
 test('obtenerProductoParaEdicion expone los datos que necesita el editor', async () => {
   const repositorio = {
     async obtenerPorId() {

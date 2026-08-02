@@ -7,8 +7,33 @@ const incluirProductoAdmin = {
   etiquetas: { include: { etiqueta: true } },
 }
 
+// El listado usa una proyección pequeña: el editor completo se solicita solo
+// al abrir un producto, para no cargar galerías y etiquetas innecesarias.
+const incluirResumenProductoAdmin = {
+  categoria: { select: { id: true, nombre: true, slug: true } },
+  marca: { select: { id: true, nombre: true } },
+  imagenes: {
+    select: { url: true, textoAlternativo: true },
+    orderBy: { orden: 'asc' },
+    take: 1,
+  },
+}
+
 export function crearRepositorioProductosAdmin(cliente = prisma) {
   return {
+    listar({ page, limit }) {
+      return cliente.producto.findMany({
+        include: incluirResumenProductoAdmin,
+        orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }],
+        skip: (page - 1) * limit,
+        take: limit,
+      })
+    },
+
+    contar() {
+      return cliente.producto.count()
+    },
+
     obtenerPorId(id) {
       return cliente.producto.findUnique({
         where: { id },

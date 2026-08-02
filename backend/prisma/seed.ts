@@ -12,6 +12,7 @@ import {
   calcularCostoEnvio,
   REGLAS_POR_DEFECTO,
 } from "../src/lib/reglasTienda.js";
+import { crearHashContrasena } from "../src/modules/auth/contrasena.js";
 
 // El seed representa un catálogo mínimo de desarrollo. No es la fuente de
 // verdad del negocio ni reemplaza el futuro panel de administración.
@@ -461,13 +462,34 @@ async function sembrarReglas() {
   }
 }
 
+// Cuenta de cliente de ejemplo para probar login, direcciones e historial. Id
+// fijo (repetible). En re-seed no se pisa la contraseña, por si se cambió desde
+// la app durante pruebas.
+async function sembrarCliente() {
+  const email = "cliente@sumarketexpress.cl";
+  const passwordHash = await crearHashContrasena("Cliente2026!");
+
+  await prisma.cliente.upsert({
+    where: { email },
+    create: {
+      id: "11111111-1111-4111-8111-111111111111",
+      nombre: "Wilnes A.",
+      email,
+      passwordHash,
+      telefono: "+56 9 1234 5678",
+    },
+    update: { nombre: "Wilnes A.", telefono: "+56 9 1234 5678", activo: true },
+  });
+}
+
 try {
   await sembrarCatalogo();
   await sembrarOfertaSemanal();
   await sembrarPedidos();
   await sembrarReglas();
+  await sembrarCliente();
   console.info(
-    `Seed completado: ${catalogoInicial.length} productos, ${pedidosIniciales.length} pedidos y las reglas de la tienda.`,
+    `Seed completado: ${catalogoInicial.length} productos, ${pedidosIniciales.length} pedidos, las reglas de la tienda y una cuenta de cliente de ejemplo.`,
   );
 } finally {
   await prisma.$disconnect();

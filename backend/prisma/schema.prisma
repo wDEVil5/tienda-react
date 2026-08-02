@@ -333,3 +333,41 @@ model TarifaComuna {
 
   @@map("tarifas_comuna")
 }
+
+// Cuenta de comprador. Es un dominio SEPARADO del staff (Usuario): distinta
+// tabla, distintas sesiones y distinta cookie. Así un cliente nunca puede tocar
+// el panel y sus datos (direcciones, historial) no ensucian al staff. Comparte
+// los helpers de hash y el patrón de sesión, no la identidad.
+model Cliente {
+  id           String   @id @default(uuid()) @db.Uuid
+  nombre       String   @db.VarChar(120)
+  email        String   @unique @db.VarChar(255)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  telefono     String?  @db.VarChar(40)
+  activo       Boolean  @default(true)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  sesiones SesionCliente[]
+
+  @@index([activo])
+  @@map("clientes")
+}
+
+// Igual que Sesion (staff): la base guarda solo el hash del token, nunca el
+// token que viaja en la cookie. Permite expirar/revocar sin credenciales
+// reutilizables.
+model SesionCliente {
+  id         String    @id @default(uuid()) @db.Uuid
+  tokenHash  String    @unique @map("token_hash") @db.VarChar(64)
+  expiraEn   DateTime  @map("expira_en")
+  revocadaEn DateTime? @map("revocada_en")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  clienteId  String    @map("cliente_id") @db.Uuid
+
+  cliente Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  @@index([clienteId])
+  @@index([expiraEn])
+  @@map("sesiones_cliente")
+}

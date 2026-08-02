@@ -8,6 +8,7 @@
     "start": "node --env-file=.env src/server.js",
     "test": "node --env-file=.env --test",
     "db:seed": "prisma db seed",
+    "preadmin:create": "prisma generate",
     "admin:create": "node --env-file=.env src/scripts/crearAdmin.js"
   },
   "dependencies": {

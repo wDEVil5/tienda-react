@@ -348,10 +348,35 @@ model Cliente {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  sesiones SesionCliente[]
+  sesiones    SesionCliente[]
+  direcciones Direccion[]
 
   @@index([activo])
   @@map("clientes")
+}
+
+// Direcciones guardadas del cliente (pantalla /mi-cuenta). Los campos y largos
+// coinciden con el esquema de dirección del checkout. Invariante de negocio: a
+// lo sumo una `predeterminada` por cliente, garantizada en el servicio con
+// transacciones (no con una constraint, porque "0 o 1 default" no se expresa
+// bien en SQL portable).
+model Direccion {
+  id             String   @id @default(uuid()) @db.Uuid
+  clienteId      String   @map("cliente_id") @db.Uuid
+  etiqueta       String?  @db.VarChar(60)
+  calle          String   @db.VarChar(200)
+  depto          String?  @db.VarChar(60)
+  comuna         String   @db.VarChar(80)
+  region         String   @db.VarChar(80)
+  instrucciones  String?  @db.VarChar(300)
+  predeterminada Boolean  @default(false)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  cliente Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  @@index([clienteId])
+  @@map("direcciones")
 }
 
 // Igual que Sesion (staff): la base guarda solo el hash del token, nunca el

@@ -7,6 +7,7 @@ import pedidosRouter from './modules/pedidos/pedidos.routes.js'
 import reglasRouter from './modules/reglas/reglas.routes.js'
 import authRouter from './modules/auth/auth.routes.js'
 import cuentaRouter from './modules/cuenta/cuenta.routes.js'
+import direccionesRouter from './modules/cuenta/cuenta.direcciones.routes.js'
 import adminRouter from './modules/admin/admin.routes.js'
 
 // La aplicación se exporta separada del servidor para probar rutas sin abrir un puerto.
@@ -37,6 +38,7 @@ app.use('/api/pedidos', pedidosRouter)
 app.use('/api/reglas', reglasRouter)
 app.use('/api/auth', authRouter)
 app.use('/api/cuenta', cuentaRouter)
+app.use('/api/cuenta/direcciones', direccionesRouter)
 app.use('/api/admin', adminRouter)
 
 // Debe ir después de las rutas: responde de forma predecible cuando la API no reconoce una URL.

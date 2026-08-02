@@ -9,6 +9,21 @@ export class ErrorProductoAdmin extends Error {
   }
 }
 
+function crearSlug(nombre) {
+  const slug = normalizarTextoBusqueda(nombre)
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+
+  if (!slug) {
+    throw new ErrorProductoAdmin(
+      'INVALID_PRODUCT_SLUG',
+      'El nombre debe incluir letras o números para generar su URL.',
+    )
+  }
+
+  return slug
+}
+
 function crearProductoParaEdicion(producto) {
   return {
     id: producto.id,
@@ -90,6 +105,24 @@ function construirDatosActualizacion(cambios) {
   return datos
 }
 
+async function validarReferencias(repositorio, cambios) {
+  const categoriaInvalida =
+    cambios.categoriaId !== undefined &&
+    !(await repositorio.existeCategoriaActiva(cambios.categoriaId))
+  const marcaInvalida =
+    cambios.marcaId !== undefined && !(await repositorio.existeMarca(cambios.marcaId))
+  const etiquetasInvalidas =
+    cambios.etiquetaIds !== undefined &&
+    (await repositorio.contarEtiquetas(cambios.etiquetaIds)) !== cambios.etiquetaIds.length
+
+  if (categoriaInvalida || marcaInvalida || etiquetasInvalidas) {
+    throw new ErrorProductoAdmin(
+      'INVALID_PRODUCT_REFERENCE',
+      'Categoría, marca o etiquetas no son válidas.',
+    )
+  }
+}
+
 export function crearServicioProductosAdmin(
   repositorio = repositorioProductosAdmin,
   almacenamiento = almacenamientoImagenes,
@@ -118,24 +151,33 @@ export function crearServicioProductosAdmin(
         )
       }
 
-      if (
-        (cambios.categoriaId !== undefined &&
-          !(await repositorio.existeCategoriaActiva(cambios.categoriaId))) ||
-        (cambios.marcaId !== undefined && !(await repositorio.existeMarca(cambios.marcaId))) ||
-        (cambios.etiquetaIds !== undefined &&
-          (await repositorio.contarEtiquetas(cambios.etiquetaIds)) !== cambios.etiquetaIds.length)
-      ) {
+      if (cambios.activo === true && productoActual.imagenes.length === 0) {
         throw new ErrorProductoAdmin(
-          'INVALID_PRODUCT_REFERENCE',
-          'Categoría, marca o etiquetas no son válidas.',
+          'PRODUCT_IMAGE_REQUIRED',
+          'Debes asignar al menos una imagen antes de publicar el producto.',
         )
       }
+
+      await validarReferencias(repositorio, cambios)
 
       const productoActualizado = await repositorio.actualizarPorId(
         id,
         construirDatosActualizacion(cambios),
       )
       return crearProductoParaEdicion(productoActualizado)
+    },
+
+    async crearProducto(datos) {
+      await validarReferencias(repositorio, datos)
+      const slug = datos.slug ?? crearSlug(datos.nombre)
+      const producto = await repositorio.crear({
+        ...construirDatosActualizacion({ ...datos, slug }),
+        // La galería se administra en un flujo separado: un producto nuevo se
+        // mantiene fuera del catálogo hasta que tenga al menos una imagen.
+        activo: false,
+      })
+
+      return crearProductoParaEdicion(producto)
     },
 
     async reemplazarImagenesProducto(id, imagenes) {
@@ -172,4 +214,5 @@ const servicioProductosAdmin = crearServicioProductosAdmin()
 
 export const obtenerProductoParaEdicion = servicioProductosAdmin.obtenerProductoParaEdicion
 export const actualizarProducto = servicioProductosAdmin.actualizarProducto
+export const crearProducto = servicioProductosAdmin.crearProducto
 export const reemplazarImagenesProducto = servicioProductosAdmin.reemplazarImagenesProducto

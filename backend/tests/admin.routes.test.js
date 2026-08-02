@@ -32,6 +32,37 @@ test('GET /api/admin/productos/:id informa cuando no existe', async () => {
   assert.equal(response.body.error.code, 'ADMIN_PRODUCT_NOT_FOUND')
 })
 
+test('POST /api/admin/productos crea un producto validado sin publicarlo', async () => {
+  let datosRecibidos
+  const app = express()
+  app.use(express.json())
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'ADMIN' }
+      next()
+    },
+    servicio: {
+      async crearProducto(datos) {
+        datosRecibidos = datos
+        return { id: 'producto-1', nombre: datos.nombre, activo: false }
+      },
+    },
+  }))
+
+  const response = await request(app)
+    .post('/api/admin/productos')
+    .send({
+      nombre: 'Té verde', sku: 'TE-VERDE-250', descripcion: 'Té de hoja.',
+      precio: 3490, stock: 10,
+      categoriaId: '550e8400-e29b-41d4-a716-446655440000',
+      marcaId: '550e8400-e29b-41d4-a716-446655440001',
+    })
+
+  assert.equal(response.status, 201)
+  assert.equal(datosRecibidos.sku, 'TE-VERDE-250')
+  assert.equal(response.body.data.activo, false)
+})
+
 test('PATCH /api/admin/productos/:id valida y entrega el producto actualizado', async () => {
   let cambiosRecibidos
   const app = express()

@@ -1,6 +1,9 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { validarCambiosProductoAdmin } from '../src/modules/admin/admin-productos.validacion.js'
+import {
+  validarCambiosProductoAdmin,
+  validarProductoNuevoAdmin,
+} from '../src/modules/admin/admin-productos.validacion.js'
 
 const categoriaId = '550e8400-e29b-41d4-a716-446655440000'
 const marcaId = '550e8400-e29b-41d4-a716-446655440001'
@@ -44,4 +47,18 @@ test('rechaza una actualización sin cambios', () => {
   const resultado = validarCambiosProductoAdmin({})
 
   assert.equal(resultado.success, false)
+})
+
+test('exige los campos base al crear un producto', () => {
+  const resultado = validarProductoNuevoAdmin({
+    nombre: 'Té verde',
+    sku: 'TE-VERDE-250',
+    descripcion: 'Té de hoja.',
+    precio: 3490,
+    stock: 10,
+    categoriaId,
+    marcaId,
+  })
+
+  assert.equal(resultado.success, true)
 })

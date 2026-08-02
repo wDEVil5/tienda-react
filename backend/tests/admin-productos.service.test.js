@@ -109,3 +109,35 @@ test('reemplazarImagenesProducto delega una galería completa al repositorio', a
   assert.equal(actualizado.imagenes[0].orden, 1)
   assert.deepEqual(clavesEliminadas, ['sumarket/productos/aceite-anterior'])
 })
+
+test('crearProducto genera slug, búsqueda y lo deja sin publicar', async () => {
+  let datosCreacion
+  const productoCreado = {
+    id: 'producto-1', sku: 'TE-VERDE-250', slug: 'te-verde', nombre: 'Té verde',
+    descripcion: 'Té de hoja.', precio: 3490, precioAnterior: null, stock: 10,
+    activo: false, destacado: false, alertaStockBajo: null, codigoBarras: null,
+    origen: null, contenidoCantidad: null, contenidoUnidad: null, pesoDespachoGramos: null,
+    fechaVencimiento: null, categoria: { id: 'cat-1', nombre: 'Despensa', slug: 'despensa' },
+    marca: { id: 'marca-1', nombre: 'Marca', slug: 'marca', logoUrl: null },
+    imagenes: [], etiquetas: [],
+  }
+  const repositorio = {
+    async existeCategoriaActiva() { return true },
+    async existeMarca() { return true },
+    async crear(datos) {
+      datosCreacion = datos
+      return productoCreado
+    },
+  }
+  const servicio = crearServicioProductosAdmin(repositorio)
+
+  const creado = await servicio.crearProducto({
+    nombre: 'Té verde', sku: 'TE-VERDE-250', descripcion: 'Té de hoja.',
+    precio: 3490, stock: 10, categoriaId: 'cat-1', marcaId: 'marca-1',
+  })
+
+  assert.equal(datosCreacion.slug, 'te-verde')
+  assert.equal(datosCreacion.nombreBusqueda, 'te verde')
+  assert.equal(datosCreacion.activo, false)
+  assert.equal(creado.activo, false)
+})

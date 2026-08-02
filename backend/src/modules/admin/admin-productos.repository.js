@@ -24,6 +24,10 @@ export function crearRepositorioProductosAdmin(cliente = prisma) {
       })
     },
 
+    crear(datos) {
+      return cliente.producto.create({ data: datos, include: incluirProductoAdmin })
+    },
+
     async existeCategoriaActiva(id) {
       const categoria = await cliente.categoria.findFirst({
         where: { id, activa: true },

@@ -50,3 +50,17 @@ test('subirImagenProducto acepta una imagen PNG válida', async () => {
 
   assert.equal(seSubio, true)
 })
+
+test('subirLogoMarca admite proporciones de logo desde 200 × 100 píxeles', async () => {
+  let archivoSubido
+  const servicio = crearServicioImagenes({
+    async subirLogoMarca(buffer) { archivoSubido = buffer; return { url: 'https://ejemplo.test/logo.webp' } },
+  }, () => ({
+    async metadata() { return { format: 'webp', width: 200, height: 100 } },
+  }))
+
+  const resultado = await servicio.subirLogoMarca({ buffer: Buffer.from('logo') })
+
+  assert.equal(resultado.url, 'https://ejemplo.test/logo.webp')
+  assert.deepEqual(archivoSubido, Buffer.from('logo'))
+})

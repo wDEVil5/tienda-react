@@ -34,6 +34,10 @@ import { ErrorCategoriaAdmin, crearCategoriaAdmin } from './admin-categorias.ser
 import { validarCategoriaNuevaAdmin } from './admin-categorias.validacion.js'
 import { ErrorMarcaAdmin, crearMarcaAdmin } from './admin-marcas.service.js'
 import { validarMarcaNuevaAdmin } from './admin-marcas.validacion.js'
+import { asignarLogoMarcaAdmin } from './admin-marcas.service.js'
+import { recibirLogoMarca } from '../imagenes/imagenes.middleware.js'
+import { subirLogoMarca } from '../imagenes/imagenes.service.js'
+import { eliminarLogoMarca } from '../imagenes/imagenes.storage.js'
 
 export function crearRouterAdmin({
   servicio = {
@@ -51,6 +55,8 @@ export function crearRouterAdmin({
     actualizarPromocionAdmin,
     crearCategoriaAdmin,
     crearMarcaAdmin,
+    asignarLogoMarcaAdmin,
+    subirLogoMarca,
     desactivarPromocionAdmin,
     obtenerPromocionParaEdicionAdmin,
   },
@@ -110,6 +116,32 @@ export function crearRouterAdmin({
           return response.status(409).json({
             error: { code: 'BRAND_ALREADY_EXISTS', message: 'El nombre o slug de la marca ya está en uso.' },
           })
+        }
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.post(
+    '/marcas/:id/logo',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    recibirLogoMarca,
+    async (request, response, next) => {
+      try {
+        const logo = await servicio.subirLogoMarca(request.file)
+        const marca = await servicio.asignarLogoMarcaAdmin(request.params.id, logo)
+        if (!marca) {
+          // El archivo ya llegó a Cloudinary: lo eliminamos si la marca no existe.
+          await eliminarLogoMarca(logo.storageKey).catch(() => {})
+          return response.status(404).json({
+            error: { code: 'ADMIN_BRAND_NOT_FOUND', message: 'No encontramos la marca solicitada.' },
+          })
+        }
+        return response.json({ data: marca })
+      } catch (error) {
+        if (error instanceof ErrorImagen) {
+          return response.status(422).json({ error: { code: error.code, message: error.message } })
         }
         return next(error)
       }

@@ -1,5 +1,6 @@
 import { normalizarTextoBusqueda } from '../../lib/texto.js'
 import { repositorioMarcasAdmin } from './admin-marcas.repository.js'
+import { almacenamientoImagenes } from '../imagenes/imagenes.storage.js'
 
 export class ErrorMarcaAdmin extends Error {
   constructor(code, message) {
@@ -22,8 +23,30 @@ function crearSlug(nombre) {
   return slug
 }
 
-export function crearServicioMarcasAdmin(repositorio = repositorioMarcasAdmin) {
+export function crearServicioMarcasAdmin(
+  repositorio = repositorioMarcasAdmin,
+  almacenamiento = almacenamientoImagenes,
+) {
   return {
+    async asignarLogoMarca(id, logo) {
+      const marcaActual = await repositorio.obtenerPorId(id)
+      if (!marcaActual) return null
+
+      let marcaActualizada
+      try {
+        marcaActualizada = await repositorio.actualizarLogo(id, logo)
+      } catch (error) {
+        // Si la base rechaza el cambio, la imagen recién subida no debe quedar huérfana.
+        await almacenamiento.eliminarLogoMarca(logo.storageKey).catch(() => {})
+        throw error
+      }
+
+      if (marcaActual.logoStorageKey && marcaActual.logoStorageKey !== logo.storageKey) {
+        await almacenamiento.eliminarLogoMarca(marcaActual.logoStorageKey).catch(() => {})
+      }
+      return marcaActualizada
+    },
+
     async crearMarca(datos) {
       return repositorio.crear({
         ...datos,
@@ -36,3 +59,4 @@ export function crearServicioMarcasAdmin(repositorio = repositorioMarcasAdmin) {
 const servicioMarcasAdmin = crearServicioMarcasAdmin()
 
 export const crearMarcaAdmin = servicioMarcasAdmin.crearMarca
+export const asignarLogoMarcaAdmin = servicioMarcasAdmin.asignarLogoMarca

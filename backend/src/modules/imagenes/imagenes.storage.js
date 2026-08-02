@@ -28,7 +28,42 @@ export function crearAlmacenamientoImagenes(obtenerCliente = obtenerClienteCloud
       })
     },
 
+    subirLogoMarca(buffer) {
+      const cliente = obtenerCliente()
+
+      return new Promise((resolve, reject) => {
+        const carga = cliente.uploader.upload_stream(
+          {
+            folder: 'sumarket/marcas',
+            resource_type: 'image',
+            overwrite: false,
+          },
+          (error, resultado) => {
+            if (error) return reject(error)
+            return resolve({
+              url: resultado.secure_url,
+              storageKey: resultado.public_id,
+              ancho: resultado.width,
+              alto: resultado.height,
+              formato: resultado.format,
+            })
+          },
+        )
+        carga.end(buffer)
+      })
+    },
+
     async eliminarImagenProducto(storageKey) {
+      const cliente = obtenerCliente()
+      const resultado = await cliente.uploader.destroy(storageKey, {
+        resource_type: 'image',
+        invalidate: true,
+      })
+
+      return resultado.result
+    },
+
+    async eliminarLogoMarca(storageKey) {
       const cliente = obtenerCliente()
       const resultado = await cliente.uploader.destroy(storageKey, {
         resource_type: 'image',
@@ -41,3 +76,4 @@ export function crearAlmacenamientoImagenes(obtenerCliente = obtenerClienteCloud
 }
 
 export const almacenamientoImagenes = crearAlmacenamientoImagenes()
+export const eliminarLogoMarca = almacenamientoImagenes.eliminarLogoMarca

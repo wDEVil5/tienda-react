@@ -120,6 +120,31 @@ test('POST /api/admin/marcas crea una marca sin logo manual', async () => {
   assert.equal(response.body.data.logoUrl, null)
 })
 
+test('POST /api/admin/marcas/:id/logo sube y asigna un logo a la marca', async () => {
+  const app = express()
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'ADMIN' }
+      next()
+    },
+    servicio: {
+      async subirLogoMarca() {
+        return { url: 'https://cdn.ejemplo.test/logo.webp', storageKey: 'sumarket/marcas/cafe' }
+      },
+      async asignarLogoMarcaAdmin() {
+        return { id: 'marca-1', logoUrl: 'https://cdn.ejemplo.test/logo.webp' }
+      },
+    },
+  }))
+
+  const response = await request(app)
+    .post('/api/admin/marcas/marca-1/logo')
+    .attach('imagen', Buffer.from('logo-simulado'), { filename: 'logo.webp', contentType: 'image/webp' })
+
+  assert.equal(response.status, 200)
+  assert.equal(response.body.data.logoUrl, 'https://cdn.ejemplo.test/logo.webp')
+})
+
 test('GET /api/admin/promociones/:id entrega una campaña para edición', async () => {
   const app = express()
   app.use('/api/admin', crearRouterAdmin({

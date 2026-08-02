@@ -1,8 +1,14 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { env } from "prisma/config";
-import { EstadoProducto, PrismaClient } from "../src/generated/prisma/client";
+import {
+  EstadoPedido,
+  EstadoProducto,
+  ModalidadEntrega,
+  PrismaClient,
+} from "../src/generated/prisma/client";
 import { normalizarTextoBusqueda } from "../src/lib/texto.js";
+import { calcularCostoEnvio } from "../src/lib/reglasTienda.js";
 
 // El seed representa un catálogo mínimo de desarrollo. No es la fuente de
 // verdad del negocio ni reemplaza el futuro panel de administración.
@@ -167,6 +173,55 @@ const ofertaSemanalDesarrollo = {
   productosSku: ["ACE-OLIVA-500", "LECHE-ENTERA-1L"],
 };
 
+// Pedidos de ejemplo para probar "Mis pedidos" y el panel del dueño sin comprar
+// a mano. Ids fijos para que el seed sea repetible (upsert). `historial` define
+// la línea de tiempo: cada estado con cuántas horas atrás ocurrió; el estado
+// actual es el último de la lista. NOTA: estos pedidos son registros ilustrativos
+// y NO mueven stock/stockReservado (eso lo maneja el servicio transaccional).
+const pedidosIniciales = [
+  {
+    id: "00000000-0000-4000-8000-000000000001",
+    modalidad: ModalidadEntrega.RETIRO,
+    contacto: {
+      nombre: "Wilnes A.",
+      email: "wilnes@correo.cl",
+      telefono: "+56 9 1234 5678",
+    },
+    direccion: null,
+    lineas: [
+      { sku: "ACE-OLIVA-500", cantidad: 2 },
+      { sku: "CAFE-GRANO-250", cantidad: 1 },
+    ],
+    historial: [
+      { estado: EstadoPedido.PENDIENTE, horasAtras: 72 },
+      { estado: EstadoPedido.PREPARANDO, horasAtras: 70 },
+      { estado: EstadoPedido.LISTO_PARA_RETIRO, horasAtras: 48 },
+      { estado: EstadoPedido.ENTREGADO, horasAtras: 44 },
+    ],
+  },
+  {
+    id: "00000000-0000-4000-8000-000000000002",
+    modalidad: ModalidadEntrega.DESPACHO,
+    contacto: {
+      nombre: "Camila R.",
+      email: "camila@correo.cl",
+      telefono: "+56 9 8765 4321",
+    },
+    direccion: {
+      calle: "Av. Providencia 1234",
+      depto: "Depto 501",
+      comuna: "Providencia",
+      region: "Región Metropolitana",
+      instrucciones: "Dejar en conserjería",
+    },
+    lineas: [
+      { sku: "LECHE-ENTERA-1L", cantidad: 1 },
+      { sku: "DETERGENTE-LIQ-3L", cantidad: 1 },
+    ],
+    historial: [{ estado: EstadoPedido.PENDIENTE, horasAtras: 3 }],
+  },
+];
+
 const adapter = new PrismaPg({ connectionString: env("DATABASE_URL") });
 const prisma = new PrismaClient({ adapter });
 
@@ -295,10 +350,100 @@ async function sembrarOfertaSemanal() {
   });
 }
 
+async function sembrarPedidos() {
+  for (const pedido of pedidosIniciales) {
+    // Se traen los productos para CONGELAR sus datos como snapshot en el ítem.
+    const productos = await prisma.producto.findMany({
+      where: { sku: { in: pedido.lineas.map((linea) => linea.sku) } },
+      select: { id: true, sku: true, nombre: true, precio: true, precioAnterior: true },
+    });
+    const porSku = new Map(productos.map((producto) => [producto.sku, producto]));
+
+    const items = pedido.lineas.map((linea) => {
+      const producto = porSku.get(linea.sku);
+      if (!producto) {
+        throw new Error(`Seed de pedidos: falta el producto ${linea.sku}`);
+      }
+
+      // precio = valor final; precioAnterior = normal tachado (o el final si no hay oferta).
+      const precioFinal = producto.precio;
+      const precioNormal = producto.precioAnterior ?? producto.precio;
+      return {
+        productoId: producto.id,
+        nombre: producto.nombre,
+        sku: producto.sku,
+        precioNormal,
+        precioFinal,
+        cantidad: linea.cantidad,
+        subtotal: precioFinal * linea.cantidad,
+      };
+    });
+
+    // Totales: subtotal a precio NORMAL, descuento acumulado y envío por reglas.
+    const subtotal = items.reduce(
+      (suma, item) => suma + item.precioNormal * item.cantidad,
+      0,
+    );
+    const descuento = items.reduce(
+      (suma, item) => suma + (item.precioNormal - item.precioFinal) * item.cantidad,
+      0,
+    );
+    const costoEnvio = calcularCostoEnvio({
+      modalidad: pedido.modalidad,
+      comuna: pedido.direccion?.comuna,
+      subtotal,
+    });
+    const total = subtotal - descuento + costoEnvio;
+
+    const ahora = Date.now();
+    const eventos = pedido.historial.map((evento) => ({
+      estado: evento.estado,
+      createdAt: new Date(ahora - evento.horasAtras * 60 * 60 * 1000),
+    }));
+    const estado = pedido.historial[pedido.historial.length - 1].estado;
+
+    const datosPedido = {
+      estado,
+      modalidad: pedido.modalidad,
+      contactoNombre: pedido.contacto.nombre,
+      contactoEmail: pedido.contacto.email,
+      contactoTelefono: pedido.contacto.telefono,
+      dirCalle: pedido.direccion?.calle ?? null,
+      dirDepto: pedido.direccion?.depto ?? null,
+      dirComuna: pedido.direccion?.comuna ?? null,
+      dirRegion: pedido.direccion?.region ?? null,
+      dirInstrucciones: pedido.direccion?.instrucciones ?? null,
+      subtotal,
+      descuento,
+      costoEnvio,
+      total,
+    };
+
+    await prisma.pedido.upsert({
+      where: { id: pedido.id },
+      create: {
+        id: pedido.id,
+        ...datosPedido,
+        items: { create: items },
+        eventos: { create: eventos },
+      },
+      // Repetible: reemplaza líneas y eventos declarados en cada corrida.
+      update: {
+        ...datosPedido,
+        items: { deleteMany: {}, create: items },
+        eventos: { deleteMany: {}, create: eventos },
+      },
+    });
+  }
+}
+
 try {
   await sembrarCatalogo();
   await sembrarOfertaSemanal();
-  console.info(`Seed completado: ${catalogoInicial.length} productos procesados.`);
+  await sembrarPedidos();
+  console.info(
+    `Seed completado: ${catalogoInicial.length} productos y ${pedidosIniciales.length} pedidos procesados.`,
+  );
 } finally {
   await prisma.$disconnect();
 }

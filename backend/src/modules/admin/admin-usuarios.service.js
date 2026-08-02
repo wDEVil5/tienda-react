@@ -6,6 +6,11 @@ export function crearServicioUsuariosAdmin(
   crearHash = crearHashContrasena,
 ) {
   return {
+    async listarUsuarios() {
+      const usuarios = await repositorio.listar()
+      return { data: usuarios.map((usuario) => ({ ...usuario })) }
+    },
+
     async crearOperador({ nombre, email, contrasena }) {
       const passwordHash = await crearHash(contrasena)
       return repositorio.crear({
@@ -22,3 +27,4 @@ export function crearServicioUsuariosAdmin(
 const servicioUsuariosAdmin = crearServicioUsuariosAdmin()
 
 export const crearOperadorAdmin = servicioUsuariosAdmin.crearOperador
+export const listarUsuariosAdmin = servicioUsuariosAdmin.listarUsuarios

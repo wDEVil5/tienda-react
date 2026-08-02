@@ -51,6 +51,26 @@ test('POST /api/admin/usuarios crea un operador solo desde ADMIN', async () => {
   assert.equal(response.body.data.rol, 'OPERADOR')
 })
 
+test('GET /api/admin/usuarios lista usuarios solo para ADMIN', async () => {
+  const app = express()
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'ADMIN' }
+      next()
+    },
+    servicio: {
+      async listarUsuariosAdmin() {
+        return { data: [{ id: 'usuario-1', rol: 'ADMIN' }] }
+      },
+    },
+  }))
+
+  const response = await request(app).get('/api/admin/usuarios')
+
+  assert.equal(response.status, 200)
+  assert.equal(response.body.data[0].rol, 'ADMIN')
+})
+
 test('GET /api/admin/productos/:id informa cuando no existe', async () => {
   const response = await request(crearAppAdmin()).get('/api/admin/productos/producto-1')
 

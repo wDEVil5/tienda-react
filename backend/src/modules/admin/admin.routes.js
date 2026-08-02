@@ -46,7 +46,7 @@ import { subirLogoMarca } from '../imagenes/imagenes.service.js'
 import { eliminarLogoMarca } from '../imagenes/imagenes.storage.js'
 import { ErrorEtiquetaAdmin, crearEtiquetaAdmin, listarEtiquetasAdmin } from './admin-etiquetas.service.js'
 import { validarEtiquetaNuevaAdmin } from './admin-etiquetas.validacion.js'
-import { crearOperadorAdmin } from './admin-usuarios.service.js'
+import { crearOperadorAdmin, listarUsuariosAdmin } from './admin-usuarios.service.js'
 import { validarUsuarioNuevoAdmin } from './admin-usuarios.validacion.js'
 
 export function crearRouterAdmin({
@@ -74,6 +74,7 @@ export function crearRouterAdmin({
     crearEtiquetaAdmin,
     listarEtiquetasAdmin,
     crearOperadorAdmin,
+    listarUsuariosAdmin,
     desactivarPromocionAdmin,
     obtenerPromocionParaEdicionAdmin,
   },
@@ -102,6 +103,19 @@ export function crearRouterAdmin({
             error: { code: 'USER_ALREADY_EXISTS', message: 'Ya existe un usuario con ese email.' },
           })
         }
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.get(
+    '/usuarios',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (_request, response, next) => {
+      try {
+        return response.json(await servicio.listarUsuariosAdmin())
+      } catch (error) {
         return next(error)
       }
     },

@@ -58,6 +58,8 @@ import {
   validarContrasenaUsuarioAdmin,
   validarUsuarioNuevoAdmin,
 } from './admin-usuarios.validacion.js'
+import { listarPedidos, obtenerDetallePedido } from '../pedidos/pedidos.service.js'
+import { ESTADOS_PEDIDO } from '../pedidos/pedidos.estados.js'
 
 export function crearRouterAdmin({
   servicio = {
@@ -90,6 +92,8 @@ export function crearRouterAdmin({
     restablecerContrasenaUsuarioAdmin,
     desactivarPromocionAdmin,
     obtenerPromocionParaEdicionAdmin,
+    listarPedidos,
+    obtenerDetallePedido,
   },
   middlewareSesion = requerirSesion,
 } = {}) {
@@ -774,6 +778,55 @@ export function crearRouterAdmin({
             error: { code: error.code, message: error.message },
           })
         }
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.get(
+    '/pedidos',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      const page = leerEnteroPositivo(request.query.page, 1)
+      const limit = leerEnteroPositivo(request.query.limit, 20, 100)
+      const estado = typeof request.query.estado === 'string' ? request.query.estado : undefined
+
+      if (
+        page === null ||
+        limit === null ||
+        (estado !== undefined && !ESTADOS_PEDIDO.includes(estado))
+      ) {
+        return response.status(400).json({
+          error: {
+            code: 'INVALID_QUERY_PARAM',
+            message: 'page debe ser positivo, limit entre 1 y 100 y estado debe ser válido.',
+          },
+        })
+      }
+
+      try {
+        return response.json(await servicio.listarPedidos({ page, limit, estado }))
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.get(
+    '/pedidos/:id',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      try {
+        const pedido = await servicio.obtenerDetallePedido(request.params.id)
+        if (!pedido) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_ORDER_NOT_FOUND', message: 'No encontramos el pedido solicitado.' },
+          })
+        }
+        return response.json({ data: pedido })
+      } catch (error) {
         return next(error)
       }
     },

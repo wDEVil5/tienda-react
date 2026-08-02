@@ -140,3 +140,56 @@ test('delega la persistencia en una sola transacción y devuelve su resultado', 
   assert.equal(creado.numero, 1)
   assert.equal(creado.estado, 'PENDIENTE')
 })
+
+test('listarPedidos entrega resumen paginado con conteos de productos y unidades', async () => {
+  const servicio = crearServicioPedidos({
+    async listar() {
+      return [{
+        id: 'ped-1', numero: 1, estado: 'ENTREGADO', modalidad: 'DESPACHO',
+        contactoNombre: 'Wilnes A.', dirComuna: 'Providencia', total: 21470,
+        createdAt: new Date('2026-07-30T10:00:00.000Z'),
+        items: [{ cantidad: 2 }, { cantidad: 1 }],
+      }]
+    },
+    async contar() { return 1 },
+  })
+
+  const resultado = await servicio.listarPedidos({ page: 1, limit: 20 })
+
+  assert.deepEqual(resultado.meta, { page: 1, limit: 20, total: 1, totalPages: 1 })
+  assert.equal(resultado.data[0].cantidadProductos, 2)
+  assert.equal(resultado.data[0].cantidadUnidades, 3)
+  assert.equal(resultado.data[0].comuna, 'Providencia')
+})
+
+test('obtenerDetallePedido arma la ficha con timeline y sin dirección en retiro', async () => {
+  const servicio = crearServicioPedidos({
+    async obtenerPorId() {
+      return {
+        id: 'ped-1', numero: 1, estado: 'ENTREGADO', modalidad: 'RETIRO',
+        contactoNombre: 'Wilnes A.', contactoEmail: 'w@correo.cl', contactoTelefono: '+56 9',
+        dirCalle: null, dirDepto: null, dirComuna: null, dirRegion: null, dirInstrucciones: null,
+        subtotal: 26796, descuento: 5326, costoEnvio: 0, total: 21470,
+        createdAt: new Date('2026-07-30T10:00:00.000Z'),
+        items: [{ nombre: 'Aceite', sku: 'ACE', cantidad: 2, precioNormal: 10653, precioFinal: 7990, subtotal: 15980 }],
+        eventos: [
+          { estado: 'PENDIENTE', nota: null, createdAt: new Date('2026-07-27T10:00:00.000Z') },
+          { estado: 'ENTREGADO', nota: null, createdAt: new Date('2026-07-29T10:00:00.000Z') },
+        ],
+      }
+    },
+  })
+
+  const detalle = await servicio.obtenerDetallePedido('ped-1')
+
+  assert.equal(detalle.direccion, null)
+  assert.equal(detalle.items[0].nombre, 'Aceite')
+  assert.equal(detalle.eventos.length, 2)
+  assert.equal(detalle.eventos[1].estado, 'ENTREGADO')
+})
+
+test('obtenerDetallePedido devuelve null cuando el pedido no existe', async () => {
+  const servicio = crearServicioPedidos({ async obtenerPorId() { return null } })
+
+  assert.equal(await servicio.obtenerDetallePedido('fantasma'), null)
+})

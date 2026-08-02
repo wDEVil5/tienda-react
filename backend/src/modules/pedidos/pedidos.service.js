@@ -26,6 +26,67 @@ function calcularLinea(producto, cantidad) {
   }
 }
 
+// Resumen para el listado del panel: lo justo para una fila (incluye conteos
+// de productos y unidades, y la comuna solo si es despacho).
+function crearResumenPedido(pedido) {
+  return {
+    id: pedido.id,
+    numero: pedido.numero,
+    estado: pedido.estado,
+    modalidad: pedido.modalidad,
+    contactoNombre: pedido.contactoNombre,
+    comuna: pedido.modalidad === 'DESPACHO' ? pedido.dirComuna : null,
+    cantidadProductos: pedido.items.length,
+    cantidadUnidades: pedido.items.reduce((suma, item) => suma + item.cantidad, 0),
+    total: pedido.total,
+    createdAt: pedido.createdAt,
+  }
+}
+
+// Detalle completo para la ficha de pedido: ítems, dirección (si aplica) y la
+// línea de tiempo de eventos.
+function crearDetallePedido(pedido) {
+  return {
+    id: pedido.id,
+    numero: pedido.numero,
+    estado: pedido.estado,
+    modalidad: pedido.modalidad,
+    contacto: {
+      nombre: pedido.contactoNombre,
+      email: pedido.contactoEmail,
+      telefono: pedido.contactoTelefono,
+    },
+    direccion:
+      pedido.modalidad === 'DESPACHO'
+        ? {
+            calle: pedido.dirCalle,
+            depto: pedido.dirDepto,
+            comuna: pedido.dirComuna,
+            region: pedido.dirRegion,
+            instrucciones: pedido.dirInstrucciones,
+          }
+        : null,
+    items: pedido.items.map((item) => ({
+      nombre: item.nombre,
+      sku: item.sku,
+      cantidad: item.cantidad,
+      precioNormal: item.precioNormal,
+      precioFinal: item.precioFinal,
+      subtotal: item.subtotal,
+    })),
+    subtotal: pedido.subtotal,
+    descuento: pedido.descuento,
+    costoEnvio: pedido.costoEnvio,
+    total: pedido.total,
+    eventos: pedido.eventos.map((evento) => ({
+      estado: evento.estado,
+      nota: evento.nota,
+      createdAt: evento.createdAt,
+    })),
+    createdAt: pedido.createdAt,
+  }
+}
+
 export function crearServicioPedidos(repositorio = repositorioPedidos) {
   return {
     async crearPedido(entrada, ahora = new Date()) {
@@ -94,9 +155,29 @@ export function crearServicioPedidos(repositorio = repositorioPedidos) {
 
       return repositorio.crearPedidoTransaccional({ pedido, items })
     },
+
+    async listarPedidos({ page = 1, limit = 20, estado } = {}) {
+      const filtros = { page, limit, ...(estado ? { estado } : {}) }
+      const [pedidos, total] = await Promise.all([
+        repositorio.listar(filtros),
+        repositorio.contar(filtros),
+      ])
+
+      return {
+        data: pedidos.map(crearResumenPedido),
+        meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      }
+    },
+
+    async obtenerDetallePedido(id) {
+      const pedido = await repositorio.obtenerPorId(id)
+      return pedido ? crearDetallePedido(pedido) : null
+    },
   }
 }
 
 const servicioPedidos = crearServicioPedidos()
 
 export const crearPedido = servicioPedidos.crearPedido
+export const listarPedidos = servicioPedidos.listarPedidos
+export const obtenerDetallePedido = servicioPedidos.obtenerDetallePedido

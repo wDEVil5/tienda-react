@@ -6,6 +6,16 @@
 
 export const ESTADO_INICIAL = 'PENDIENTE'
 
+// Todos los estados posibles (para validar filtros y entradas de la API).
+export const ESTADOS_PEDIDO = [
+  'PENDIENTE',
+  'PREPARANDO',
+  'LISTO_PARA_RETIRO',
+  'ENVIADO',
+  'ENTREGADO',
+  'CANCELADO',
+]
+
 // Estados finales: no admiten ninguna transición de salida.
 export const ESTADOS_TERMINALES = ['ENTREGADO', 'CANCELADO']
 

@@ -44,6 +44,33 @@ export function crearRepositorioPedidos(cliente = prisma) {
       }))
     },
 
+    // Listado para el panel: el más reciente primero. Incluye la cantidad de
+    // cada ítem para poder mostrar "N productos, M unidades" sin otra consulta.
+    async listar({ page = 1, limit = 20, estado } = {}) {
+      const where = estado ? { estado } : {}
+      return cliente.pedido.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+        include: { items: { select: { cantidad: true } } },
+      })
+    },
+
+    async contar({ estado } = {}) {
+      return cliente.pedido.count({ where: estado ? { estado } : {} })
+    },
+
+    async obtenerPorId(id) {
+      return cliente.pedido.findUnique({
+        where: { id },
+        include: {
+          items: true,
+          eventos: { orderBy: { createdAt: 'asc' } },
+        },
+      })
+    },
+
     // Reserva stock y crea pedido + ítems + evento inicial en UNA transacción:
     // o se guarda todo, o nada.
     async crearPedidoTransaccional({ pedido, items }) {

@@ -10,6 +10,7 @@ const productoApi = {
   nombre: "Aceite de oliva extra virgen 500 ml",
   precio: 7990,
   precioAnterior: 9990,
+  oferta: { porcentajeDescuento: 25 },
   categoria: { nombre: "Despensa" },
   descripcion: "Prensado en frío.",
   stock: 12,
@@ -35,6 +36,7 @@ describe("obtenerCatalogo", () => {
       id: "prod_aceite_oliva_500",
       categoria: "Despensa",
       imagen: "https://ejemplo.cl/aceite.jpg",
+      oferta: { porcentajeDescuento: 25 },
     });
   });
 

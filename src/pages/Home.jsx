@@ -24,6 +24,7 @@ function Home({
   productosCatalogo,
   categorias,
   metaCatalogo,
+  ofertasDestacadas,
   usaPaginacionServidor,
   cargandoMas,
   onCargarMas,
@@ -45,7 +46,11 @@ function Home({
         onSeleccionarCategoria={onSeleccionarCategoria}
         onCambiarSoloOfertas={onCambiarSoloOfertas}
       />
-      <BandaOfertas productos={productos} onVerOfertas={onVerOfertas} />
+      <BandaOfertas
+        productos={productos}
+        ofertasDestacadas={ofertasDestacadas}
+        onVerOfertas={onVerOfertas}
+      />
       <Catalogo
         productos={productosCatalogo}
         productosBase={productos}

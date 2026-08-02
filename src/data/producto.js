@@ -20,6 +20,7 @@
  * @property {string}        categoriaSlug - Identificador estable de la categoría para la API.
  * @property {string}        descripcion   - Descripción larga.
  * @property {number|null}   precioAnterior - Precio previo si está en oferta; null si no.
+ * @property {Object|null}   oferta         - Promoción vigente cuando la fuente la conoce.
  * @property {string}        sku           - Código visible para inventario y administración.
  * @property {number}        stock         - Unidades disponibles informadas por la API.
  */
@@ -49,6 +50,7 @@ export function normalizarProductoFakeStore(p) {
     // (backend propio) este valor llegará como dato real.
     precioAnterior:
       p.id % 2 === 0 ? Math.round((p.price / 0.75) * 100) / 100 : null,
+    oferta: p.id % 2 === 0 ? { porcentajeDescuento: 25 } : null,
   };
 }
 
@@ -77,8 +79,7 @@ export function normalizarProductoApi(producto) {
     categoriaSlug: producto.categoria.slug,
     descripcion: producto.descripcion,
     precioAnterior: producto.precioAnterior,
-    // La API incorporará SKU explícito antes de persistir productos; este
-    // fallback mantiene la ficha usable mientras uso datos temporales.
+    oferta: producto.oferta ?? null,
     sku: producto.sku ?? producto.id,
     stock: producto.stock,
   };

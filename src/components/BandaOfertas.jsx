@@ -2,21 +2,28 @@ import styles from "./BandaOfertas.module.css";
 import ImagenProducto from "./ImagenProducto.jsx";
 import { Link } from "react-router-dom";
 
-// Banda de ofertas del Home. Deriva las ofertas reales (las que tienen
-// precioAnterior) para el conteo y las mini-tarjetas.
-function BandaOfertas({ productos, onVerOfertas }) {
-  const ofertas = productos.filter((p) => p.precioAnterior !== null);
+function obtenerPorcentajeDescuento(producto) {
+  return producto.oferta?.porcentajeDescuento ?? Math.round(
+    (1 - producto.precio / producto.precioAnterior) * 100,
+  );
+}
+
+// La API entrega una muestra editorial y su resumen global. Fake Store no lo
+// conoce aún, por lo que conserva la derivación temporal desde sus precios.
+function BandaOfertas({ productos, ofertasDestacadas, onVerOfertas }) {
+  const ofertasLocales = productos.filter((p) => p.precioAnterior !== null);
+  const usaResumenApi = Boolean(ofertasDestacadas?.productos?.length);
+  const ofertas = usaResumenApi ? ofertasDestacadas.productos : ofertasLocales;
   if (ofertas.length === 0) return null;
 
   // La campaña puede tener muchas ofertas, pero la composición editorial solo
   // presenta tres; el CTA lleva al catálogo filtrado para ver el conjunto completo.
   const mostradas = ofertas.slice(0, 3);
-  const descuentoMaximo = Math.max(
-    ...ofertas.map((producto) =>
-      Math.round((1 - producto.precio / producto.precioAnterior) * 100)
-    )
-  );
-  const etiquetaProductos = ofertas.length === 1 ? "producto" : "productos";
+  const descuentoMaximo = usaResumenApi
+    ? ofertasDestacadas.meta.maxDescuento
+    : Math.max(...ofertas.map(obtenerPorcentajeDescuento));
+  const totalOfertas = usaResumenApi ? ofertasDestacadas.meta.total : ofertas.length;
+  const etiquetaProductos = totalOfertas === 1 ? "producto" : "productos";
 
   return (
     <section id="ofertas" className={styles.banda}>
@@ -28,7 +35,7 @@ function BandaOfertas({ productos, onVerOfertas }) {
         <h2 className={styles.titulo}>
           Hasta {descuentoMaximo}% menos
           <br />
-          en {ofertas.length} {etiquetaProductos}
+          en {totalOfertas} {etiquetaProductos}
         </h2>
         <p className={styles.bajada}>Descuentos aplicados directamente al precio.</p>
         <Link to="/#catalogo" className={styles.boton} onClick={onVerOfertas}>
@@ -51,7 +58,7 @@ function BandaOfertas({ productos, onVerOfertas }) {
             >
               <div className={styles.miniImg}>
                 <span className={styles.descuentoProducto}>
-                  −{Math.round((1 - p.precio / p.precioAnterior) * 100)}%
+                  −{obtenerPorcentajeDescuento(p)}%
                 </span>
                 <ImagenProducto
                   src={p.imagen}
@@ -88,7 +95,7 @@ function BandaOfertas({ productos, onVerOfertas }) {
         className={styles.botonMovil}
         onClick={onVerOfertas}
       >
-        Ver las {ofertas.length} ofertas
+        Ver las {totalOfertas} ofertas
         <i className="fa-solid fa-arrow-right" aria-hidden="true"></i>
       </Link>
     </section>

@@ -27,6 +27,7 @@ function App() {
   const [productosCatalogo, setProductosCatalogo] = useState([]); // resultado de la consulta actual
   const [metaCatalogo, setMetaCatalogo] = useState(null);
   const [fuenteCatalogo, setFuenteCatalogo] = useState(null);
+  const [ofertasDestacadas, setOfertasDestacadas] = useState(null);
   const [cargandoMas, setCargandoMas] = useState(false);
   const [cargando, setCargando] = useState(true); // ¿esta cargando?
   const [error, setError] = useState(null); // null = sin error, string = mensaje a mostrar
@@ -49,6 +50,30 @@ function App() {
       if (categorias) setCategoriasDisponibles(categorias);
     });
   }, []);
+
+  useEffect(() => {
+    if (fuenteCatalogo !== "api") {
+      setOfertasDestacadas(null);
+      return undefined;
+    }
+
+    let vigente = true;
+
+    // Esta consulta editorial es independiente de los filtros del catálogo.
+    // Solo corre con API propia: la demo conserva la derivación de Fake Store.
+    obtenerCatalogo({ soloOfertas: true, limit: 3 }).then((resultado) => {
+      if (vigente && resultado.fuente === "api") {
+        setOfertasDestacadas({
+          productos: resultado.productos,
+          meta: resultado.meta,
+        });
+      }
+    });
+
+    return () => {
+      vigente = false;
+    };
+  }, [fuenteCatalogo]);
 
   // La interfaz muestra el nombre, pero la API filtra con el slug estable. No
   // derivamos el slug desde el texto: lo conservamos en el contrato de datos.
@@ -234,6 +259,7 @@ function App() {
                 productosCatalogo={productosCatalogo}
                 categorias={categoriasDisponibles}
                 metaCatalogo={metaCatalogo}
+                ofertasDestacadas={ofertasDestacadas}
                 usaPaginacionServidor={fuenteCatalogo === "api"}
                 cargandoMas={cargandoMas}
                 onCargarMas={cargarMasProductos}

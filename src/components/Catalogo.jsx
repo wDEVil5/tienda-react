@@ -355,8 +355,8 @@ function Catalogo({
               />
             </div>
             <div className={styles.precioValores}>
-              <span>${minActual.toLocaleString("es-CL")}</span>
-              <span>${maxActual.toLocaleString("es-CL")}</span>
+              <span>{"$\u202F"}{minActual.toLocaleString("es-CL")}</span>
+              <span>{"$\u202F"}{maxActual.toLocaleString("es-CL")}</span>
             </div>
           </div>
 

@@ -98,9 +98,12 @@
 }
 
 .precio {
-  font-family: var(--font-display);
-  font-size: 21px;
+  font-family: var(--font-precio);
+  font-size: var(--tam-precio-tarjeta);
   line-height: 1;
+  font-weight: var(--peso-precio);
+  letter-spacing: -0.01em;
+  font-variant-numeric: var(--numeros-precio);
   color: var(--color-texto);
 }
 

@@ -202,12 +202,12 @@ function ProductoDetalle({ productos }) {
 
           <div className={styles.precios}>
             <span className={styles.precio}>
-              ${producto.precio.toLocaleString("es-CL")}
+              {"$\u202F"}{producto.precio.toLocaleString("es-CL")}
             </span>
             {enOferta && (
               <>
                 <span className={styles.precioAntes}>
-                  ${producto.precioAnterior.toLocaleString("es-CL")}
+                  {"$\u202F"}{producto.precioAnterior.toLocaleString("es-CL")}
                 </span>
                 <span className={styles.ahorro}>
                   Ahorras ${ahorro.toLocaleString("es-CL")}
@@ -218,7 +218,7 @@ function ProductoDetalle({ productos }) {
 
           {producto.precioPorUnidad && (
             <p className={styles.precioPorUnidad}>
-              ${producto.precioPorUnidad.monto.toLocaleString("es-CL")} por {producto.precioPorUnidad.unidad}
+              {"$\u202F"}{producto.precioPorUnidad.monto.toLocaleString("es-CL")} por {producto.precioPorUnidad.unidad}
             </p>
           )}
 

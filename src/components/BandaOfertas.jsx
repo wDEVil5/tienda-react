@@ -92,10 +92,10 @@ function BandaOfertas({ productos, ofertasDestacadas, onVerOfertas }) {
               <p className={styles.miniNombre}>{p.nombre}</p>
               <div className={styles.miniPrecios}>
                 <span className={styles.miniPrecio}>
-                  ${p.precio.toLocaleString("es-CL")}
+                  {"$\u202F"}{p.precio.toLocaleString("es-CL")}
                 </span>
                 <span className={styles.miniPrecioAnterior}>
-                  ${p.precioAnterior.toLocaleString("es-CL")}
+                  {"$\u202F"}{p.precioAnterior.toLocaleString("es-CL")}
                 </span>
               </div>
             </Link>

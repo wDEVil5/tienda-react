@@ -185,11 +185,13 @@
 }
 
 .precio {
-  font-family: var(--font-display);
-  font-size: 36px;
+  font-family: var(--font-precio);
+  font-size: var(--tam-precio-detalle);
   line-height: 1;
-  letter-spacing: -0.035em;
-  font-variant-numeric: lining-nums proportional-nums;
+  /* Referencia marketplace: una sans clara, menos editorial y menos pesada. */
+  font-weight: var(--peso-precio);
+  letter-spacing: var(--tracking-precio);
+  font-variant-numeric: var(--numeros-precio);
   color: var(--color-texto);
 }
 
@@ -402,10 +404,6 @@
     line-height: 1.08;
   }
 
-  .precio {
-    font-size: 40px;
-  }
-
   .relacionados {
     margin-top: var(--e-2xl);
     padding: var(--e-xl) 0 0;
@@ -443,10 +441,6 @@
 
   .nombre {
     font-size: 30px;
-  }
-
-  .precio {
-    font-size: 36px;
   }
 
   .compra {
@@ -511,10 +505,6 @@
 
   .nombre {
     font-size: 28px;
-  }
-
-  .precio {
-    font-size: 34px;
   }
 
   .compra {

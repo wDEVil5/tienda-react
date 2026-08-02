@@ -292,9 +292,11 @@
 }
 
 .miniPrecio {
-  font-family: "Playfair Display", Georgia, serif;
-  font-size: 19px;
-  font-weight: 400;
+  font-family: var(--font-precio);
+  font-size: var(--tam-precio-oferta);
+  font-weight: var(--peso-precio);
+  letter-spacing: -0.01em;
+  font-variant-numeric: var(--numeros-precio);
   color: #f6f5f1;
 }
 
@@ -345,9 +347,6 @@
     font-size: 12px;
   }
 
-  .miniPrecio {
-    font-size: 21px;
-  }
 }
 
 @media (max-width: 767px) {
@@ -484,10 +483,6 @@
     font-size: 11px;
     line-clamp: 1;
     -webkit-line-clamp: 1;
-  }
-
-  .miniPrecio {
-    font-size: 18px;
   }
 
   .miniPrecioAnterior {

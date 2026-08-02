@@ -32,11 +32,11 @@ function TarjetaProducto({ producto }) {
                 <div className={styles.precios}>
                     {enOferta && (
                         <span className={styles.precioAntes}>
-                            ${producto.precioAnterior.toLocaleString("es-CL")}
+                            {"$\u202F"}{producto.precioAnterior.toLocaleString("es-CL")}
                         </span>
                     )}
                     <span className={styles.precio}>
-                        ${producto.precio.toLocaleString("es-CL")}
+                        {"$\u202F"}{producto.precio.toLocaleString("es-CL")}
                     </span>
                 </div>
 

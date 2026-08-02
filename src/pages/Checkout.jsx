@@ -9,7 +9,9 @@ import {
   hayApiPedidos,
 } from "../services/pedidosApi.js";
 
-const clp = (n) => `$${(n ?? 0).toLocaleString("es-CL")}`;
+// Espacio fino inseparable: separa el símbolo de la cifra sin permitir que se
+// partan en dos líneas dentro de los resúmenes angostos.
+const clp = (n) => `$\u202F${(n ?? 0).toLocaleString("es-CL")}`;
 
 // Comunas con tarifa conocida (espejo de reglasTienda.js). Es solo una ayuda de
 // autocompletado: el costo real y la validación siempre los decide el servidor.

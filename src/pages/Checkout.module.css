@@ -340,7 +340,14 @@
 
 .totalFila { display: flex; align-items: baseline; justify-content: space-between; padding-top: var(--e-md); border-top: 1px solid var(--color-borde-2); }
 .totalFila > span:first-child { color: var(--color-texto); font-size: 17px; font-weight: 600; }
-.totalMonto { color: var(--color-texto); font-family: var(--font-display); font-size: 34px; }
+.totalMonto {
+  color: var(--color-texto);
+  font-family: var(--font-precio);
+  font-size: var(--tam-precio-checkout-total);
+  font-weight: var(--peso-precio);
+  letter-spacing: var(--tracking-precio);
+  font-variant-numeric: var(--numeros-precio);
+}
 .notaEstimado,
 .notaServidor { margin-top: var(--e-sm); color: var(--color-texto-tenue); font-size: 11.5px; line-height: 1.5; }
 .notaServidor { margin-top: var(--e-md); text-align: center; }
@@ -373,7 +380,12 @@
 .confFila dt { color: var(--color-texto-suave); font-size: 13px; }
 .confFila dd { margin: 0; color: var(--color-texto); font-size: 14px; }
 .confNumero { font-family: var(--font-mono); }
-.confTotal { font-family: var(--font-display); font-size: 22px; }
+.confTotal {
+  font-family: var(--font-precio);
+  font-size: var(--tam-precio-confirmacion);
+  font-weight: var(--peso-precio);
+  font-variant-numeric: tabular-nums;
+}
 .confAcciones { margin-bottom: var(--e-md); }
 .confBotonPrimario { padding: 13px 24px; border: 0; border-radius: var(--radio-control); background: var(--color-acento); color: #fff; cursor: pointer; font: inherit; font-size: 14px; font-weight: 600; }
 .confNota { color: var(--color-texto-tenue); font-size: 12px; line-height: 1.5; }

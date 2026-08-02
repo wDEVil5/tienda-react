@@ -226,7 +226,7 @@ function Header({
             <span className={styles.carritoTexto}>
               <span className={styles.carritoLabel}>Mi carrito</span>
               <span className={styles.carritoMonto}>
-                ${total.toLocaleString("es-CL")}
+                {"$\u202F"}{total.toLocaleString("es-CL")}
               </span>
             </span>
             {totalItems > 0 && (

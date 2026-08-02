@@ -195,10 +195,10 @@ function Carrito({ onCerrar, abierto, productos, onVerOfertas, onVerCatalogo }) 
                 <span className={styles.precioUnitario}>
   {typeof item.precioAnterior === "number" && (
                     <span className={styles.precioAntes}>
-                      ${item.precioAnterior.toLocaleString("es-CL")}
+                      {"$\u202F"}{item.precioAnterior.toLocaleString("es-CL")}
                     </span>
                   )}
-                  <span>${item.precio.toLocaleString("es-CL")} c/u</span>
+                  <span>{"$\u202F"}{item.precio.toLocaleString("es-CL")} c/u</span>
                 </span>
 
                 <div className={styles.filaInferior}>
@@ -212,7 +212,7 @@ function Carrito({ onCerrar, abierto, productos, onVerOfertas, onVerCatalogo }) 
                     }
                   />
                   <span className={styles.subtotal}>
-                    ${(item.precio * item.cantidad).toLocaleString("es-CL")}
+                    {"$\u202F"}{(item.precio * item.cantidad).toLocaleString("es-CL")}
                   </span>
                 </div>
               </div>
@@ -232,7 +232,7 @@ function Carrito({ onCerrar, abierto, productos, onVerOfertas, onVerCatalogo }) 
             <div className={styles.filaResumen}>
               <span>Subtotal</span>
               <span>
-                ${(hayDescuento ? subtotalOriginal : total).toLocaleString(
+                {"$\u202F"}{(hayDescuento ? subtotalOriginal : total).toLocaleString(
                   "es-CL",
                 )}
               </span>
@@ -241,7 +241,7 @@ function Carrito({ onCerrar, abierto, productos, onVerOfertas, onVerCatalogo }) 
               <div className={styles.filaResumen}>
                 <span>Descuento</span>
                 <span className={styles.descuento}>
-                  −${descuento.toLocaleString("es-CL")}
+                  −{"$\u202F"}{descuento.toLocaleString("es-CL")}
                 </span>
               </div>
             )}
@@ -254,7 +254,7 @@ function Carrito({ onCerrar, abierto, productos, onVerOfertas, onVerCatalogo }) 
           <div className={styles.total}>
             <span>Total</span>
             <span className={styles.totalMonto}>
-              ${total.toLocaleString("es-CL")}
+              {"$\u202F"}{total.toLocaleString("es-CL")}
             </span>
           </div>
 

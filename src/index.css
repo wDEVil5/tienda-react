@@ -32,6 +32,21 @@
   --font-ui:      "Instrument Sans", system-ui, sans-serif;
   --font-mono:    "IBM Plex Mono", ui-monospace, monospace;  /* eyebrows, SKU, IDs */
 
+  /* ---- Precios ----
+     Contrato único para todos los montos comerciales. El contexto solo elige
+     un tamaño; fuente, peso y cifras se ajustan aquí para toda la tienda. */
+  --font-precio: var(--font-ui);
+  --peso-precio: 500;
+  --tracking-precio: -0.015em;
+  --numeros-precio: proportional-nums;
+  --tam-precio-tarjeta: 21px;
+  --tam-precio-oferta: 19px;
+  --tam-precio-detalle: 30px;
+  --tam-precio-drawer-subtotal: 17px;
+  --tam-precio-drawer-total: 24px;
+  --tam-precio-checkout-total: 28px;
+  --tam-precio-confirmacion: 20px;
+
   /* ---- Radios ---- */
   --radio-control: 11px;  /* TODO control interactivo: botón, chip cuadrado, input alto */
   --radio-campo:   10px;  /* campos de formulario compactos */
@@ -70,4 +85,43 @@ body {
 :focus-visible {
   outline: 2px solid var(--color-acento);
   outline-offset: 2px;
+}
+
+/* Escala contextual del sistema de precios, no reglas aisladas por componente. */
+@media (min-width: 768px) {
+  :root {
+    --tam-precio-drawer-subtotal: 18px;
+    --tam-precio-drawer-total: 26px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --tam-precio-detalle: 32px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  :root {
+    --tam-precio-drawer-subtotal: 17px;
+  }
+}
+
+@media (max-width: 1023px) {
+  :root {
+    --tam-precio-oferta: 21px;
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --tam-precio-detalle: 28px;
+    --tam-precio-oferta: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --tam-precio-drawer-total: 23px;
+  }
 }

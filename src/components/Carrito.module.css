@@ -176,10 +176,11 @@
 
 .subtotal {
   flex-shrink: 0;
-  font-family: var(--font-display);
-  font-size: 19px;
-  letter-spacing: -0.03em;
-  font-variant-numeric: lining-nums proportional-nums;
+  font-family: var(--font-precio);
+  font-size: var(--tam-precio-drawer-subtotal);
+  font-weight: var(--peso-precio);
+  letter-spacing: var(--tracking-precio);
+  font-variant-numeric: var(--numeros-precio);
   color: var(--color-texto);
 }
 
@@ -319,10 +320,11 @@
 }
 
 .totalMonto {
-  font-family: var(--font-display);
-  font-size: 27px;
-  letter-spacing: -0.035em;
-  font-variant-numeric: lining-nums proportional-nums;
+  font-family: var(--font-precio);
+  font-size: var(--tam-precio-drawer-total);
+  font-weight: var(--peso-precio);
+  letter-spacing: var(--tracking-precio);
+  font-variant-numeric: var(--numeros-precio);
   color: var(--color-texto);
 }
 
@@ -410,17 +412,9 @@
     font-size: 14px;
   }
 
-  .subtotal {
-    font-size: 21px;
-  }
-
   .resumen {
     margin-bottom: var(--e-lg);
     padding-bottom: var(--e-lg);
-  }
-
-  .totalMonto {
-    font-size: 30px;
   }
 
   .pagar {
@@ -453,10 +447,6 @@
     flex-basis: 64px;
     width: 64px;
     height: 64px;
-  }
-
-  .subtotal {
-    font-size: 19px;
   }
 
   /* El drawer sigue siendo lateral en tablet: el estado vacío aprovecha su
@@ -507,10 +497,6 @@
     font-size: 13px;
   }
 
-  .subtotal {
-    font-size: 18px;
-  }
-
   .resumen {
     margin-bottom: var(--e-sm);
     padding-bottom: var(--e-sm);
@@ -522,10 +508,6 @@
 
   .total {
     margin-bottom: var(--e-sm);
-  }
-
-  .totalMonto {
-    font-size: 25px;
   }
 
   .pagar {

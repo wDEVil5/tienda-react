@@ -24,6 +24,18 @@ function crearSlug(nombre) {
 
 export function crearServicioEtiquetasAdmin(repositorio = repositorioEtiquetasAdmin) {
   return {
+    async listarEtiquetas() {
+      const etiquetas = await repositorio.listar()
+      return {
+        data: etiquetas.map((etiqueta) => ({
+          id: etiqueta.id,
+          nombre: etiqueta.nombre,
+          slug: etiqueta.slug,
+          productosAsignados: etiqueta._count.productos,
+        })),
+      }
+    },
+
     async crearEtiqueta(datos) {
       return repositorio.crear({
         ...datos,
@@ -36,3 +48,4 @@ export function crearServicioEtiquetasAdmin(repositorio = repositorioEtiquetasAd
 const servicioEtiquetasAdmin = crearServicioEtiquetasAdmin()
 
 export const crearEtiquetaAdmin = servicioEtiquetasAdmin.crearEtiqueta
+export const listarEtiquetasAdmin = servicioEtiquetasAdmin.listarEtiquetas

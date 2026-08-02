@@ -44,7 +44,7 @@ import { asignarLogoMarcaAdmin } from './admin-marcas.service.js'
 import { recibirLogoMarca } from '../imagenes/imagenes.middleware.js'
 import { subirLogoMarca } from '../imagenes/imagenes.service.js'
 import { eliminarLogoMarca } from '../imagenes/imagenes.storage.js'
-import { ErrorEtiquetaAdmin, crearEtiquetaAdmin } from './admin-etiquetas.service.js'
+import { ErrorEtiquetaAdmin, crearEtiquetaAdmin, listarEtiquetasAdmin } from './admin-etiquetas.service.js'
 import { validarEtiquetaNuevaAdmin } from './admin-etiquetas.validacion.js'
 
 export function crearRouterAdmin({
@@ -70,6 +70,7 @@ export function crearRouterAdmin({
     asignarLogoMarcaAdmin,
     subirLogoMarca,
     crearEtiquetaAdmin,
+    listarEtiquetasAdmin,
     desactivarPromocionAdmin,
     obtenerPromocionParaEdicionAdmin,
   },
@@ -252,6 +253,19 @@ export function crearRouterAdmin({
             error: { code: 'TAG_ALREADY_EXISTS', message: 'El nombre o slug de la etiqueta ya está en uso.' },
           })
         }
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.get(
+    '/etiquetas',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (_request, response, next) => {
+      try {
+        return response.json(await servicio.listarEtiquetasAdmin())
+      } catch (error) {
         return next(error)
       }
     },

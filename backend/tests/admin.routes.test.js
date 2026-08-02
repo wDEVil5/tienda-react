@@ -241,6 +241,26 @@ test('POST /api/admin/etiquetas crea una etiqueta reutilizable', async () => {
   assert.equal(response.body.data.id, 'etiqueta-1')
 })
 
+test('GET /api/admin/etiquetas lista etiquetas para el panel', async () => {
+  const app = express()
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'OPERADOR' }
+      next()
+    },
+    servicio: {
+      async listarEtiquetasAdmin() {
+        return { data: [{ id: 'etiqueta-1', productosAsignados: 0 }] }
+      },
+    },
+  }))
+
+  const response = await request(app).get('/api/admin/etiquetas')
+
+  assert.equal(response.status, 200)
+  assert.equal(response.body.data[0].productosAsignados, 0)
+})
+
 test('GET /api/admin/promociones/:id entrega una campaña para edición', async () => {
   const app = express()
   app.use('/api/admin', crearRouterAdmin({

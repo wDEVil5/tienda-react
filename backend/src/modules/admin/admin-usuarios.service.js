@@ -30,6 +30,20 @@ export function crearServicioUsuariosAdmin(
       return repositorio.desactivarPorId(id, new Date())
     },
 
+    async activarUsuario(id) {
+      const usuario = await repositorio.obtenerPorId(id)
+      if (!usuario) return null
+
+      if (usuario.rol === 'ADMIN') {
+        throw new ErrorUsuarioAdmin(
+          'CANNOT_MANAGE_ADMIN',
+          'Las cuentas administradoras se gestionan fuera de esta ruta.',
+        )
+      }
+
+      return repositorio.activarPorId(id)
+    },
+
     async listarUsuarios() {
       const usuarios = await repositorio.listar()
       return { data: usuarios.map((usuario) => ({ ...usuario })) }
@@ -53,3 +67,4 @@ const servicioUsuariosAdmin = crearServicioUsuariosAdmin()
 export const crearOperadorAdmin = servicioUsuariosAdmin.crearOperador
 export const listarUsuariosAdmin = servicioUsuariosAdmin.listarUsuarios
 export const desactivarUsuarioAdmin = servicioUsuariosAdmin.desactivarUsuario
+export const activarUsuarioAdmin = servicioUsuariosAdmin.activarUsuario

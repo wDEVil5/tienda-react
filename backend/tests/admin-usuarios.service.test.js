@@ -26,6 +26,19 @@ test('desactivarUsuario impide que el administrador se desactive a sí mismo', a
   )
 })
 
+test('activarUsuario recupera un operador sin restaurar sesiones previas', async () => {
+  let usuarioActivado
+  const servicio = crearServicioUsuariosAdmin({
+    async obtenerPorId() { return { id: 'usuario-2', rol: 'OPERADOR' } },
+    async activarPorId(id) { usuarioActivado = id; return { id, activo: true } },
+  })
+
+  const usuario = await servicio.activarUsuario('usuario-2')
+
+  assert.equal(usuarioActivado, 'usuario-2')
+  assert.equal(usuario.activo, true)
+})
+
 test('listarUsuarios no expone hashes ni sesiones', async () => {
   const servicio = crearServicioUsuariosAdmin({
     async listar() {

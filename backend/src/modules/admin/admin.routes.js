@@ -48,6 +48,7 @@ import { ErrorEtiquetaAdmin, crearEtiquetaAdmin, listarEtiquetasAdmin } from './
 import { validarEtiquetaNuevaAdmin } from './admin-etiquetas.validacion.js'
 import {
   ErrorUsuarioAdmin,
+  activarUsuarioAdmin,
   crearOperadorAdmin,
   desactivarUsuarioAdmin,
   listarUsuariosAdmin,
@@ -81,6 +82,7 @@ export function crearRouterAdmin({
     crearOperadorAdmin,
     listarUsuariosAdmin,
     desactivarUsuarioAdmin,
+    activarUsuarioAdmin,
     desactivarPromocionAdmin,
     obtenerPromocionParaEdicionAdmin,
   },
@@ -134,6 +136,28 @@ export function crearRouterAdmin({
     async (request, response, next) => {
       try {
         const usuario = await servicio.desactivarUsuarioAdmin(request.params.id, request.usuario.id)
+        if (!usuario) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_USER_NOT_FOUND', message: 'No encontramos el usuario solicitado.' },
+          })
+        }
+        return response.json({ data: usuario })
+      } catch (error) {
+        if (error instanceof ErrorUsuarioAdmin) {
+          return response.status(422).json({ error: { code: error.code, message: error.message } })
+        }
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.patch(
+    '/usuarios/:id/activar',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      try {
+        const usuario = await servicio.activarUsuarioAdmin(request.params.id)
         if (!usuario) {
           return response.status(404).json({
             error: { code: 'ADMIN_USER_NOT_FOUND', message: 'No encontramos el usuario solicitado.' },

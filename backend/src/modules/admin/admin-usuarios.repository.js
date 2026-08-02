@@ -24,6 +24,14 @@ export function crearRepositorioUsuariosAdmin(cliente = prisma) {
       })
     },
 
+    activarPorId(id) {
+      return cliente.usuario.update({
+        where: { id },
+        data: { activo: true },
+        select: { id: true, nombre: true, email: true, rol: true, activo: true, createdAt: true },
+      })
+    },
+
     listar() {
       return cliente.usuario.findMany({
         select: { id: true, nombre: true, email: true, rol: true, activo: true, createdAt: true },

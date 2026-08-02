@@ -100,6 +100,37 @@ test('PATCH /api/admin/productos/:id rechaza datos inválidos antes de guardar',
   assert.equal(response.body.error.code, 'INVALID_PRODUCT_DATA')
 })
 
+test('DELETE /api/admin/productos/:id realiza una baja lógica', async () => {
+  const app = express()
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'ADMIN' }
+      next()
+    },
+    servicio: { async desactivarProducto() { return true } },
+  }))
+
+  const response = await request(app).delete('/api/admin/productos/producto-1')
+
+  assert.equal(response.status, 204)
+})
+
+test('DELETE /api/admin/productos/:id responde 404 si no existe', async () => {
+  const app = express()
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'ADMIN' }
+      next()
+    },
+    servicio: { async desactivarProducto() { return false } },
+  }))
+
+  const response = await request(app).delete('/api/admin/productos/inexistente')
+
+  assert.equal(response.status, 404)
+  assert.equal(response.body.error.code, 'ADMIN_PRODUCT_NOT_FOUND')
+})
+
 test('PUT /api/admin/productos/:id/imagenes reemplaza la galería validada', async () => {
   let imagenesRecibidas
   const app = express()

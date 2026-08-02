@@ -180,6 +180,16 @@ export function crearServicioProductosAdmin(
       return crearProductoParaEdicion(producto)
     },
 
+    async desactivarProducto(id) {
+      const producto = await repositorio.obtenerPorId(id)
+      if (!producto) return false
+
+      // La baja lógica permite recuperar el producto y preserva referencias
+      // futuras de pedidos; un producto inactivo tampoco puede destacarse.
+      await repositorio.actualizarPorId(id, { activo: false, destacado: false })
+      return true
+    },
+
     async reemplazarImagenesProducto(id, imagenes) {
       const productoActual = await repositorio.obtenerPorId(id)
       if (!productoActual) return null
@@ -215,4 +225,5 @@ const servicioProductosAdmin = crearServicioProductosAdmin()
 export const obtenerProductoParaEdicion = servicioProductosAdmin.obtenerProductoParaEdicion
 export const actualizarProducto = servicioProductosAdmin.actualizarProducto
 export const crearProducto = servicioProductosAdmin.crearProducto
+export const desactivarProducto = servicioProductosAdmin.desactivarProducto
 export const reemplazarImagenesProducto = servicioProductosAdmin.reemplazarImagenesProducto

@@ -141,3 +141,17 @@ test('crearProducto genera slug, búsqueda y lo deja sin publicar', async () => 
   assert.equal(datosCreacion.activo, false)
   assert.equal(creado.activo, false)
 })
+
+test('desactivarProducto conserva el registro y quita su destacado', async () => {
+  let datosActualizacion
+  const repositorio = {
+    async obtenerPorId() { return { id: 'producto-1' } },
+    async actualizarPorId(_id, datos) { datosActualizacion = datos },
+  }
+  const servicio = crearServicioProductosAdmin(repositorio)
+
+  const resultado = await servicio.desactivarProducto('producto-1')
+
+  assert.equal(resultado, true)
+  assert.deepEqual(datosActualizacion, { activo: false, destacado: false })
+})

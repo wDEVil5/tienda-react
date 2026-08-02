@@ -4,6 +4,7 @@ import {
   ErrorProductoAdmin,
   actualizarProducto,
   crearProducto,
+  desactivarProducto,
   obtenerProductoParaEdicion,
   reemplazarImagenesProducto,
 } from './admin-productos.service.js'
@@ -20,6 +21,7 @@ export function crearRouterAdmin({
     obtenerProductoParaEdicion,
     actualizarProducto,
     crearProducto,
+    desactivarProducto,
     reemplazarImagenesProducto,
     subirImagenProducto,
   },
@@ -129,6 +131,30 @@ export function crearRouterAdmin({
             error: { code: error.code, message: error.message },
           })
         }
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.delete(
+    '/productos/:id',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      try {
+        const fueDesactivado = await servicio.desactivarProducto(request.params.id)
+
+        if (!fueDesactivado) {
+          return response.status(404).json({
+            error: {
+              code: 'ADMIN_PRODUCT_NOT_FOUND',
+              message: 'No encontramos el producto solicitado.',
+            },
+          })
+        }
+
+        return response.status(204).end()
+      } catch (error) {
         return next(error)
       }
     },

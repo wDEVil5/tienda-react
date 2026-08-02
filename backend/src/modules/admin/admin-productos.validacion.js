@@ -24,8 +24,16 @@ export const esquemaCambiosProductoAdmin = z.object({
   fechaVencimiento: z.string().date().nullable().optional(),
   categoriaId: uuid.optional(),
   marcaId: uuid.optional(),
-  etiquetaIds: z.array(uuid).max(10).optional(),
+  etiquetaIds: z.array(uuid).max(10).refine(
+    (ids) => new Set(ids).size === ids.length,
+    'etiquetaIds no puede repetir etiquetas.',
+  ).optional(),
 }).strict().refine(
+  (cambios) => Object.keys(cambios).length > 0,
+  {
+    message: 'Debes enviar al menos un cambio.',
+  },
+).refine(
   (cambios) =>
     cambios.precioAnterior === undefined ||
     cambios.precioAnterior === null ||

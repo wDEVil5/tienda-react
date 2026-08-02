@@ -42,3 +42,32 @@ test('obtenerProductoParaEdicion expone los datos que necesita el editor', async
     { id: 'etiqueta-1', nombre: 'Vegano', slug: 'vegano' },
   ])
 })
+
+test('actualizarProducto deriva la clave de búsqueda al cambiar el nombre', async () => {
+  let datosActualizacion
+  const producto = {
+    id: 'producto-1',
+    sku: 'ACE-001', slug: 'aceite-oliva', nombre: 'Aceite', descripcion: 'Descripción',
+    precio: 7990, precioAnterior: 9990, stock: 12, activo: true, destacado: false,
+    alertaStockBajo: null, codigoBarras: null, origen: null, contenidoCantidad: null,
+    contenidoUnidad: null, pesoDespachoGramos: null, fechaVencimiento: null,
+    categoria: { id: 'cat-1', nombre: 'Despensa', slug: 'despensa' },
+    marca: { id: 'marca-1', nombre: 'Marca', slug: 'marca', logoUrl: null },
+    imagenes: [], etiquetas: [],
+  }
+  const repositorio = {
+    async obtenerPorId() { return producto },
+    async actualizarPorId(_id, datos) {
+      datosActualizacion = datos
+      return { ...producto, ...datos }
+    },
+  }
+  const servicio = crearServicioProductosAdmin(repositorio)
+
+  const actualizado = await servicio.actualizarProducto('producto-1', {
+    nombre: 'Café de grano',
+  })
+
+  assert.equal(datosActualizacion.nombreBusqueda, 'cafe de grano')
+  assert.equal(actualizado.nombre, 'Café de grano')
+})

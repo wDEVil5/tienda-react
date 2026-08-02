@@ -39,3 +39,9 @@ test('rechaza un precio anterior menor o igual al precio actual', () => {
   assert.equal(resultado.success, false)
   assert.equal(resultado.error.issues[0].path[0], 'precioAnterior')
 })
+
+test('rechaza una actualización sin cambios', () => {
+  const resultado = validarCambiosProductoAdmin({})
+
+  assert.equal(resultado.success, false)
+})

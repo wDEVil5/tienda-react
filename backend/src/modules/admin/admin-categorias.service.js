@@ -24,6 +24,13 @@ function crearSlug(nombre) {
 
 export function crearServicioCategoriasAdmin(repositorio = repositorioCategoriasAdmin) {
   return {
+    async activarCategoria(id) {
+      const categoria = await repositorio.obtenerPorId(id)
+      if (!categoria) return null
+
+      return repositorio.actualizarPorId(id, { activa: true })
+    },
+
     async desactivarCategoria(id) {
       const categoria = await repositorio.obtenerPorId(id)
       if (!categoria) return null
@@ -66,3 +73,4 @@ const servicioCategoriasAdmin = crearServicioCategoriasAdmin()
 export const crearCategoriaAdmin = servicioCategoriasAdmin.crearCategoria
 export const listarCategoriasAdmin = servicioCategoriasAdmin.listarCategorias
 export const desactivarCategoriaAdmin = servicioCategoriasAdmin.desactivarCategoria
+export const activarCategoriaAdmin = servicioCategoriasAdmin.activarCategoria

@@ -132,6 +132,22 @@ test('PATCH /api/admin/categorias/:id/desactivar desactiva una categoría dispon
   assert.equal(response.body.data.activa, false)
 })
 
+test('PATCH /api/admin/categorias/:id/activar reactiva una categoría existente', async () => {
+  const app = express()
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'OPERADOR' }
+      next()
+    },
+    servicio: { async activarCategoriaAdmin() { return { id: 'cat-1', activa: true } } },
+  }))
+
+  const response = await request(app).patch('/api/admin/categorias/cat-1/activar')
+
+  assert.equal(response.status, 200)
+  assert.equal(response.body.data.activa, true)
+})
+
 test('POST /api/admin/marcas crea una marca sin logo manual', async () => {
   let datosRecibidos
   const app = express()

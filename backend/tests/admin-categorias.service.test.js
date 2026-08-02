@@ -13,6 +13,22 @@ test('desactivarCategoria impide ocultar una categoría con productos', async ()
   )
 })
 
+test('activarCategoria vuelve a habilitar una categoría existente', async () => {
+  let datosActualizacion
+  const servicio = crearServicioCategoriasAdmin({
+    async obtenerPorId() { return { id: 'cat-1' } },
+    async actualizarPorId(_id, datos) {
+      datosActualizacion = datos
+      return { id: 'cat-1', activa: true }
+    },
+  })
+
+  const categoria = await servicio.activarCategoria('cat-1')
+
+  assert.deepEqual(datosActualizacion, { activa: true })
+  assert.equal(categoria.activa, true)
+})
+
 test('desactivarCategoria oculta una categoría sin productos', async () => {
   let datosActualizacion
   const servicio = crearServicioCategoriasAdmin({

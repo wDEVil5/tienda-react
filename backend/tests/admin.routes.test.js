@@ -25,6 +25,32 @@ test('GET /api/admin/productos/:id entrega datos para edición a un administrado
   assert.deepEqual(response.body, { data: { id: 'producto-1', estado: 'BORRADOR' } })
 })
 
+test('POST /api/admin/usuarios crea un operador solo desde ADMIN', async () => {
+  let datosRecibidos
+  const app = express()
+  app.use(express.json())
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'ADMIN' }
+      next()
+    },
+    servicio: {
+      async crearOperadorAdmin(datos) {
+        datosRecibidos = datos
+        return { id: 'usuario-2', email: datos.email, rol: 'OPERADOR' }
+      },
+    },
+  }))
+
+  const response = await request(app).post('/api/admin/usuarios').send({
+    nombre: 'Operador Uno', email: 'OPERADOR@EJEMPLO.TEST', contrasena: 'Una frase segura 2026',
+  })
+
+  assert.equal(response.status, 201)
+  assert.equal(datosRecibidos.email, 'operador@ejemplo.test')
+  assert.equal(response.body.data.rol, 'OPERADOR')
+})
+
 test('GET /api/admin/productos/:id informa cuando no existe', async () => {
   const response = await request(crearAppAdmin()).get('/api/admin/productos/producto-1')
 

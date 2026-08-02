@@ -46,6 +46,8 @@ import { subirLogoMarca } from '../imagenes/imagenes.service.js'
 import { eliminarLogoMarca } from '../imagenes/imagenes.storage.js'
 import { ErrorEtiquetaAdmin, crearEtiquetaAdmin, listarEtiquetasAdmin } from './admin-etiquetas.service.js'
 import { validarEtiquetaNuevaAdmin } from './admin-etiquetas.validacion.js'
+import { crearOperadorAdmin } from './admin-usuarios.service.js'
+import { validarUsuarioNuevoAdmin } from './admin-usuarios.validacion.js'
 
 export function crearRouterAdmin({
   servicio = {
@@ -71,12 +73,39 @@ export function crearRouterAdmin({
     subirLogoMarca,
     crearEtiquetaAdmin,
     listarEtiquetasAdmin,
+    crearOperadorAdmin,
     desactivarPromocionAdmin,
     obtenerPromocionParaEdicionAdmin,
   },
   middlewareSesion = requerirSesion,
 } = {}) {
   const adminRouter = Router()
+
+  adminRouter.post(
+    '/usuarios',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      const validacion = validarUsuarioNuevoAdmin(request.body)
+      if (!validacion.success) {
+        return response.status(422).json({
+          error: { code: 'INVALID_USER_DATA', message: 'Revisa los datos del usuario.' },
+        })
+      }
+
+      try {
+        const usuario = await servicio.crearOperadorAdmin(validacion.data)
+        return response.status(201).json({ data: usuario })
+      } catch (error) {
+        if (error.code === 'P2002') {
+          return response.status(409).json({
+            error: { code: 'USER_ALREADY_EXISTS', message: 'Ya existe un usuario con ese email.' },
+          })
+        }
+        return next(error)
+      }
+    },
+  )
 
   adminRouter.get(
     '/categorias',

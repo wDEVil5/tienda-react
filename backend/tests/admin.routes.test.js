@@ -72,6 +72,34 @@ test('GET /api/admin/promociones entrega campañas al personal autorizado', asyn
   assert.equal(response.body.data[0].productosAsignados, 3)
 })
 
+test('POST /api/admin/promociones crea una campaña validada e inactiva', async () => {
+  let datosRecibidos
+  const app = express()
+  app.use(express.json())
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'ADMIN' }
+      next()
+    },
+    servicio: {
+      async crearPromocionAdmin(datos) {
+        datosRecibidos = datos
+        return { id: 'promo-1', activa: false }
+      },
+    },
+  }))
+
+  const response = await request(app).post('/api/admin/promociones').send({
+    nombre: 'Ofertas de agosto', porcentajeDescuento: 25,
+    empiezaEn: '2026-08-01T00:00:00.000Z', terminaEn: '2026-08-08T00:00:00.000Z',
+    productoIds: ['550e8400-e29b-41d4-a716-446655440000'],
+  })
+
+  assert.equal(response.status, 201)
+  assert.equal(datosRecibidos.productoIds.length, 1)
+  assert.equal(response.body.data.activa, false)
+})
+
 test('GET /api/admin/productos devuelve el listado administrativo paginado', async () => {
   const app = express()
   app.use('/api/admin', crearRouterAdmin({

@@ -18,6 +18,8 @@ import { ErrorImagen, subirImagenProducto } from '../imagenes/imagenes.service.j
 import { recibirImagenProducto } from '../imagenes/imagenes.middleware.js'
 import { listarOpcionesProductoAdmin } from './admin-referencias.service.js'
 import { listarPromocionesAdmin } from './admin-promociones.service.js'
+import { ErrorPromocionAdmin, crearPromocionAdmin } from './admin-promociones.service.js'
+import { validarPromocionNuevaAdmin } from './admin-promociones.validacion.js'
 
 export function crearRouterAdmin({
   servicio = {
@@ -30,6 +32,7 @@ export function crearRouterAdmin({
     subirImagenProducto,
     listarOpcionesProductoAdmin,
     listarPromocionesAdmin,
+    crearPromocionAdmin,
   },
   middlewareSesion = requerirSesion,
 } = {}) {
@@ -43,6 +46,39 @@ export function crearRouterAdmin({
       try {
         return response.json(await servicio.listarPromocionesAdmin())
       } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.post(
+    '/promociones',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      const validacion = validarPromocionNuevaAdmin(request.body)
+      if (!validacion.success) {
+        return response.status(422).json({
+          error: {
+            code: 'INVALID_PROMOTION_DATA',
+            message: 'Revisa los datos de la promoción.',
+            fields: validacion.error.issues.map((issue) => issue.path.join('.')),
+          },
+        })
+      }
+
+      try {
+        const promocion = await servicio.crearPromocionAdmin(validacion.data)
+        return response.status(201).json({ data: promocion })
+      } catch (error) {
+        if (error instanceof ErrorPromocionAdmin) {
+          return response.status(422).json({ error: { code: error.code, message: error.message } })
+        }
+        if (error.code === 'P2002') {
+          return response.status(409).json({
+            error: { code: 'PROMOTION_ALREADY_EXISTS', message: 'El slug de la promoción ya está en uso.' },
+          })
+        }
         return next(error)
       }
     },

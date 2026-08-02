@@ -1,4 +1,27 @@
 import { repositorioPromocionesAdmin } from './admin-promociones.repository.js'
+import { normalizarTextoBusqueda } from '../../lib/texto.js'
+
+export class ErrorPromocionAdmin extends Error {
+  constructor(code, message) {
+    super(message)
+    this.code = code
+  }
+}
+
+function crearSlug(nombre) {
+  const slug = normalizarTextoBusqueda(nombre)
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+
+  if (!slug) {
+    throw new ErrorPromocionAdmin(
+      'INVALID_PROMOTION_SLUG',
+      'El nombre debe incluir letras o números para generar su URL.',
+    )
+  }
+
+  return slug
+}
 
 function crearResumenPromocion(promocion) {
   return {
@@ -15,6 +38,28 @@ function crearResumenPromocion(promocion) {
 
 export function crearServicioPromocionesAdmin(repositorio = repositorioPromocionesAdmin) {
   return {
+    async crearPromocion(datos) {
+      const productosEncontrados = await repositorio.contarProductos(datos.productoIds)
+      if (productosEncontrados !== datos.productoIds.length) {
+        throw new ErrorPromocionAdmin(
+          'INVALID_PROMOTION_PRODUCT',
+          'Uno o más productos seleccionados no existen.',
+        )
+      }
+
+      const promocion = await repositorio.crear({
+        ...datos,
+        slug: datos.slug ?? crearSlug(datos.nombre),
+        empiezaEn: new Date(datos.empiezaEn),
+        terminaEn: new Date(datos.terminaEn),
+        // Se revisa antes de activarla para que una campaña incompleta nunca
+        // cambie precios por accidente en la tienda.
+        activa: false,
+      })
+
+      return crearResumenPromocion(promocion)
+    },
+
     async listarPromociones() {
       const promociones = await repositorio.listar()
       return { data: promociones.map(crearResumenPromocion) }
@@ -25,3 +70,4 @@ export function crearServicioPromocionesAdmin(repositorio = repositorioPromocion
 const servicioPromocionesAdmin = crearServicioPromocionesAdmin()
 
 export const listarPromocionesAdmin = servicioPromocionesAdmin.listarPromociones
+export const crearPromocionAdmin = servicioPromocionesAdmin.crearPromocion

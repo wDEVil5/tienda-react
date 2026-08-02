@@ -2,6 +2,30 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { crearServicioUsuariosAdmin } from '../src/modules/admin/admin-usuarios.service.js'
 
+test('desactivarUsuario revoca el acceso de un operador', async () => {
+  let usuarioDesactivado
+  const servicio = crearServicioUsuariosAdmin({
+    async obtenerPorId() { return { id: 'usuario-2', rol: 'OPERADOR' } },
+    async desactivarPorId(id) { usuarioDesactivado = id; return { id, activo: false } },
+  })
+
+  const usuario = await servicio.desactivarUsuario('usuario-2', 'usuario-1')
+
+  assert.equal(usuarioDesactivado, 'usuario-2')
+  assert.equal(usuario.activo, false)
+})
+
+test('desactivarUsuario impide que el administrador se desactive a sí mismo', async () => {
+  const servicio = crearServicioUsuariosAdmin({
+    async obtenerPorId() { return { id: 'usuario-1', rol: 'ADMIN' } },
+  })
+
+  await assert.rejects(
+    servicio.desactivarUsuario('usuario-1', 'usuario-1'),
+    { code: 'CANNOT_DEACTIVATE_SELF' },
+  )
+})
+
 test('listarUsuarios no expone hashes ni sesiones', async () => {
   const servicio = crearServicioUsuariosAdmin({
     async listar() {

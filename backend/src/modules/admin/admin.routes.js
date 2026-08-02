@@ -46,7 +46,12 @@ import { subirLogoMarca } from '../imagenes/imagenes.service.js'
 import { eliminarLogoMarca } from '../imagenes/imagenes.storage.js'
 import { ErrorEtiquetaAdmin, crearEtiquetaAdmin, listarEtiquetasAdmin } from './admin-etiquetas.service.js'
 import { validarEtiquetaNuevaAdmin } from './admin-etiquetas.validacion.js'
-import { crearOperadorAdmin, listarUsuariosAdmin } from './admin-usuarios.service.js'
+import {
+  ErrorUsuarioAdmin,
+  crearOperadorAdmin,
+  desactivarUsuarioAdmin,
+  listarUsuariosAdmin,
+} from './admin-usuarios.service.js'
 import { validarUsuarioNuevoAdmin } from './admin-usuarios.validacion.js'
 
 export function crearRouterAdmin({
@@ -75,6 +80,7 @@ export function crearRouterAdmin({
     listarEtiquetasAdmin,
     crearOperadorAdmin,
     listarUsuariosAdmin,
+    desactivarUsuarioAdmin,
     desactivarPromocionAdmin,
     obtenerPromocionParaEdicionAdmin,
   },
@@ -116,6 +122,28 @@ export function crearRouterAdmin({
       try {
         return response.json(await servicio.listarUsuariosAdmin())
       } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.patch(
+    '/usuarios/:id/desactivar',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      try {
+        const usuario = await servicio.desactivarUsuarioAdmin(request.params.id, request.usuario.id)
+        if (!usuario) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_USER_NOT_FOUND', message: 'No encontramos el usuario solicitado.' },
+          })
+        }
+        return response.json({ data: usuario })
+      } catch (error) {
+        if (error instanceof ErrorUsuarioAdmin) {
+          return response.status(422).json({ error: { code: error.code, message: error.message } })
+        }
         return next(error)
       }
     },

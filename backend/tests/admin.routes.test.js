@@ -71,6 +71,22 @@ test('GET /api/admin/usuarios lista usuarios solo para ADMIN', async () => {
   assert.equal(response.body.data[0].rol, 'ADMIN')
 })
 
+test('PATCH /api/admin/usuarios/:id/desactivar revoca el acceso de un operador', async () => {
+  const app = express()
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'ADMIN' }
+      next()
+    },
+    servicio: { async desactivarUsuarioAdmin() { return { id: 'usuario-2', activo: false } } },
+  }))
+
+  const response = await request(app).patch('/api/admin/usuarios/usuario-2/desactivar')
+
+  assert.equal(response.status, 200)
+  assert.equal(response.body.data.activo, false)
+})
+
 test('GET /api/admin/productos/:id informa cuando no existe', async () => {
   const response = await request(crearAppAdmin()).get('/api/admin/productos/producto-1')
 

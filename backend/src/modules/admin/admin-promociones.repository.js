@@ -33,9 +33,20 @@ export function crearRepositorioPromocionesAdmin(cliente = prisma) {
     },
 
     actualizarPorId(id, datos) {
+      const { productoIds, ...campos } = datos
       return cliente.promocion.update({
         where: { id },
-        data: datos,
+        data: {
+          ...campos,
+          ...(productoIds
+            ? {
+                productos: {
+                  deleteMany: {},
+                  create: productoIds.map((productoId) => ({ producto: { connect: { id: productoId } } })),
+                },
+              }
+            : {}),
+        },
         select: {
           id: true,
           nombre: true,

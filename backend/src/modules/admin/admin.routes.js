@@ -20,12 +20,16 @@ import { listarOpcionesProductoAdmin } from './admin-referencias.service.js'
 import {
   ErrorPromocionAdmin,
   activarPromocionAdmin,
+  actualizarPromocionAdmin,
   crearPromocionAdmin,
   desactivarPromocionAdmin,
   listarPromocionesAdmin,
   obtenerPromocionParaEdicionAdmin,
 } from './admin-promociones.service.js'
-import { validarPromocionNuevaAdmin } from './admin-promociones.validacion.js'
+import {
+  validarCambiosPromocionAdmin,
+  validarPromocionNuevaAdmin,
+} from './admin-promociones.validacion.js'
 
 export function crearRouterAdmin({
   servicio = {
@@ -40,6 +44,7 @@ export function crearRouterAdmin({
     listarPromocionesAdmin,
     crearPromocionAdmin,
     activarPromocionAdmin,
+    actualizarPromocionAdmin,
     desactivarPromocionAdmin,
     obtenerPromocionParaEdicionAdmin,
   },
@@ -98,6 +103,44 @@ export function crearRouterAdmin({
       try {
         const promocion = await servicio.crearPromocionAdmin(validacion.data)
         return response.status(201).json({ data: promocion })
+      } catch (error) {
+        if (error instanceof ErrorPromocionAdmin) {
+          return response.status(422).json({ error: { code: error.code, message: error.message } })
+        }
+        if (error.code === 'P2002') {
+          return response.status(409).json({
+            error: { code: 'PROMOTION_ALREADY_EXISTS', message: 'El slug de la promoción ya está en uso.' },
+          })
+        }
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.patch(
+    '/promociones/:id',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      const validacion = validarCambiosPromocionAdmin(request.body)
+      if (!validacion.success) {
+        return response.status(422).json({
+          error: {
+            code: 'INVALID_PROMOTION_DATA',
+            message: 'Revisa los datos de la promoción.',
+            fields: validacion.error.issues.map((issue) => issue.path.join('.')),
+          },
+        })
+      }
+
+      try {
+        const promocion = await servicio.actualizarPromocionAdmin(request.params.id, validacion.data)
+        if (!promocion) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_PROMOTION_NOT_FOUND', message: 'No encontramos la promoción solicitada.' },
+          })
+        }
+        return response.json({ data: promocion })
       } catch (error) {
         if (error instanceof ErrorPromocionAdmin) {
           return response.status(422).json({ error: { code: error.code, message: error.message } })

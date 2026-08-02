@@ -19,6 +19,42 @@ test('obtenerPromocionParaEdicion incluye sus productos asignados', async () => 
   assert.deepEqual(promocion.productoIds, ['producto-1', 'producto-2'])
 })
 
+test('actualizarPromocion permite cambios cuando la campaña está inactiva', async () => {
+  let datosActualizacion
+  const servicio = crearServicioPromocionesAdmin({
+    async obtenerPorId() {
+      return {
+        id: 'promo-1', activa: false,
+        empiezaEn: new Date('2026-08-01T00:00:00.000Z'), terminaEn: new Date('2026-08-08T00:00:00.000Z'),
+      }
+    },
+    async actualizarPorId(_id, datos) {
+      datosActualizacion = datos
+      return {
+        id: 'promo-1', nombre: 'Ofertas', slug: 'ofertas', porcentajeDescuento: 30,
+        empiezaEn: new Date('2026-08-01T00:00:00.000Z'), terminaEn: new Date('2026-08-08T00:00:00.000Z'),
+        activa: false, _count: { productos: 1 },
+      }
+    },
+  })
+
+  const promocion = await servicio.actualizarPromocion('promo-1', { porcentajeDescuento: 30 })
+
+  assert.equal(datosActualizacion.porcentajeDescuento, 30)
+  assert.equal(promocion.porcentajeDescuento, 30)
+})
+
+test('actualizarPromocion exige desactivar primero una campaña activa', async () => {
+  const servicio = crearServicioPromocionesAdmin({
+    async obtenerPorId() { return { id: 'promo-1', activa: true } },
+  })
+
+  await assert.rejects(
+    servicio.actualizarPromocion('promo-1', { porcentajeDescuento: 30 }),
+    { code: 'PROMOTION_ACTIVE_EDIT_LOCKED' },
+  )
+})
+
 test('activarPromocion publica una campaña sin solapamientos', async () => {
   let datosActualizacion
   const servicio = crearServicioPromocionesAdmin({

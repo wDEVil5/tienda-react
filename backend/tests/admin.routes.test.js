@@ -120,6 +120,29 @@ test('POST /api/admin/promociones crea una campaña validada e inactiva', async 
   assert.equal(response.body.data.activa, false)
 })
 
+test('PATCH /api/admin/promociones/:id actualiza una campaña inactiva', async () => {
+  let cambiosRecibidos
+  const app = express()
+  app.use(express.json())
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'ADMIN' }
+      next()
+    },
+    servicio: {
+      async actualizarPromocionAdmin(_id, cambios) {
+        cambiosRecibidos = cambios
+        return { id: 'promo-1', porcentajeDescuento: cambios.porcentajeDescuento }
+      },
+    },
+  }))
+
+  const response = await request(app).patch('/api/admin/promociones/promo-1').send({ porcentajeDescuento: 30 })
+
+  assert.equal(response.status, 200)
+  assert.equal(cambiosRecibidos.porcentajeDescuento, 30)
+})
+
 test('PATCH /api/admin/promociones/:id/activar activa una campaña sin conflicto', async () => {
   const app = express()
   app.use('/api/admin', crearRouterAdmin({

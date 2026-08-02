@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { validarPromocionNuevaAdmin } from '../src/modules/admin/admin-promociones.validacion.js'
+import { validarCambiosPromocionAdmin } from '../src/modules/admin/admin-promociones.validacion.js'
 
 const productoId = '550e8400-e29b-41d4-a716-446655440000'
 
@@ -10,6 +11,12 @@ test('acepta una campaña nueva con fechas y productos válidos', () => {
     empiezaEn: '2026-08-01T00:00:00.000Z', terminaEn: '2026-08-08T00:00:00.000Z',
     productoIds: [productoId],
   })
+
+  assert.equal(resultado.success, true)
+})
+
+test('acepta cambios parciales de una promoción', () => {
+  const resultado = validarCambiosPromocionAdmin({ porcentajeDescuento: 30 })
 
   assert.equal(resultado.success, true)
 })

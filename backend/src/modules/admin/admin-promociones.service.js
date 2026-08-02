@@ -43,8 +43,50 @@ function crearPromocionParaEdicion(promocion) {
   }
 }
 
+function construirDatosPromocion(cambios) {
+  return {
+    ...cambios,
+    ...(cambios.empiezaEn ? { empiezaEn: new Date(cambios.empiezaEn) } : {}),
+    ...(cambios.terminaEn ? { terminaEn: new Date(cambios.terminaEn) } : {}),
+  }
+}
+
 export function crearServicioPromocionesAdmin(repositorio = repositorioPromocionesAdmin) {
   return {
+    async actualizarPromocion(id, cambios) {
+      const promocionActual = await repositorio.obtenerPorId(id)
+      if (!promocionActual) return null
+
+      if (promocionActual.activa) {
+        throw new ErrorPromocionAdmin(
+          'PROMOTION_ACTIVE_EDIT_LOCKED',
+          'Desactiva la promoción antes de modificarla.',
+        )
+      }
+
+      const empiezaEn = cambios.empiezaEn ? new Date(cambios.empiezaEn) : promocionActual.empiezaEn
+      const terminaEn = cambios.terminaEn ? new Date(cambios.terminaEn) : promocionActual.terminaEn
+      if (empiezaEn >= terminaEn) {
+        throw new ErrorPromocionAdmin(
+          'INVALID_PROMOTION_DATES',
+          'La fecha de término debe ser posterior a la fecha de inicio.',
+        )
+      }
+
+      if (cambios.productoIds !== undefined) {
+        const productosEncontrados = await repositorio.contarProductos(cambios.productoIds)
+        if (productosEncontrados !== cambios.productoIds.length) {
+          throw new ErrorPromocionAdmin(
+            'INVALID_PROMOTION_PRODUCT',
+            'Uno o más productos seleccionados no existen.',
+          )
+        }
+      }
+
+      const actualizada = await repositorio.actualizarPorId(id, construirDatosPromocion(cambios))
+      return crearResumenPromocion(actualizada)
+    },
+
     async obtenerPromocionParaEdicion(id) {
       const promocion = await repositorio.obtenerPorId(id)
       return promocion ? crearPromocionParaEdicion(promocion) : null
@@ -117,3 +159,4 @@ export const crearPromocionAdmin = servicioPromocionesAdmin.crearPromocion
 export const activarPromocionAdmin = servicioPromocionesAdmin.activarPromocion
 export const desactivarPromocionAdmin = servicioPromocionesAdmin.desactivarPromocion
 export const obtenerPromocionParaEdicionAdmin = servicioPromocionesAdmin.obtenerPromocionParaEdicion
+export const actualizarPromocionAdmin = servicioPromocionesAdmin.actualizarPromocion

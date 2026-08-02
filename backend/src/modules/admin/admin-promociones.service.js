@@ -38,6 +38,29 @@ function crearResumenPromocion(promocion) {
 
 export function crearServicioPromocionesAdmin(repositorio = repositorioPromocionesAdmin) {
   return {
+    async activarPromocion(id) {
+      const promocion = await repositorio.obtenerPorId(id)
+      if (!promocion) return null
+
+      const productoIds = promocion.productos.map(({ productoId }) => productoId)
+      const solapamiento = await repositorio.buscarSolapamientoActivo({
+        id: promocion.id,
+        empiezaEn: promocion.empiezaEn,
+        terminaEn: promocion.terminaEn,
+        productoIds,
+      })
+
+      if (solapamiento) {
+        throw new ErrorPromocionAdmin(
+          'PROMOTION_OVERLAP',
+          `La campaña coincide con la promoción activa “${solapamiento.nombre}”.`,
+        )
+      }
+
+      const actualizada = await repositorio.actualizarPorId(id, { activa: true })
+      return crearResumenPromocion(actualizada)
+    },
+
     async crearPromocion(datos) {
       const productosEncontrados = await repositorio.contarProductos(datos.productoIds)
       if (productosEncontrados !== datos.productoIds.length) {
@@ -71,3 +94,4 @@ const servicioPromocionesAdmin = crearServicioPromocionesAdmin()
 
 export const listarPromocionesAdmin = servicioPromocionesAdmin.listarPromociones
 export const crearPromocionAdmin = servicioPromocionesAdmin.crearPromocion
+export const activarPromocionAdmin = servicioPromocionesAdmin.activarPromocion

@@ -100,6 +100,22 @@ test('POST /api/admin/promociones crea una campaña validada e inactiva', async 
   assert.equal(response.body.data.activa, false)
 })
 
+test('PATCH /api/admin/promociones/:id/activar activa una campaña sin conflicto', async () => {
+  const app = express()
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'ADMIN' }
+      next()
+    },
+    servicio: { async activarPromocionAdmin() { return { id: 'promo-1', activa: true } } },
+  }))
+
+  const response = await request(app).patch('/api/admin/promociones/promo-1/activar')
+
+  assert.equal(response.status, 200)
+  assert.equal(response.body.data.activa, true)
+})
+
 test('GET /api/admin/productos devuelve el listado administrativo paginado', async () => {
   const app = express()
   app.use('/api/admin', crearRouterAdmin({

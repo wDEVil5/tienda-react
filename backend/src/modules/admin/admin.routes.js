@@ -17,8 +17,12 @@ import { validarImagenesProductoAdmin } from './admin-imagenes.validacion.js'
 import { ErrorImagen, subirImagenProducto } from '../imagenes/imagenes.service.js'
 import { recibirImagenProducto } from '../imagenes/imagenes.middleware.js'
 import { listarOpcionesProductoAdmin } from './admin-referencias.service.js'
-import { listarPromocionesAdmin } from './admin-promociones.service.js'
-import { ErrorPromocionAdmin, crearPromocionAdmin } from './admin-promociones.service.js'
+import {
+  ErrorPromocionAdmin,
+  activarPromocionAdmin,
+  crearPromocionAdmin,
+  listarPromocionesAdmin,
+} from './admin-promociones.service.js'
 import { validarPromocionNuevaAdmin } from './admin-promociones.validacion.js'
 
 export function crearRouterAdmin({
@@ -33,6 +37,7 @@ export function crearRouterAdmin({
     listarOpcionesProductoAdmin,
     listarPromocionesAdmin,
     crearPromocionAdmin,
+    activarPromocionAdmin,
   },
   middlewareSesion = requerirSesion,
 } = {}) {
@@ -78,6 +83,28 @@ export function crearRouterAdmin({
           return response.status(409).json({
             error: { code: 'PROMOTION_ALREADY_EXISTS', message: 'El slug de la promoción ya está en uso.' },
           })
+        }
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.patch(
+    '/promociones/:id/activar',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      try {
+        const promocion = await servicio.activarPromocionAdmin(request.params.id)
+        if (!promocion) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_PROMOTION_NOT_FOUND', message: 'No encontramos la promoción solicitada.' },
+          })
+        }
+        return response.json({ data: promocion })
+      } catch (error) {
+        if (error instanceof ErrorPromocionAdmin) {
+          return response.status(422).json({ error: { code: error.code, message: error.message } })
         }
         return next(error)
       }

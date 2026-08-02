@@ -25,6 +25,26 @@ enum EstadoProducto {
   ARCHIVADO
 }
 
+// La modalidad se decide una vez por pedido y define si se necesita dirección
+// y si hay costo de envío (RETIRO siempre es gratis).
+enum ModalidadEntrega {
+  RETIRO
+  DESPACHO
+}
+
+// Ciclo operativo del pedido. Las transiciones válidas se controlan en el
+// servicio; el enum solo enumera los estados posibles. RETIRO y DESPACHO
+// comparten inicio y fin pero difieren en el estado intermedio (LISTO_PARA_RETIRO
+// vs ENVIADO).
+enum EstadoPedido {
+  PENDIENTE
+  PREPARANDO
+  LISTO_PARA_RETIRO
+  ENVIADO
+  ENTREGADO
+  CANCELADO
+}
+
 model Usuario {
   id           String     @id @default(uuid()) @db.Uuid
   nombre       String     @db.VarChar(120)
@@ -97,6 +117,10 @@ model Producto {
   // Estar publicado y tener stock son estados distintos: un producto agotado
   // puede seguir visible, mientras que su estado editorial controla exposición.
   stock            Int     @default(0)
+  // Unidades comprometidas por pedidos PENDIENTE aún no aceptados. El stock
+  // disponible real es (stock - stockReservado): así dos pedidos no venden la
+  // misma unidad mientras el dueño no confirma.
+  stockReservado   Int     @default(0) @map("stock_reservado")
   estado           EstadoProducto @default(BORRADOR)
   destacado        Boolean @default(false)
   alertaStockBajo  Int?    @map("alerta_stock_bajo")
@@ -118,6 +142,7 @@ model Producto {
   imagenes  ProductoImagen[]
   promociones PromocionProducto[]
   etiquetas ProductoEtiqueta[]
+  itemsPedido ItemPedido[]
 
   @@index([categoriaId])
   @@index([marcaId])
@@ -199,4 +224,81 @@ model ProductoImagen {
   @@unique([productoId, orden])
   @@index([productoId])
   @@map("producto_imagenes")
+}
+
+// Un pedido congela (snapshot) contacto, dirección y montos del instante de
+// compra: el histórico no cambia aunque luego se editen productos o promociones.
+model Pedido {
+  id     String @id @default(uuid()) @db.Uuid
+  // Número legible para clientes y dueño ("SE-1043"); el uuid es la llave técnica.
+  numero Int    @unique @default(autoincrement())
+
+  estado    EstadoPedido     @default(PENDIENTE)
+  modalidad ModalidadEntrega
+
+  // Contacto como snapshot: todavía no existen cuentas de cliente (Fase 3).
+  contactoNombre   String @map("contacto_nombre") @db.VarChar(120)
+  contactoEmail    String @map("contacto_email") @db.VarChar(255)
+  contactoTelefono String @map("contacto_telefono") @db.VarChar(40)
+
+  // Dirección como snapshot; solo se llena cuando la modalidad es DESPACHO.
+  dirCalle         String? @map("dir_calle") @db.VarChar(200)
+  dirDepto         String? @map("dir_depto") @db.VarChar(60)
+  dirComuna        String? @map("dir_comuna") @db.VarChar(80)
+  dirRegion        String? @map("dir_region") @db.VarChar(80)
+  dirInstrucciones String? @map("dir_instrucciones") @db.VarChar(300)
+
+  // Montos calculados en el servidor y congelados. Enteros CLP, nunca floats.
+  subtotal   Int
+  descuento  Int @default(0)
+  costoEnvio Int @default(0) @map("costo_envio")
+  total      Int
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  items   ItemPedido[]
+  eventos EventoPedido[]
+
+  @@index([estado])
+  @@index([createdAt])
+  @@map("pedidos")
+}
+
+// Cada línea guarda el snapshot del producto al comprar. productoId es opcional
+// (SetNull) para que el pedido sobreviva si el producto se elimina, pero permite
+// "Repetir pedido" mientras el producto siga existiendo.
+model ItemPedido {
+  id         String  @id @default(uuid()) @db.Uuid
+  pedidoId   String  @map("pedido_id") @db.Uuid
+  productoId String? @map("producto_id") @db.Uuid
+
+  nombre       String @db.VarChar(200)
+  sku          String @db.VarChar(80)
+  precioNormal Int    @map("precio_normal")
+  precioFinal  Int    @map("precio_final")
+  cantidad     Int
+  subtotal     Int
+
+  pedido   Pedido    @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  producto Producto? @relation(fields: [productoId], references: [id], onDelete: SetNull)
+
+  @@index([pedidoId])
+  @@index([productoId])
+  @@map("items_pedido")
+}
+
+// Una fila por cambio de estado: alimenta la línea de tiempo del detalle y deja
+// trazabilidad (cuándo ocurrió y una nota opcional del operador).
+model EventoPedido {
+  id        String       @id @default(uuid()) @db.Uuid
+  pedidoId  String       @map("pedido_id") @db.Uuid
+  estado    EstadoPedido
+  nota      String?      @db.VarChar(300)
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  pedido Pedido @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+
+  @@index([pedidoId])
+  @@map("eventos_pedido")
 }

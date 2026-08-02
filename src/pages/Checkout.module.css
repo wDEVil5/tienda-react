@@ -218,13 +218,44 @@
   padding: clamp(24px, 3vw, 32px);
 }
 
+.itemsViewport {
+  position: relative;
+  margin: 0 0 var(--e-lg);
+}
+
+/* Indica que existen más productos sin impedir el gesto de desplazamiento. */
+.itemsViewport::after {
+  position: absolute;
+  z-index: 1;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 42px;
+  content: "";
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #fff 88%);
+}
+
 .items {
   display: flex;
   flex-direction: column;
   gap: var(--e-md);
-  margin: 0 0 var(--e-lg);
-  padding: 0;
+  max-height: min(404px, 52vh);
+  margin: 0;
+  padding: 0 6px 30px 0;
   list-style: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: var(--color-borde-3) transparent;
+  scrollbar-width: thin;
+}
+
+/* El resumen conserva sus montos visibles aunque el carrito tenga muchas
+   líneas. El gesto de scroll queda contenido en la lista, como en el drawer. */
+.items::-webkit-scrollbar { width: 5px; }
+.items::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--color-borde-3);
 }
 
 .itemFila {

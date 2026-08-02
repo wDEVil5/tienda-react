@@ -442,28 +442,30 @@ function Checkout() {
             Tu pedido ({carrito.reduce((total, item) => total + item.cantidad, 0)})
           </h2>
 
-          <ul className={styles.items}>
-            {carrito.map((item) => (
-              <li key={item.id} className={styles.itemFila}>
-                <ImagenProducto
-                  className={styles.itemImagen}
-                  src={item.imagen}
-                  alt={item.nombre}
-                />
-                <div className={styles.itemInfo}>
-                  <div className={styles.itemEncabezado}>
-                    <span className={styles.itemNombre} title={item.nombre}>
-                      {item.nombre}
+          <div className={styles.itemsViewport}>
+            <ul className={styles.items}>
+              {carrito.map((item) => (
+                <li key={item.id} className={styles.itemFila}>
+                  <ImagenProducto
+                    className={styles.itemImagen}
+                    src={item.imagen}
+                    alt={item.nombre}
+                  />
+                  <div className={styles.itemInfo}>
+                    <div className={styles.itemEncabezado}>
+                      <span className={styles.itemNombre} title={item.nombre}>
+                        {item.nombre}
+                      </span>
+                      <span className={styles.itemCantidad}>× {item.cantidad}</span>
+                    </div>
+                    <span className={styles.itemPrecio}>
+                      {clp(item.precio * item.cantidad)}
                     </span>
-                    <span className={styles.itemCantidad}>× {item.cantidad}</span>
                   </div>
-                  <span className={styles.itemPrecio}>
-                    {clp(item.precio * item.cantidad)}
-                  </span>
-                </div>
-              </li>
-            ))}
-          </ul>
+                </li>
+              ))}
+            </ul>
+          </div>
 
           {/* Presentación del futuro cupón. No es un control interactivo hasta
               que el backend defina validación, vigencia y efecto en totales. */}

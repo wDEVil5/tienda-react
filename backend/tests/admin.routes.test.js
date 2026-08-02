@@ -96,6 +96,30 @@ test('POST /api/admin/categorias crea una categoría validada', async () => {
   assert.equal(response.body.data.activa, true)
 })
 
+test('POST /api/admin/marcas crea una marca sin logo manual', async () => {
+  let datosRecibidos
+  const app = express()
+  app.use(express.json())
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'OPERADOR' }
+      next()
+    },
+    servicio: {
+      async crearMarcaAdmin(datos) {
+        datosRecibidos = datos
+        return { id: 'marca-1', ...datos, logoUrl: null }
+      },
+    },
+  }))
+
+  const response = await request(app).post('/api/admin/marcas').send({ nombre: 'Café Central' })
+
+  assert.equal(response.status, 201)
+  assert.equal(datosRecibidos.nombre, 'Café Central')
+  assert.equal(response.body.data.logoUrl, null)
+})
+
 test('GET /api/admin/promociones/:id entrega una campaña para edición', async () => {
   const app = express()
   app.use('/api/admin', crearRouterAdmin({

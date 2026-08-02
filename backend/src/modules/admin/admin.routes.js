@@ -32,6 +32,8 @@ import {
 } from './admin-promociones.validacion.js'
 import { ErrorCategoriaAdmin, crearCategoriaAdmin } from './admin-categorias.service.js'
 import { validarCategoriaNuevaAdmin } from './admin-categorias.validacion.js'
+import { ErrorMarcaAdmin, crearMarcaAdmin } from './admin-marcas.service.js'
+import { validarMarcaNuevaAdmin } from './admin-marcas.validacion.js'
 
 export function crearRouterAdmin({
   servicio = {
@@ -48,6 +50,7 @@ export function crearRouterAdmin({
     activarPromocionAdmin,
     actualizarPromocionAdmin,
     crearCategoriaAdmin,
+    crearMarcaAdmin,
     desactivarPromocionAdmin,
     obtenerPromocionParaEdicionAdmin,
   },
@@ -77,6 +80,35 @@ export function crearRouterAdmin({
         if (error.code === 'P2002') {
           return response.status(409).json({
             error: { code: 'CATEGORY_ALREADY_EXISTS', message: 'El nombre o slug de la categoría ya está en uso.' },
+          })
+        }
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.post(
+    '/marcas',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      const validacion = validarMarcaNuevaAdmin(request.body)
+      if (!validacion.success) {
+        return response.status(422).json({
+          error: { code: 'INVALID_BRAND_DATA', message: 'Revisa los datos de la marca.' },
+        })
+      }
+
+      try {
+        const marca = await servicio.crearMarcaAdmin(validacion.data)
+        return response.status(201).json({ data: marca })
+      } catch (error) {
+        if (error instanceof ErrorMarcaAdmin) {
+          return response.status(422).json({ error: { code: error.code, message: error.message } })
+        }
+        if (error.code === 'P2002') {
+          return response.status(409).json({
+            error: { code: 'BRAND_ALREADY_EXISTS', message: 'El nombre o slug de la marca ya está en uso.' },
           })
         }
         return next(error)

@@ -1,6 +1,10 @@
 import { repositorioPedidos } from './pedidos.repository.js'
 import { calcularCostoEnvio } from '../../lib/reglasTienda.js'
-import { ESTADO_INICIAL } from './pedidos.estados.js'
+import {
+  ESTADO_INICIAL,
+  efectoStockTransicion,
+  esTransicionValida,
+} from './pedidos.estados.js'
 import { ErrorPedido } from './pedidos.errores.js'
 
 export { ErrorPedido }
@@ -173,6 +177,32 @@ export function crearServicioPedidos(repositorio = repositorioPedidos) {
       const pedido = await repositorio.obtenerPorId(id)
       return pedido ? crearDetallePedido(pedido) : null
     },
+
+    async cambiarEstadoPedido(id, nuevoEstado, nota) {
+      const pedido = await repositorio.obtenerPorId(id)
+      if (!pedido) return null
+
+      // La máquina de estados decide si el salto es legal según la modalidad.
+      if (!esTransicionValida({ desde: pedido.estado, hacia: nuevoEstado, modalidad: pedido.modalidad })) {
+        throw new ErrorPedido(
+          'INVALID_ORDER_TRANSITION',
+          `No se puede pasar de ${pedido.estado} a ${nuevoEstado}.`,
+        )
+      }
+
+      // El efecto sobre el inventario depende del par (estado actual → nuevo).
+      const efecto = efectoStockTransicion(pedido.estado, nuevoEstado)
+
+      const actualizado = await repositorio.cambiarEstadoTransaccional({
+        id,
+        nuevoEstado,
+        nota,
+        efecto,
+        items: pedido.items,
+      })
+
+      return crearDetallePedido(actualizado)
+    },
   }
 }
 
@@ -181,3 +211,4 @@ const servicioPedidos = crearServicioPedidos()
 export const crearPedido = servicioPedidos.crearPedido
 export const listarPedidos = servicioPedidos.listarPedidos
 export const obtenerDetallePedido = servicioPedidos.obtenerDetallePedido
+export const cambiarEstadoPedido = servicioPedidos.cambiarEstadoPedido

@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   ESTADO_INICIAL,
+  efectoStockTransicion,
   esEstadoTerminal,
   esTransicionValida,
   transicionesValidas,
@@ -50,4 +51,22 @@ test('no se puede saltar estados intermedios', () => {
   assert.ok(
     !esTransicionValida({ desde: 'PENDIENTE', hacia: 'ENTREGADO', modalidad: 'RETIRO' }),
   )
+})
+
+test('aceptar el pedido consume la reserva', () => {
+  assert.equal(efectoStockTransicion('PENDIENTE', 'PREPARANDO'), 'CONSUMIR')
+})
+
+test('cancelar un pedido pendiente libera la reserva', () => {
+  assert.equal(efectoStockTransicion('PENDIENTE', 'CANCELADO'), 'LIBERAR')
+})
+
+test('cancelar un pedido ya aceptado restituye el stock', () => {
+  assert.equal(efectoStockTransicion('PREPARANDO', 'CANCELADO'), 'RESTITUIR')
+  assert.equal(efectoStockTransicion('ENVIADO', 'CANCELADO'), 'RESTITUIR')
+})
+
+test('las transiciones intermedias no mueven inventario', () => {
+  assert.equal(efectoStockTransicion('PREPARANDO', 'ENVIADO'), 'NINGUNO')
+  assert.equal(efectoStockTransicion('ENVIADO', 'ENTREGADO'), 'NINGUNO')
 })

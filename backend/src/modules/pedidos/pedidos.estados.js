@@ -60,3 +60,18 @@ export function transicionesValidas(estado, modalidad) {
 export function esTransicionValida({ desde, hacia, modalidad }) {
   return transicionesValidas(desde, modalidad).includes(hacia)
 }
+
+/**
+ * Efecto sobre el stock de una transición, según el modelo de reserva:
+ * - al crear (PENDIENTE) el stock queda RESERVADO;
+ * - al aceptar (→ PREPARANDO) se CONSUME la reserva: bajan stock y reserva;
+ * - al cancelar, si el pedido aún estaba PENDIENTE se LIBERA la reserva; si ya
+ *   se había consumido (PREPARANDO en adelante), se RESTITUYE el stock.
+ * El resto de las transiciones no mueven inventario.
+ * @returns {'CONSUMIR'|'LIBERAR'|'RESTITUIR'|'NINGUNO'}
+ */
+export function efectoStockTransicion(desde, hacia) {
+  if (hacia === 'PREPARANDO') return 'CONSUMIR'
+  if (hacia === 'CANCELADO') return desde === 'PENDIENTE' ? 'LIBERAR' : 'RESTITUIR'
+  return 'NINGUNO'
+}

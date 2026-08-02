@@ -58,7 +58,13 @@ import {
   validarContrasenaUsuarioAdmin,
   validarUsuarioNuevoAdmin,
 } from './admin-usuarios.validacion.js'
-import { listarPedidos, obtenerDetallePedido } from '../pedidos/pedidos.service.js'
+import {
+  ErrorPedido,
+  cambiarEstadoPedido,
+  listarPedidos,
+  obtenerDetallePedido,
+} from '../pedidos/pedidos.service.js'
+import { validarCambioEstadoPedido } from '../pedidos/pedidos.validacion.js'
 import { ESTADOS_PEDIDO } from '../pedidos/pedidos.estados.js'
 
 export function crearRouterAdmin({
@@ -94,6 +100,7 @@ export function crearRouterAdmin({
     obtenerPromocionParaEdicionAdmin,
     listarPedidos,
     obtenerDetallePedido,
+    cambiarEstadoPedido,
   },
   middlewareSesion = requerirSesion,
 } = {}) {
@@ -827,6 +834,40 @@ export function crearRouterAdmin({
         }
         return response.json({ data: pedido })
       } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.patch(
+    '/pedidos/:id/estado',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      const validacion = validarCambioEstadoPedido(request.body)
+      if (!validacion.success) {
+        return response.status(422).json({
+          error: { code: 'INVALID_ORDER_STATE', message: 'Revisa el estado enviado.' },
+        })
+      }
+
+      try {
+        const pedido = await servicio.cambiarEstadoPedido(
+          request.params.id,
+          validacion.data.estado,
+          validacion.data.nota,
+        )
+        if (!pedido) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_ORDER_NOT_FOUND', message: 'No encontramos el pedido solicitado.' },
+          })
+        }
+        return response.json({ data: pedido })
+      } catch (error) {
+        // Transición no permitida por la máquina de estados.
+        if (error instanceof ErrorPedido) {
+          return response.status(409).json({ error: { code: error.code, message: error.message } })
+        }
         return next(error)
       }
     },

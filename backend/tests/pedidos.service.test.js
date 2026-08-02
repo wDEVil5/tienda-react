@@ -193,3 +193,65 @@ test('obtenerDetallePedido devuelve null cuando el pedido no existe', async () =
 
   assert.equal(await servicio.obtenerDetallePedido('fantasma'), null)
 })
+
+const PEDIDO_PENDIENTE = {
+  id: 'ped-1', numero: 1, estado: 'PENDIENTE', modalidad: 'RETIRO',
+  contactoNombre: 'W', contactoEmail: 'w@c.cl', contactoTelefono: '+56',
+  dirCalle: null, dirDepto: null, dirComuna: null, dirRegion: null, dirInstrucciones: null,
+  subtotal: 5490, descuento: 0, costoEnvio: 0, total: 5490,
+  createdAt: new Date('2026-08-02T10:00:00.000Z'),
+  items: [{ productoId: 'prod-1', nombre: 'Café', sku: 'CAFE', cantidad: 1, precioNormal: 5490, precioFinal: 5490, subtotal: 5490 }],
+  eventos: [],
+}
+
+function crearRepoEstado(pedido) {
+  const captura = { cambio: null, llamadas: 0 }
+  const repositorio = {
+    async obtenerPorId() { return pedido },
+    async cambiarEstadoTransaccional(datos) {
+      captura.cambio = datos
+      captura.llamadas += 1
+      return { ...pedido, estado: datos.nuevoEstado, eventos: [] }
+    },
+  }
+  return { repositorio, captura }
+}
+
+test('cambiarEstadoPedido acepta una transición válida y consume la reserva', async () => {
+  const { repositorio, captura } = crearRepoEstado(PEDIDO_PENDIENTE)
+  const servicio = crearServicioPedidos(repositorio)
+
+  const detalle = await servicio.cambiarEstadoPedido('ped-1', 'PREPARANDO', 'A preparar')
+
+  assert.equal(captura.llamadas, 1)
+  assert.equal(captura.cambio.nuevoEstado, 'PREPARANDO')
+  assert.equal(captura.cambio.efecto, 'CONSUMIR')
+  assert.equal(captura.cambio.nota, 'A preparar')
+  assert.equal(detalle.estado, 'PREPARANDO')
+})
+
+test('cambiarEstadoPedido rechaza una transición inválida sin tocar el repositorio', async () => {
+  const { repositorio, captura } = crearRepoEstado(PEDIDO_PENDIENTE)
+  const servicio = crearServicioPedidos(repositorio)
+
+  await assert.rejects(
+    servicio.cambiarEstadoPedido('ped-1', 'ENTREGADO'),
+    (error) => error instanceof ErrorPedido && error.code === 'INVALID_ORDER_TRANSITION',
+  )
+  assert.equal(captura.llamadas, 0)
+})
+
+test('cambiarEstadoPedido cancela un pedido ya aceptado restituyendo stock', async () => {
+  const { repositorio, captura } = crearRepoEstado({ ...PEDIDO_PENDIENTE, estado: 'PREPARANDO' })
+  const servicio = crearServicioPedidos(repositorio)
+
+  await servicio.cambiarEstadoPedido('ped-1', 'CANCELADO')
+
+  assert.equal(captura.cambio.efecto, 'RESTITUIR')
+})
+
+test('cambiarEstadoPedido devuelve null cuando el pedido no existe', async () => {
+  const servicio = crearServicioPedidos({ async obtenerPorId() { return null } })
+
+  assert.equal(await servicio.cambiarEstadoPedido('fantasma', 'PREPARANDO'), null)
+})

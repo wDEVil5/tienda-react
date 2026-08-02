@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { ESTADOS_PEDIDO } from './pedidos.estados.js'
 
 // Contrato de ENTRADA para crear un pedido. Regla de oro: el cliente manda
 // QUÉ compra (productos + cantidades) y a dónde, nunca CUÁNTO cuesta. Los
@@ -61,4 +62,18 @@ export const esquemaPedidoNuevo = z
 
 export function validarPedidoNuevo(datos) {
   return esquemaPedidoNuevo.safeParse(datos)
+}
+
+// Cambio de estado desde el panel: el estado debe ser uno válido; la nota es
+// opcional (queda registrada en el evento). Que la transición sea permitida lo
+// decide el servicio con la máquina de estados, no esta validación de forma.
+export const esquemaCambioEstadoPedido = z
+  .object({
+    estado: z.enum(ESTADOS_PEDIDO),
+    nota: z.string().trim().max(300).optional(),
+  })
+  .strict()
+
+export function validarCambioEstadoPedido(datos) {
+  return esquemaCambioEstadoPedido.safeParse(datos)
 }

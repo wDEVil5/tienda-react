@@ -109,6 +109,40 @@ export function crearRepositorioPedidos(cliente = prisma) {
         })
       })
     },
+
+    // Cambia el estado, mueve el stock según el efecto y registra el evento, todo
+    // en una transacción. El efecto ya viene decidido por el servicio.
+    async cambiarEstadoTransaccional({ id, nuevoEstado, nota, efecto, items }) {
+      return cliente.$transaction(async (tx) => {
+        if (efecto !== 'NINGUNO') {
+          for (const item of items) {
+            // Un ítem cuyo producto fue eliminado (productoId null) no mueve stock.
+            if (!item.productoId) continue
+
+            const data =
+              efecto === 'CONSUMIR'
+                ? { stock: { decrement: item.cantidad }, stockReservado: { decrement: item.cantidad } }
+                : efecto === 'LIBERAR'
+                  ? { stockReservado: { decrement: item.cantidad } }
+                  : { stock: { increment: item.cantidad } } // RESTITUIR
+
+            await tx.producto.update({ where: { id: item.productoId }, data })
+          }
+        }
+
+        return tx.pedido.update({
+          where: { id },
+          data: {
+            estado: nuevoEstado,
+            eventos: { create: { estado: nuevoEstado, nota: nota ?? null } },
+          },
+          include: {
+            items: true,
+            eventos: { orderBy: { createdAt: 'asc' } },
+          },
+        })
+      })
+    },
   }
 }
 

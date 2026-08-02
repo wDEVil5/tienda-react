@@ -4,6 +4,7 @@ import categoriasRouter from './modules/categorias/categorias.routes.js'
 import marcasRouter from './modules/marcas/marcas.routes.js'
 import productosRouter from './modules/productos/productos.routes.js'
 import authRouter from './modules/auth/auth.routes.js'
+import adminRouter from './modules/admin/admin.routes.js'
 
 // La aplicación se exporta separada del servidor para probar rutas sin abrir un puerto.
 const app = express()
@@ -30,6 +31,7 @@ app.use('/api/productos', productosRouter)
 app.use('/api/categorias', categoriasRouter)
 app.use('/api/marcas', marcasRouter)
 app.use('/api/auth', authRouter)
+app.use('/api/admin', adminRouter)
 
 // Debe ir después de las rutas: responde de forma predecible cuando la API no reconoce una URL.
 app.use((request, response) => {

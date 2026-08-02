@@ -33,3 +33,20 @@ test('subirImagenProducto rechaza imágenes menores a 800 píxeles', async () =>
     (error) => error.code === 'IMAGE_DIMENSIONS_TOO_SMALL',
   )
 })
+
+test('subirImagenProducto acepta una imagen PNG válida', async () => {
+  let seSubio = false
+  const servicio = crearServicioImagenes({
+    async subirImagenProducto() {
+      seSubio = true
+      return { url: 'https://ejemplo.test/imagen.png', storageKey: 'producto/imagen' }
+    },
+  })
+  const buffer = await sharp({
+    create: { width: 800, height: 800, channels: 3, background: '#ffffff' },
+  }).png().toBuffer()
+
+  await servicio.subirImagenProducto({ buffer })
+
+  assert.equal(seSubio, true)
+})

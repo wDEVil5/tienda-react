@@ -1,7 +1,7 @@
 import sharp from 'sharp'
 import { almacenamientoImagenes } from './imagenes.storage.js'
 
-const FORMATOS_PERMITIDOS = new Set(['jpeg', 'webp'])
+const FORMATOS_PERMITIDOS = new Set(['jpeg', 'png', 'webp'])
 const LADO_MINIMO = 800
 
 export class ErrorImagen extends Error {
@@ -29,7 +29,7 @@ export function crearServicioImagenes(
       }
 
       if (!FORMATOS_PERMITIDOS.has(metadata.format)) {
-        throw new ErrorImagen('INVALID_IMAGE_FORMAT', 'Solo se permiten imágenes JPG o WebP.')
+        throw new ErrorImagen('INVALID_IMAGE_FORMAT', 'Solo se permiten imágenes JPG, PNG o WebP.')
       }
 
       if (metadata.width < LADO_MINIMO || metadata.height < LADO_MINIMO) {

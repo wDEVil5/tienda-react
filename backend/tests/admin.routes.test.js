@@ -130,3 +130,28 @@ test('POST /api/admin/imagenes rechaza archivos que no son imágenes permitidas'
   assert.equal(response.status, 422)
   assert.equal(response.body.error.code, 'INVALID_IMAGE_FILE')
 })
+
+test('POST /api/admin/imagenes permite declarar una imagen PNG', async () => {
+  const app = express()
+  app.use(express.json())
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'ADMIN' }
+      next()
+    },
+    servicio: {
+      async subirImagenProducto() {
+        return { url: 'https://cdn.ejemplo.test/aceite.png', storageKey: 'sumarket/productos/aceite' }
+      },
+    },
+  }))
+
+  const response = await request(app)
+    .post('/api/admin/imagenes')
+    .attach('imagen', Buffer.from('archivo-simulado'), {
+      filename: 'aceite.png',
+      contentType: 'image/png',
+    })
+
+  assert.equal(response.status, 201)
+})

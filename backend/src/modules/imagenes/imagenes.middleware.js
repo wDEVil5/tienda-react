@@ -1,14 +1,14 @@
 import multer from 'multer'
 
 const TAMANO_MAXIMO_BYTES = 5 * 1024 * 1024
-const MIMES_PERMITIDOS = new Set(['image/jpeg', 'image/webp'])
+const MIMES_PERMITIDOS = new Set(['image/jpeg', 'image/png', 'image/webp'])
 
 const receptorImagen = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: TAMANO_MAXIMO_BYTES, files: 1 },
   fileFilter(_request, archivo, callback) {
     if (!MIMES_PERMITIDOS.has(archivo.mimetype)) {
-      const error = new Error('Solo se permiten archivos JPG o WebP.')
+      const error = new Error('Solo se permiten archivos JPG, PNG o WebP.')
       error.code = 'INVALID_IMAGE_MIMETYPE'
       return callback(error)
     }
@@ -28,7 +28,7 @@ export function recibirImagenProducto(request, response, next) {
         code: esArchivoMuyGrande ? 'IMAGE_TOO_LARGE' : 'INVALID_IMAGE_FILE',
         message: esArchivoMuyGrande
           ? 'La imagen no puede superar 5 MB.'
-          : 'Solo se permiten archivos JPG o WebP.',
+          : 'Solo se permiten archivos JPG, PNG o WebP.',
       },
     })
   })

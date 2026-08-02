@@ -34,16 +34,25 @@ function Toast({
   // Sin aviso, no renderizamos nada.
   if (!visible) return null;
 
-  const icono = aviso.accion ? "fa-trash-can" : "fa-circle-check";
+  const esAdvertencia = aviso.tipo === "advertencia";
+  const icono = aviso.accion
+    ? "fa-trash-can"
+    : esAdvertencia
+      ? "fa-circle-exclamation"
+      : "fa-circle-check";
 
   return (
     <div
       className={`${styles.toast} ${ubicacion === "carrito" ? styles.toastCarrito : ""}`}
-      role="status"
+      role={esAdvertencia ? "alert" : "status"}
     >
       <i
         className={`fa-solid ${icono} ${styles.icono} ${
-          aviso.accion ? styles.iconoAccion : ""
+          aviso.accion
+            ? styles.iconoAccion
+            : esAdvertencia
+              ? styles.iconoAdvertencia
+              : ""
         }`}
       ></i>
       <span className={styles.texto}>{aviso.mensaje}</span>

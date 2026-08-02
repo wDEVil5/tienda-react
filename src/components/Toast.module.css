@@ -39,6 +39,12 @@
   color: var(--color-sobre-oscuro);
 }
 
+/* Sin stock y cantidades parciales no son confirmaciones: usan un aviso cálido
+   para diferenciarse del check verde sin volver el mensaje alarmista. */
+.iconoAdvertencia {
+  color: var(--color-oferta);
+}
+
 /* Botón dentro del toast ("Deshacer"), sobre el fondo oscuro. */
 .accion {
   margin-left: var(--e-sm);

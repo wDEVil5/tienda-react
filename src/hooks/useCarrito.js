@@ -106,8 +106,8 @@ export function useCarrito() {
   // opcional permite restaurar un ítem eliminado sin persistir un historial completo.
   const [aviso, setAviso] = useState(null);
   const descartarAviso = () => setAviso(null);
-  const mostrarAviso = (mensaje, accion = null) =>
-    setAviso({ mensaje, key: Date.now(), accion });
+  const mostrarAviso = (mensaje, accion = null, tipo = "exito") =>
+    setAviso({ mensaje, key: Date.now(), accion, tipo });
 
   // Funciones "envoltorio" traducen una intención a una acción y la despachan.
   // Quien usa el hook no necesita saber que por dentro hay un reducer.
@@ -119,7 +119,11 @@ export function useCarrito() {
     const disponible = stockConocido ? stock - cantidadActual : cantidad;
 
     if (disponible <= 0) {
-      mostrarAviso(`No quedan más unidades de ${producto.nombre}`);
+      mostrarAviso(
+        `No quedan más unidades de ${producto.nombre}`,
+        null,
+        "advertencia",
+      );
       return;
     }
 
@@ -129,6 +133,8 @@ export function useCarrito() {
       cantidadAceptada < cantidad
         ? `Solo quedan ${cantidadAceptada} unidades de ${producto.nombre}`
         : `${producto.nombre} se agregó al carrito`,
+      null,
+      cantidadAceptada < cantidad ? "advertencia" : "exito",
     );
   };
 

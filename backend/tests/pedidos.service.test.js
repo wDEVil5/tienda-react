@@ -9,9 +9,13 @@ const contacto = {
   telefono: '+56 9 8765 4321',
 }
 
-// Cargador de reglas falso: mantiene estos tests como unitarios (sin tocar la
-// base). Usa los valores por defecto, que son los que asumen las aserciones.
-const reglasFalsas = { obtenerReglas: async () => REGLAS_POR_DEFECTO }
+// Opciones falsas: mantienen estos tests unitarios (sin tocar la base ni enviar
+// correos). Las reglas usan los valores por defecto que asumen las aserciones;
+// el notificador es no-op porque la confirmación se prueba aparte.
+const reglasFalsas = {
+  obtenerReglas: async () => REGLAS_POR_DEFECTO,
+  notificador: { async enviarConfirmacion() {} },
+}
 
 // Repo falso: devuelve los productos declarados y captura lo que recibe la
 // transacción, para poder afirmar sobre los montos y snapshots calculados.
@@ -194,6 +198,46 @@ test('delega la persistencia en una sola transacción y devuelve su resultado', 
   assert.equal(captura.llamadas, 1)
   assert.equal(creado.numero, 1)
   assert.equal(creado.estado, 'PENDIENTE')
+})
+
+test('crearPedido dispara la confirmación por correo con el pedido creado', async () => {
+  const { repositorio } = crearRepoFalso([CAFE])
+  let pedidoNotificado
+  const servicio = crearServicioPedidos(repositorio, {
+    obtenerReglas: async () => REGLAS_POR_DEFECTO,
+    notificador: {
+      async enviarConfirmacion(pedido) { pedidoNotificado = pedido },
+    },
+  })
+
+  const creado = await servicio.crearPedido({
+    contacto,
+    modalidad: 'RETIRO',
+    items: [{ productoId: 'p2', cantidad: 1 }],
+  })
+
+  assert.equal(pedidoNotificado.numero, creado.numero)
+  assert.equal(pedidoNotificado.contactoEmail, 'camila@correo.cl')
+})
+
+test('un fallo al enviar la confirmación no rompe la creación del pedido', async () => {
+  const { repositorio, captura } = crearRepoFalso([CAFE])
+  const servicio = crearServicioPedidos(repositorio, {
+    obtenerReglas: async () => REGLAS_POR_DEFECTO,
+    notificador: {
+      async enviarConfirmacion() { throw new Error('proveedor caído') },
+    },
+  })
+
+  const creado = await servicio.crearPedido({
+    contacto,
+    modalidad: 'RETIRO',
+    items: [{ productoId: 'p2', cantidad: 1 }],
+  })
+
+  // La compra se persistió igual; el fallo del correo quedó aislado.
+  assert.equal(captura.llamadas, 1)
+  assert.equal(creado.numero, 1)
 })
 
 test('listarPedidos entrega resumen paginado con conteos de productos y unidades', async () => {

@@ -1,6 +1,7 @@
 import { repositorioPedidos } from './pedidos.repository.js'
 import { calcularCostoEnvio } from '../../lib/reglasTienda.js'
 import { obtenerReglas as obtenerReglasVigentes } from '../reglas/reglas.service.js'
+import { notificadorPedidos } from './pedidos.notificaciones.js'
 import {
   ESTADO_INICIAL,
   efectoStockTransicion,
@@ -136,7 +137,7 @@ function crearDetallePedido(pedido) {
 
 export function crearServicioPedidos(
   repositorio = repositorioPedidos,
-  { obtenerReglas = obtenerReglasVigentes } = {},
+  { obtenerReglas = obtenerReglasVigentes, notificador = notificadorPedidos } = {},
 ) {
   return {
     async crearPedido(entrada, { clienteId = null, ahora = new Date() } = {}) {
@@ -174,7 +175,19 @@ export function crearServicioPedidos(
         ...totales,
       }
 
-      return repositorio.crearPedidoTransaccional({ pedido, items })
+      const pedidoCreado = await repositorio.crearPedidoTransaccional({ pedido, items })
+
+      // Confirmación por correo, fire-and-forget: la compra no debe fallar ni
+      // demorarse si el proveedor de correo está caído. Un fallo se registra.
+      notificador
+        .enviarConfirmacion(pedidoCreado)
+        .catch((error) =>
+          console.error(
+            `No se pudo enviar la confirmación del pedido ${pedidoCreado.numero}: ${error.message}`,
+          ),
+        )
+
+      return pedidoCreado
     },
 
     // Calcula los montos vigentes SIN crear el pedido ni reservar stock. Alimenta

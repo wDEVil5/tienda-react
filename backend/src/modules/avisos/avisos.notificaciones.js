@@ -25,8 +25,8 @@ export function crearProcesadorAvisos({
   urlBase = URL_TIENDA,
 } = {}) {
   return {
-    async procesarReposiciones({ limite = 50 } = {}) {
-      const pendientes = await repositorio.listarListosParaNotificar(limite)
+    async procesarReposiciones({ limite = 50, productoId = null } = {}) {
+      const pendientes = await repositorio.listarListosParaNotificar(limite, productoId)
       const notificados = []
       let fallidos = 0
 

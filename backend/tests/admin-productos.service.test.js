@@ -213,7 +213,7 @@ function crearProductoAgotado(overrides = {}) {
   }
 }
 
-test('actualizarProducto marca los avisos listos al reponer (agotado -> disponible)', async () => {
+test('actualizarProducto marca y dispara el barrido acotado al reponer (agotado -> disponible)', async () => {
   const producto = crearProductoAgotado()
   const repositorio = {
     async obtenerPorId() { return producto },
@@ -223,28 +223,35 @@ test('actualizarProducto marca los avisos listos al reponer (agotado -> disponib
   const avisos = {
     async marcarListosPorProducto(productoId) { productoNotificado = productoId },
   }
-  const servicio = crearServicioProductosAdmin(repositorio, null, avisos)
+  let barridoDe
+  const procesador = {
+    async procesarReposiciones({ productoId }) { barridoDe = productoId },
+  }
+  const servicio = crearServicioProductosAdmin(repositorio, null, avisos, procesador)
 
   await servicio.actualizarProducto('producto-1', { stock: 10 })
 
   assert.equal(productoNotificado, 'producto-1')
+  // El barrido se dispara acotado a este producto (no global).
+  assert.equal(barridoDe, 'producto-1')
 })
 
-test('actualizarProducto no toca avisos si el producto ya tenía stock', async () => {
+test('actualizarProducto no toca avisos ni barre si el producto ya tenía stock', async () => {
   const producto = crearProductoAgotado({ stock: 5 })
   const repositorio = {
     async obtenerPorId() { return producto },
     async actualizarPorId(_id, datos) { return { ...producto, ...datos } },
   }
-  let llamado = false
-  const avisos = {
-    async marcarListosPorProducto() { llamado = true },
-  }
-  const servicio = crearServicioProductosAdmin(repositorio, null, avisos)
+  let marco = false
+  let barrio = false
+  const avisos = { async marcarListosPorProducto() { marco = true } }
+  const procesador = { async procesarReposiciones() { barrio = true } }
+  const servicio = crearServicioProductosAdmin(repositorio, null, avisos, procesador)
 
   await servicio.actualizarProducto('producto-1', { stock: 12 })
 
-  assert.equal(llamado, false)
+  assert.equal(marco, false)
+  assert.equal(barrio, false)
 })
 
 test('actualizarProducto no dispara si el disponible sigue en cero (todo reservado)', async () => {
@@ -253,14 +260,15 @@ test('actualizarProducto no dispara si el disponible sigue en cero (todo reserva
     async obtenerPorId() { return producto },
     async actualizarPorId(_id, datos) { return { ...producto, ...datos } },
   }
-  let llamado = false
-  const avisos = {
-    async marcarListosPorProducto() { llamado = true },
-  }
-  const servicio = crearServicioProductosAdmin(repositorio, null, avisos)
+  let marco = false
+  let barrio = false
+  const avisos = { async marcarListosPorProducto() { marco = true } }
+  const procesador = { async procesarReposiciones() { barrio = true } }
+  const servicio = crearServicioProductosAdmin(repositorio, null, avisos, procesador)
 
   // Sube el stock pero la reserva lo consume: disponible sigue en 0.
   await servicio.actualizarProducto('producto-1', { stock: 8, stockReservado: 8 })
 
-  assert.equal(llamado, false)
+  assert.equal(marco, false)
+  assert.equal(barrio, false)
 })

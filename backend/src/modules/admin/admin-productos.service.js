@@ -2,6 +2,7 @@ import { repositorioProductosAdmin } from './admin-productos.repository.js'
 import { normalizarTextoBusqueda } from '../../lib/texto.js'
 import { almacenamientoImagenes } from '../imagenes/imagenes.storage.js'
 import { repositorioAvisos } from '../avisos/avisos.repository.js'
+import { procesadorAvisos } from '../avisos/avisos.notificaciones.js'
 import { calcularDisponible } from '../../lib/estadoStock.js'
 
 export class ErrorProductoAdmin extends Error {
@@ -147,6 +148,7 @@ export function crearServicioProductosAdmin(
   repositorio = repositorioProductosAdmin,
   almacenamiento = almacenamientoImagenes,
   avisos = repositorioAvisos,
+  procesador = procesadorAvisos,
 ) {
   return {
     async listarProductos({ page = 1, limit = 20, query = '', estado } = {}) {
@@ -206,11 +208,16 @@ export function crearServicioProductosAdmin(
       )
 
       // Reposición: si el producto pasó de agotado a disponible, los avisos
-      // pendientes quedan listos para que el módulo de correo los envíe.
+      // pendientes quedan listos y se dispara el envío.
       const disponibleAntes = calcularDisponible(productoActual)
       const disponibleDespues = calcularDisponible(productoActualizado)
       if (disponibleAntes <= 0 && disponibleDespues > 0) {
         await avisos.marcarListosPorProducto(id)
+        // Envío automático, acotado a este producto y SIN bloquear la respuesta
+        // del admin. Si falla, el aviso queda listo para el próximo barrido.
+        procesador
+          .procesarReposiciones({ productoId: id })
+          .catch((error) => console.error(`Barrido de avisos falló para ${id}: ${error.message}`))
       }
 
       return crearProductoParaEdicion(productoActualizado)

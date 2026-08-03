@@ -76,6 +76,24 @@ test('un envío que falla no se marca: queda para reintento', async () => {
   assert.deepEqual(resultado, { revisados: 2, notificados: 1, fallidos: 1 })
 })
 
+test('procesarReposiciones acota por productoId cuando se le pasa', async () => {
+  let argsRecibidos
+  const procesador = crearProcesadorAvisos({
+    repositorio: {
+      async listarListosParaNotificar(limite, productoId) {
+        argsRecibidos = { limite, productoId }
+        return []
+      },
+      async marcarNotificados() { return { count: 0 } },
+    },
+    servicioCorreo: { async enviar() {} },
+  })
+
+  await procesador.procesarReposiciones({ productoId: 'p1' })
+
+  assert.equal(argsRecibidos.productoId, 'p1')
+})
+
 test('sin pendientes no marca nada', async () => {
   let llamoMarcar = false
   const procesador = crearProcesadorAvisos({

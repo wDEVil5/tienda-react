@@ -50,10 +50,16 @@ export function crearRepositorioAvisos(db = prisma) {
     },
 
     // Avisos listos para enviar: stock repuesto (listoEn) y aún sin notificar.
-    // Trae los datos del producto necesarios para redactar el correo.
-    async listarListosParaNotificar(limite = 50) {
+    // Trae los datos del producto necesarios para redactar el correo. Con
+    // productoId acota al producto recién repuesto (disparo automático); sin él,
+    // barre todo (script de respaldo).
+    async listarListosParaNotificar(limite = 50, productoId = null) {
       return db.avisoStock.findMany({
-        where: { listoEn: { not: null }, notificadoEn: null },
+        where: {
+          listoEn: { not: null },
+          notificadoEn: null,
+          ...(productoId ? { productoId } : {}),
+        },
         orderBy: { listoEn: 'asc' },
         take: limite,
         include: { producto: { select: { nombre: true, slug: true } } },

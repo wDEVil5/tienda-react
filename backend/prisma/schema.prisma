@@ -143,6 +143,7 @@ model Producto {
   promociones PromocionProducto[]
   etiquetas   ProductoEtiqueta[]
   itemsPedido ItemPedido[]
+  avisosStock AvisoStock[]
 
   @@index([categoriaId])
   @@index([marcaId])
@@ -358,6 +359,7 @@ model Cliente {
   sesiones    SesionCliente[]
   direcciones Direccion[]
   pedidos     Pedido[]
+  avisosStock AvisoStock[]
 
   @@index([activo])
   @@map("clientes")
@@ -403,4 +405,30 @@ model SesionCliente {
   @@index([clienteId])
   @@index([expiraEn])
   @@map("sesiones_cliente")
+}
+
+// "Avísame": un interesado deja su correo para que le avisemos cuando un
+// producto agotado vuelva a tener stock. El cliente es opcional (un invitado
+// también puede suscribirse). El ciclo de vida se lee por sus fechas:
+//   pendiente  -> creadoEn con listoEn = null
+//   listo      -> listoEn se marca cuando el stock vuelve (dispara el turno CP4)
+//   notificado -> notificadoEn lo pondrá el módulo de correo al enviar
+model AvisoStock {
+  id           String    @id @default(uuid()) @db.Uuid
+  productoId   String    @map("producto_id") @db.Uuid
+  email        String    @db.VarChar(255)
+  clienteId    String?   @map("cliente_id") @db.Uuid
+  creadoEn     DateTime  @default(now()) @map("creado_en")
+  listoEn      DateTime? @map("listo_en")
+  notificadoEn DateTime? @map("notificado_en")
+
+  producto Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  cliente  Cliente? @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+
+  // Un mismo correo no se suscribe dos veces al mismo producto: si vuelve a
+  // pedir aviso, se reutiliza y reactiva esa fila (lógica en el servicio).
+  @@unique([productoId, email])
+  @@index([productoId])
+  @@index([clienteId])
+  @@map("avisos_stock")
 }

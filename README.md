@@ -32,6 +32,7 @@ evoluciona con Express, PostgreSQL y Prisma.
 - Zod para contratos y validación de entradas.
 - Argon2id, cookies `httpOnly` y sesiones con token hasheado para el personal.
 - Cloudinary, Multer y Sharp para imágenes de productos y logos de marcas.
+- Servicio de correo con transporte inyectable (memoria/consola/proveedor real).
 - `node:test` + Supertest para reglas y contratos HTTP.
 
 ### Servicios temporales
@@ -58,14 +59,20 @@ evoluciona con Express, PostgreSQL y Prisma.
 
 - Productos publicados con búsqueda sin tildes, categorías, marcas, imágenes,
   etiquetas, promociones vigentes, filtros y paginación.
+- Disponibilidad honesta por producto (`disponible` = stock − reservado,
+  `estadoStock`) y suscripción "Avísame" para productos agotados.
 - Administración protegida de productos, categorías, marcas, logos, etiquetas,
   promociones y operadores.
 - Sesiones de administrador/operador, roles y limitador de intentos de login.
+- Cuentas de clientes como dominio separado del staff: registro, login y logout
+  con cookie de sesión propia, direcciones guardadas e historial de pedidos.
 - Pedidos con montos recalculados por el servidor, snapshots históricos,
   reserva atómica de stock y máquina de estados por modalidad de entrega.
-- Reglas de entrega calculadas en el backend: envío gratis, tarifa base y
-  cobertura reducida por comuna. Más adelante serán configurables desde el
-  panel sobre un catálogo geográfico base.
+- Reglas de entrega editables por el administrador (umbral de envío gratis,
+  tarifa base, tarifas por comuna y corte de retiro), persistidas en la base;
+  el servidor calcula el costo de envío.
+- Notificaciones por correo con transporte inyectable: aviso de reposición al
+  reponer stock y confirmación al crear un pedido.
 
 ## Arquitectura
 
@@ -117,9 +124,14 @@ GET  /api/productos?q=cafe&categoria=despensa&ofertas=true&page=1&limit=12
 GET  /api/productos/:slug
 GET  /api/categorias
 GET  /api/marcas
+GET  /api/reglas
 POST /api/pedidos/cotizar
 POST /api/pedidos
+POST /api/avisos
 ```
+
+Las cuentas de clientes viven bajo `/api/cuenta` (registro, login, logout,
+direcciones e historial de pedidos) con su propia cookie de sesión.
 
 ## Calidad
 
@@ -135,17 +147,19 @@ cd backend && npm test
 
 Actualmente hay pruebas unitarias y de integración para carrito, servicios del
 frontend, catálogo, autenticación, administración, imágenes, promociones,
-pedidos, stock y transiciones de estado.
+pedidos, stock, transiciones de estado, cuentas de clientes, avisos de stock y
+notificaciones por correo.
 
 ## Próximos pasos
 
-1. Integrar Mercado Pago/stripe y verificar pagos mediante webhook.
-2. Expirar pedidos pendientes para liberar reservas de stock abandonadas.
-3. Construir la interfaz del panel administrativo sobre la API ya creada.
-4. Configurar cobertura, tarifas y plazos de entrega desde administración.
+1. stripe/mercado pago Pago y verificar pagos mediante webhook.
+2. Conectar un proveedor de correo real (hoy corre con transporte de consola).
+3. Construir la interfaz del panel administrativo y las pantallas de cuenta de
+   cliente (login, perfil, direcciones, "Mis pedidos") sobre la API ya creada.
+4. Expirar pedidos pendientes para liberar reservas de stock abandonadas.
 5. Desplegar API, PostgreSQL y almacenamiento de imágenes; retirar Fake Store.
 
-El alcance y las decisiones de producto se mantienen en el PRD.
+El alcance y las decisiones de producto se mantienen en un PRD.
 
 ---
 

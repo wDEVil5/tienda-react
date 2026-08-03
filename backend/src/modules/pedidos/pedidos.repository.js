@@ -120,6 +120,49 @@ export function crearRepositorioPedidos(cliente = prisma) {
       })
     },
 
+    // Pedidos PENDIENTE creados antes de `antesDe`: candidatos a expirar. Solo
+    // los ids; la expiración vuelve a leer y verifica el estado en su transacción.
+    async listarPendientesExpirados(antesDe, limite = 100) {
+      return cliente.pedido.findMany({
+        where: { estado: 'PENDIENTE', createdAt: { lt: antesDe } },
+        orderBy: { createdAt: 'asc' },
+        take: limite,
+        select: { id: true },
+      })
+    },
+
+    // Expira un pedido SOLO si sigue PENDIENTE. La guarda atómica (updateMany con
+    // estado en el WHERE) evita la carrera con el dueño que lo acepta justo al
+    // expirar: si 0 filas cambiaron, ya no estaba pendiente y no se toca el stock.
+    // Si expira, libera la reserva (LIBERAR) y registra el evento, todo en una tx.
+    async expirarPendienteTransaccional(id, nota) {
+      return cliente.$transaction(async (tx) => {
+        const { count } = await tx.pedido.updateMany({
+          where: { id, estado: 'PENDIENTE' },
+          data: { estado: 'CANCELADO' },
+        })
+        if (count === 0) {
+          return null
+        }
+
+        const pedido = await tx.pedido.findUnique({ where: { id }, include: { items: true } })
+        for (const item of pedido.items) {
+          // Un ítem cuyo producto fue eliminado (productoId null) no mueve stock.
+          if (!item.productoId) continue
+          await tx.producto.update({
+            where: { id: item.productoId },
+            data: { stockReservado: { decrement: item.cantidad } },
+          })
+        }
+
+        return tx.pedido.update({
+          where: { id },
+          data: { eventos: { create: { estado: 'CANCELADO', nota: nota ?? null } } },
+          include: { items: true, eventos: { orderBy: { createdAt: 'asc' } } },
+        })
+      })
+    },
+
     // Cambia el estado, mueve el stock según el efecto y registra el evento, todo
     // en una transacción. El efecto ya viene decidido por el servicio.
     async cambiarEstadoTransaccional({ id, nuevoEstado, nota, efecto, items }) {

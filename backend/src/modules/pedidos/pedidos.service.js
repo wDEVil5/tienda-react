@@ -135,6 +135,11 @@ function crearDetallePedido(pedido) {
   }
 }
 
+// Ventana por defecto tras la cual un pedido PENDIENTE sin confirmar se expira y
+// libera su reserva. Configurable por entorno; 24 h es holgado para no cancelar
+// pedidos legítimos que el dueño todavía no alcanzó a aceptar.
+const MINUTOS_EXPIRACION_PENDIENTE = Number(process.env.MINUTOS_EXPIRACION_PENDIENTE) || 24 * 60
+
 export function crearServicioPedidos(
   repositorio = repositorioPedidos,
   { obtenerReglas = obtenerReglasVigentes, notificador = notificadorPedidos } = {},
@@ -283,6 +288,30 @@ export function crearServicioPedidos(
 
       return crearDetallePedido(actualizado)
     },
+
+    // Barrido de expiración: cancela los pedidos PENDIENTE más viejos que la
+    // ventana y libera su reserva de stock. Es puramente temporal (no hay un
+    // evento que enganchar), así que lo corre un cron o el script pedidos:expirar.
+    // Cada cancelación es atómica y segura ante la carrera con el dueño.
+    async expirarPedidosPendientes({
+      ahora = new Date(),
+      minutos = MINUTOS_EXPIRACION_PENDIENTE,
+      limite = 100,
+    } = {}) {
+      const antesDe = new Date(ahora.getTime() - minutos * 60_000)
+      const vencidos = await repositorio.listarPendientesExpirados(antesDe, limite)
+
+      let expirados = 0
+      for (const { id } of vencidos) {
+        const cancelado = await repositorio.expirarPendienteTransaccional(
+          id,
+          `Expirado automáticamente por falta de confirmación (${minutos} min).`,
+        )
+        if (cancelado) expirados += 1
+      }
+
+      return { revisados: vencidos.length, expirados }
+    },
   }
 }
 
@@ -295,3 +324,4 @@ export const obtenerDetallePedido = servicioPedidos.obtenerDetallePedido
 export const cambiarEstadoPedido = servicioPedidos.cambiarEstadoPedido
 export const listarPedidosDeCliente = servicioPedidos.listarPedidosDeCliente
 export const obtenerPedidoDeCliente = servicioPedidos.obtenerPedidoDeCliente
+export const expirarPedidosPendientes = servicioPedidos.expirarPedidosPendientes

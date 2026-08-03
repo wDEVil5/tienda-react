@@ -10,7 +10,8 @@
     "db:seed": "prisma db seed",
     "preadmin:create": "prisma generate",
     "admin:create": "node --env-file=.env src/scripts/crearAdmin.js",
-    "avisos:enviar": "node --env-file=.env src/scripts/enviarAvisos.js"
+    "avisos:enviar": "node --env-file=.env src/scripts/enviarAvisos.js",
+    "pedidos:expirar": "node --env-file=.env src/scripts/expirarPedidos.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.1",

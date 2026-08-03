@@ -1,4 +1,5 @@
 import { prisma } from '../../lib/prisma.js'
+import { calcularDisponible, calcularEstadoStock } from '../../lib/estadoStock.js'
 
 // Seleccionamos y traducimos solo el contrato público que ya consume React.
 // Así los campos internos de PostgreSQL no se filtran por accidente a la API.
@@ -96,6 +97,8 @@ function crearProductoPublico(producto) {
         }
       : null,
     stock: producto.stock,
+    disponible: calcularDisponible(producto),
+    estadoStock: calcularEstadoStock(producto),
     origen: producto.origen,
     contenidoCantidad: producto.contenidoCantidad ? Number(producto.contenidoCantidad) : null,
     contenidoUnidad: producto.contenidoUnidad,

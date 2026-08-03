@@ -196,3 +196,71 @@ test('desactivarProducto conserva el registro y quita su destacado', async () =>
   assert.equal(resultado, true)
   assert.deepEqual(datosActualizacion, { estado: 'ARCHIVADO', destacado: false })
 })
+
+// Producto base agotado (stock 0) para probar el disparo de avisos al reponer.
+function crearProductoAgotado(overrides = {}) {
+  return {
+    id: 'producto-1',
+    sku: 'LEC-001', slug: 'leche', nombre: 'Leche', descripcion: 'Leche entera.',
+    precio: 1290, precioAnterior: null, stock: 0, stockReservado: 0,
+    estado: 'PUBLICADO', destacado: false, alertaStockBajo: null, codigoBarras: null,
+    origen: null, contenidoCantidad: null, contenidoUnidad: null,
+    pesoDespachoGramos: null, fechaVencimiento: null,
+    categoria: { id: 'cat-1', nombre: 'Lácteos', slug: 'lacteos' },
+    marca: { id: 'marca-1', nombre: 'Marca', slug: 'marca', logoUrl: null },
+    imagenes: [{ url: 'x' }], etiquetas: [],
+    ...overrides,
+  }
+}
+
+test('actualizarProducto marca los avisos listos al reponer (agotado -> disponible)', async () => {
+  const producto = crearProductoAgotado()
+  const repositorio = {
+    async obtenerPorId() { return producto },
+    async actualizarPorId(_id, datos) { return { ...producto, ...datos } },
+  }
+  let productoNotificado
+  const avisos = {
+    async marcarListosPorProducto(productoId) { productoNotificado = productoId },
+  }
+  const servicio = crearServicioProductosAdmin(repositorio, null, avisos)
+
+  await servicio.actualizarProducto('producto-1', { stock: 10 })
+
+  assert.equal(productoNotificado, 'producto-1')
+})
+
+test('actualizarProducto no toca avisos si el producto ya tenía stock', async () => {
+  const producto = crearProductoAgotado({ stock: 5 })
+  const repositorio = {
+    async obtenerPorId() { return producto },
+    async actualizarPorId(_id, datos) { return { ...producto, ...datos } },
+  }
+  let llamado = false
+  const avisos = {
+    async marcarListosPorProducto() { llamado = true },
+  }
+  const servicio = crearServicioProductosAdmin(repositorio, null, avisos)
+
+  await servicio.actualizarProducto('producto-1', { stock: 12 })
+
+  assert.equal(llamado, false)
+})
+
+test('actualizarProducto no dispara si el disponible sigue en cero (todo reservado)', async () => {
+  const producto = crearProductoAgotado({ stock: 4, stockReservado: 4 })
+  const repositorio = {
+    async obtenerPorId() { return producto },
+    async actualizarPorId(_id, datos) { return { ...producto, ...datos } },
+  }
+  let llamado = false
+  const avisos = {
+    async marcarListosPorProducto() { llamado = true },
+  }
+  const servicio = crearServicioProductosAdmin(repositorio, null, avisos)
+
+  // Sube el stock pero la reserva lo consume: disponible sigue en 0.
+  await servicio.actualizarProducto('producto-1', { stock: 8, stockReservado: 8 })
+
+  assert.equal(llamado, false)
+})

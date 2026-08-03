@@ -38,6 +38,16 @@ export function crearRepositorioAvisos(db = prisma) {
         },
       })
     },
+
+    // Marca como listos para notificar los avisos pendientes de un producto que
+    // volvió a tener stock. Solo toca los que aún no fueron notificados ni
+    // marcados: no reenvía a quien ya fue avisado.
+    async marcarListosPorProducto(productoId, ahora = new Date()) {
+      return db.avisoStock.updateMany({
+        where: { productoId, listoEn: null, notificadoEn: null },
+        data: { listoEn: ahora },
+      })
+    },
   }
 }
 

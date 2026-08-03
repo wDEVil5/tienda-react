@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { crearPedido, cotizarPedido, ErrorPedido } from './pedidos.service.js'
 import { validarCotizacion, validarPedidoNuevo } from './pedidos.validacion.js'
+import { clienteOpcional } from '../cuenta/cuenta.middleware.js'
 
 // Contrato de SALIDA del pedido recién creado: campos intencionales para la
 // pantalla de confirmación. No se filtran ids internos de ítems ni timestamps
@@ -42,7 +43,10 @@ function formatearPedido(pedido) {
   }
 }
 
-export function crearRouterPedidos({ servicio = { crearPedido, cotizarPedido } } = {}) {
+export function crearRouterPedidos({
+  servicio = { crearPedido, cotizarPedido },
+  middlewareCliente = clienteOpcional,
+} = {}) {
   const pedidosRouter = Router()
 
   // Cotización: montos calculados en el servidor sin crear el pedido. La usa el
@@ -72,7 +76,9 @@ export function crearRouterPedidos({ servicio = { crearPedido, cotizarPedido } }
     }
   })
 
-  pedidosRouter.post('/', async (request, response, next) => {
+  // clienteOpcional: enlaza el pedido a la cuenta si el comprador está logueado;
+  // el invitado (sin sesión) pasa igual y el pedido queda sin dueño.
+  pedidosRouter.post('/', middlewareCliente, async (request, response, next) => {
     const validacion = validarPedidoNuevo(request.body)
     if (!validacion.success) {
       return response.status(422).json({
@@ -85,7 +91,9 @@ export function crearRouterPedidos({ servicio = { crearPedido, cotizarPedido } }
     }
 
     try {
-      const pedido = await servicio.crearPedido(validacion.data)
+      const pedido = await servicio.crearPedido(validacion.data, {
+        clienteId: request.cliente?.id ?? null,
+      })
       return response.status(201).json({ data: formatearPedido(pedido) })
     } catch (error) {
       // 409 Conflict: el estado del catálogo (sin stock, no publicado) impide

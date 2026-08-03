@@ -39,6 +39,24 @@ const CAFE = {
   stock: 25, stockReservado: 0, tieneOfertaVigente: false,
 }
 
+test('enlaza el clienteId recibido y usa null por defecto (invitado)', async () => {
+  const { repositorio, captura } = crearRepoFalso([CAFE])
+  const servicio = crearServicioPedidos(repositorio, reglasFalsas)
+
+  await servicio.crearPedido(
+    { contacto, modalidad: 'RETIRO', items: [{ productoId: 'p2', cantidad: 1 }] },
+    { clienteId: 'cli-9' },
+  )
+  assert.equal(captura.transaccion.pedido.clienteId, 'cli-9')
+
+  await servicio.crearPedido({
+    contacto,
+    modalidad: 'RETIRO',
+    items: [{ productoId: 'p2', cantidad: 1 }],
+  })
+  assert.equal(captura.transaccion.pedido.clienteId, null)
+})
+
 test('recalcula precios y totales en el servidor (retiro)', async () => {
   const { repositorio, captura } = crearRepoFalso([ACEITE, CAFE])
   const servicio = crearServicioPedidos(repositorio, reglasFalsas)

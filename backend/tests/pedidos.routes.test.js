@@ -5,11 +5,19 @@ import request from 'supertest'
 import { crearRouterPedidos } from '../src/modules/pedidos/pedidos.routes.js'
 import { ErrorPedido } from '../src/modules/pedidos/pedidos.service.js'
 
-function crearApp(servicio) {
+function crearApp(servicio, { middlewareCliente } = {}) {
   const app = express()
   app.use(express.json())
-  app.use('/api/pedidos', crearRouterPedidos({ servicio }))
+  app.use(
+    '/api/pedidos',
+    crearRouterPedidos({ servicio, ...(middlewareCliente ? { middlewareCliente } : {}) }),
+  )
   return app
+}
+
+const pedidoMinimo = {
+  id: 'p', numero: 8, estado: 'PENDIENTE', modalidad: 'RETIRO',
+  items: [], subtotal: 0, descuento: 0, costoEnvio: 0, total: 0,
 }
 
 const contacto = {
@@ -49,6 +57,46 @@ test('POST /api/pedidos crea el pedido y responde 201 con su contrato', async ()
   // El contrato de salida no expone ids internos de ítem.
   assert.equal('id' in response.body.data.items[0], false)
   assert.equal(recibido.modalidad, 'RETIRO')
+})
+
+test('POST /api/pedidos enlaza el pedido al cliente logueado', async () => {
+  let opciones
+  const app = crearApp(
+    {
+      async crearPedido(_datos, opts) {
+        opciones = opts
+        return pedidoMinimo
+      },
+    },
+    { middlewareCliente: (request, _response, next) => { request.cliente = { id: 'cli-1' }; next() } },
+  )
+
+  const response = await request(app)
+    .post('/api/pedidos')
+    .send({ contacto, modalidad: 'RETIRO', items: [{ productoId, cantidad: 1 }] })
+
+  assert.equal(response.status, 201)
+  assert.equal(opciones.clienteId, 'cli-1')
+})
+
+test('POST /api/pedidos de invitado no enlaza cliente (clienteId null)', async () => {
+  let opciones
+  const app = crearApp(
+    {
+      async crearPedido(_datos, opts) {
+        opciones = opts
+        return pedidoMinimo
+      },
+    },
+    { middlewareCliente: (_request, _response, next) => next() },
+  )
+
+  const response = await request(app)
+    .post('/api/pedidos')
+    .send({ contacto, modalidad: 'RETIRO', items: [{ productoId, cantidad: 1 }] })
+
+  assert.equal(response.status, 201)
+  assert.equal(opciones.clienteId, null)
 })
 
 test('POST /api/pedidos/cotizar responde 200 con los totales', async () => {

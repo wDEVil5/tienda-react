@@ -236,7 +236,13 @@ model Pedido {
   estado    EstadoPedido     @default(PENDIENTE)
   modalidad ModalidadEntrega
 
-  // Contacto como snapshot: todavía no existen cuentas de cliente (Fase 3).
+  // Dueño de la cuenta, opcional: los pedidos de invitado quedan en null. El
+  // contacto sigue guardándose como snapshot (puede diferir del email de la
+  // cuenta). SetNull: si se borra el cliente, su historial sobrevive sin dueño.
+  clienteId String?  @map("cliente_id") @db.Uuid
+  cliente   Cliente? @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+
+  // Contacto como snapshot (invitado o el que se escribió al comprar).
   contactoNombre   String @map("contacto_nombre") @db.VarChar(120)
   contactoEmail    String @map("contacto_email") @db.VarChar(255)
   contactoTelefono String @map("contacto_telefono") @db.VarChar(40)
@@ -262,6 +268,7 @@ model Pedido {
 
   @@index([estado])
   @@index([createdAt])
+  @@index([clienteId])
   @@map("pedidos")
 }
 
@@ -350,6 +357,7 @@ model Cliente {
 
   sesiones    SesionCliente[]
   direcciones Direccion[]
+  pedidos     Pedido[]
 
   @@index([activo])
   @@map("clientes")

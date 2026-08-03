@@ -139,7 +139,7 @@ export function crearServicioPedidos(
   { obtenerReglas = obtenerReglasVigentes } = {},
 ) {
   return {
-    async crearPedido(entrada, ahora = new Date()) {
+    async crearPedido(entrada, { clienteId = null, ahora = new Date() } = {}) {
       // Se recalcula TODO con la verdad del servidor; nada de montos del cliente.
       // Las reglas (umbral, tarifas) también vienen del servidor, editables por
       // el dueño; nunca del cliente.
@@ -158,6 +158,9 @@ export function crearServicioPedidos(
       )
 
       const pedido = {
+        // Dueño de la cuenta (null si es invitado). Viene de la sesión de
+        // cliente en la ruta, jamás del cuerpo de la petición.
+        clienteId,
         estado: ESTADO_INICIAL,
         modalidad: entrada.modalidad,
         contactoNombre: entrada.contacto.nombre,

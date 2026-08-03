@@ -48,6 +48,28 @@ export function crearRepositorioAvisos(db = prisma) {
         data: { listoEn: ahora },
       })
     },
+
+    // Avisos listos para enviar: stock repuesto (listoEn) y aún sin notificar.
+    // Trae los datos del producto necesarios para redactar el correo.
+    async listarListosParaNotificar(limite = 50) {
+      return db.avisoStock.findMany({
+        where: { listoEn: { not: null }, notificadoEn: null },
+        orderBy: { listoEn: 'asc' },
+        take: limite,
+        include: { producto: { select: { nombre: true, slug: true } } },
+      })
+    },
+
+    // Confirma el envío: se marca solo lo que se envió con éxito, en lote.
+    async marcarNotificados(ids, ahora = new Date()) {
+      if (ids.length === 0) {
+        return { count: 0 }
+      }
+      return db.avisoStock.updateMany({
+        where: { id: { in: ids } },
+        data: { notificadoEn: ahora },
+      })
+    },
   }
 }
 

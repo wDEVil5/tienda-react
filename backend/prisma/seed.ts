@@ -407,6 +407,9 @@ async function sembrarPedidos() {
     const estado = pedido.historial[pedido.historial.length - 1].estado;
 
     const datosPedido = {
+      // Los pedidos de ejemplo pertenecen al cliente demo, para poblar su
+      // historial (/api/cuenta/pedidos). El cliente se siembra antes.
+      clienteId: CLIENTE_DEMO_ID,
       estado,
       modalidad: pedido.modalidad,
       contactoNombre: pedido.contacto.nombre,
@@ -465,6 +468,8 @@ async function sembrarReglas() {
 // Cuenta de cliente de ejemplo para probar login, direcciones e historial. Id
 // fijo (repetible). En re-seed no se pisa la contraseña, por si se cambió desde
 // la app durante pruebas.
+const CLIENTE_DEMO_ID = "11111111-1111-4111-8111-111111111111";
+
 async function sembrarCliente() {
   const email = "cliente@sumarketexpress.cl";
   const passwordHash = await crearHashContrasena("Cliente2026!");
@@ -472,7 +477,7 @@ async function sembrarCliente() {
   await prisma.cliente.upsert({
     where: { email },
     create: {
-      id: "11111111-1111-4111-8111-111111111111",
+      id: CLIENTE_DEMO_ID,
       nombre: "Wilnes A.",
       email,
       passwordHash,
@@ -485,9 +490,9 @@ async function sembrarCliente() {
 try {
   await sembrarCatalogo();
   await sembrarOfertaSemanal();
+  await sembrarCliente(); // antes de los pedidos: estos se enlazan a su cuenta
   await sembrarPedidos();
   await sembrarReglas();
-  await sembrarCliente();
   console.info(
     `Seed completado: ${catalogoInicial.length} productos, ${pedidosIniciales.length} pedidos, las reglas de la tienda y una cuenta de cliente de ejemplo.`,
   );

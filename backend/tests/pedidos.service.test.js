@@ -310,3 +310,58 @@ test('cambiarEstadoPedido devuelve null cuando el pedido no existe', async () =>
 
   assert.equal(await servicio.cambiarEstadoPedido('fantasma', 'PREPARANDO'), null)
 })
+
+test('listarPedidosDeCliente acota por clienteId y arma la meta', async () => {
+  let filtrosListar
+  let filtrosContar
+  const servicio = crearServicioPedidos({
+    async listar(filtros) {
+      filtrosListar = filtros
+      return [
+        {
+          id: 'p1', numero: 1, estado: 'ENVIADO', modalidad: 'DESPACHO',
+          contactoNombre: 'Wilnes', dirComuna: 'Ñuñoa',
+          items: [{ cantidad: 2 }], total: 1000, createdAt: new Date(),
+        },
+      ]
+    },
+    async contar(filtros) {
+      filtrosContar = filtros
+      return 1
+    },
+  })
+
+  const resultado = await servicio.listarPedidosDeCliente('cli-1', { page: 1, limit: 20 })
+
+  assert.equal(filtrosListar.clienteId, 'cli-1')
+  assert.equal(filtrosContar.clienteId, 'cli-1')
+  assert.equal(resultado.meta.total, 1)
+  assert.equal(resultado.data[0].numero, 1)
+  assert.equal(resultado.data[0].cantidadUnidades, 2)
+})
+
+test('obtenerPedidoDeCliente pasa el clienteId y devuelve null si no es suyo', async () => {
+  let recibido
+  const servicioAjeno = crearServicioPedidos({
+    async obtenerPorId(id, opciones) {
+      recibido = { id, opciones }
+      return null
+    },
+  })
+  assert.equal(await servicioAjeno.obtenerPedidoDeCliente('cli-1', 'p9'), null)
+  assert.equal(recibido.opciones.clienteId, 'cli-1')
+
+  const servicioPropio = crearServicioPedidos({
+    async obtenerPorId() {
+      return {
+        id: 'p1', numero: 5, estado: 'ENTREGADO', modalidad: 'RETIRO',
+        contactoNombre: 'W', contactoEmail: 'w@c.cl', contactoTelefono: 'x',
+        dirCalle: null, dirDepto: null, dirComuna: null, dirRegion: null, dirInstrucciones: null,
+        subtotal: 0, descuento: 0, costoEnvio: 0, total: 0,
+        items: [], eventos: [], createdAt: new Date(),
+      }
+    },
+  })
+  const detalle = await servicioPropio.obtenerPedidoDeCliente('cli-1', 'p1')
+  assert.equal(detalle.numero, 5)
+})

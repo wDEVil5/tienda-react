@@ -225,6 +225,26 @@ export function crearServicioPedidos(
       return pedido ? crearDetallePedido(pedido) : null
     },
 
+    // Historial del cliente: mismas formas que el panel, pero SIEMPRE acotadas a
+    // su clienteId. Un pedido ajeno o inexistente devuelve null → 404.
+    async listarPedidosDeCliente(clienteId, { page = 1, limit = 20, estado } = {}) {
+      const filtros = { page, limit, clienteId, ...(estado ? { estado } : {}) }
+      const [pedidos, total] = await Promise.all([
+        repositorio.listar(filtros),
+        repositorio.contar(filtros),
+      ])
+
+      return {
+        data: pedidos.map(crearResumenPedido),
+        meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      }
+    },
+
+    async obtenerPedidoDeCliente(clienteId, id) {
+      const pedido = await repositorio.obtenerPorId(id, { clienteId })
+      return pedido ? crearDetallePedido(pedido) : null
+    },
+
     async cambiarEstadoPedido(id, nuevoEstado, nota) {
       const pedido = await repositorio.obtenerPorId(id)
       if (!pedido) return null
@@ -260,3 +280,5 @@ export const cotizarPedido = servicioPedidos.cotizarPedido
 export const listarPedidos = servicioPedidos.listarPedidos
 export const obtenerDetallePedido = servicioPedidos.obtenerDetallePedido
 export const cambiarEstadoPedido = servicioPedidos.cambiarEstadoPedido
+export const listarPedidosDeCliente = servicioPedidos.listarPedidosDeCliente
+export const obtenerPedidoDeCliente = servicioPedidos.obtenerPedidoDeCliente

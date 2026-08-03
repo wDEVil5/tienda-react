@@ -46,8 +46,11 @@ export function crearRepositorioPedidos(cliente = prisma) {
 
     // Listado para el panel: el más reciente primero. Incluye la cantidad de
     // cada ítem para poder mostrar "N productos, M unidades" sin otra consulta.
-    async listar({ page = 1, limit = 20, estado } = {}) {
-      const where = estado ? { estado } : {}
+    async listar({ page = 1, limit = 20, estado, clienteId } = {}) {
+      const where = {
+        ...(estado ? { estado } : {}),
+        ...(clienteId ? { clienteId } : {}),
+      }
       return cliente.pedido.findMany({
         where,
         orderBy: { createdAt: 'desc' },
@@ -57,13 +60,20 @@ export function crearRepositorioPedidos(cliente = prisma) {
       })
     },
 
-    async contar({ estado } = {}) {
-      return cliente.pedido.count({ where: estado ? { estado } : {} })
+    async contar({ estado, clienteId } = {}) {
+      return cliente.pedido.count({
+        where: {
+          ...(estado ? { estado } : {}),
+          ...(clienteId ? { clienteId } : {}),
+        },
+      })
     },
 
-    async obtenerPorId(id) {
-      return cliente.pedido.findUnique({
-        where: { id },
+    // `clienteId` opcional: sin él (panel) busca por id; con él (cuenta) exige
+    // además que el pedido sea de ese cliente, así nadie ve pedidos ajenos.
+    async obtenerPorId(id, { clienteId } = {}) {
+      return cliente.pedido.findFirst({
+        where: { id, ...(clienteId ? { clienteId } : {}) },
         include: {
           items: true,
           eventos: { orderBy: { createdAt: 'asc' } },

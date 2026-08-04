@@ -8,9 +8,10 @@ evoluciona con Express, PostgreSQL y Prisma.
 
 [Ver demo pública](https://wdevil5.github.io/tienda-react/)
 
-> GitHub Pages solo aloja el frontend estático, por lo que la demo conserva
-> Fake Store como respaldo. En desarrollo local, React consume la API propia y
-> PostgreSQL.
+> La demo en vivo consume la **API propia desplegada** (Render + PostgreSQL en
+> Supabase). Si esa API gratuita está dormida y la primera petición se pasa de
+> tiempo, el catálogo cae automáticamente a Fake Store como respaldo; recargar
+> lo soluciona.
 
 ![Vista previa de SumarketExpress](./src/assets/vistaprevia.png)
 
@@ -37,8 +38,8 @@ evoluciona con Express, PostgreSQL y Prisma.
 
 ### Servicios temporales
 
-- [Fake Store API](https://fakestoreapi.com/) solo como fallback de la demo
-  pública mientras la API propia no esté desplegada.
+- [Fake Store API](https://fakestoreapi.com/) como respaldo automático de la
+  demo si la API propia (plan gratuito) está temporalmente dormida.
 
 ## Funcionalidades actuales
 
@@ -87,6 +88,22 @@ La UI se comunica mediante HTTP y normaliza sus respuestas; así Fake Store
 puede retirarse sin acoplar la interfaz a su estructura. En pedidos, el cliente
 solo envía productos, cantidades y entrega: precio, descuento, envío y stock
 los determina el servidor.
+
+## Despliegue en producción
+
+La aplicación está desplegada de forma gratuita (portafolio):
+
+| Capa | Servicio | URL |
+|---|---|---|
+| Frontend | GitHub Pages | https://wdevil5.github.io/tienda-react/ |
+| API | Render | https://sumarket-express-api.onrender.com/api |
+| Base de datos | Supabase (PostgreSQL) | — |
+| Pagos | Mercado Pago (pruebas) | — |
+
+El frontend se publica con `npm run deploy` (build + `gh-pages`). La API corre en
+Render y aplica las migraciones durante el build. Como el plan gratuito de Render
+suspende el servicio tras unos minutos de inactividad, la primera visita puede
+tardar unos segundos en responder mientras despierta.
 
 ## Ejecutar localmente
 
@@ -152,12 +169,12 @@ notificaciones por correo.
 
 ## Próximos pasos
 
-1. stripe/mercado pago Pago y verificar pagos mediante webhook.
-2. Conectar un proveedor de correo real (hoy corre con transporte de consola).
-3. Construir la interfaz del panel administrativo y las pantallas de cuenta de
+1. Construir la interfaz del panel administrativo y las pantallas de cuenta de
    cliente (login, perfil, direcciones, "Mis pedidos") sobre la API ya creada.
-4. Expirar pedidos pendientes para liberar reservas de stock abandonadas.
-5. Desplegar API, PostgreSQL y almacenamiento de imágenes; retirar Fake Store.
+2. Conectar un proveedor de correo real (hoy corre con transporte de consola).
+3. Verificar la firma del webhook de Mercado Pago (`x-signature`) para endurecer
+   la recepción de notificaciones.
+4. App móvil con React Native/Expo (fase posterior del roadmap).
 
 El alcance y las decisiones de producto se mantienen en un PRD.
 

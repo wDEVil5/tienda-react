@@ -4,7 +4,11 @@ import ImagenProducto from "../components/ImagenProducto.jsx";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 import { crearPedido } from "../services/pedidosApi.js";
 import { iniciarPago } from "../services/pagosApi.js";
-import { guardarCheckoutPendiente, obtenerCheckoutPendiente } from "../services/checkoutPendiente.js";
+import {
+  actualizarCheckoutPendiente,
+  guardarCheckoutPendiente,
+  obtenerCheckoutPendiente,
+} from "../services/checkoutPendiente.js";
 import styles from "./Checkout.module.css";
 
 const clp = (monto) => `$\u202F${Number(monto ?? 0).toLocaleString("es-CL")}`;
@@ -94,6 +98,7 @@ function CheckoutPago() {
       }
 
       const pago = await iniciarPago({ pedidoId: pedido.id });
+      actualizarCheckoutPendiente({ pedidoCreado: pedido, pagoId: pago.pagoId });
       vaciarCarrito();
       window.location.assign(pago.urlPago);
     } catch (errorSolicitud) {

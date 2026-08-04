@@ -23,3 +23,12 @@ export function obtenerCheckoutPendiente() {
     return null;
   }
 }
+
+export function actualizarCheckoutPendiente(cambios) {
+  const actual = obtenerCheckoutPendiente();
+  if (!actual) return null;
+
+  const siguiente = { ...actual, ...cambios };
+  guardarCheckoutPendiente(siguiente);
+  return siguiente;
+}

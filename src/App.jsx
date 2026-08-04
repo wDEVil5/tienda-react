@@ -4,6 +4,7 @@ import Home from "./pages/Home.jsx";
 import ProductoDetalle from "./pages/ProductoDetalle.jsx";
 import Checkout from "./pages/Checkout.jsx";
 import CheckoutPago from "./pages/CheckoutPago.jsx";
+import EstadoPago from "./pages/EstadoPago.jsx";
 import { Login, Registro } from "./pages/Acceso.jsx";
 import MiCuenta from "./pages/MiCuenta.jsx";
 import MisPedidos from "./pages/MisPedidos.jsx";
@@ -211,9 +212,10 @@ function App() {
   const ofertasDestacadasVigentes =
     fuenteCatalogo === "api" ? ofertasDestacadas : null;
   const esCheckout = ubicacion.pathname.startsWith("/checkout");
+  const esEstadoPago = ubicacion.pathname.startsWith("/pago/");
   const esAcceso = ["/login", "/registro"].includes(ubicacion.pathname);
   const esMiCuenta = ubicacion.pathname.startsWith("/mi-cuenta");
-  const esPantallaPrivada = esAcceso || esMiCuenta;
+  const esPantallaPrivada = esAcceso || esMiCuenta || esEstadoPago;
 
   //early return
   if (cargando) {
@@ -258,7 +260,7 @@ function App() {
       {/* Contenido centrado: el Header y el Footer viven FUERA de este
           envoltorio para poder ir de borde a borde . */}
       <main
-        className={`${styles.contenido} ${esCheckout ? styles.contenidoCheckout : ""} ${esAcceso ? styles.contenidoAcceso : ""} ${esMiCuenta ? styles.contenidoCuenta : ""}`}
+        className={`${styles.contenido} ${(esCheckout || esEstadoPago) ? styles.contenidoCheckout : ""} ${esAcceso ? styles.contenidoAcceso : ""} ${esMiCuenta ? styles.contenidoCuenta : ""}`}
       >
         <Routes>
           <Route
@@ -296,6 +298,9 @@ function App() {
           />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/checkout/pago" element={<CheckoutPago />} />
+          <Route path="/pago/exito" element={<EstadoPago />} />
+          <Route path="/pago/pendiente" element={<EstadoPago />} />
+          <Route path="/pago/error" element={<EstadoPago />} />
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
           <Route

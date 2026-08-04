@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AdminShell from "../components/admin/AdminShell.jsx";
 import {
   ErrorAdminApi,
@@ -127,6 +128,7 @@ function FilasCargando() {
 }
 
 export default function AdminProductos() {
+  const navegar = useNavigate();
   const [usuario, setUsuario] = useState(undefined);
   const [productos, setProductos] = useState([]);
   const [meta, setMeta] = useState(null);
@@ -242,8 +244,7 @@ export default function AdminProductos() {
             <button
               className={styles.nuevo}
               type="button"
-              disabled
-              title="El editor de productos se implementará en la próxima entrega."
+              onClick={() => navegar("/admin/productos/nuevo")}
             >
               + Nuevo
             </button>
@@ -343,8 +344,7 @@ export default function AdminProductos() {
                       <button
                         className={styles.editar}
                         type="button"
-                        disabled
-                        title="El editor se implementará en la próxima entrega."
+                        onClick={() => navegar(`/admin/productos/${producto.id}/editar`)}
                       >
                         Editar
                       </button>

@@ -1,3 +1,6 @@
+// Contrato compartido entre el editor, sus validaciones y el cliente admin.
+// Los inputs mantienen strings para no pelear con valores vacíos mientras la
+// persona escribe; el payload numérico se construye justo antes de guardar.
 const ESTADOS_PRODUCTO = ["BORRADOR", "PUBLICADO", "ARCHIVADO"];
 const UNIDADES_CONTENIDO = ["g", "kg", "ml", "l", "un"];
 
@@ -23,6 +26,8 @@ export const PRODUCTO_FORMULARIO_INICIAL = {
   etiquetaIds: [],
 };
 
+// Convierte tanto un producto nuevo como el detalle completo de edición a la
+// misma forma. El detalle trae relaciones anidadas; el formulario usa IDs.
 export function crearFormularioProducto(producto = {}) {
   return {
     ...PRODUCTO_FORMULARIO_INICIAL,
@@ -40,6 +45,8 @@ export function crearFormularioProducto(producto = {}) {
   };
 }
 
+// La validación corre antes de llamar a la API, pero replica las reglas visibles
+// del backend para dar feedback inmediato. El servidor sigue siendo la autoridad.
 export function validarFormularioProducto(valores, { esNuevo = false } = {}) {
   const errores = {};
   const nombre = String(valores.nombre ?? "").trim();
@@ -104,6 +111,8 @@ export function validarFormularioProducto(valores, { esNuevo = false } = {}) {
   return errores;
 }
 
+// En creación se omiten opcionales vacíos porque el POST acepta defaults. En
+// edición se envía null para distinguir "limpiar" de "no modificar" (undefined).
 export function normalizarPayloadProductoAdmin(valores, { esNuevo = false } = {}) {
   const payload = {
     nombre: String(valores.nombre ?? "").trim(),
@@ -134,6 +143,8 @@ export function normalizarPayloadProductoAdmin(valores, { esNuevo = false } = {}
   return payload;
 }
 
+// Los campos type="number" también reciben "" cuando se borran. No forzamos
+// el número aquí porque la validación debe poder distinguir vacío de inválido.
 function convertirNumeroAEntrada(valor) {
   return valor === null || valor === undefined ? "" : String(valor);
 }
@@ -168,6 +179,8 @@ function esEnteroNoNegativo(valor) {
   return Number.isInteger(numero) && numero >= 0;
 }
 
+// Estas funciones mantienen el payload compatible con el esquema .strict() del
+// backend: no mandamos strings vacíos donde espera texto válido o null.
 function agregarTextoOpcional(payload, campo, valor, esNuevo) {
   const texto = String(valor ?? "").trim();
   if (texto) payload[campo] = texto;

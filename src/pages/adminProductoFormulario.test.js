@@ -6,6 +6,8 @@ import {
   validarFormularioProducto,
 } from "./adminProductoFormulario.js";
 
+// Estas pruebas protegen el contrato antes de conectar el editor visual a la
+// API: si cambia la forma del detalle o del payload, fallan cerca del origen.
 describe("adminProductoFormulario", () => {
   it("crea valores iniciales compatibles con inputs controlados", () => {
     expect(crearFormularioProducto()).toEqual(PRODUCTO_FORMULARIO_INICIAL);

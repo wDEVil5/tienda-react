@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useCuenta } from "../context/CuentaContext.jsx";
 import { obtenerCheckoutPendiente } from "../services/checkoutPendiente.js";
 import { obtenerEstadoPago } from "../services/pagosApi.js";
@@ -8,12 +8,15 @@ import styles from "./EstadoPago.module.css";
 const clp = (monto) => `$\u202F${Number(monto ?? 0).toLocaleString("es-CL")}`;
 const INTERVALO_CONSULTA_MS = 2000;
 
-// El parámetro de la URL de vuelta no se usa para decidir nada. Solo el estado
-// consultado a nuestra API —actualizado por webhook— define qué se muestra.
+// El retorno de MP incluye external_reference (nuestro pagoId). Solo se usa
+// como respaldo si la pasarela vuelve en otra pestaña y sessionStorage no viaja;
+// la API —actualizada por webhook— sigue siendo quien decide qué se muestra.
 function EstadoPago() {
   const { estaAutenticado } = useCuenta();
+  const [parametros] = useSearchParams();
   const pendiente = obtenerCheckoutPendiente();
-  const pagoId = pendiente?.pagoId;
+  const pagoIdRetorno = parametros.get("external_reference");
+  const pagoId = pagoIdRetorno ?? pendiente?.pagoId;
   const [estado, setEstado] = useState(() => ({
     tipo: pagoId ? "cargando" : "ausente",
     pago: null,

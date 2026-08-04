@@ -120,8 +120,11 @@
 }
 .filtro,
 .filtroActivo {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   min-height: 34px;
-  padding: 6px 14px;
+  padding: 6px 12px 6px 14px;
   border: 1px solid var(--color-borde-3);
   border-radius: var(--radio-pill);
   background: var(--color-superficie);
@@ -129,6 +132,20 @@
   font: inherit;
   font-size: 12.5px;
   cursor: pointer;
+}
+.filtroConteo {
+  min-width: 18px;
+  padding: 1px 6px;
+  border-radius: var(--radio-pill);
+  background: var(--color-crudo);
+  color: var(--color-texto-tenue);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.filtroActivo .filtroConteo {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--color-fondo);
 }
 .filtro:hover {
   border-color: var(--color-texto-tenue);

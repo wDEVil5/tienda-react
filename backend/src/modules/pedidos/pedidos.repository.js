@@ -5,6 +5,32 @@ function crearPromocionVigenteDonde(ahora) {
   return { activa: true, empiezaEn: { lte: ahora }, terminaEn: { gt: ahora } }
 }
 
+// Filtro de búsqueda libre para el panel: coincide por nombre de contacto (sin
+// distinguir mayúsculas) o por número exacto. Acepta el número escrito como
+// "#SE-1043", "SE-1043" o "1043"; solo lo trata como número si, tras quitar ese
+// prefijo, quedan puros dígitos. Sin texto, no restringe.
+function crearFiltroBusqueda(q) {
+  const texto = typeof q === 'string' ? q.trim() : ''
+  if (!texto) return {}
+
+  const condiciones = [{ contactoNombre: { contains: texto, mode: 'insensitive' } }]
+  const soloNumero = texto.replace(/^#?\s*SE-?/i, '').trim()
+  if (/^\d+$/.test(soloNumero)) {
+    condiciones.push({ numero: Number(soloNumero) })
+  }
+  return { OR: condiciones }
+}
+
+// WHERE compartido por listar/contar/contarPorEstado: combina estado, dueño y
+// búsqueda. Cada filtro es opcional; los ausentes no restringen.
+function crearWherePedidos({ estado, clienteId, q } = {}) {
+  return {
+    ...(estado ? { estado } : {}),
+    ...(clienteId ? { clienteId } : {}),
+    ...crearFiltroBusqueda(q),
+  }
+}
+
 /**
  * Aísla Prisma del servicio de pedidos. Se le puede inyectar un cliente de
  * transacción o de prueba, igual que el resto de los repositorios del backend.
@@ -47,13 +73,9 @@ export function crearRepositorioPedidos(cliente = prisma) {
     // Listado para panel y cuenta: además de los conteos, trae la primera imagen
     // vigente de hasta tres productos. Evita una petición por pedido en "Mis
     // pedidos"; si el producto se eliminó, su miniatura simplemente se omite.
-    async listar({ page = 1, limit = 20, estado, clienteId } = {}) {
-      const where = {
-        ...(estado ? { estado } : {}),
-        ...(clienteId ? { clienteId } : {}),
-      }
+    async listar({ page = 1, limit = 20, estado, clienteId, q } = {}) {
       return cliente.pedido.findMany({
-        where,
+        where: crearWherePedidos({ estado, clienteId, q }),
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
@@ -76,13 +98,20 @@ export function crearRepositorioPedidos(cliente = prisma) {
       })
     },
 
-    async contar({ estado, clienteId } = {}) {
-      return cliente.pedido.count({
-        where: {
-          ...(estado ? { estado } : {}),
-          ...(clienteId ? { clienteId } : {}),
-        },
+    async contar({ estado, clienteId, q } = {}) {
+      return cliente.pedido.count({ where: crearWherePedidos({ estado, clienteId, q }) })
+    },
+
+    // Conteo por estado para los chips del panel. Ignora el filtro de estado a
+    // propósito (cada chip muestra cuántos hay en SU estado), pero respeta la
+    // búsqueda vigente. Devuelve un mapa { estado: n } solo con los presentes.
+    async contarPorEstado({ clienteId, q } = {}) {
+      const grupos = await cliente.pedido.groupBy({
+        by: ['estado'],
+        where: crearWherePedidos({ clienteId, q }),
+        _count: true,
       })
+      return Object.fromEntries(grupos.map((grupo) => [grupo.estado, grupo._count]))
     },
 
     // `clienteId` opcional: sin él (panel) busca por id; con él (cuenta) exige

@@ -211,6 +211,8 @@ export default function AdminPedidos() {
   const [pedidos, setPedidos] = useState([]);
   const [meta, setMeta] = useState(null);
   const [estado, setEstado] = useState("");
+  const [busqueda, setBusqueda] = useState("");
+  const [busquedaAplicada, setBusquedaAplicada] = useState("");
   const [seleccionado, setSeleccionado] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
@@ -244,11 +246,28 @@ export default function AdminPedidos() {
     return () => { vigente = false; };
   }, [intentoAcceso]);
 
+  // Debounce: aplica lo escrito 350 ms después de la última tecla, para no
+  // disparar una petición por cada pulsación. El setState va dentro del timer
+  // (asíncrono), no en el cuerpo del efecto.
+  useEffect(() => {
+    if (busqueda === busquedaAplicada) return undefined;
+    const temporizador = setTimeout(() => {
+      setCargando(true);
+      setBusquedaAplicada(busqueda);
+    }, 350);
+    return () => clearTimeout(temporizador);
+  }, [busqueda, busquedaAplicada]);
+
   useEffect(() => {
     if (!usuario) return undefined;
     let vigente = true;
 
-    listarPedidosAdmin({ page: 1, limit: LIMITE, estado: estado || undefined })
+    listarPedidosAdmin({
+      page: 1,
+      limit: LIMITE,
+      estado: estado || undefined,
+      q: busquedaAplicada || undefined,
+    })
       .then((resultado) => {
         if (!vigente) return;
         const data = Array.isArray(resultado.data) ? resultado.data : [];
@@ -271,7 +290,7 @@ export default function AdminPedidos() {
       });
 
     return () => { vigente = false; };
-  }, [usuario, estado, intento]);
+  }, [usuario, estado, busquedaAplicada, intento]);
 
   useEffect(() => {
     if (!usuario || !seleccionado) return undefined;
@@ -336,6 +355,17 @@ export default function AdminPedidos() {
   const errorCambioActual =
     errorCambio && errorCambio.id === seleccionado ? errorCambio.mensaje : null;
 
+  // Conteos por estado para los chips. Vienen del backend (ignoran el filtro de
+  // estado, respetan la búsqueda). "Todos" es la suma; los demás, su estado.
+  const conteos = meta?.conteos ?? null;
+  const totalGeneral = conteos
+    ? Object.values(conteos).reduce((suma, cantidad) => suma + cantidad, 0)
+    : null;
+  const conteoDe = (valor) => {
+    if (!conteos) return null;
+    return valor === "" ? totalGeneral : conteos[valor] ?? 0;
+  };
+
   async function cambiarEstado(nuevoEstado) {
     if (!detalle) return;
     if (
@@ -379,8 +409,8 @@ export default function AdminPedidos() {
               <input
                 type="search"
                 placeholder="Buscar por número o cliente"
-                disabled
-                title="Búsqueda disponible en un próximo checkpoint."
+                value={busqueda}
+                onChange={(evento) => setBusqueda(evento.target.value)}
               />
             </label>
             <button
@@ -397,22 +427,27 @@ export default function AdminPedidos() {
         <div className={styles.cuerpo}>
           <div className={styles.columnaLista}>
             <div className={styles.filtros} aria-label="Filtrar pedidos por estado">
-              {FILTROS.map((filtro) => (
-                <button
-                  key={filtro.valor || "todos"}
-                  className={estado === filtro.valor ? styles.filtroActivo : styles.filtro}
-                  type="button"
-                  aria-pressed={estado === filtro.valor}
-                  onClick={() => {
-                    setCargando(true);
-                    setError(null);
-                    setEstado(filtro.valor);
-                  }}
-                >
-                  {filtro.etiqueta}
-                  {estado === filtro.valor && meta ? ` ${meta.total}` : ""}
-                </button>
-              ))}
+              {FILTROS.map((filtro) => {
+                const cantidad = conteoDe(filtro.valor);
+                return (
+                  <button
+                    key={filtro.valor || "todos"}
+                    className={estado === filtro.valor ? styles.filtroActivo : styles.filtro}
+                    type="button"
+                    aria-pressed={estado === filtro.valor}
+                    onClick={() => {
+                      setCargando(true);
+                      setError(null);
+                      setEstado(filtro.valor);
+                    }}
+                  >
+                    {filtro.etiqueta}
+                    {cantidad !== null && (
+                      <span className={styles.filtroConteo}>{cantidad}</span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
             <div className={styles.lista} aria-label="Lista de pedidos">
@@ -436,7 +471,11 @@ export default function AdminPedidos() {
               ) : pedidos.length === 0 ? (
                 <div className={styles.estadoLista}>
                   <strong>No hay pedidos para mostrar</strong>
-                  <span>Prueba con otro filtro de estado.</span>
+                  <span>
+                    {busquedaAplicada
+                      ? `Sin resultados para «${busquedaAplicada}».`
+                      : "Prueba con otro filtro de estado."}
+                  </span>
                 </div>
               ) : (
                 pedidos.map((pedido) => (

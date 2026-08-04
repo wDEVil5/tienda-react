@@ -36,7 +36,22 @@ test('GET /api/admin/pedidos lista pedidos para el panel', async () => {
 
   assert.equal(response.status, 200)
   assert.equal(response.body.data[0].numero, 1)
-  assert.deepEqual(filtros, { page: 1, limit: 20, estado: undefined })
+  assert.deepEqual(filtros, { page: 1, limit: 20, estado: undefined, q: '' })
+})
+
+test('GET /api/admin/pedidos pasa el término de búsqueda al servicio', async () => {
+  let filtros
+  const app = crearApp({
+    async listarPedidos(recibidos) {
+      filtros = recibidos
+      return { data: [], meta: { page: 1, limit: 20, total: 0, totalPages: 0, conteos: {} } }
+    },
+  })
+
+  const response = await request(app).get('/api/admin/pedidos?q=camila')
+
+  assert.equal(response.status, 200)
+  assert.equal(filtros.q, 'camila')
 })
 
 test('GET /api/admin/pedidos acepta filtro de estado válido', async () => {

@@ -145,9 +145,10 @@ export function obtenerOpcionesProductoAdmin(opciones = {}) {
   });
 }
 
-export function listarPedidosAdmin({ page = 1, limit = 20, estado, ...opciones } = {}) {
+export function listarPedidosAdmin({ page = 1, limit = 20, estado, q, ...opciones } = {}) {
   const parametros = new URLSearchParams({ page: String(page), limit: String(limit) });
   if (estado) parametros.set("estado", estado);
+  if (q) parametros.set("q", q);
   return solicitarAdmin(`/admin/pedidos?${parametros}`, { ...opciones, incluirMeta: true });
 }
 

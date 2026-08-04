@@ -251,15 +251,32 @@ test('listarPedidos entrega resumen paginado con conteos de productos y unidades
       }]
     },
     async contar() { return 1 },
+    async contarPorEstado() { return { ENTREGADO: 1 } },
   })
 
   const resultado = await servicio.listarPedidos({ page: 1, limit: 20 })
 
-  assert.deepEqual(resultado.meta, { page: 1, limit: 20, total: 1, totalPages: 1 })
+  assert.deepEqual(resultado.meta, {
+    page: 1, limit: 20, total: 1, totalPages: 1, conteos: { ENTREGADO: 1 },
+  })
   assert.equal(resultado.data[0].cantidadProductos, 2)
   assert.equal(resultado.data[0].cantidadUnidades, 3)
   assert.equal(resultado.data[0].comuna, 'Providencia')
   assert.deepEqual(resultado.data[0].previsualizaciones, [])
+})
+
+test('listarPedidos pasa la búsqueda al repositorio y expone los conteos por estado', async () => {
+  let filtros
+  const servicio = crearServicioPedidos({
+    async listar(recibidos) { filtros = recibidos; return [] },
+    async contar() { return 0 },
+    async contarPorEstado() { return { PENDIENTE: 2, ENVIADO: 3 } },
+  })
+
+  const resultado = await servicio.listarPedidos({ page: 1, limit: 20, q: 'camila' })
+
+  assert.equal(filtros.q, 'camila')
+  assert.deepEqual(resultado.meta.conteos, { PENDIENTE: 2, ENVIADO: 3 })
 })
 
 test('obtenerDetallePedido arma la ficha con timeline y sin dirección en retiro', async () => {

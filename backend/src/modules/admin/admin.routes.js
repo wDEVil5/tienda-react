@@ -802,6 +802,7 @@ export function crearRouterAdmin({
       const page = leerEnteroPositivo(request.query.page, 1)
       const limit = leerEnteroPositivo(request.query.limit, 20, 100)
       const estado = typeof request.query.estado === 'string' ? request.query.estado : undefined
+      const q = typeof request.query.q === 'string' ? request.query.q : ''
 
       if (
         page === null ||
@@ -817,7 +818,7 @@ export function crearRouterAdmin({
       }
 
       try {
-        return response.json(await servicio.listarPedidos({ page, limit, estado }))
+        return response.json(await servicio.listarPedidos({ page, limit, estado, q }))
       } catch (error) {
         return next(error)
       }

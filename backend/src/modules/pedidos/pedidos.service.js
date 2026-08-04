@@ -256,16 +256,19 @@ export function crearServicioPedidos(
       }
     },
 
-    async listarPedidos({ page = 1, limit = 20, estado } = {}) {
-      const filtros = { page, limit, ...(estado ? { estado } : {}) }
-      const [pedidos, total] = await Promise.all([
+    async listarPedidos({ page = 1, limit = 20, estado, q } = {}) {
+      const filtros = { page, limit, q, ...(estado ? { estado } : {}) }
+      // Los conteos por estado ignoran el filtro de estado (cada chip cuenta lo
+      // suyo) pero respetan la búsqueda, así los números cuadran con la lista.
+      const [pedidos, total, conteos] = await Promise.all([
         repositorio.listar(filtros),
         repositorio.contar(filtros),
+        repositorio.contarPorEstado({ q }),
       ])
 
       return {
         data: pedidos.map(crearResumenPedido),
-        meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        meta: { page, limit, total, totalPages: Math.ceil(total / limit), conteos },
       }
     },
 

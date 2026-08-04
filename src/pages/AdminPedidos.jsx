@@ -4,6 +4,7 @@ import AdminShell from "../components/admin/AdminShell.jsx";
 import {
   ErrorAdminApi,
   listarPedidosAdmin,
+  obtenerPedidoAdmin,
   obtenerSesionAdmin,
 } from "../services/adminApi.js";
 import styles from "./AdminPedidos.module.css";
@@ -11,7 +12,8 @@ import styles from "./AdminPedidos.module.css";
 const LIMITE = 20;
 
 // Los chips y badges usan los estados REALES del backend (no hay "Pagado" como
-// estado: un pago aprobado ya mueve el pedido a PREPARANDO).
+// estado: un pago aprobado ya mueve el pedido a PREPARANDO). "Pagado" se muestra
+// como un indicador aparte, derivado del pago aprobado.
 const FILTROS = [
   { valor: "", etiqueta: "Todos" },
   { valor: "PENDIENTE", etiqueta: "Pendientes" },
@@ -40,6 +42,8 @@ const CLASE_ESTADO = {
   CANCELADO: styles.estadoCancelado,
 };
 
+const PROVEEDOR = { mercadopago: "Mercado Pago", fake: "Pago de prueba" };
+
 const MONEDA_CLP = new Intl.NumberFormat("es-CL", {
   style: "currency",
   currency: "CLP",
@@ -51,9 +55,89 @@ const FECHA = new Intl.DateTimeFormat("es-CL", {
   hour: "2-digit",
   minute: "2-digit",
 });
+const HORA = new Intl.DateTimeFormat("es-CL", { hour: "2-digit", minute: "2-digit" });
 
 function referencia(numero) {
   return `#SE-${numero}`;
+}
+
+function nombreProveedor(proveedor) {
+  return PROVEEDOR[proveedor] ?? proveedor;
+}
+
+function textoEntrega(direccion) {
+  if (!direccion) return "Retiro en tienda";
+  const linea = [direccion.calle, direccion.depto].filter(Boolean).join(", ");
+  return `Despacho: ${linea}${direccion.comuna ? ` · ${direccion.comuna}` : ""}`;
+}
+
+function DetallePedido({ detalle }) {
+  const pagoAprobado = (detalle.pagos ?? []).find((pago) => pago.estado === "APROBADO");
+
+  return (
+    <div className={styles.detalleContenido}>
+      <div className={styles.detalleCabecera}>
+        <span className={styles.numeroDetalle}>{referencia(detalle.numero)}</span>
+        <span className={styles.badges}>
+          {pagoAprobado && <span className={`${styles.badge} ${styles.estadoPagado}`}>Pagado</span>}
+          <span className={`${styles.badge} ${CLASE_ESTADO[detalle.estado] ?? ""}`}>
+            {ETIQUETA_ESTADO[detalle.estado] ?? detalle.estado}
+          </span>
+        </span>
+      </div>
+
+      <p className={styles.detalleCliente}>{detalle.contacto.nombre}</p>
+      <div className={styles.detalleDatos}>
+        {detalle.contacto.telefono && <span>{detalle.contacto.telefono}</span>}
+        <span>{detalle.contacto.email}</span>
+        <span>{textoEntrega(detalle.direccion)}</span>
+        {pagoAprobado && (
+          <span>
+            {nombreProveedor(pagoAprobado.proveedor)} · verificado{" "}
+            {HORA.format(new Date(pagoAprobado.updatedAt))}
+          </span>
+        )}
+      </div>
+
+      <ul className={styles.items}>
+        {detalle.items.map((item, indice) => (
+          <li className={styles.item} key={`${item.sku}-${indice}`}>
+            {item.productoActual?.imagen ? (
+              <img className={styles.itemImagen} src={item.productoActual.imagen} alt="" />
+            ) : (
+              <span className={styles.itemImagenVacia} aria-hidden="true" />
+            )}
+            <span className={styles.itemNombre}>
+              {item.nombre}
+              <small>× {item.cantidad}</small>
+            </span>
+            <span className={styles.itemSubtotal}>{MONEDA_CLP.format(item.subtotal)}</span>
+          </li>
+        ))}
+      </ul>
+
+      <dl className={styles.totales}>
+        <div>
+          <dt>Subtotal</dt>
+          <dd>{MONEDA_CLP.format(detalle.subtotal)}</dd>
+        </div>
+        {detalle.descuento > 0 && (
+          <div>
+            <dt>Descuento</dt>
+            <dd>−{MONEDA_CLP.format(detalle.descuento)}</dd>
+          </div>
+        )}
+        <div>
+          <dt>Envío</dt>
+          <dd>{detalle.costoEnvio > 0 ? MONEDA_CLP.format(detalle.costoEnvio) : "Gratis"}</dd>
+        </div>
+        <div className={styles.totalFinal}>
+          <dt>{pagoAprobado ? "Total pagado" : "Total"}</dt>
+          <dd>{MONEDA_CLP.format(detalle.total)}</dd>
+        </div>
+      </dl>
+    </div>
+  );
 }
 
 export default function AdminPedidos() {
@@ -68,6 +152,10 @@ export default function AdminPedidos() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
   const [intento, setIntento] = useState(0);
+
+  const [detalle, setDetalle] = useState(null);
+  const [errorDetalle, setErrorDetalle] = useState(null);
+  const [intentoDetalle, setIntentoDetalle] = useState(0);
 
   useEffect(() => {
     let vigente = true;
@@ -101,7 +189,6 @@ export default function AdminPedidos() {
         const data = Array.isArray(resultado.data) ? resultado.data : [];
         setPedidos(data);
         setMeta(resultado.meta);
-        // Conserva la selección si sigue en la lista; si no, selecciona el primero.
         setSeleccionado((actual) =>
           actual && data.some((pedido) => pedido.id === actual) ? actual : data[0]?.id ?? null,
         );
@@ -120,6 +207,28 @@ export default function AdminPedidos() {
 
     return () => { vigente = false; };
   }, [usuario, estado, intento]);
+
+  useEffect(() => {
+    if (!usuario || !seleccionado) return undefined;
+    let vigente = true;
+
+    obtenerPedidoAdmin(seleccionado)
+      .then((data) => {
+        if (!vigente) return;
+        setDetalle(data);
+        setErrorDetalle(null);
+      })
+      .catch((errorRespuesta) => {
+        if (!vigente) return;
+        if (errorRespuesta instanceof ErrorAdminApi && errorRespuesta.status === 401) {
+          setUsuario(null);
+          return;
+        }
+        setErrorDetalle({ id: seleccionado, mensaje: errorRespuesta.message });
+      });
+
+    return () => { vigente = false; };
+  }, [usuario, seleccionado, intentoDetalle]);
 
   if (usuario === undefined) {
     return (
@@ -154,7 +263,11 @@ export default function AdminPedidos() {
     return <Navigate to="/admin/productos" replace />;
   }
 
-  const seleccion = pedidos.find((pedido) => pedido.id === seleccionado) ?? null;
+  // Estado del detalle DERIVADO (sin setState en el efecto): "listo" cuando el
+  // detalle cargado corresponde a la selección actual; el error se acota a su id.
+  const detalleListo = detalle && detalle.id === seleccionado;
+  const errorActual =
+    errorDetalle && errorDetalle.id === seleccionado ? errorDetalle.mensaje : null;
 
   return (
     <main className={styles.fondo}>
@@ -258,27 +371,20 @@ export default function AdminPedidos() {
           </div>
 
           <aside className={styles.detalle} aria-label="Detalle del pedido">
-            {seleccion ? (
-              <div className={styles.detalleContenido}>
-                <div className={styles.detalleCabecera}>
-                  <span className={styles.numeroDetalle}>{referencia(seleccion.numero)}</span>
-                  <span className={`${styles.badge} ${CLASE_ESTADO[seleccion.estado] ?? ""}`}>
-                    {ETIQUETA_ESTADO[seleccion.estado] ?? seleccion.estado}
-                  </span>
-                </div>
-                <p className={styles.detalleCliente}>{seleccion.contactoNombre}</p>
-                <p className={styles.detalleMeta}>
-                  {seleccion.cantidadUnidades} {seleccion.cantidadUnidades === 1 ? "unidad" : "unidades"}
-                  {seleccion.comuna ? ` · ${seleccion.comuna}` : " · Retiro en tienda"}
-                </p>
-                <p className={styles.detalleTotal}>{MONEDA_CLP.format(seleccion.total)}</p>
-                <p className={styles.detalleNota}>
-                  El detalle completo (contacto, ítems, pago y cambio de estado) llega en el
-                  próximo checkpoint.
-                </p>
-              </div>
-            ) : (
+            {!seleccionado ? (
               <p className={styles.detalleVacio}>Selecciona un pedido para ver su detalle.</p>
+            ) : errorActual ? (
+              <div className={styles.detalleEstado} role="alert">
+                <strong>No pudimos cargar el detalle</strong>
+                <span>{errorActual}</span>
+                <button type="button" onClick={() => setIntentoDetalle((valor) => valor + 1)}>
+                  Reintentar
+                </button>
+              </div>
+            ) : detalleListo ? (
+              <DetallePedido detalle={detalle} />
+            ) : (
+              <p className={styles.detalleEstado} role="status">Cargando detalle…</p>
             )}
           </aside>
         </div>

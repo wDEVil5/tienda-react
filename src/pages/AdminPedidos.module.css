@@ -282,24 +282,134 @@
   font-size: 22px;
   font-weight: 400;
 }
-.detalleMeta {
-  margin-top: 4px;
+.badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.estadoPagado {
+  background: var(--color-acento-bg);
+  color: var(--color-acento);
+}
+
+.detalleDatos {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 10px;
+  color: var(--color-texto-suave);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.items {
+  margin: 18px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-borde-2);
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.item {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+.itemImagen,
+.itemImagenVacia {
+  width: 40px;
+  height: 40px;
+  border-radius: 9px;
+  object-fit: cover;
+}
+.itemImagen {
+  background: var(--color-crudo);
+}
+.itemImagenVacia {
+  display: block;
+  background: repeating-linear-gradient(135deg, #f0eee8 0 9px, #faf9f5 9px 18px);
+}
+.itemNombre {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  color: var(--color-texto);
+  font-size: 13px;
+}
+.itemNombre small {
+  color: var(--color-texto-tenue);
+  font-size: 11.5px;
+}
+.itemSubtotal {
+  color: var(--color-texto);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.totales {
+  margin: 18px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-borde-2);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.totales > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.totales dt {
   color: var(--color-texto-suave);
   font-size: 12.5px;
 }
-.detalleTotal {
-  margin-top: 16px;
+.totales dd {
+  margin: 0;
+  color: var(--color-texto-2);
+  font-size: 12.5px;
+}
+.totalFinal {
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-borde-2);
+}
+.totalFinal dt {
+  color: var(--color-texto);
+  font-size: 13px;
+  font-weight: 500;
+}
+.totalFinal dd {
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: 20px;
   color: var(--color-texto);
 }
-.detalleNota {
-  margin-top: 16px;
-  padding-top: 14px;
-  border-top: 1px solid var(--color-borde-2);
-  color: var(--color-texto-tenue);
-  font-size: 12px;
-  line-height: 1.5;
+
+.detalleEstado {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 34px 22px;
+  color: var(--color-texto-suave);
+  font-size: 13px;
+}
+.detalleEstado strong {
+  color: var(--color-texto-2);
+  font-weight: 500;
+}
+.detalleEstado button {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--color-borde-3);
+  border-radius: var(--radio-control);
+  background: var(--color-superficie);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
 }
 
 @media (max-width: 900px) {

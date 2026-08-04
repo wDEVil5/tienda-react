@@ -8,16 +8,15 @@ const URL_FAKE_STORE = "https://fakestoreapi.com/products";
 /**
  * Obtiene una página de catálogo sin exponer a la UI cuál es la fuente de datos.
  *
- * En local, VITE_API_URL apunta a la API propia. La demo de GitHub Pages no
- * tiene backend desplegado todavía, por eso conserva Fake Store como respaldo
- * temporal. Cuando la API se publique, este fallback se podrá retirar aquí.
+ * VITE_API_URL apunta a la API propia (local en desarrollo, la desplegada en
+ * producción). Fake Store queda como respaldo automático: si la API no responde
+ * —p. ej. el backend gratis dormido— el catálogo sigue mostrando algo.
  */
 export async function obtenerCatalogo({
   fetchImpl = fetch,
-  // Vite reemplaza estas variables al compilar. Solo usamos la URL local en
-  // desarrollo: el bundle de GitHub Pages debe iniciar directamente con el
-  // respaldo hasta que exista una API pública.
-  apiUrl = import.meta.env.DEV ? import.meta.env.VITE_API_URL : undefined,
+  // Vite reemplaza esta variable al compilar (en producción, con la API
+  // desplegada). Si queda vacía o la API falla, el catálogo cae a Fake Store.
+  apiUrl = import.meta.env.VITE_API_URL,
   orden = "relevancia",
   busqueda = "",
   categoria,
@@ -114,7 +113,7 @@ export async function obtenerCatalogo({
 export async function obtenerProductoDetalle({
   slug,
   fetchImpl = fetch,
-  apiUrl = import.meta.env.DEV ? import.meta.env.VITE_API_URL : undefined,
+  apiUrl = import.meta.env.VITE_API_URL,
 } = {}) {
   if (apiUrl) {
     try {
@@ -163,7 +162,7 @@ export async function obtenerProductoDetalle({
  */
 export async function obtenerCategorias({
   fetchImpl = fetch,
-  apiUrl = import.meta.env.DEV ? import.meta.env.VITE_API_URL : undefined,
+  apiUrl = import.meta.env.VITE_API_URL,
 } = {}) {
   if (!apiUrl) return null;
 

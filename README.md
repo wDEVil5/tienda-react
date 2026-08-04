@@ -136,7 +136,7 @@ direcciones e historial de pedidos) con su propia cookie de sesión.
 ## Calidad
 
 ```bash
-# Frontenddd
+# Frontend
 npm test
 npm run lint
 npm run build

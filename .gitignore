@@ -14,6 +14,7 @@ dist-ssr
 .env
 .env.*
 !.env.example
+!.env.production
 backend/BACKEND.md
 
 # Editor directories and files

@@ -1,9 +1,8 @@
 // Acceso a la API de pedidos. A diferencia del catálogo, cotizar y crear SIEMPRE
 // requieren el backend propio: no hay respaldo Fake Store (no crea pedidos). Sin
-// VITE_API_URL (p. ej. en la demo de GitHub Pages) fallan con un mensaje claro.
+// VITE_API_URL, o si la API no responde, fallan con un mensaje claro.
 
-const apiUrlPorDefecto = () =>
-  import.meta.env.DEV ? import.meta.env.VITE_API_URL : undefined;
+const apiUrlPorDefecto = () => import.meta.env.VITE_API_URL;
 
 export function hayApiPedidos(apiUrl = apiUrlPorDefecto()) {
   return Boolean(apiUrl);

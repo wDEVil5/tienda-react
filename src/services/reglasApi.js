@@ -13,7 +13,7 @@ export const REGLAS_POR_DEFECTO = {
 
 export async function obtenerReglas({
   fetchImpl = fetch,
-  apiUrl = import.meta.env.DEV ? import.meta.env.VITE_API_URL : undefined,
+  apiUrl = import.meta.env.VITE_API_URL,
 } = {}) {
   if (!apiUrl) return REGLAS_POR_DEFECTO;
 

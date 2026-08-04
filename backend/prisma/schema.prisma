@@ -45,6 +45,12 @@ enum EstadoPedido {
   CANCELADO
 }
 
+enum EstadoPago {
+  PENDIENTE
+  APROBADO
+  RECHAZADO
+}
+
 model Usuario {
   id           String     @id @default(uuid()) @db.Uuid
   nombre       String     @db.VarChar(120)
@@ -266,11 +272,36 @@ model Pedido {
 
   items   ItemPedido[]
   eventos EventoPedido[]
+  pagos   Pago[]
 
   @@index([estado])
   @@index([createdAt])
   @@index([clienteId])
   @@map("pedidos")
+}
+
+// Intento de pago de un pedido. 1:N: un pedido puede tener varios (uno rechazado
+// y luego uno aprobado). El webhook del proveedor es la fuente de verdad del
+// estado; `referenciaExterna` es el id del pago/preferencia en el proveedor, por
+// donde la notificación entrante encuentra su fila de forma idempotente.
+model Pago {
+  id                String     @id @default(uuid()) @db.Uuid
+  pedidoId          String     @map("pedido_id") @db.Uuid
+  proveedor         String     @db.VarChar(40)
+  referenciaExterna String?    @unique @map("referencia_externa") @db.VarChar(200)
+  estado            EstadoPago @default(PENDIENTE)
+  // Monto en CLP, entero (como el resto de los montos). Congelado al iniciarse.
+  monto             Int
+  // Carga cruda del proveedor para auditar/depurar sin perder información.
+  datosProveedor    Json?      @map("datos_proveedor")
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime   @updatedAt @map("updated_at")
+
+  pedido Pedido @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+
+  @@index([pedidoId])
+  @@index([estado])
+  @@map("pagos")
 }
 
 // Cada línea guarda el snapshot del producto al comprar. productoId es opcional

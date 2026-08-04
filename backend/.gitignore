@@ -3,3 +3,6 @@ node_modules
 .env
 
 /src/generated/prisma
+
+# Config local de Claude Code (skills, settings.local.json, etc.)
+.claude/

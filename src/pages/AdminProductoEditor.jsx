@@ -10,6 +10,7 @@ import {
   obtenerSesionAdmin,
 } from "../services/adminApi.js";
 import {
+  calcularPrecioPorUnidad,
   crearFormularioProducto,
   normalizarPayloadProductoAdmin,
   PRODUCTO_FORMULARIO_INICIAL,
@@ -54,7 +55,14 @@ export default function AdminProductoEditor() {
   const [guardando, setGuardando] = useState(false);
   const [errores, setErrores] = useState({});
   const [tocados, setTocados] = useState({});
+  const [detallesAbiertos, setDetallesAbiertos] = useState(false);
   const [errorGeneral, setErrorGeneral] = useState(null);
+
+  const precioPorUnidad = calcularPrecioPorUnidad(
+    formulario.precio,
+    formulario.contenidoCantidad,
+    formulario.contenidoUnidad,
+  );
 
   // La sesión se consulta de nuevo al entrar por URL directa; el listado no
   // debe ser un requisito para proteger el editor.
@@ -265,6 +273,78 @@ export default function AdminProductoEditor() {
                 <small>Puede aparecer en espacios editoriales del catálogo.</small>
               </span>
             </label>
+          </section>
+
+          <section className={`${styles.seccion} ${styles.seccionDetalles}`} aria-labelledby="titulo-detalles">
+            <button
+              className={styles.detallesTrigger}
+              type="button"
+              aria-expanded={detallesAbiertos}
+              aria-controls="panel-mas-detalles"
+              onClick={() => setDetallesAbiertos((abierto) => !abierto)}
+            >
+              <span>
+                <span className={styles.eyebrow}>03 · Opcional</span>
+                <strong id="titulo-detalles">Más detalles</strong>
+              </span>
+              <span className={`${styles.chevron} ${detallesAbiertos ? styles.chevronAbierto : ""}`} aria-hidden="true">⌄</span>
+            </button>
+
+            {detallesAbiertos && (
+              <div id="panel-mas-detalles" className={styles.detallesPanel}>
+                <p className={styles.detallesIntro}>
+                  Completa esta información para mejorar la ficha, el despacho y el cálculo por unidad.
+                </p>
+
+                <Campo id="slug" etiqueta="URL / slug" error={tocados.slug && errores.slug} ayuda="Solo minúsculas, números y guiones.">
+                  {(props) => <input {...props} className={styles.input} type="text" value={formulario.slug} onChange={cambiar("slug")} onBlur={() => marcarTocado("slug")} maxLength="180" placeholder="aceite-de-oliva-500" />}
+                </Campo>
+
+                <div className={styles.filaDos}>
+                  <Campo id="codigoBarras" etiqueta="Código de barras" error={tocados.codigoBarras && errores.codigoBarras}>
+                    {(props) => <input {...props} className={styles.input} type="text" value={formulario.codigoBarras} onChange={cambiar("codigoBarras")} onBlur={() => marcarTocado("codigoBarras")} maxLength="50" />}
+                  </Campo>
+                  <Campo id="origen" etiqueta="Origen" error={tocados.origen && errores.origen}>
+                    {(props) => <input {...props} className={styles.input} type="text" value={formulario.origen} onChange={cambiar("origen")} onBlur={() => marcarTocado("origen")} maxLength="120" placeholder="Chile" />}
+                  </Campo>
+                </div>
+
+                <div className={styles.filaTres}>
+                  <Campo id="contenidoCantidad" etiqueta="Contenido" error={tocados.contenidoCantidad && errores.contenidoCantidad}>
+                    {(props) => <input {...props} className={styles.input} type="number" min="0" step="0.001" value={formulario.contenidoCantidad} onChange={cambiar("contenidoCantidad")} onBlur={() => marcarTocado("contenidoCantidad")} />}
+                  </Campo>
+                  <Campo id="contenidoUnidad" etiqueta="Unidad" error={tocados.contenidoUnidad && errores.contenidoUnidad}>
+                    {(props) => (
+                      <select {...props} className={styles.input} value={formulario.contenidoUnidad} onChange={cambiar("contenidoUnidad")} onBlur={() => marcarTocado("contenidoUnidad")}>
+                        <option value="">Selecciona</option>
+                        <option value="g">g</option>
+                        <option value="kg">kg</option>
+                        <option value="ml">ml</option>
+                        <option value="l">l</option>
+                        <option value="un">un</option>
+                      </select>
+                    )}
+                  </Campo>
+                  <div className={styles.precioUnidad} aria-live="polite">
+                    <span>Precio por unidad</span>
+                    <strong>{precioPorUnidad ? `$${precioPorUnidad.monto.toLocaleString("es-CL")} / ${precioPorUnidad.unidad}` : "—"}</strong>
+                  </div>
+                </div>
+
+                <div className={styles.filaDos}>
+                  <Campo id="fechaVencimiento" etiqueta="Vence" error={tocados.fechaVencimiento && errores.fechaVencimiento}>
+                    {(props) => <input {...props} className={styles.input} type="date" value={formulario.fechaVencimiento} onChange={cambiar("fechaVencimiento")} onBlur={() => marcarTocado("fechaVencimiento")} />}
+                  </Campo>
+                  <Campo id="pesoDespachoGramos" etiqueta="Peso de despacho (g)" error={tocados.pesoDespachoGramos && errores.pesoDespachoGramos}>
+                    {(props) => <input {...props} className={styles.input} type="number" min="1" step="1" value={formulario.pesoDespachoGramos} onChange={cambiar("pesoDespachoGramos")} onBlur={() => marcarTocado("pesoDespachoGramos")} />}
+                  </Campo>
+                </div>
+
+                <Campo id="alertaStockBajo" etiqueta="Avisar cuando queden" error={tocados.alertaStockBajo && errores.alertaStockBajo} ayuda="Opcional; se usa para alertas internas de inventario.">
+                  {(props) => <input {...props} className={styles.input} type="number" min="1" step="1" value={formulario.alertaStockBajo} onChange={cambiar("alertaStockBajo")} onBlur={() => marcarTocado("alertaStockBajo")} />}
+                </Campo>
+              </div>
+            )}
           </section>
 
           {errorGeneral && <p className={styles.errorGeneral} role="alert">{errorGeneral}</p>}

@@ -113,6 +113,25 @@ export function validarFormularioProducto(valores, { esNuevo = false } = {}) {
 
 // En creación se omiten opcionales vacíos porque el POST acepta defaults. En
 // edición se envía null para distinguir "limpiar" de "no modificar" (undefined).
+// Usa la misma conversión de unidades que el catálogo público: ml y g se
+// convierten a litros y kilos; una unidad no convertible no muestra estimación.
+export function calcularPrecioPorUnidad(precio, cantidad, unidad) {
+  const monto = Number(precio);
+  const valor = Number(cantidad);
+  const referencia = {
+    ml: { factor: 1000, etiqueta: "L" },
+    l: { factor: 1, etiqueta: "L" },
+    g: { factor: 1000, etiqueta: "kg" },
+    kg: { factor: 1, etiqueta: "kg" },
+  }[unidad?.toLowerCase()];
+
+  if (!Number.isFinite(monto) || !Number.isFinite(valor) || valor <= 0 || !referencia) {
+    return null;
+  }
+
+  return { monto: Math.round((monto * referencia.factor) / valor), unidad: referencia.etiqueta };
+}
+
 export function normalizarPayloadProductoAdmin(valores, { esNuevo = false } = {}) {
   const payload = {
     nombre: String(valores.nombre ?? "").trim(),

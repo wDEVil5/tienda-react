@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  calcularPrecioPorUnidad,
   crearFormularioProducto,
   normalizarPayloadProductoAdmin,
   PRODUCTO_FORMULARIO_INICIAL,
@@ -79,6 +80,14 @@ describe("adminProductoFormulario", () => {
       etiquetaIds: ["tag_1"],
       destacado: true,
     });
+  });
+
+  it("calcula el precio por litro usando la misma regla del catálogo", () => {
+    expect(calcularPrecioPorUnidad("15980", "500", "ml")).toEqual({
+      monto: 31960,
+      unidad: "L",
+    });
+    expect(calcularPrecioPorUnidad("1200", "1", "un")).toBeNull();
   });
 
   it("envía null para limpiar opcionales al editar", () => {

@@ -20,6 +20,20 @@ export function crearRepositorioNewsletter(db = prisma) {
         data: { estado: 'ACTIVO', bajaEn: null, clienteId },
       })
     },
+
+    // Baja por token (enlace "cancelar con un clic" del correo). Si el token no
+    // existe, Prisma lanza P2025 y devolvemos null (la ruta responde 404).
+    async darDeBaja(token) {
+      try {
+        return await db.suscriptor.update({
+          where: { token },
+          data: { estado: 'BAJA', bajaEn: new Date() },
+        })
+      } catch (error) {
+        if (error.code === 'P2025') return null
+        throw error
+      }
+    },
   }
 }
 

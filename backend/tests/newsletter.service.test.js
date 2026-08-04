@@ -2,6 +2,18 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { crearServicioNewsletter, ErrorNewsletter } from '../src/modules/newsletter/newsletter.service.js'
 
+// Notificador falso: registra si se pidió la bienvenida, sin enviar nada.
+function crearNotificadorFalso(overrides = {}) {
+  const llamadas = []
+  return {
+    llamadas,
+    async enviarBienvenida(suscriptor) {
+      llamadas.push(suscriptor)
+    },
+    ...overrides,
+  }
+}
+
 // Repositorio en memoria: por defecto el correo no existe. Cada prueba
 // sobrescribe solo lo que necesita para ejercer una rama concreta.
 function crearRepositorioFalso(overrides = {}) {
@@ -10,85 +22,112 @@ function crearRepositorioFalso(overrides = {}) {
       return null
     },
     async crear(datos) {
-      return { id: 's1', estado: 'ACTIVO', ...datos }
+      return { id: 's1', estado: 'ACTIVO', token: 't1', ...datos }
     },
     async reactivar(id, { clienteId }) {
-      return { id, clienteId, estado: 'ACTIVO', bajaEn: null }
+      return { id, clienteId, email: 'ana@correo.cl', estado: 'ACTIVO', token: 't1', bajaEn: null }
+    },
+    async darDeBaja() {
+      return { id: 's1', email: 'ana@correo.cl', estado: 'BAJA' }
     },
     ...overrides,
   }
 }
 
-test('suscribir crea el suscriptor cuando el correo no existe', async () => {
+function crearServicio(repoOverrides = {}, notificador = crearNotificadorFalso()) {
+  return {
+    servicio: crearServicioNewsletter(crearRepositorioFalso(repoOverrides), { notificador }),
+    notificador,
+  }
+}
+
+test('suscribir crea el suscriptor y envía la bienvenida', async () => {
   let recibido
-  const servicio = crearServicioNewsletter(
-    crearRepositorioFalso({
-      async crear(datos) {
-        recibido = datos
-        return { id: 's1', estado: 'ACTIVO', ...datos }
-      },
-    }),
-  )
+  const { servicio, notificador } = crearServicio({
+    async crear(datos) {
+      recibido = datos
+      return { id: 's1', estado: 'ACTIVO', token: 't1', ...datos }
+    },
+  })
 
   const suscriptor = await servicio.suscribir({ email: 'ana@correo.cl', clienteId: 'c1' })
 
   assert.equal(suscriptor.estado, 'ACTIVO')
   assert.equal(recibido.email, 'ana@correo.cl')
   assert.equal(recibido.clienteId, 'c1')
+  assert.equal(notificador.llamadas.length, 1)
+  assert.equal(notificador.llamadas[0].email, 'ana@correo.cl')
 })
 
-test('suscribir falla con ALREADY_SUBSCRIBED si el correo ya está activo', async () => {
-  let creo = false
-  const servicio = crearServicioNewsletter(
-    crearRepositorioFalso({
-      async buscarPorEmail() {
-        return { id: 's1', estado: 'ACTIVO' }
-      },
-      async crear() {
-        creo = true
-      },
-    }),
-  )
+test('suscribir falla con ALREADY_SUBSCRIBED y NO envía bienvenida si ya está activo', async () => {
+  const { servicio, notificador } = crearServicio({
+    async buscarPorEmail() {
+      return { id: 's1', estado: 'ACTIVO' }
+    },
+  })
 
   await assert.rejects(
     servicio.suscribir({ email: 'ana@correo.cl' }),
     (error) => error instanceof ErrorNewsletter && error.code === 'ALREADY_SUBSCRIBED',
   )
-  assert.equal(creo, false)
+  assert.equal(notificador.llamadas.length, 0)
 })
 
-test('suscribir reactiva un correo que se había dado de baja', async () => {
-  let reactivado
-  const servicio = crearServicioNewsletter(
-    crearRepositorioFalso({
-      async buscarPorEmail() {
-        return { id: 's1', estado: 'BAJA' }
-      },
-      async reactivar(id, datos) {
-        reactivado = { id, ...datos }
-        return { id, estado: 'ACTIVO', bajaEn: null, ...datos }
-      },
-    }),
-  )
+test('suscribir reactiva un correo dado de baja y envía la bienvenida', async () => {
+  const { servicio, notificador } = crearServicio({
+    async buscarPorEmail() {
+      return { id: 's1', estado: 'BAJA' }
+    },
+  })
 
   const suscriptor = await servicio.suscribir({ email: 'ana@correo.cl', clienteId: 'c9' })
 
-  assert.equal(reactivado.id, 's1')
-  assert.equal(reactivado.clienteId, 'c9')
   assert.equal(suscriptor.estado, 'ACTIVO')
+  assert.equal(notificador.llamadas.length, 1)
 })
 
 test('suscribir traduce una carrera (P2002) a ALREADY_SUBSCRIBED', async () => {
-  const servicio = crearServicioNewsletter(
-    crearRepositorioFalso({
-      async crear() {
-        throw Object.assign(new Error('unique'), { code: 'P2002' })
-      },
-    }),
-  )
+  const { servicio } = crearServicio({
+    async crear() {
+      throw Object.assign(new Error('unique'), { code: 'P2002' })
+    },
+  })
 
   await assert.rejects(
     servicio.suscribir({ email: 'ana@correo.cl' }),
     (error) => error instanceof ErrorNewsletter && error.code === 'ALREADY_SUBSCRIBED',
+  )
+})
+
+test('una bienvenida que falla NO rompe la suscripción (fire-and-forget)', async () => {
+  const notificador = crearNotificadorFalso({
+    async enviarBienvenida() {
+      throw new Error('proveedor caído')
+    },
+  })
+  const { servicio } = crearServicio({}, notificador)
+
+  const suscriptor = await servicio.suscribir({ email: 'ana@correo.cl' })
+  assert.equal(suscriptor.estado, 'ACTIVO')
+})
+
+test('darDeBaja marca BAJA cuando el token existe', async () => {
+  const { servicio } = crearServicio()
+
+  const suscriptor = await servicio.darDeBaja({ token: 't1' })
+
+  assert.equal(suscriptor.estado, 'BAJA')
+})
+
+test('darDeBaja falla con SUBSCRIPTION_NOT_FOUND si el token no existe', async () => {
+  const { servicio } = crearServicio({
+    async darDeBaja() {
+      return null
+    },
+  })
+
+  await assert.rejects(
+    servicio.darDeBaja({ token: 'inexistente' }),
+    (error) => error instanceof ErrorNewsletter && error.code === 'SUBSCRIPTION_NOT_FOUND',
   )
 })

@@ -90,3 +90,49 @@ test('POST / responde 409 si el correo ya está suscrito', async () => {
   assert.equal(response.status, 409)
   assert.equal(response.body.error.code, 'ALREADY_SUBSCRIBED')
 })
+
+test('POST /baja da de baja y responde 200', async () => {
+  let recibido
+  const app = crearApp({
+    async darDeBaja(entrada) {
+      recibido = entrada
+      return { email: 'ana@correo.cl', estado: 'BAJA' }
+    },
+  })
+
+  const response = await request(app)
+    .post('/api/newsletter/baja')
+    .send({ token: 'tok-123' })
+
+  assert.equal(response.status, 200)
+  assert.equal(response.body.data.estado, 'BAJA')
+  assert.equal(recibido.token, 'tok-123')
+})
+
+test('POST /baja responde 422 si falta el token', async () => {
+  const app = crearApp({
+    async darDeBaja() {
+      throw new Error('no debería llamarse')
+    },
+  })
+
+  const response = await request(app).post('/api/newsletter/baja').send({})
+
+  assert.equal(response.status, 422)
+  assert.equal(response.body.error.code, 'INVALID_SUBSCRIPTION_DATA')
+})
+
+test('POST /baja responde 404 si el token no existe', async () => {
+  const app = crearApp({
+    async darDeBaja() {
+      throw new ErrorNewsletter('SUBSCRIPTION_NOT_FOUND', 'No encontramos esa suscripción.')
+    },
+  })
+
+  const response = await request(app)
+    .post('/api/newsletter/baja')
+    .send({ token: 'inexistente' })
+
+  assert.equal(response.status, 404)
+  assert.equal(response.body.error.code, 'SUBSCRIPTION_NOT_FOUND')
+})

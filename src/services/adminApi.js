@@ -111,3 +111,10 @@ export function archivarProductoAdmin(id, opciones = {}) {
     method: "DELETE",
   });
 }
+
+export function obtenerOpcionesProductoAdmin(opciones = {}) {
+  return solicitarAdmin("/admin/referencias/producto", {
+    ...opciones,
+    incluirMeta: false,
+  });
+}

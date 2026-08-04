@@ -6,6 +6,7 @@ import {
   ErrorAdminApi,
   iniciarSesionAdmin,
   listarProductosAdmin,
+  obtenerOpcionesProductoAdmin,
   obtenerProductoAdmin,
   obtenerSesionAdmin,
 } from "./adminApi.js";
@@ -134,6 +135,29 @@ describe("adminApi", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(producto),
       },
+    );
+  });
+
+  it("consulta las referencias necesarias para el editor", async () => {
+    const referencias = {
+      categorias: [{ id: "cat_1", nombre: "Despensa" }],
+      marcas: [{ id: "marca_1", nombre: "Acme" }],
+      etiquetas: [{ id: "tag_1", nombre: "Oferta" }],
+    };
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: referencias }),
+    });
+
+    await expect(
+      obtenerOpcionesProductoAdmin({
+        fetchImpl,
+        apiUrl: "http://localhost:3000/api",
+      }),
+    ).resolves.toEqual(referencias);
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "http://localhost:3000/api/admin/referencias/producto",
+      { method: "GET", credentials: "include" },
     );
   });
 

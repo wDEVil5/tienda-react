@@ -1,6 +1,16 @@
 import { repositorioPagos } from './pagos.repository.js'
 import { crearPasarelaFalsa } from './pagos.pasarela.js'
+import { crearPasarelaMercadoPago } from './pagos.pasarela.mercadopago.js'
 import { esTransicionPagoValida } from './pagos.estados.js'
+
+// Selección de pasarela por entorno: si hay access token de Mercado Pago se usa
+// la real; si no, la falsa (dev/tests). Mismo criterio que el transporte de correo.
+function pasarelaPorDefecto() {
+  if (process.env.MP_ACCESS_TOKEN) {
+    return crearPasarelaMercadoPago({ accessToken: process.env.MP_ACCESS_TOKEN })
+  }
+  return crearPasarelaFalsa()
+}
 
 export class ErrorPago extends Error {
   constructor(code, message) {
@@ -13,7 +23,7 @@ export class ErrorPago extends Error {
 // proveedor real se seleccionará por entorno, igual que el transporte de correo.
 export function crearServicioPagos({
   repositorio = repositorioPagos,
-  pasarela = crearPasarelaFalsa(),
+  pasarela = pasarelaPorDefecto(),
 } = {}) {
   return {
     // Inicia el pago de un pedido: crea el registro de pago, pide una preferencia
@@ -58,7 +68,7 @@ export function crearServicioPagos({
     // idempotente en dos niveles: acá (si ya está en el estado entrante, no-op) y
     // en la transacción del repositorio (guarda updateMany where estado=PENDIENTE).
     async procesarNotificacion(payload) {
-      const interpretada = pasarela.interpretarNotificacion(payload)
+      const interpretada = await pasarela.interpretarNotificacion(payload)
       if (!interpretada) {
         return { procesado: false, motivo: 'NOTIFICACION_INVALIDA' }
       }

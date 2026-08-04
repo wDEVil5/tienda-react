@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import {
   actualizarPerfilCuenta,
   cambiarContrasenaCuenta,
+  cerrarTodasLasSesionesCuenta,
   cerrarSesionCuenta,
   iniciarSesionCuenta,
   obtenerCuenta,
@@ -77,6 +78,11 @@ export function CuentaProvider({ children }) {
     await cambiarContrasenaCuenta(datos);
   }, []);
 
+  const cerrarTodasLasSesiones = useCallback(async () => {
+    await cerrarTodasLasSesionesCuenta();
+    setCliente(null);
+  }, []);
+
   return (
     <CuentaContext.Provider
       value={{
@@ -88,6 +94,7 @@ export function CuentaProvider({ children }) {
         cerrarSesion,
         actualizarPerfil,
         cambiarContrasena,
+        cerrarTodasLasSesiones,
         recargarSesion,
       }}
     >

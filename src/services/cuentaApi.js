@@ -98,6 +98,12 @@ export function cambiarContrasenaCuenta(datos, opciones = {}) {
   });
 }
 
+// Invalida todas las sesiones, incluida la actual. La API borra la cookie
+// httpOnly; el contexto limpia además el perfil que queda en memoria.
+export function cerrarTodasLasSesionesCuenta(opciones = {}) {
+  return solicitarCuenta("/cuenta/sesiones", { ...opciones, method: "DELETE" });
+}
+
 // Estas colecciones pertenecen a la sesión actual: el cliente nunca envía su
 // id. La API lo obtiene desde la cookie httpOnly antes de consultar la base.
 export function listarDireccionesCuenta(opciones = {}) {

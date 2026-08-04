@@ -5,6 +5,7 @@ import {
   actualizarDireccionCuenta,
   actualizarPerfilCuenta,
   cambiarContrasenaCuenta,
+  cerrarTodasLasSesionesCuenta,
   eliminarDireccionCuenta,
   iniciarSesionCuenta,
   listarDireccionesCuenta,
@@ -104,6 +105,20 @@ describe("cuentaApi", () => {
         credentials: "include",
         body: JSON.stringify(datos),
       }),
+    );
+  });
+
+  it("cierra todas las sesiones usando únicamente la cookie actual", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({ ok: true, json: async () => null });
+
+    await expect(cerrarTodasLasSesionesCuenta({
+      fetchImpl,
+      apiUrl: "http://localhost:3000/api",
+    })).resolves.toBeNull();
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "http://localhost:3000/api/cuenta/sesiones",
+      expect.objectContaining({ method: "DELETE", credentials: "include" }),
     );
   });
 

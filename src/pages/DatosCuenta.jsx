@@ -17,7 +17,13 @@ const CONTRASENA_INICIAL = {
 // Esta vista solo permite editar los campos respaldados por PATCH /cuenta/perfil.
 // Email y seguridad se mantienen fuera para no mezclar credenciales con perfil.
 function DatosCuenta() {
-  const { cliente, cerrarSesion, actualizarPerfil, cambiarContrasena } = useCuenta();
+  const {
+    cliente,
+    cerrarSesion,
+    actualizarPerfil,
+    cambiarContrasena,
+    cerrarTodasLasSesiones,
+  } = useCuenta();
   const navegar = useNavigate();
   const [perfil, setPerfil] = useState(() => crearPerfilEditable(cliente));
   const [guardando, setGuardando] = useState(false);
@@ -27,6 +33,9 @@ function DatosCuenta() {
   const [contrasenas, setContrasenas] = useState(CONTRASENA_INICIAL);
   const [guardandoContrasena, setGuardandoContrasena] = useState(false);
   const [errorContrasena, setErrorContrasena] = useState("");
+  const [modalSesionesAbierto, setModalSesionesAbierto] = useState(false);
+  const [cerrandoSesiones, setCerrandoSesiones] = useState(false);
+  const [errorSesiones, setErrorSesiones] = useState("");
 
   const tieneCambios =
     perfil.nombre.trim() !== (cliente?.nombre ?? "") ||
@@ -114,6 +123,28 @@ function DatosCuenta() {
       setErrorContrasena(errorSolicitud.message || "No pudimos cambiar tu contraseña.");
     } finally {
       setGuardandoContrasena(false);
+    }
+  };
+
+  const abrirCierreSesiones = () => {
+    setErrorSesiones("");
+    setModalSesionesAbierto(true);
+  };
+
+  const cerrarCierreSesiones = () => {
+    if (!cerrandoSesiones) setModalSesionesAbierto(false);
+  };
+
+  const confirmarCierreSesiones = async () => {
+    setCerrandoSesiones(true);
+    setErrorSesiones("");
+    try {
+      await cerrarTodasLasSesiones();
+      navegar("/login", { replace: true });
+    } catch (errorSolicitud) {
+      setErrorSesiones(errorSolicitud.message || "No pudimos cerrar las sesiones. Inténtalo nuevamente.");
+    } finally {
+      setCerrandoSesiones(false);
     }
   };
 
@@ -221,9 +252,11 @@ function DatosCuenta() {
               <div className={styles.ajuste}>
                 <div>
                   <strong>Sesiones activas</strong>
-                  <p>Podrás cerrar las sesiones abiertas en otros dispositivos.</p>
+                  <p>Cierra el acceso en este y todos los demás dispositivos.</p>
                 </div>
-                <button type="button" disabled>Cerrar sesiones</button>
+                <button type="button" className={styles.accionDestructiva} onClick={abrirCierreSesiones}>
+                  Cerrar sesiones
+                </button>
               </div>
             </div>
           </section>
@@ -284,6 +317,48 @@ function DatosCuenta() {
                 </button>
               </div>
             </form>
+          </section>
+        </div>
+      )}
+
+      {modalSesionesAbierto && (
+        <div
+          className={styles.modalFondo}
+          onMouseDown={(evento) => {
+            if (evento.target === evento.currentTarget) cerrarCierreSesiones();
+          }}
+        >
+          <section
+            className={styles.modalContrasena}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="titulo-cierre-sesiones"
+            onKeyDown={(evento) => {
+              if (evento.key === "Escape") cerrarCierreSesiones();
+            }}
+          >
+            <header className={styles.modalCabecera}>
+              <div>
+                <p className={styles.eyebrow}>Seguridad</p>
+                <h2 id="titulo-cierre-sesiones">Cerrar todas las sesiones</h2>
+              </div>
+              <button type="button" className={styles.cerrarModal} onClick={cerrarCierreSesiones} disabled={cerrandoSesiones} aria-label="Cerrar">
+                <i className="fa-solid fa-xmark" aria-hidden="true" />
+              </button>
+            </header>
+
+            <div className={styles.confirmacionSesiones}>
+              <span className={styles.iconoConfirmacion} aria-hidden="true"><i className="fa-solid fa-shield-halved" /></span>
+              <p>Se cerrará tu sesión en este navegador y en todos los demás dispositivos donde hayas iniciado sesión.</p>
+              <p className={styles.notaConfirmacion}>Para volver a entrar tendrás que usar tu email y contraseña.</p>
+              {errorSesiones && <p className={styles.errorModal} role="alert">{errorSesiones}</p>}
+              <div className={styles.accionesModal}>
+                <button type="button" className={styles.cancelarModal} onClick={cerrarCierreSesiones} disabled={cerrandoSesiones}>Cancelar</button>
+                <button type="button" className={styles.confirmarDestructivo} onClick={confirmarCierreSesiones} disabled={cerrandoSesiones}>
+                  {cerrandoSesiones ? "Cerrando…" : "Cerrar sesiones"}
+                </button>
+              </div>
+            </div>
           </section>
         </div>
       )}

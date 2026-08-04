@@ -279,6 +279,15 @@
 
 .accionSeguridad:hover { background: var(--color-acento-bg) !important; }
 
+.accionDestructiva {
+  border-color: #c2472d !important;
+  color: #ad3b26 !important;
+  cursor: pointer !important;
+  transition: background-color .18s ease, color .18s ease;
+}
+
+.accionDestructiva:hover { background: #f9ebe7 !important; }
+
 .modalFondo {
   position: fixed;
   z-index: 1200;
@@ -347,11 +356,19 @@
 .errorModal { margin: -4px 0 0; color: var(--color-oferta); font-size: 13px; line-height: 1.45; }
 
 .accionesModal { display: flex; justify-content: flex-end; gap: 10px; margin-top: 3px; }
-.cancelarModal, .confirmarContrasena { min-height: 45px; padding: 0 18px; border-radius: var(--radio-control); font: inherit; font-size: 14px; }
+.cancelarModal, .confirmarContrasena, .confirmarDestructivo { min-height: 45px; padding: 0 18px; border-radius: var(--radio-control); font: inherit; font-size: 14px; }
 .cancelarModal { border: 1px solid var(--color-borde-3); background: var(--color-superficie); color: var(--color-texto-2); cursor: pointer; }
 .confirmarContrasena { border: 1px solid var(--color-acento); background: var(--color-acento); color: #fff; cursor: pointer; font-weight: 600; }
 .confirmarContrasena:hover:not(:disabled) { background: #285d40; }
-.cancelarModal:disabled, .confirmarContrasena:disabled { cursor: wait; opacity: .7; }
+.confirmarDestructivo { border: 1px solid #ad3b26; background: #ad3b26; color: #fff; cursor: pointer; font-weight: 600; }
+.confirmarDestructivo:hover:not(:disabled) { background: #91311f; }
+.cancelarModal:disabled, .confirmarContrasena:disabled, .confirmarDestructivo:disabled { cursor: wait; opacity: .7; }
+
+.confirmacionSesiones { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; padding: 28px 30px 30px; }
+.iconoConfirmacion { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; background: #f9ebe7; color: #ad3b26; font-size: 15px; }
+.confirmacionSesiones > p { color: var(--color-texto-2); font-size: 14px; line-height: 1.55; }
+.confirmacionSesiones .notaConfirmacion { color: var(--color-texto-suave); font-size: 13px; }
+.confirmacionSesiones .accionesModal { width: 100%; margin-top: 7px; }
 
 @keyframes aparecerModal { from { opacity: 0; } to { opacity: 1; } }
 @keyframes subirModal { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -383,6 +400,7 @@
   .modalCabecera { padding: 24px 22px 20px; }
   .modalCabecera h2 { font-size: 29px; }
   .formularioContrasena { padding: 22px; }
+  .confirmacionSesiones { padding: 22px; }
   .accionesModal { flex-direction: column-reverse; }
-  .cancelarModal, .confirmarContrasena { width: 100%; }
+  .cancelarModal, .confirmarContrasena, .confirmarDestructivo { width: 100%; }
 }

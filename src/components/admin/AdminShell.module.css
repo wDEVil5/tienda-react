@@ -1,0 +1,94 @@
+.pantalla {
+  width: min(100%, 1180px);
+  min-width: 900px;
+  min-height: 620px;
+  display: flex;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-tarjeta);
+  background: var(--color-fondo);
+  box-shadow: 0 24px 60px rgba(28, 27, 24, 0.1);
+}
+
+.sidebar {
+  width: 186px;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px 14px;
+  background: var(--color-texto);
+}
+
+.marca {
+  padding: 0 12px;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 18px;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+.marca em {
+  color: var(--color-acento-claro);
+  font-style: italic;
+}
+
+.navegacion {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.enlaceActivo,
+.enlacePendiente {
+  width: 100%;
+  min-height: 38px;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+}
+
+.enlaceActivo {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-weight: 500;
+}
+
+.enlacePendiente {
+  color: #a5a29a;
+}
+
+.enlacePendiente:disabled {
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.usuario {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: auto;
+  padding: 0 12px;
+  color: #a5a29a;
+  font-size: 12px;
+}
+
+.usuario span:last-child {
+  color: #7d7a72;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+}
+
+.contenido {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-fondo);
+}

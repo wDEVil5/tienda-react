@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
-import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import { Navigate, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import Home from "./pages/Home.jsx";
 import ProductoDetalle from "./pages/ProductoDetalle.jsx";
 import Checkout from "./pages/Checkout.jsx";
 import CheckoutPago from "./pages/CheckoutPago.jsx";
 import EstadoPago from "./pages/EstadoPago.jsx";
+import AdminProductos from "./pages/AdminProductos.jsx";
 import { Login, Registro } from "./pages/Acceso.jsx";
 import MiCuenta from "./pages/MiCuenta.jsx";
 import MisPedidos from "./pages/MisPedidos.jsx";
@@ -23,6 +24,7 @@ const PRODUCTOS_POR_PAGINA = 10;
 function App() {
   const ubicacion = useLocation();
   const navegar = useNavigate();
+  const esAdmin = ubicacion.pathname.startsWith("/admin");
   const [busqueda, setBusqueda] = useState("");
   // Header y catálogo comparten estos filtros: una sugerencia puede cambiar la
   // categoría y el catálogo la refleja sin depender de un backend todavía.
@@ -55,16 +57,18 @@ function App() {
   }, [busqueda]);
 
   useEffect(() => {
+    if (esAdmin) return;
+
     obtenerCategorias().then((categorias) => {
       if (categorias) setCategoriasDisponibles(categorias);
     });
-  }, []);
+  }, [esAdmin]);
 
   useEffect(() => {
     // Sin API propia no hay sección editorial: no consultamos ni tocamos el
     // estado aquí. La versión mostrada se deriva en render (ver más abajo), así
     // el effect solo asigna estado en el camino asíncrono del .then().
-    if (fuenteCatalogo !== "api") return undefined;
+    if (esAdmin || fuenteCatalogo !== "api") return undefined;
 
     let vigente = true;
 
@@ -82,7 +86,7 @@ function App() {
     return () => {
       vigente = false;
     };
-  }, [fuenteCatalogo]);
+  }, [esAdmin, fuenteCatalogo]);
 
   // La interfaz muestra el nombre, pero la API filtra con el slug estable. No
   // derivamos el slug desde el texto: lo conservamos en el contrato de datos.
@@ -154,10 +158,10 @@ function App() {
   useEffect(() => {
     // Si el usuario aún está escribiendo, esperamos al término diferido. Así
     // no combinamos una categoría nueva con la búsqueda anterior por 250 ms.
-    if (busqueda !== busquedaParaApi) return;
+    if (esAdmin || busqueda !== busquedaParaApi) return;
 
     cargarProductos();
-  }, [busqueda, busquedaParaApi, cargarProductos]);
+  }, [esAdmin, busqueda, busquedaParaApi, cargarProductos]);
 
   // React Router actualiza la URL, pero no desplaza automáticamente al hash.
   // Tras llegar a la sección limpiamos el hash: al recargar, la tienda vuelve
@@ -216,6 +220,17 @@ function App() {
   const esAcceso = ["/login", "/registro"].includes(ubicacion.pathname);
   const esMiCuenta = ubicacion.pathname.startsWith("/mi-cuenta");
   const esPantallaPrivada = esAcceso || esMiCuenta || esEstadoPago;
+
+  // El panel tiene su propia sesión y shell. Se resuelve antes que la carga de
+  // la tienda pública para no depender del catálogo ni montar carrito/footer.
+  if (esAdmin) {
+    return (
+      <Routes>
+        <Route path="/admin/productos" element={<AdminProductos />} />
+        <Route path="/admin/*" element={<Navigate to="/admin/productos" replace />} />
+      </Routes>
+    );
+  }
 
   //early return
   if (cargando) {

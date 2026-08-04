@@ -8,15 +8,25 @@ const crearPerfilEditable = (cliente) => ({
   telefono: cliente?.telefono ?? "",
 });
 
+const CONTRASENA_INICIAL = {
+  contrasenaActual: "",
+  contrasenaNueva: "",
+  confirmacion: "",
+};
+
 // Esta vista solo permite editar los campos respaldados por PATCH /cuenta/perfil.
 // Email y seguridad se mantienen fuera para no mezclar credenciales con perfil.
 function DatosCuenta() {
-  const { cliente, cerrarSesion, actualizarPerfil } = useCuenta();
+  const { cliente, cerrarSesion, actualizarPerfil, cambiarContrasena } = useCuenta();
   const navegar = useNavigate();
   const [perfil, setPerfil] = useState(() => crearPerfilEditable(cliente));
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
+  const [modalContrasenaAbierto, setModalContrasenaAbierto] = useState(false);
+  const [contrasenas, setContrasenas] = useState(CONTRASENA_INICIAL);
+  const [guardandoContrasena, setGuardandoContrasena] = useState(false);
+  const [errorContrasena, setErrorContrasena] = useState("");
 
   const tieneCambios =
     perfil.nombre.trim() !== (cliente?.nombre ?? "") ||
@@ -58,6 +68,52 @@ function DatosCuenta() {
       setError(errorSolicitud.message || "No pudimos guardar tus datos.");
     } finally {
       setGuardando(false);
+    }
+  };
+
+  const abrirCambioContrasena = () => {
+    setContrasenas(CONTRASENA_INICIAL);
+    setErrorContrasena("");
+    setModalContrasenaAbierto(true);
+  };
+
+  const cerrarCambioContrasena = () => {
+    if (!guardandoContrasena) setModalContrasenaAbierto(false);
+  };
+
+  const cambiarCampoContrasena = (evento) => {
+    const { name, value } = evento.target;
+    setContrasenas((actual) => ({ ...actual, [name]: value }));
+    setErrorContrasena("");
+  };
+
+  const guardarContrasena = async (evento) => {
+    evento.preventDefault();
+    const { contrasenaActual, contrasenaNueva, confirmacion } = contrasenas;
+
+    if (contrasenaNueva.length < 12) {
+      setErrorContrasena("La nueva contraseña debe tener al menos 12 caracteres.");
+      return;
+    }
+    if (contrasenaNueva === contrasenaActual) {
+      setErrorContrasena("La nueva contraseña debe ser distinta de la actual.");
+      return;
+    }
+    if (contrasenaNueva !== confirmacion) {
+      setErrorContrasena("Las contraseñas nuevas no coinciden.");
+      return;
+    }
+
+    setGuardandoContrasena(true);
+    setErrorContrasena("");
+    try {
+      await cambiarContrasena({ contrasenaActual, contrasenaNueva });
+      setModalContrasenaAbierto(false);
+      setMensaje("Contraseña actualizada. Cerramos las sesiones de otros dispositivos.");
+    } catch (errorSolicitud) {
+      setErrorContrasena(errorSolicitud.message || "No pudimos cambiar tu contraseña.");
+    } finally {
+      setGuardandoContrasena(false);
     }
   };
 
@@ -158,7 +214,9 @@ function DatosCuenta() {
                   <strong>Contraseña</strong>
                   <p>Nunca mostramos tu contraseña actual.</p>
                 </div>
-                <button type="button" disabled>Cambiar contraseña</button>
+                <button type="button" className={styles.accionSeguridad} onClick={abrirCambioContrasena}>
+                  Cambiar contraseña
+                </button>
               </div>
               <div className={styles.ajuste}>
                 <div>
@@ -171,6 +229,64 @@ function DatosCuenta() {
           </section>
         </main>
       </div>
+
+      {modalContrasenaAbierto && (
+        <div
+          className={styles.modalFondo}
+          onMouseDown={(evento) => {
+            if (evento.target === evento.currentTarget) cerrarCambioContrasena();
+          }}
+        >
+          <section
+            className={styles.modalContrasena}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="titulo-cambio-contrasena"
+            onKeyDown={(evento) => {
+              if (evento.key === "Escape") cerrarCambioContrasena();
+            }}
+          >
+            <header className={styles.modalCabecera}>
+              <div>
+                <p className={styles.eyebrow}>Seguridad</p>
+                <h2 id="titulo-cambio-contrasena">Cambiar contraseña</h2>
+              </div>
+              <button type="button" className={styles.cerrarModal} onClick={cerrarCambioContrasena} disabled={guardandoContrasena} aria-label="Cerrar">
+                <i className="fa-solid fa-xmark" aria-hidden="true" />
+              </button>
+            </header>
+
+            <form className={styles.formularioContrasena} onSubmit={guardarContrasena} noValidate>
+              <p className={styles.introduccionModal}>Usa una contraseña nueva de al menos 12 caracteres. Tu sesión actual seguirá abierta.</p>
+              <label className={styles.campoContrasena} htmlFor="contrasena-actual">
+                Contraseña actual
+                <input id="contrasena-actual" name="contrasenaActual" type="password" autoComplete="current-password" value={contrasenas.contrasenaActual} onChange={cambiarCampoContrasena} autoFocus required />
+              </label>
+              <label className={styles.campoContrasena} htmlFor="contrasena-nueva">
+                Nueva contraseña
+                <input id="contrasena-nueva" name="contrasenaNueva" type="password" autoComplete="new-password" value={contrasenas.contrasenaNueva} onChange={cambiarCampoContrasena} required />
+              </label>
+              <label className={styles.campoContrasena} htmlFor="confirmacion-contrasena">
+                Repite la nueva contraseña
+                <input id="confirmacion-contrasena" name="confirmacion" type="password" autoComplete="new-password" value={contrasenas.confirmacion} onChange={cambiarCampoContrasena} required />
+              </label>
+
+              <div className={styles.avisoSesiones}>
+                <i className="fa-solid fa-shield-halved" aria-hidden="true" />
+                <p>Al confirmar, cerraremos las sesiones activas en otros dispositivos.</p>
+              </div>
+              {errorContrasena && <p className={styles.errorModal} role="alert">{errorContrasena}</p>}
+
+              <div className={styles.accionesModal}>
+                <button type="button" className={styles.cancelarModal} onClick={cerrarCambioContrasena} disabled={guardandoContrasena}>Cancelar</button>
+                <button type="submit" className={styles.confirmarContrasena} disabled={guardandoContrasena}>
+                  {guardandoContrasena ? "Actualizando…" : "Actualizar contraseña"}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
     </section>
   );
 }

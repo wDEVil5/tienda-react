@@ -270,6 +270,92 @@
 .ajuste p { margin-top: 5px; color: var(--color-texto-suave); font-size: 13px; line-height: 1.45; }
 .ajuste button { flex: 0 0 auto; min-width: 160px; background: var(--color-superficie); }
 
+.accionSeguridad {
+  border-color: var(--color-acento) !important;
+  color: var(--color-acento) !important;
+  cursor: pointer !important;
+  transition: background-color .18s ease, color .18s ease;
+}
+
+.accionSeguridad:hover { background: var(--color-acento-bg) !important; }
+
+.modalFondo {
+  position: fixed;
+  z-index: 1200;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(28, 27, 24, .42);
+  animation: aparecerModal .18s ease;
+}
+
+.modalContrasena {
+  width: min(100%, 520px);
+  border: 1px solid var(--color-borde);
+  border-radius: 18px;
+  background: var(--color-fondo);
+  box-shadow: 0 22px 54px rgba(28, 27, 24, .24);
+  animation: subirModal .2s ease;
+}
+
+.modalCabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 28px 30px 24px;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.modalCabecera h2 {
+  margin-top: 9px;
+  color: var(--color-texto);
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 400;
+  letter-spacing: -.02em;
+  line-height: 1;
+}
+
+.cerrarModal {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-crudo);
+  color: var(--color-texto);
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.cerrarModal:hover:not(:disabled) { background: var(--color-borde-3); }
+.cerrarModal:disabled { cursor: wait; opacity: .7; }
+
+.formularioContrasena { display: flex; flex-direction: column; gap: 17px; padding: 26px 30px 30px; }
+.introduccionModal { color: var(--color-texto-suave); font-size: 13.5px; line-height: 1.5; }
+.campoContrasena { display: flex; flex-direction: column; gap: 7px; color: var(--color-texto-2); font-size: 13px; }
+.campoContrasena input { min-height: 48px; padding: 11px 13px; border: 1px solid var(--color-borde); border-radius: var(--radio-campo); background: var(--color-superficie); color: var(--color-texto); font: inherit; font-size: 15px; }
+.campoContrasena input:focus { outline: none; border-color: var(--color-acento); box-shadow: 0 0 0 3px var(--color-acento-bg); }
+
+.avisoSesiones { display: flex; align-items: flex-start; gap: 11px; padding: 14px 15px; border-radius: var(--radio-caja); background: var(--color-crudo); color: var(--color-texto-suave); }
+.avisoSesiones i { margin-top: 2px; color: var(--color-acento); font-size: 13px; }
+.avisoSesiones p { font-size: 12.5px; line-height: 1.45; }
+.errorModal { margin: -4px 0 0; color: var(--color-oferta); font-size: 13px; line-height: 1.45; }
+
+.accionesModal { display: flex; justify-content: flex-end; gap: 10px; margin-top: 3px; }
+.cancelarModal, .confirmarContrasena { min-height: 45px; padding: 0 18px; border-radius: var(--radio-control); font: inherit; font-size: 14px; }
+.cancelarModal { border: 1px solid var(--color-borde-3); background: var(--color-superficie); color: var(--color-texto-2); cursor: pointer; }
+.confirmarContrasena { border: 1px solid var(--color-acento); background: var(--color-acento); color: #fff; cursor: pointer; font-weight: 600; }
+.confirmarContrasena:hover:not(:disabled) { background: #285d40; }
+.cancelarModal:disabled, .confirmarContrasena:disabled { cursor: wait; opacity: .7; }
+
+@keyframes aparecerModal { from { opacity: 0; } to { opacity: 1; } }
+@keyframes subirModal { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
 @media (max-width: 900px) {
   .cabecera { padding: 0 26px; }
   .cuerpo { grid-template-columns: 190px minmax(0, 1fr); }
@@ -293,4 +379,10 @@
   .campo:first-child, .aviso, .error, .exito, .acciones { grid-column: auto; }
   .acciones { align-items: stretch; flex-direction: column-reverse; }
   .acciones button, .ajuste button { width: 100%; }
+  .modalFondo { padding: 16px; }
+  .modalCabecera { padding: 24px 22px 20px; }
+  .modalCabecera h2 { font-size: 29px; }
+  .formularioContrasena { padding: 22px; }
+  .accionesModal { flex-direction: column-reverse; }
+  .cancelarModal, .confirmarContrasena { width: 100%; }
 }

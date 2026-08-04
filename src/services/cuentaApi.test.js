@@ -4,6 +4,7 @@ import {
   crearDireccionCuenta,
   actualizarDireccionCuenta,
   actualizarPerfilCuenta,
+  cambiarContrasenaCuenta,
   eliminarDireccionCuenta,
   iniciarSesionCuenta,
   listarDireccionesCuenta,
@@ -83,6 +84,25 @@ describe("cuentaApi", () => {
         method: "PATCH",
         credentials: "include",
         body: JSON.stringify({ nombre: "Wilnes A.", telefono: "+56 9 1234 5678" }),
+      }),
+    );
+  });
+
+  it("cambia la contraseña con la sesión actual", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({ ok: true, json: async () => null });
+    const datos = { contrasenaActual: "Cliente2026!", contrasenaNueva: "Nueva clave segura 2026" };
+
+    await expect(cambiarContrasenaCuenta(datos, {
+      fetchImpl,
+      apiUrl: "http://localhost:3000/api",
+    })).resolves.toBeNull();
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "http://localhost:3000/api/cuenta/contrasena",
+      expect.objectContaining({
+        method: "PATCH",
+        credentials: "include",
+        body: JSON.stringify(datos),
       }),
     );
   });

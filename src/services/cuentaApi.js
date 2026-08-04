@@ -90,6 +90,14 @@ export function actualizarPerfilCuenta(datos, opciones = {}) {
   });
 }
 
+export function cambiarContrasenaCuenta(datos, opciones = {}) {
+  return solicitarCuenta("/cuenta/contrasena", {
+    ...opciones,
+    method: "PATCH",
+    cuerpo: datos,
+  });
+}
+
 // Estas colecciones pertenecen a la sesión actual: el cliente nunca envía su
 // id. La API lo obtiene desde la cookie httpOnly antes de consultar la base.
 export function listarDireccionesCuenta(opciones = {}) {

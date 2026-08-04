@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import {
   actualizarPerfilCuenta,
+  cambiarContrasenaCuenta,
   cerrarSesionCuenta,
   iniciarSesionCuenta,
   obtenerCuenta,
@@ -72,6 +73,10 @@ export function CuentaProvider({ children }) {
     return resultado.cliente;
   }, []);
 
+  const cambiarContrasena = useCallback(async (datos) => {
+    await cambiarContrasenaCuenta(datos);
+  }, []);
+
   return (
     <CuentaContext.Provider
       value={{
@@ -82,6 +87,7 @@ export function CuentaProvider({ children }) {
         registrar,
         cerrarSesion,
         actualizarPerfil,
+        cambiarContrasena,
         recargarSesion,
       }}
     >

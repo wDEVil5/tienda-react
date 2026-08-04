@@ -97,3 +97,94 @@ test('iniciarPago falla con ORDER_ALREADY_PAID si ya hay un pago aprobado', asyn
     (error) => error instanceof ErrorPago && error.code === 'ORDER_ALREADY_PAID',
   )
 })
+
+// --- Webhook: procesarNotificacion ---
+
+function crearPasarelaWebhook(interpretacion) {
+  return {
+    proveedor: 'fake',
+    async crearPreferencia() { return {} },
+    interpretarNotificacion() { return interpretacion },
+  }
+}
+
+test('procesarNotificacion aprobada llama a aprobarPagoTransaccional', async () => {
+  let aprobadoId
+  const servicio = crearServicioPagos({
+    repositorio: {
+      async buscarPorReferencia() { return { id: 'pago1', estado: 'PENDIENTE' } },
+      async aprobarPagoTransaccional(id) { aprobadoId = id; return { aplicado: true, consumido: true } },
+    },
+    pasarela: crearPasarelaWebhook({ referenciaExterna: 'ref1', estado: 'APROBADO' }),
+  })
+
+  const r = await servicio.procesarNotificacion({})
+
+  assert.equal(aprobadoId, 'pago1')
+  assert.deepEqual(r, { procesado: true, estado: 'APROBADO', aplicado: true, consumido: true })
+})
+
+test('procesarNotificacion es idempotente si el pago ya está en el estado entrante', async () => {
+  let aprobLlamado = false
+  const servicio = crearServicioPagos({
+    repositorio: {
+      async buscarPorReferencia() { return { id: 'pago1', estado: 'APROBADO' } },
+      async aprobarPagoTransaccional() { aprobLlamado = true },
+    },
+    pasarela: crearPasarelaWebhook({ referenciaExterna: 'ref1', estado: 'APROBADO' }),
+  })
+
+  const r = await servicio.procesarNotificacion({})
+
+  assert.deepEqual(r, { procesado: true, idempotente: true })
+  assert.equal(aprobLlamado, false)
+})
+
+test('procesarNotificacion rechazada llama a rechazarPagoTransaccional', async () => {
+  let rechId
+  const servicio = crearServicioPagos({
+    repositorio: {
+      async buscarPorReferencia() { return { id: 'pago1', estado: 'PENDIENTE' } },
+      async rechazarPagoTransaccional(id) { rechId = id; return { aplicado: true } },
+    },
+    pasarela: crearPasarelaWebhook({ referenciaExterna: 'ref1', estado: 'RECHAZADO' }),
+  })
+
+  const r = await servicio.procesarNotificacion({})
+
+  assert.equal(rechId, 'pago1')
+  assert.deepEqual(r, { procesado: true, estado: 'RECHAZADO', aplicado: true })
+})
+
+test('procesarNotificacion ignora una notificación ilegible', async () => {
+  const servicio = crearServicioPagos({
+    repositorio: {},
+    pasarela: crearPasarelaWebhook(null),
+  })
+
+  const r = await servicio.procesarNotificacion({})
+
+  assert.deepEqual(r, { procesado: false, motivo: 'NOTIFICACION_INVALIDA' })
+})
+
+test('procesarNotificacion ignora si no encuentra el pago', async () => {
+  const servicio = crearServicioPagos({
+    repositorio: { async buscarPorReferencia() { return null } },
+    pasarela: crearPasarelaWebhook({ referenciaExterna: 'x', estado: 'APROBADO' }),
+  })
+
+  const r = await servicio.procesarNotificacion({})
+
+  assert.deepEqual(r, { procesado: false, motivo: 'PAGO_NO_ENCONTRADO' })
+})
+
+test('procesarNotificacion rechaza una transición inválida (pago ya terminal)', async () => {
+  const servicio = crearServicioPagos({
+    repositorio: { async buscarPorReferencia() { return { id: 'pago1', estado: 'RECHAZADO' } } },
+    pasarela: crearPasarelaWebhook({ referenciaExterna: 'x', estado: 'APROBADO' }),
+  })
+
+  const r = await servicio.procesarNotificacion({})
+
+  assert.deepEqual(r, { procesado: false, motivo: 'TRANSICION_INVALIDA' })
+})

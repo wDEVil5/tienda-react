@@ -81,3 +81,21 @@ test('POST / responde 409 si el pedido ya fue pagado', async () => {
   assert.equal(response.status, 409)
   assert.equal(response.body.error.code, 'ORDER_ALREADY_PAID')
 })
+
+test('POST /webhook siempre responde 200 y pasa el cuerpo al servicio', async () => {
+  let recibido
+  const app = crearApp({
+    async procesarNotificacion(payload) {
+      recibido = payload
+      return { procesado: true, estado: 'APROBADO', aplicado: true }
+    },
+  })
+
+  const response = await request(app)
+    .post('/api/pagos/webhook')
+    .send({ referenciaExterna: 'r1', estado: 'APROBADO' })
+
+  assert.equal(response.status, 200)
+  assert.equal(response.body.ok, true)
+  assert.deepEqual(recibido, { referenciaExterna: 'r1', estado: 'APROBADO' })
+})

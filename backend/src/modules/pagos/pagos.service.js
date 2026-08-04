@@ -1,5 +1,6 @@
 import { repositorioPagos } from './pagos.repository.js'
 import { crearPasarelaFalsa } from './pagos.pasarela.js'
+import { esTransicionPagoValida } from './pagos.estados.js'
 
 export class ErrorPago extends Error {
   constructor(code, message) {
@@ -51,9 +52,43 @@ export function crearServicioPagos({
 
       return { pagoId: pago.id, referenciaExterna, urlPago }
     },
+
+    // Procesa una notificación del proveedor (webhook). Es la ÚNICA vía por la
+    // que un pago cambia de estado: el redirect del navegador no cuenta. Es
+    // idempotente en dos niveles: acá (si ya está en el estado entrante, no-op) y
+    // en la transacción del repositorio (guarda updateMany where estado=PENDIENTE).
+    async procesarNotificacion(payload) {
+      const interpretada = pasarela.interpretarNotificacion(payload)
+      if (!interpretada) {
+        return { procesado: false, motivo: 'NOTIFICACION_INVALIDA' }
+      }
+
+      const pago = await repositorio.buscarPorReferencia(interpretada.referenciaExterna)
+      if (!pago) {
+        return { procesado: false, motivo: 'PAGO_NO_ENCONTRADO' }
+      }
+
+      // Ya está en el estado entrante: la misma notificación llegó de nuevo.
+      if (pago.estado === interpretada.estado) {
+        return { procesado: true, idempotente: true }
+      }
+      // Solo transiciones legales desde PENDIENTE (aprobar o rechazar).
+      if (!esTransicionPagoValida(pago.estado, interpretada.estado)) {
+        return { procesado: false, motivo: 'TRANSICION_INVALIDA' }
+      }
+
+      if (interpretada.estado === 'APROBADO') {
+        const resultado = await repositorio.aprobarPagoTransaccional(pago.id)
+        return { procesado: true, estado: 'APROBADO', ...resultado }
+      }
+
+      const resultado = await repositorio.rechazarPagoTransaccional(pago.id)
+      return { procesado: true, estado: 'RECHAZADO', ...resultado }
+    },
   }
 }
 
 const servicioPagos = crearServicioPagos()
 
 export const iniciarPago = (pedidoId) => servicioPagos.iniciarPago(pedidoId)
+export const procesarNotificacion = (payload) => servicioPagos.procesarNotificacion(payload)

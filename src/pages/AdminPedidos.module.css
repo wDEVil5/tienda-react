@@ -447,7 +447,8 @@
   margin-top: 10px;
 }
 .botonAvance,
-.botonCancelar {
+.botonCancelar,
+.botonImprimir {
   min-height: 40px;
   padding: 0 16px;
   border-radius: var(--radio-control);
@@ -477,6 +478,23 @@
   cursor: wait;
   opacity: 0.6;
 }
+
+/* Acciones secundarias del detalle (handoff §7: "Imprimir / Cancelar"). Siempre
+   se puede imprimir; Cancelar solo aparece si el estado lo permite. */
+.accionesSecundarias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.botonImprimir {
+  border: 1px solid var(--color-borde-3);
+  background: var(--color-superficie);
+  color: var(--color-texto-2);
+}
+.botonImprimir:hover {
+  border-color: var(--color-texto-tenue);
+}
 .notaCorreo {
   margin-top: 10px;
   color: var(--color-texto-tenue);
@@ -486,13 +504,6 @@
   margin-top: 10px;
   color: var(--color-oferta);
   font-size: 12px;
-}
-.sinAcciones {
-  margin-top: 18px;
-  padding-top: 16px;
-  border-top: 1px solid var(--color-borde-2);
-  color: var(--color-texto-tenue);
-  font-size: 12.5px;
 }
 
 @media (max-width: 900px) {

@@ -125,3 +125,76 @@ body {
     --tam-precio-drawer-total: 23px;
   }
 }
+
+/* Impresión de un pedido (comanda). La hoja se monta oculta en el <body> (vía
+   portal) y solo se hace visible al imprimir: ocultamos toda la app con
+   visibility (para no romper el layout) y mostramos únicamente la hoja. Los
+   colores van fijos porque el papel siempre es blanco, sin importar el tema. */
+.hoja-impresion {
+  display: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .hoja-impresion,
+  .hoja-impresion * {
+    visibility: visible;
+  }
+  .hoja-impresion {
+    display: block;
+    position: absolute;
+    inset: 0;
+    padding: 24px 28px;
+    color: #111;
+    font-family: system-ui, sans-serif;
+    font-size: 12px;
+  }
+  .hoja-impresion h1 {
+    margin: 0 0 2px;
+    font-size: 17px;
+    font-weight: 700;
+  }
+  .hoja-impresion .hoja-sub {
+    margin: 0 0 16px;
+    color: #555;
+  }
+  .hoja-impresion .hoja-datos {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 4px 12px;
+    margin: 0 0 16px;
+  }
+  .hoja-impresion .hoja-datos dt {
+    color: #555;
+  }
+  .hoja-impresion .hoja-datos dd {
+    margin: 0;
+  }
+  .hoja-impresion .hoja-items {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .hoja-impresion .hoja-items th,
+  .hoja-impresion .hoja-items td {
+    padding: 6px 0;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+  }
+  .hoja-impresion .hoja-items th:last-child,
+  .hoja-impresion .hoja-items td:last-child,
+  .hoja-impresion .hoja-items th:nth-child(2),
+  .hoja-impresion .hoja-items td:nth-child(2) {
+    text-align: right;
+  }
+  .hoja-impresion .hoja-total {
+    margin-top: 14px;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: right;
+  }
+  @page {
+    margin: 1.4cm;
+  }
+}

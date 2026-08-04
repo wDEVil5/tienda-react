@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Navigate } from "react-router-dom";
 import AdminShell from "../components/admin/AdminShell.jsx";
 import {
@@ -77,6 +78,13 @@ const FECHA = new Intl.DateTimeFormat("es-CL", {
   minute: "2-digit",
 });
 const HORA = new Intl.DateTimeFormat("es-CL", { hour: "2-digit", minute: "2-digit" });
+const FECHA_LARGA = new Intl.DateTimeFormat("es-CL", {
+  day: "2-digit",
+  month: "long",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
 
 function referencia(numero) {
   return `#SE-${numero}`;
@@ -92,7 +100,7 @@ function textoEntrega(direccion) {
   return `Despacho: ${linea}${direccion.comuna ? ` · ${direccion.comuna}` : ""}`;
 }
 
-function DetallePedido({ detalle, onCambiarEstado, cambiando, errorCambio }) {
+function DetallePedido({ detalle, onCambiarEstado, onImprimir, cambiando, errorCambio }) {
   const pagoAprobado = (detalle.pagos ?? []).find((pago) => pago.estado === "APROBADO");
   const transiciones = TRANSICIONES[detalle.modalidad]?.[detalle.estado] ?? [];
   const avances = transiciones.filter((estadoDestino) => estadoDestino !== "CANCELADO");
@@ -162,11 +170,7 @@ function DetallePedido({ detalle, onCambiarEstado, cambiando, errorCambio }) {
       </dl>
 
       <div className={styles.cambiarEstado}>
-        {avances.length === 0 && !puedeCancelar ? (
-          <p className={styles.sinAcciones}>
-            Pedido {ETIQUETA_ESTADO[detalle.estado]?.toLowerCase()} · sin acciones disponibles.
-          </p>
-        ) : (
+        {avances.length > 0 && (
           <>
             <p className={styles.accionesTitulo}>Cambiar estado</p>
             <div className={styles.accionesBotones}>
@@ -181,24 +185,72 @@ function DetallePedido({ detalle, onCambiarEstado, cambiando, errorCambio }) {
                   {ETIQUETA_ESTADO[estadoDestino]}
                 </button>
               ))}
-              {puedeCancelar && (
-                <button
-                  className={styles.botonCancelar}
-                  type="button"
-                  disabled={cambiando}
-                  onClick={() => onCambiarEstado("CANCELADO")}
-                >
-                  Cancelar pedido
-                </button>
-              )}
             </div>
             <p className={styles.notaCorreo}>
               Al cambiar el estado, el cliente recibe un aviso por correo.
             </p>
-            {errorCambio && <p className={styles.errorCambio} role="alert">{errorCambio}</p>}
           </>
         )}
+        {errorCambio && <p className={styles.errorCambio} role="alert">{errorCambio}</p>}
+        <div className={styles.accionesSecundarias}>
+          <button className={styles.botonImprimir} type="button" onClick={onImprimir}>
+            Imprimir
+          </button>
+          {puedeCancelar && (
+            <button
+              className={styles.botonCancelar}
+              type="button"
+              disabled={cambiando}
+              onClick={() => onCambiarEstado("CANCELADO")}
+            >
+              Cancelar pedido
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* Comanda para imprimir: se monta oculta en el <body> (portal) y solo se
+          ve al imprimir. Refleja el pedido seleccionado (ver estilos en index.css). */}
+      {createPortal(
+        <div className="hoja-impresion" aria-hidden="true">
+          <h1>SumarketExpress · Pedido {referencia(detalle.numero)}</h1>
+          <p className="hoja-sub">
+            {FECHA_LARGA.format(new Date(detalle.createdAt))} ·{" "}
+            {ETIQUETA_ESTADO[detalle.estado] ?? detalle.estado}
+            {pagoAprobado ? " · Pagado" : ""}
+          </p>
+          <dl className="hoja-datos">
+            <dt>Cliente</dt>
+            <dd>{detalle.contacto.nombre}</dd>
+            <dt>Contacto</dt>
+            <dd>
+              {[detalle.contacto.telefono, detalle.contacto.email].filter(Boolean).join(" · ")}
+            </dd>
+            <dt>Entrega</dt>
+            <dd>{textoEntrega(detalle.direccion)}</dd>
+          </dl>
+          <table className="hoja-items">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Cant.</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {detalle.items.map((item, indice) => (
+                <tr key={`${item.sku}-${indice}`}>
+                  <td>{item.nombre}</td>
+                  <td>{item.cantidad}</td>
+                  <td>{MONEDA_CLP.format(item.subtotal)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="hoja-total">Total: {MONEDA_CLP.format(detalle.total)}</p>
+        </div>,
+        document.body,
+      )}
     </div>
   );
 }
@@ -523,6 +575,7 @@ export default function AdminPedidos() {
               <DetallePedido
                 detalle={detalle}
                 onCambiarEstado={cambiarEstado}
+                onImprimir={() => window.print()}
                 cambiando={cambiando}
                 errorCambio={errorCambioActual}
               />

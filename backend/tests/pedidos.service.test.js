@@ -14,7 +14,7 @@ const contacto = {
 // el notificador es no-op porque la confirmación se prueba aparte.
 const reglasFalsas = {
   obtenerReglas: async () => REGLAS_POR_DEFECTO,
-  notificador: { async enviarConfirmacion() {} },
+  notificador: { async enviarConfirmacion() {}, async enviarCambioEstado() {} },
 }
 
 // Repo falso: devuelve los productos declarados y captura lo que recibe la
@@ -350,6 +350,22 @@ test('cambiarEstadoPedido cancela un pedido ya aceptado restituyendo stock', asy
   await servicio.cambiarEstadoPedido('ped-1', 'CANCELADO')
 
   assert.equal(captura.cambio.efecto, 'RESTITUIR')
+})
+
+test('cambiarEstadoPedido avisa el nuevo estado por correo (RF-5.6)', async () => {
+  const { repositorio } = crearRepoEstado(PEDIDO_PENDIENTE)
+  let avisado = null
+  const servicio = crearServicioPedidos(repositorio, {
+    obtenerReglas: async () => REGLAS_POR_DEFECTO,
+    notificador: {
+      async enviarConfirmacion() {},
+      async enviarCambioEstado(pedido) { avisado = pedido },
+    },
+  })
+
+  await servicio.cambiarEstadoPedido('ped-1', 'PREPARANDO')
+
+  assert.equal(avisado.estado, 'PREPARANDO')
 })
 
 test('cambiarEstadoPedido devuelve null cuando el pedido no existe', async () => {

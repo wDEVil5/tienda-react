@@ -460,6 +460,11 @@
   cursor: wait;
   opacity: 0.6;
 }
+.notaCorreo {
+  margin-top: 10px;
+  color: var(--color-texto-tenue);
+  font-size: 11.5px;
+}
 .errorCambio {
   margin-top: 10px;
   color: var(--color-oferta);

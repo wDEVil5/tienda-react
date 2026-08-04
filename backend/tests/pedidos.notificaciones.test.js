@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   crearNotificadorPedidos,
+  plantillaCambioEstado,
   plantillaConfirmacionPedido,
 } from '../src/modules/pedidos/pedidos.notificaciones.js'
 
@@ -50,4 +51,41 @@ test('enviarConfirmacion manda el correo al contacto del pedido', async () => {
   assert.equal(enviados.length, 1)
   assert.equal(enviados[0].para, 'camila@correo.cl')
   assert.equal(enviados[0].asunto, 'Confirmación de tu pedido #SE-1043')
+})
+
+test('plantillaCambioEstado arma el asunto con la referencia y el estado', () => {
+  const mensaje = plantillaCambioEstado({ numero: 1043, estado: 'ENVIADO', contactoNombre: 'Camila R.' })
+  assert.match(mensaje.asunto, /#SE-1043/)
+  assert.match(mensaje.asunto, /Enviado/)
+})
+
+test('plantillaCambioEstado usa un mensaje propio de cada estado', () => {
+  assert.match(
+    plantillaCambioEstado({ numero: 1, estado: 'ENTREGADO', contactoNombre: 'Ana' }).texto,
+    /entregado/i,
+  )
+  assert.match(
+    plantillaCambioEstado({ numero: 1, estado: 'CANCELADO', contactoNombre: 'Ana' }).texto,
+    /cancelado/i,
+  )
+})
+
+test('enviarCambioEstado manda el correo al contacto del pedido', async () => {
+  const enviados = []
+  const notificador = crearNotificadorPedidos({
+    servicioCorreo: {
+      async enviar(mensaje) { enviados.push(mensaje) },
+    },
+  })
+
+  await notificador.enviarCambioEstado({
+    numero: 1043,
+    estado: 'ENVIADO',
+    contactoNombre: 'Camila R.',
+    contactoEmail: 'camila@correo.cl',
+  })
+
+  assert.equal(enviados.length, 1)
+  assert.equal(enviados[0].para, 'camila@correo.cl')
+  assert.match(enviados[0].asunto, /Enviado/)
 })

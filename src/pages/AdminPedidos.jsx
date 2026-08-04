@@ -192,6 +192,9 @@ function DetallePedido({ detalle, onCambiarEstado, cambiando, errorCambio }) {
                 </button>
               )}
             </div>
+            <p className={styles.notaCorreo}>
+              Al cambiar el estado, el cliente recibe un aviso por correo.
+            </p>
             {errorCambio && <p className={styles.errorCambio} role="alert">{errorCambio}</p>}
           </>
         )}

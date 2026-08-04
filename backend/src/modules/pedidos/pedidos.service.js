@@ -317,6 +317,16 @@ export function crearServicioPedidos(
         items: pedido.items,
       })
 
+      // Aviso del nuevo estado al cliente (RF-5.6), fire-and-forget: cambiar el
+      // estado no debe fallar ni demorarse si el proveedor de correo está caído.
+      notificador
+        .enviarCambioEstado(actualizado)
+        .catch((error) =>
+          console.error(
+            `No se pudo avisar el cambio de estado del pedido ${actualizado.numero}: ${error.message}`,
+          ),
+        )
+
       return crearDetallePedido(actualizado)
     },
 

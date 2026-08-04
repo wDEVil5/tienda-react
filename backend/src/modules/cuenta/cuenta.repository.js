@@ -68,6 +68,15 @@ export function crearRepositorioCuenta(db = prisma) {
         data: { revocadaEn: ahora },
       })
     },
+
+    // Cierra toda sesión vigente del cliente, incluida la que hizo la petición.
+    // No tocamos sesiones ya vencidas o revocadas porque no son reutilizables.
+    revocarTodasLasSesiones(clienteId, ahora) {
+      return db.sesionCliente.updateMany({
+        where: { clienteId, revocadaEn: null, expiraEn: { gt: ahora } },
+        data: { revocadaEn: ahora },
+      })
+    },
   }
 }
 

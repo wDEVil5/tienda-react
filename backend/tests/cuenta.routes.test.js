@@ -197,6 +197,26 @@ test('PATCH /api/cuenta/contrasena rechaza la contraseña actual incorrecta', as
   assert.equal(response.body.error.code, 'INVALID_CURRENT_PASSWORD')
 })
 
+test('DELETE /api/cuenta/sesiones revoca todas las sesiones y limpia la cookie', async () => {
+  let clienteRecibido = null
+  const app = crearApp({
+    async obtenerSesionActiva() {
+      return { cliente: { id: 'c1' } }
+    },
+    async cerrarTodasLasSesiones(clienteId) {
+      clienteRecibido = clienteId
+    },
+  })
+
+  const response = await request(app)
+    .delete('/api/cuenta/sesiones')
+    .set('Cookie', 'sesion_cliente=tok')
+
+  assert.equal(response.status, 204)
+  assert.equal(clienteRecibido, 'c1')
+  assert.match(response.headers['set-cookie'][0], /sesion_cliente=/)
+})
+
 test('POST /logout revoca la sesión y limpia la cookie', async () => {
   let revocado = false
   const app = crearApp({

@@ -154,3 +154,19 @@ test('cambiarContrasena rechaza una contraseña actual incorrecta sin guardar na
     (error) => error instanceof ErrorCuenta && error.code === 'INVALID_CURRENT_PASSWORD',
   )
 })
+
+test('cerrarTodasLasSesiones revoca solo las sesiones vigentes del cliente', async () => {
+  let recibido = null
+  const servicio = crearServicioCuenta({
+    async revocarTodasLasSesiones(clienteId, ahora) {
+      recibido = { clienteId, ahora }
+      return { count: 3 }
+    },
+  })
+  const ahora = new Date('2026-08-04T12:00:00Z')
+
+  const resultado = await servicio.cerrarTodasLasSesiones('c1', ahora)
+
+  assert.deepEqual(recibido, { clienteId: 'c1', ahora })
+  assert.deepEqual(resultado, { count: 3 })
+})

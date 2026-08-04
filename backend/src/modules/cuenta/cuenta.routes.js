@@ -7,6 +7,7 @@ import {
   registrar,
   actualizarPerfil,
   cambiarContrasena,
+  cerrarTodasLasSesiones,
 } from './cuenta.service.js'
 import { crearRequerirCliente } from './cuenta.middleware.js'
 import {
@@ -40,6 +41,7 @@ export function crearRouterCuenta(
     cerrarSesion,
     actualizarPerfil,
     cambiarContrasena,
+    cerrarTodasLasSesiones,
   },
   { limitarLogin = crearLimitadorIntentosLogin() } = {},
 ) {
@@ -160,6 +162,18 @@ export function crearRouterCuenta(
           error: { code: error.code, message: error.message },
         })
       }
+      return next(error)
+    }
+  })
+
+  // DELETE expresa que se invalida la colección de sesiones del cliente. Al
+  // borrar también la cookie actual, el navegador deberá autenticarse de nuevo.
+  cuentaRouter.delete('/sesiones', requerirCliente, async (request, response, next) => {
+    try {
+      await servicio.cerrarTodasLasSesiones(request.cliente.id)
+      response.clearCookie('sesion_cliente', opcionesCookie())
+      return response.status(204).end()
+    } catch (error) {
       return next(error)
     }
   })

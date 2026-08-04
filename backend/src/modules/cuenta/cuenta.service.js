@@ -121,6 +121,10 @@ export function crearServicioCuenta(repositorio = repositorioCuenta) {
       if (!token) return Promise.resolve()
       return repositorio.revocarSesionPorHash(hashTokenSesion(token), ahora)
     },
+
+    cerrarTodasLasSesiones(clienteId, ahora = new Date()) {
+      return repositorio.revocarTodasLasSesiones(clienteId, ahora)
+    },
   }
 }
 
@@ -132,3 +136,4 @@ export const obtenerSesionActiva = servicioCuenta.obtenerSesionActiva
 export const cerrarSesion = servicioCuenta.cerrarSesion
 export const actualizarPerfil = servicioCuenta.actualizarPerfil
 export const cambiarContrasena = servicioCuenta.cambiarContrasena
+export const cerrarTodasLasSesiones = servicioCuenta.cerrarTodasLasSesiones

@@ -5,9 +5,13 @@ import {
   iniciarSesion,
   obtenerSesionActiva,
   registrar,
+  actualizarPerfil,
 } from './cuenta.service.js'
 import { crearRequerirCliente } from './cuenta.middleware.js'
-import { validarRegistroCliente } from './cuenta.validacion.js'
+import {
+  validarActualizacionPerfilCliente,
+  validarRegistroCliente,
+} from './cuenta.validacion.js'
 import { crearLimitadorIntentosLogin } from '../auth/limite-intentos.js'
 import { opcionesCookieSesion } from '../../lib/cookies.js'
 
@@ -27,7 +31,7 @@ function leerCredenciales(body) {
 }
 
 export function crearRouterCuenta(
-  servicio = { registrar, iniciarSesion, obtenerSesionActiva, cerrarSesion },
+  servicio = { registrar, iniciarSesion, obtenerSesionActiva, cerrarSesion, actualizarPerfil },
   { limitarLogin = crearLimitadorIntentosLogin() } = {},
 ) {
   const cuentaRouter = Router()
@@ -98,6 +102,28 @@ export function crearRouterCuenta(
 
   cuentaRouter.get('/', requerirCliente, (request, response) => {
     return response.json({ data: { cliente: request.cliente } })
+  })
+
+  cuentaRouter.patch('/perfil', requerirCliente, async (request, response, next) => {
+    const validacion = validarActualizacionPerfilCliente(request.body)
+    if (!validacion.success) {
+      return response.status(422).json({
+        error: {
+          code: 'INVALID_PROFILE_DATA',
+          message: 'Revisa los datos de tu perfil.',
+          fields: validacion.error.issues.map((issue) => issue.path.join('.')),
+        },
+      })
+    }
+
+    try {
+      // clienteId sale de la cookie ya validada por requerirCliente; el cuerpo
+      // no puede apuntar al perfil de otra persona.
+      const cliente = await servicio.actualizarPerfil(request.cliente.id, validacion.data)
+      return response.json({ data: { cliente } })
+    } catch (error) {
+      return next(error)
+    }
   })
 
   cuentaRouter.post('/logout', requerirCliente, async (request, response, next) => {

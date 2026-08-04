@@ -111,6 +111,49 @@ test('GET /api/cuenta devuelve el cliente autenticado', async () => {
   assert.equal(response.body.data.cliente.id, 'c1')
 })
 
+test('PATCH /api/cuenta/perfil actualiza solo al cliente autenticado', async () => {
+  let recibido = null
+  const app = crearApp({
+    async obtenerSesionActiva() {
+      return { cliente: { id: 'c1', email: 'w@c.cl' } }
+    },
+    async actualizarPerfil(clienteId, datos) {
+      recibido = { clienteId, datos }
+      return { id: clienteId, email: 'w@c.cl', ...datos }
+    },
+  })
+
+  const response = await request(app)
+    .patch('/api/cuenta/perfil')
+    .set('Cookie', 'sesion_cliente=tok')
+    .send({ nombre: 'Wilnes A.', telefono: '+56 9 1234 5678' })
+
+  assert.equal(response.status, 200)
+  assert.deepEqual(recibido, {
+    clienteId: 'c1',
+    datos: { nombre: 'Wilnes A.', telefono: '+56 9 1234 5678' },
+  })
+})
+
+test('PATCH /api/cuenta/perfil rechaza datos inválidos antes de llamar al servicio', async () => {
+  const app = crearApp({
+    async obtenerSesionActiva() {
+      return { cliente: { id: 'c1' } }
+    },
+    async actualizarPerfil() {
+      throw new Error('no debería llamarse')
+    },
+  })
+
+  const response = await request(app)
+    .patch('/api/cuenta/perfil')
+    .set('Cookie', 'sesion_cliente=tok')
+    .send({ nombre: 'W', telefono: '+56 9 1234 5678', email: 'ajeno@correo.cl' })
+
+  assert.equal(response.status, 422)
+  assert.equal(response.body.error.code, 'INVALID_PROFILE_DATA')
+})
+
 test('POST /logout revoca la sesión y limpia la cookie', async () => {
   let revocado = false
   const app = crearApp({

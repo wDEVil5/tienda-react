@@ -78,6 +78,11 @@ export function crearServicioCuenta(repositorio = repositorioCuenta) {
       return abrirSesion(cliente, ahora)
     },
 
+    async actualizarPerfil(clienteId, datos) {
+      const cliente = await repositorio.actualizarPerfilCliente(clienteId, datos)
+      return crearClientePublico(cliente)
+    },
+
     async obtenerSesionActiva(token, ahora = new Date()) {
       if (!token) return null
 
@@ -102,3 +107,4 @@ export const registrar = servicioCuenta.registrar
 export const iniciarSesion = servicioCuenta.iniciarSesion
 export const obtenerSesionActiva = servicioCuenta.obtenerSesionActiva
 export const cerrarSesion = servicioCuenta.cerrarSesion
+export const actualizarPerfil = servicioCuenta.actualizarPerfil

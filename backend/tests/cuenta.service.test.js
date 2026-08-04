@@ -75,3 +75,35 @@ test('iniciarSesion abre sesión con credenciales válidas', async () => {
   assert.equal(resultado.cliente.id, 'c1')
   assert.equal(sesionGuardada.clienteId, 'c1')
 })
+
+test('actualizarPerfil modifica solo datos públicos del cliente de sesión', async () => {
+  let actualizacion = null
+  const servicio = crearServicioCuenta({
+    async actualizarPerfilCliente(clienteId, datos) {
+      actualizacion = { clienteId, datos }
+      return {
+        id: clienteId,
+        nombre: datos.nombre,
+        email: 'cliente@correo.cl',
+        telefono: datos.telefono,
+        passwordHash: 'nunca se expone',
+      }
+    },
+  })
+
+  const resultado = await servicio.actualizarPerfil('c1', {
+    nombre: 'Wilnes Actualizado',
+    telefono: '+56 9 1234 5678',
+  })
+
+  assert.deepEqual(actualizacion, {
+    clienteId: 'c1',
+    datos: { nombre: 'Wilnes Actualizado', telefono: '+56 9 1234 5678' },
+  })
+  assert.deepEqual(resultado, {
+    id: 'c1',
+    nombre: 'Wilnes Actualizado',
+    email: 'cliente@correo.cl',
+    telefono: '+56 9 1234 5678',
+  })
+})

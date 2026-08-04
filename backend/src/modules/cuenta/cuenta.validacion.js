@@ -14,3 +14,17 @@ export const esquemaRegistroCliente = z
 export function validarRegistroCliente(datos) {
   return esquemaRegistroCliente.safeParse(datos)
 }
+
+// La identidad de acceso (email) se modifica en un flujo separado con
+// verificación del correo nuevo. Este contrato solo permite datos de perfil
+// que no cambian cómo el cliente inicia sesión.
+export const esquemaActualizacionPerfilCliente = z
+  .object({
+    nombre: z.string().trim().min(2).max(120),
+    telefono: z.string().trim().min(6).max(40).nullable(),
+  })
+  .strict()
+
+export function validarActualizacionPerfilCliente(datos) {
+  return esquemaActualizacionPerfilCliente.safeParse(datos)
+}

@@ -14,6 +14,15 @@ export function crearRepositorioCuenta(db = prisma) {
       })
     },
 
+    // El id viene siempre de una sesión validada; nunca de un campo enviado
+    // por el navegador. Email y passwordHash no pertenecen a este update.
+    actualizarPerfilCliente(id, { nombre, telefono }) {
+      return db.cliente.update({
+        where: { id },
+        data: { nombre, telefono },
+      })
+    },
+
     crearSesion({ clienteId, tokenHash, expiraEn }) {
       return db.sesionCliente.create({
         data: { clienteId, tokenHash, expiraEn },

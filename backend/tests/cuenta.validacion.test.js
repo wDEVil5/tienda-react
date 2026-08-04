@@ -1,6 +1,9 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { validarRegistroCliente } from '../src/modules/cuenta/cuenta.validacion.js'
+import {
+  validarActualizacionPerfilCliente,
+  validarRegistroCliente,
+} from '../src/modules/cuenta/cuenta.validacion.js'
 
 const base = { nombre: 'Wilnes A.', email: 'nuevo@correo.cl', contrasena: 'Cliente2026!' }
 
@@ -24,4 +27,25 @@ test('rechaza un email inválido', () => {
 
 test('rechaza campos desconocidos (no se puede colar un rol)', () => {
   assert.equal(validarRegistroCliente({ ...base, rol: 'ADMIN' }).success, false)
+})
+
+test('acepta nombre y teléfono al actualizar el perfil', () => {
+  const resultado = validarActualizacionPerfilCliente({
+    nombre: 'Wilnes Actualizado',
+    telefono: '+56 9 1234 5678',
+  })
+
+  assert.equal(resultado.success, true)
+  assert.equal(resultado.data.nombre, 'Wilnes Actualizado')
+})
+
+test('perfil no permite cambiar email ni agregar campos ajenos', () => {
+  assert.equal(
+    validarActualizacionPerfilCliente({
+      nombre: 'Wilnes A.',
+      telefono: null,
+      email: 'otro@correo.cl',
+    }).success,
+    false,
+  )
 })

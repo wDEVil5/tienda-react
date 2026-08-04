@@ -216,10 +216,9 @@ function Header({
             )}
           </form>
 
-          {/* Placeholder: llevará a /login cuando exista la auth (Fase 3). */}
-          <button className={styles.entrar} type="button">
+          <Link className={styles.entrar} to="/login">
             Entrar
-          </button>
+          </Link>
 
           <button className={styles.carrito} onClick={onAbrirCarrito}>
             <i className="fa-solid fa-cart-shopping" aria-hidden="true"></i>
@@ -271,13 +270,13 @@ function Header({
           <Link to="/#nuestra-tienda" onClick={cerrarMenu} className={styles.menuLink}>
             Nuestra tienda
           </Link>
-          <button
+          <Link
             className={styles.menuEntrar}
-            type="button"
+            to="/login"
             onClick={cerrarMenu}
           >
             Entrar
-          </button>
+          </Link>
       </nav>
 
       {/* Navegación por secciones del Home. Los hashes también funcionan si se

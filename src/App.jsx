@@ -3,6 +3,7 @@ import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import Home from "./pages/Home.jsx";
 import ProductoDetalle from "./pages/ProductoDetalle.jsx";
 import Checkout from "./pages/Checkout.jsx";
+import { Login, Registro } from "./pages/Acceso.jsx";
 import Carrito from "./components/Carrito.jsx";
 import Toast from "./components/Toast.jsx";
 import styles from "./App.module.css";
@@ -204,6 +205,7 @@ function App() {
   const ofertasDestacadasVigentes =
     fuenteCatalogo === "api" ? ofertasDestacadas : null;
   const esCheckout = ubicacion.pathname === "/checkout";
+  const esAcceso = ["/login", "/registro"].includes(ubicacion.pathname);
 
   //early return
   if (cargando) {
@@ -232,7 +234,7 @@ function App() {
 
   return (
     <div className={styles.app}>
-      {!esCheckout && (
+      {!esCheckout && !esAcceso && (
         <Header
           busqueda={busqueda}
           onBuscar={setBusqueda}
@@ -248,7 +250,7 @@ function App() {
       {/* Contenido centrado: el Header y el Footer viven FUERA de este
           envoltorio para poder ir de borde a borde . */}
       <main
-        className={`${styles.contenido} ${esCheckout ? styles.contenidoCheckout : ""}`}
+        className={`${styles.contenido} ${esCheckout ? styles.contenidoCheckout : ""} ${esAcceso ? styles.contenidoAcceso : ""}`}
       >
         <Routes>
           <Route
@@ -285,6 +287,8 @@ function App() {
             element={<ProductoDetalle productos={productos} />}
           />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/registro" element={<Registro />} />
         </Routes>
       </main>
 
@@ -309,7 +313,7 @@ function App() {
           drawer, solo el aviso con "Deshacer" se mueve al carrito. */}
       <Toast ocultarSiAccion={carritoAbierto} />
 
-      {!esCheckout && (
+      {!esCheckout && !esAcceso && (
         <Footer
           productos={productos}
           onBuscar={setBusqueda}

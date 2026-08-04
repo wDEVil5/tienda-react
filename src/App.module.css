@@ -20,6 +20,12 @@
   padding: clamp(24px, 4vw, 52px);
 }
 
+.contenidoAcceso {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
 /* En móvil el checkout va de borde a borde: sin padding externo. Los gutters
    los ponen los propios bloques del checkout (cabecera, layout) a 16px. */
 @media (max-width: 767px) {

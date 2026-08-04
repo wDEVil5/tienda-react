@@ -8,6 +8,23 @@ const MAPA_ESTADO = {
   cancelled: 'RECHAZADO',
 }
 
+// GitHub Pages sirve el index de la app, pero no reescribe rutas internas de
+// BrowserRouter (por ejemplo `/pago/exito`). Volvemos a la raíz publicada y el
+// frontend transforma `checkout_return` en su ruta interna sin recargar.
+function crearUrlsRetorno(urlBase) {
+  const crearUrl = (resultado) => {
+    const url = new URL(urlBase)
+    url.searchParams.set('checkout_return', resultado)
+    return url.toString()
+  }
+
+  return {
+    success: crearUrl('success'),
+    failure: crearUrl('failure'),
+    pending: crearUrl('pending'),
+  }
+}
+
 // Adaptador real de Mercado Pago. Implementa la MISMA interfaz que la pasarela
 // falsa (proveedor, crearPreferencia, interpretarNotificacion), así el servicio
 // de pagos no cambia. `fetchImpl` es inyectable para probar sin llamar a la API.
@@ -64,11 +81,7 @@ export function crearPasarelaMercadoPago({
           // external_reference viaja de la preferencia al pago y vuelve en el
           // webhook: es cómo correlacionamos la notificación con nuestro Pago.
           external_reference: pagoId,
-          back_urls: {
-            success: `${urlRetorno}/pago/exito`,
-            failure: `${urlRetorno}/pago/error`,
-            pending: `${urlRetorno}/pago/pendiente`,
-          },
+          back_urls: crearUrlsRetorno(urlRetorno),
           // En producción evita que la persona tenga que presionar "volver al
           // sitio" tras aprobar. El webhook continúa siendo la verdad.
           ...(puedeVolverAutomaticamente ? { auto_return: 'approved' } : {}),

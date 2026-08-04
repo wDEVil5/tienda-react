@@ -24,9 +24,9 @@ test('crearPreferencia llama a MP con el token, el monto y el external_reference
   assert.equal(capturado.body.items[0].currency_id, 'CLP')
   assert.equal(capturado.body.auto_return, 'approved')
   assert.deepEqual(capturado.body.back_urls, {
-    success: 'https://usuario.github.io/tienda-react/pago/exito',
-    failure: 'https://usuario.github.io/tienda-react/pago/error',
-    pending: 'https://usuario.github.io/tienda-react/pago/pendiente',
+    success: 'https://usuario.github.io/tienda-react?checkout_return=success',
+    failure: 'https://usuario.github.io/tienda-react?checkout_return=failure',
+    pending: 'https://usuario.github.io/tienda-react?checkout_return=pending',
   })
 })
 
@@ -71,7 +71,7 @@ test('crearPreferencia no pide retorno automático con una URL local', async () 
   await pasarela.crearPreferencia({ pagoId: 'pago-local', pedidoNumero: 1, monto: 100 })
 
   assert.equal('auto_return' in cuerpo, false)
-  assert.equal(cuerpo.back_urls.success, 'http://localhost:5173/tienda-react/pago/exito')
+  assert.equal(cuerpo.back_urls.success, 'http://localhost:5173/tienda-react?checkout_return=success')
 })
 
 test('interpretarNotificacion consulta el pago y mapea approved -> APROBADO', async () => {

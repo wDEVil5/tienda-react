@@ -412,6 +412,67 @@
   cursor: pointer;
 }
 
+/* Cambiar estado (CP3). */
+.cambiarEstado {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-borde-2);
+}
+.accionesTitulo {
+  color: var(--color-texto-2);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.accionesBotones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.botonAvance,
+.botonCancelar {
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: var(--radio-control);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.botonAvance {
+  border: 1px solid var(--color-acento);
+  background: var(--color-acento);
+  color: #fff;
+  font-weight: 600;
+}
+.botonAvance:hover {
+  filter: brightness(0.96);
+}
+.botonCancelar {
+  border: 1px solid var(--color-borde-3);
+  background: var(--color-superficie);
+  color: var(--color-oferta);
+}
+.botonCancelar:hover {
+  border-color: var(--color-oferta);
+}
+.botonAvance:disabled,
+.botonCancelar:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+.errorCambio {
+  margin-top: 10px;
+  color: var(--color-oferta);
+  font-size: 12px;
+}
+.sinAcciones {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-borde-2);
+  color: var(--color-texto-tenue);
+  font-size: 12.5px;
+}
+
 @media (max-width: 900px) {
   .cuerpo {
     flex-direction: column;

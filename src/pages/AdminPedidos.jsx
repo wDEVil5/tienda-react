@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import AdminShell from "../components/admin/AdminShell.jsx";
 import {
+  cambiarEstadoPedidoAdmin,
   ErrorAdminApi,
   listarPedidosAdmin,
   obtenerPedidoAdmin,
@@ -44,6 +45,26 @@ const CLASE_ESTADO = {
 
 const PROVEEDOR = { mercadopago: "Mercado Pago", fake: "Pago de prueba" };
 
+// Transiciones válidas por modalidad — reflejan la máquina de estados del backend
+// (pedidos.estados.js). El servidor sigue siendo la autoridad; esto solo evita
+// ofrecer saltos ilegales. CANCELADO es alcanzable desde cualquier estado no final.
+const TRANSICIONES = {
+  RETIRO: {
+    PENDIENTE: ["PREPARANDO", "CANCELADO"],
+    PREPARANDO: ["LISTO_PARA_RETIRO", "CANCELADO"],
+    LISTO_PARA_RETIRO: ["ENTREGADO", "CANCELADO"],
+    ENTREGADO: [],
+    CANCELADO: [],
+  },
+  DESPACHO: {
+    PENDIENTE: ["PREPARANDO", "CANCELADO"],
+    PREPARANDO: ["ENVIADO", "CANCELADO"],
+    ENVIADO: ["ENTREGADO", "CANCELADO"],
+    ENTREGADO: [],
+    CANCELADO: [],
+  },
+};
+
 const MONEDA_CLP = new Intl.NumberFormat("es-CL", {
   style: "currency",
   currency: "CLP",
@@ -71,8 +92,11 @@ function textoEntrega(direccion) {
   return `Despacho: ${linea}${direccion.comuna ? ` · ${direccion.comuna}` : ""}`;
 }
 
-function DetallePedido({ detalle }) {
+function DetallePedido({ detalle, onCambiarEstado, cambiando, errorCambio }) {
   const pagoAprobado = (detalle.pagos ?? []).find((pago) => pago.estado === "APROBADO");
+  const transiciones = TRANSICIONES[detalle.modalidad]?.[detalle.estado] ?? [];
+  const avances = transiciones.filter((estadoDestino) => estadoDestino !== "CANCELADO");
+  const puedeCancelar = transiciones.includes("CANCELADO");
 
   return (
     <div className={styles.detalleContenido}>
@@ -136,6 +160,42 @@ function DetallePedido({ detalle }) {
           <dd>{MONEDA_CLP.format(detalle.total)}</dd>
         </div>
       </dl>
+
+      <div className={styles.cambiarEstado}>
+        {avances.length === 0 && !puedeCancelar ? (
+          <p className={styles.sinAcciones}>
+            Pedido {ETIQUETA_ESTADO[detalle.estado]?.toLowerCase()} · sin acciones disponibles.
+          </p>
+        ) : (
+          <>
+            <p className={styles.accionesTitulo}>Cambiar estado</p>
+            <div className={styles.accionesBotones}>
+              {avances.map((estadoDestino) => (
+                <button
+                  key={estadoDestino}
+                  className={styles.botonAvance}
+                  type="button"
+                  disabled={cambiando}
+                  onClick={() => onCambiarEstado(estadoDestino)}
+                >
+                  {ETIQUETA_ESTADO[estadoDestino]}
+                </button>
+              ))}
+              {puedeCancelar && (
+                <button
+                  className={styles.botonCancelar}
+                  type="button"
+                  disabled={cambiando}
+                  onClick={() => onCambiarEstado("CANCELADO")}
+                >
+                  Cancelar pedido
+                </button>
+              )}
+            </div>
+            {errorCambio && <p className={styles.errorCambio} role="alert">{errorCambio}</p>}
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -156,6 +216,8 @@ export default function AdminPedidos() {
   const [detalle, setDetalle] = useState(null);
   const [errorDetalle, setErrorDetalle] = useState(null);
   const [intentoDetalle, setIntentoDetalle] = useState(0);
+  const [cambiando, setCambiando] = useState(false);
+  const [errorCambio, setErrorCambio] = useState(null);
 
   useEffect(() => {
     let vigente = true;
@@ -268,6 +330,40 @@ export default function AdminPedidos() {
   const detalleListo = detalle && detalle.id === seleccionado;
   const errorActual =
     errorDetalle && errorDetalle.id === seleccionado ? errorDetalle.mensaje : null;
+  const errorCambioActual =
+    errorCambio && errorCambio.id === seleccionado ? errorCambio.mensaje : null;
+
+  async function cambiarEstado(nuevoEstado) {
+    if (!detalle) return;
+    if (
+      nuevoEstado === "CANCELADO" &&
+      !window.confirm("¿Cancelar este pedido? Se liberará el stock reservado.")
+    ) {
+      return;
+    }
+
+    setCambiando(true);
+    setErrorCambio(null);
+    try {
+      const actualizado = await cambiarEstadoPedidoAdmin(detalle.id, nuevoEstado);
+      setDetalle(actualizado);
+      setIntento((valor) => valor + 1); // reconcilia la lista (badges y filtros)
+    } catch (errorRespuesta) {
+      if (errorRespuesta instanceof ErrorAdminApi && errorRespuesta.status === 401) {
+        setUsuario(null);
+        return;
+      }
+      setErrorCambio({
+        id: detalle.id,
+        mensaje:
+          errorRespuesta instanceof ErrorAdminApi
+            ? errorRespuesta.message
+            : "No pudimos cambiar el estado del pedido.",
+      });
+    } finally {
+      setCambiando(false);
+    }
+  }
 
   return (
     <main className={styles.fondo}>
@@ -382,7 +478,12 @@ export default function AdminPedidos() {
                 </button>
               </div>
             ) : detalleListo ? (
-              <DetallePedido detalle={detalle} />
+              <DetallePedido
+                detalle={detalle}
+                onCambiarEstado={cambiarEstado}
+                cambiando={cambiando}
+                errorCambio={errorCambioActual}
+              />
             ) : (
               <p className={styles.detalleEstado} role="status">Cargando detalle…</p>
             )}

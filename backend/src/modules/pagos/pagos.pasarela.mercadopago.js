@@ -46,6 +46,10 @@ export function crearPasarelaMercadoPago({
 
     async crearPreferencia({ pagoId, pedidoNumero, monto }) {
       const urlRetorno = urlBase.replace(/\/$/, '')
+      // MP solo acepta auto_return cuando success apunta a una URL pública HTTPS.
+      // En local mantenemos los back_urls para pruebas manuales, pero omitimos la
+      // redirección automática: localhost no es un destino válido para MP.
+      const puedeVolverAutomaticamente = urlRetorno.startsWith('https://')
       const preferencia = await mpFetch('/checkout/preferences', {
         method: 'POST',
         body: JSON.stringify({
@@ -65,9 +69,9 @@ export function crearPasarelaMercadoPago({
             failure: `${urlRetorno}/pago/error`,
             pending: `${urlRetorno}/pago/pendiente`,
           },
-          // Sin esto la persona debe presionar manualmente "volver al sitio"
-          // aun cuando MP ya aprobó. El webhook continúa siendo la verdad.
-          auto_return: 'approved',
+          // En producción evita que la persona tenga que presionar "volver al
+          // sitio" tras aprobar. El webhook continúa siendo la verdad.
+          ...(puedeVolverAutomaticamente ? { auto_return: 'approved' } : {}),
           // Solo se incluye si hay URL pública configurada (túnel/producción).
           ...(notificationUrl ? { notification_url: notificationUrl } : {}),
         }),

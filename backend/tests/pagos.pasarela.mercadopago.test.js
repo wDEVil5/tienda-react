@@ -57,6 +57,23 @@ test('crearPreferencia incluye notification_url solo si está configurada', asyn
   assert.equal('notification_url' in cuerpoSin.body, false)
 })
 
+test('crearPreferencia no pide retorno automático con una URL local', async () => {
+  let cuerpo
+  const pasarela = crearPasarelaMercadoPago({
+    accessToken: 'x',
+    urlBase: 'http://localhost:5173/tienda-react',
+    fetchImpl: async (_url, opciones) => {
+      cuerpo = JSON.parse(opciones.body)
+      return { ok: true, async json() { return { init_point: 'https://mp/x' } } }
+    },
+  })
+
+  await pasarela.crearPreferencia({ pagoId: 'pago-local', pedidoNumero: 1, monto: 100 })
+
+  assert.equal('auto_return' in cuerpo, false)
+  assert.equal(cuerpo.back_urls.success, 'http://localhost:5173/tienda-react/pago/exito')
+})
+
 test('interpretarNotificacion consulta el pago y mapea approved -> APROBADO', async () => {
   let rutaConsultada
   const fetchImpl = async (url) => {

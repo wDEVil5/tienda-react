@@ -339,7 +339,7 @@ function MiCuenta() {
             <h2 id="titulo-seguridad">Datos y seguridad</h2>
             <div className={styles.filaSeguridad}>
               <span>Cambiar contraseña</span>
-              <span className={styles.accionPendiente} title="Esta acción requiere un endpoint de cambio de contraseña">Cambiar</span>
+              <Link className={styles.accionEditar} to="/mi-cuenta/datos#seguridad">Cambiar</Link>
             </div>
             <div className={styles.filaSeguridad}>
               <span>Avisos de ofertas por correo</span>
@@ -349,7 +349,7 @@ function MiCuenta() {
             </div>
             <div className={styles.filaSeguridad}>
               <span>Cerrar sesión en todos los dispositivos</span>
-              <span className={styles.accionPeligrosa} title="Esta acción requiere revocar todas las sesiones">Cerrar</span>
+              <Link className={styles.accionPeligrosa} to="/mi-cuenta/datos#seguridad">Cerrar</Link>
             </div>
           </section>
         </div>

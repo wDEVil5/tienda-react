@@ -112,7 +112,6 @@
 
 .perfil p { margin-top: 7px; color: var(--color-texto-suave); font-size: 16px; }
 
-.accionPendiente { color: var(--color-acento); cursor: help; font-size: 15px; white-space: nowrap; }
 .accionEditar { color: var(--color-acento); font-size: 15px; white-space: nowrap; text-decoration: none; }
 .accionEditar:hover { text-decoration: underline; }
 .error { margin-top: var(--e-xl); color: var(--color-oferta); font-size: 13px; }
@@ -215,7 +214,8 @@
 }
 
 .interruptorPendiente i { width: 19px; height: 19px; border-radius: 50%; background: #fff; }
-.accionPeligrosa { color: var(--color-oferta); cursor: help; }
+.accionPeligrosa { color: var(--color-oferta); white-space: nowrap; text-decoration: none; }
+.accionPeligrosa:hover { text-decoration: underline; }
 
 .modalFondo {
   position: fixed;

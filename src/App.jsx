@@ -7,6 +7,7 @@ import CheckoutPago from "./pages/CheckoutPago.jsx";
 import EstadoPago from "./pages/EstadoPago.jsx";
 import AdminProductos from "./pages/AdminProductos.jsx";
 import AdminProductoEditor from "./pages/AdminProductoEditor.jsx";
+import AdminPedidos from "./pages/AdminPedidos.jsx";
 import { Login, Registro } from "./pages/Acceso.jsx";
 import MiCuenta from "./pages/MiCuenta.jsx";
 import MisPedidos from "./pages/MisPedidos.jsx";
@@ -230,6 +231,7 @@ function App() {
         <Route path="/admin/productos" element={<AdminProductos />} />
         <Route path="/admin/productos/nuevo" element={<AdminProductoEditor />} />
         <Route path="/admin/productos/:id/editar" element={<AdminProductoEditor />} />
+        <Route path="/admin/pedidos" element={<AdminPedidos />} />
         <Route path="/admin/*" element={<Navigate to="/admin/productos" replace />} />
       </Routes>
     );

@@ -1,8 +1,9 @@
 .pantalla {
   width: 100%;
   min-width: 900px;
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
+  overflow: hidden;
   background: var(--color-fondo);
 }
 
@@ -37,6 +38,7 @@
 }
 
 .enlaceActivo,
+.enlace,
 .enlacePendiente {
   width: 100%;
   min-height: 38px;
@@ -64,6 +66,18 @@
   opacity: 1;
 }
 
+/* Sección implementada pero no activa: navega, con contraste mayor que las
+   pendientes y realce al pasar el cursor. */
+.enlace {
+  color: #cfccc4;
+  cursor: pointer;
+}
+
+.enlace:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
 .usuario {
   display: flex;
   flex-direction: column;
@@ -85,5 +99,6 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
   background: var(--color-fondo);
 }

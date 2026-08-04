@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import styles from "./AdminShell.module.css";
 
 const SECCIONES = [
@@ -10,7 +11,16 @@ const SECCIONES = [
   "Contenido",
 ];
 
-export default function AdminShell({ usuario, children }) {
+// Secciones ya implementadas: su ítem del menú navega. El resto queda deshabilitado
+// hasta su entrega.
+const RUTAS = {
+  Pedidos: "/admin/pedidos",
+  Productos: "/admin/productos",
+};
+
+export default function AdminShell({ usuario, seccion = "Productos", children }) {
+  const navegar = useNavigate();
+
   return (
     <div className={styles.pantalla}>
       <aside className={styles.sidebar} aria-label="Navegación administrativa">
@@ -19,18 +29,27 @@ export default function AdminShell({ usuario, children }) {
         </a>
 
         <nav className={styles.navegacion}>
-          {SECCIONES.map((seccion) => {
-            const activa = seccion === "Productos";
+          {SECCIONES.map((nombre) => {
+            const activa = nombre === seccion;
+            const ruta = RUTAS[nombre];
+            const disponible = Boolean(ruta);
+            const clase = activa
+              ? styles.enlaceActivo
+              : disponible
+                ? styles.enlace
+                : styles.enlacePendiente;
+
             return (
               <button
-                key={seccion}
-                className={activa ? styles.enlaceActivo : styles.enlacePendiente}
+                key={nombre}
+                className={clase}
                 type="button"
                 aria-current={activa ? "page" : undefined}
-                disabled={!activa}
-                title={activa ? undefined : `${seccion} se implementará en una próxima entrega.`}
+                disabled={!disponible}
+                title={disponible ? undefined : `${nombre} se implementará en una próxima entrega.`}
+                onClick={disponible && !activa ? () => navegar(ruta) : undefined}
               >
-                {seccion}
+                {nombre}
               </button>
             );
           })}

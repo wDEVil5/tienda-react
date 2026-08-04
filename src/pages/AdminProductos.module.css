@@ -8,6 +8,15 @@
   color: var(--color-texto);
 }
 
+/* El fondo de la lista envuelve al app-shell, que ya ocupa 100vh. No debe sumar
+   padding ni otro 100vh: si lo hace, el total supera la ventana y aparece un
+   scroll innecesario. (La pantalla de login sí conserva el frame de arriba.) */
+.fondoAdmin {
+  min-height: 0;
+  padding: 0;
+  background: none;
+}
+
 .cabecera {
   min-height: 76px;
   display: flex;

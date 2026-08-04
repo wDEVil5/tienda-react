@@ -144,3 +144,21 @@ export function obtenerOpcionesProductoAdmin(opciones = {}) {
     incluirMeta: false,
   });
 }
+
+export function listarPedidosAdmin({ page = 1, limit = 20, estado, ...opciones } = {}) {
+  const parametros = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (estado) parametros.set("estado", estado);
+  return solicitarAdmin(`/admin/pedidos?${parametros}`, { ...opciones, incluirMeta: true });
+}
+
+export function obtenerPedidoAdmin(id, opciones = {}) {
+  return solicitarAdmin(`/admin/pedidos/${encodeURIComponent(id)}`, opciones);
+}
+
+export function cambiarEstadoPedidoAdmin(id, estado, nota, opciones = {}) {
+  return solicitarAdmin(`/admin/pedidos/${encodeURIComponent(id)}/estado`, {
+    ...opciones,
+    method: "PATCH",
+    cuerpo: nota ? { estado, nota } : { estado },
+  });
+}

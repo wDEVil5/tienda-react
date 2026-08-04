@@ -74,7 +74,8 @@ function TarjetaDireccion({ direccion, onEditar, onMarcarPredeterminada }) {
 }
 
 // Resumen inicial de la cuenta. Muestra solo datos entregados por los endpoints
-// actuales; editar perfil, seguridad e historial detallado llegan en sus pasos.
+// actuales; la edición y las acciones de seguridad se habilitan al existir sus
+// contratos de API específicos.
 function MiCuenta() {
   const navegar = useNavigate();
   const { cliente, cerrarSesion } = useCuenta();
@@ -273,9 +274,7 @@ function MiCuenta() {
             Mis pedidos
           </Link>
           <a href="#direcciones">Direcciones</a>
-          <span className={styles.navPendiente} title="Se habilitará con la edición de perfil">
-            Datos y seguridad
-          </span>
+          <Link to="/mi-cuenta/datos">Datos y seguridad</Link>
         </aside>
 
         <div className={styles.contenido}>
@@ -285,9 +284,7 @@ function MiCuenta() {
               <h1 id="titulo-cuenta">{cliente?.nombre}</h1>
               <p>Cuenta activa · {pedidos.length} {pedidos.length === 1 ? "pedido" : "pedidos"}</p>
             </div>
-            <span className={styles.accionPendiente} title="La edición de perfil se habilitará en un próximo paso">
-              Editar datos
-            </span>
+            <Link className={styles.accionEditar} to="/mi-cuenta/datos">Editar datos</Link>
           </div>
 
           {error && <p className={styles.error} role="alert">{error}</p>}

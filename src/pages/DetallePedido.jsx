@@ -138,7 +138,7 @@ function DetallePedido() {
           <Link to="/mi-cuenta">Resumen</Link>
           <Link className={styles.navActiva} to="/mi-cuenta/pedidos">Mis pedidos</Link>
           <Link to="/mi-cuenta#direcciones">Direcciones</Link>
-          <span className={styles.navPendiente} title="Se habilitará con la edición de perfil">Datos y seguridad</span>
+          <Link to="/mi-cuenta/datos">Datos y seguridad</Link>
         </aside>
 
         <main className={styles.contenidoPedido}>

@@ -8,7 +8,11 @@ test('crearPreferencia llama a MP con el token, el monto y el external_reference
     capturado = { url, opciones, body: JSON.parse(opciones.body) }
     return { ok: true, async json() { return { init_point: 'https://mp/checkout/123', id: 'pref1' } } }
   }
-  const pasarela = crearPasarelaMercadoPago({ accessToken: 'TEST-123', fetchImpl })
+  const pasarela = crearPasarelaMercadoPago({
+    accessToken: 'TEST-123',
+    urlBase: 'https://usuario.github.io/tienda-react/',
+    fetchImpl,
+  })
 
   const resultado = await pasarela.crearPreferencia({ pagoId: 'pago1', pedidoNumero: 7, monto: 15000 })
 
@@ -18,6 +22,12 @@ test('crearPreferencia llama a MP con el token, el monto y el external_reference
   assert.equal(capturado.body.external_reference, 'pago1')
   assert.equal(capturado.body.items[0].unit_price, 15000)
   assert.equal(capturado.body.items[0].currency_id, 'CLP')
+  assert.equal(capturado.body.auto_return, 'approved')
+  assert.deepEqual(capturado.body.back_urls, {
+    success: 'https://usuario.github.io/tienda-react/pago/exito',
+    failure: 'https://usuario.github.io/tienda-react/pago/error',
+    pending: 'https://usuario.github.io/tienda-react/pago/pendiente',
+  })
 })
 
 test('crearPreferencia incluye notification_url solo si está configurada', async () => {

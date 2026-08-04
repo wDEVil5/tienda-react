@@ -13,7 +13,9 @@ const MAPA_ESTADO = {
 // de pagos no cambia. `fetchImpl` es inyectable para probar sin llamar a la API.
 export function crearPasarelaMercadoPago({
   accessToken,
-  urlBase = process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
+  // FRONTEND_ORIGIN es solo CORS (sin ruta); la app puede vivir bajo un base
+  // path, como GitHub Pages /tienda-react/, por eso el retorno usa otra URL.
+  urlBase = process.env.FRONTEND_APP_URL || process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
   // A dónde MP envía el webhook. En local necesita ser una URL pública (túnel);
   // si no se define, MP no notifica (útil para pruebas de solo crear preferencia).
   notificationUrl = process.env.MP_WEBHOOK_URL,
@@ -43,6 +45,7 @@ export function crearPasarelaMercadoPago({
     proveedor: 'mercadopago',
 
     async crearPreferencia({ pagoId, pedidoNumero, monto }) {
+      const urlRetorno = urlBase.replace(/\/$/, '')
       const preferencia = await mpFetch('/checkout/preferences', {
         method: 'POST',
         body: JSON.stringify({
@@ -58,10 +61,13 @@ export function crearPasarelaMercadoPago({
           // webhook: es cómo correlacionamos la notificación con nuestro Pago.
           external_reference: pagoId,
           back_urls: {
-            success: `${urlBase}/pago/exito`,
-            failure: `${urlBase}/pago/error`,
-            pending: `${urlBase}/pago/pendiente`,
+            success: `${urlRetorno}/pago/exito`,
+            failure: `${urlRetorno}/pago/error`,
+            pending: `${urlRetorno}/pago/pendiente`,
           },
+          // Sin esto la persona debe presionar manualmente "volver al sitio"
+          // aun cuando MP ya aprobó. El webhook continúa siendo la verdad.
+          auto_return: 'approved',
           // Solo se incluye si hay URL pública configurada (túnel/producción).
           ...(notificationUrl ? { notification_url: notificationUrl } : {}),
         }),

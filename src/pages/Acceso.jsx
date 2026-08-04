@@ -52,7 +52,9 @@ function Acceso({ modo }) {
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
   const [mostrarContrasena, setMostrarContrasena] = useState(false);
 
-  const destino = ubicacion.state?.desde?.pathname ?? "/";
+  // Puede ser una ubicación completa (pathname, search y hash), no solo una
+  // URL de texto. Así una ruta protegida devuelve exactamente al mismo lugar.
+  const destino = ubicacion.state?.desde ?? "/";
 
   // No dejamos una pantalla de acceso abierta después de una sesión ya válida.
   if (estaAutenticado) {
@@ -300,7 +302,7 @@ function Acceso({ modo }) {
         {!esRegistro && (
           <div className={styles.alternativa}>
             <span>¿Primera vez por aquí?</span>
-            <Link to="/registro">Crear cuenta</Link>
+            <Link to="/registro" state={ubicacion.state}>Crear cuenta</Link>
           </div>
         )}
 

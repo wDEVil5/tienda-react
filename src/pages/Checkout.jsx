@@ -7,9 +7,9 @@ import { useCarritoContext } from "../context/CarritoContext.jsx";
 import { useReglas } from "../context/ReglasContext.jsx";
 import {
   cotizarPedido,
-  crearPedido,
   hayApiPedidos,
 } from "../services/pedidosApi.js";
+import { guardarCheckoutPendiente } from "../services/checkoutPendiente.js";
 
 // Espacio fino inseparable: separa el símbolo de la cifra sin permitir que se
 // partan en dos líneas dentro de los resúmenes angostos.
@@ -29,7 +29,7 @@ const DIRECCION_INICIAL = {
 };
 
 function Checkout() {
-  const { carrito, vaciarCarrito } = useCarritoContext();
+  const { carrito } = useCarritoContext();
   const { envioGratisDesde } = useReglas();
   const navegar = useNavigate();
 
@@ -44,8 +44,6 @@ function Checkout() {
 
   const [enviando, setEnviando] = useState(false);
   const [errorEnvio, setErrorEnvio] = useState(null);
-  const [pedidoConfirmado, setPedidoConfirmado] = useState(null);
-
   const conApi = hayApiPedidos();
 
   // El cliente manda QUÉ compra; el precio lo pone el servidor. Por eso al API
@@ -169,7 +167,13 @@ function Checkout() {
         : undefined;
 
     try {
-      const pedido = await crearPedido({
+      const cotizacionFinal = await cotizarPedido({
+        modalidad,
+        comuna: modalidad === "DESPACHO" ? comunaLimpia : undefined,
+        items,
+      });
+
+      guardarCheckoutPendiente({
         contacto: {
           nombre: contacto.nombre.trim(),
           email: contacto.email.trim(),
@@ -177,69 +181,15 @@ function Checkout() {
         },
         modalidad,
         direccion: direccionPedido,
-        items,
+        cotizacion: cotizacionFinal,
+        itemsVisuales: carrito.map(({ id, nombre, imagen, cantidad }) => ({ id, nombre, imagen, cantidad })),
       });
-
-      setPedidoConfirmado(pedido);
-      vaciarCarrito(); // el pedido ya vive en el servidor; liberamos el carrito
+      navegar("/checkout/pago");
     } catch (error) {
       setErrorEnvio(mensajeDeError(error));
     } finally {
       setEnviando(false);
     }
-  }
-
-  // --- Confirmación (va ANTES del guard de carrito vacío: vaciamos al crear) ---
-  if (pedidoConfirmado) {
-    return (
-      <section className={styles.checkout}>
-        <CabeceraCheckout pasoActual={3} />
-        <div className={styles.confirmacion}>
-          <span className={styles.check} aria-hidden="true">
-            <i className="fa-solid fa-check"></i>
-          </span>
-          <h1 className={styles.confTitulo}>Recibimos tu pedido</h1>
-          <p className={styles.confSub}>
-            Te enviaremos el detalle a{" "}
-            <strong>{pedidoConfirmado.contacto?.email}</strong>.
-          </p>
-
-          <dl className={styles.confFicha}>
-            <div className={styles.confFila}>
-              <dt>Pedido</dt>
-              <dd className={styles.confNumero}>
-                #SE-{pedidoConfirmado.numero}
-              </dd>
-            </div>
-            <div className={styles.confFila}>
-              <dt>Entrega</dt>
-              <dd>
-                {pedidoConfirmado.modalidad === "DESPACHO"
-                  ? `Despacho a ${pedidoConfirmado.direccion?.comuna ?? ""}`
-                  : "Retiro en tienda"}
-              </dd>
-            </div>
-            <div className={styles.confFila}>
-              <dt>Total</dt>
-              <dd className={styles.confTotal}>{clp(pedidoConfirmado.total)}</dd>
-            </div>
-          </dl>
-
-          <div className={styles.confAcciones}>
-            <button
-              className={styles.confBotonPrimario}
-              onClick={() => navegar("/")}
-            >
-              Volver al inicio
-            </button>
-          </div>
-          <p className={styles.confNota}>
-            El pedido quedó pendiente de confirmación. El pago en línea llegará en
-            una etapa posterior.
-          </p>
-        </div>
-      </section>
-    );
   }
 
   // --- Carrito vacío ---

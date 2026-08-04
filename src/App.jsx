@@ -3,6 +3,7 @@ import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import Home from "./pages/Home.jsx";
 import ProductoDetalle from "./pages/ProductoDetalle.jsx";
 import Checkout from "./pages/Checkout.jsx";
+import CheckoutPago from "./pages/CheckoutPago.jsx";
 import { Login, Registro } from "./pages/Acceso.jsx";
 import MiCuenta from "./pages/MiCuenta.jsx";
 import MisPedidos from "./pages/MisPedidos.jsx";
@@ -209,7 +210,7 @@ function App() {
   // effect y descarta datos obsoletos si la fuente vuelve al fallback.
   const ofertasDestacadasVigentes =
     fuenteCatalogo === "api" ? ofertasDestacadas : null;
-  const esCheckout = ubicacion.pathname === "/checkout";
+  const esCheckout = ubicacion.pathname.startsWith("/checkout");
   const esAcceso = ["/login", "/registro"].includes(ubicacion.pathname);
   const esMiCuenta = ubicacion.pathname.startsWith("/mi-cuenta");
   const esPantallaPrivada = esAcceso || esMiCuenta;
@@ -294,6 +295,7 @@ function App() {
             element={<ProductoDetalle productos={productos} />}
           />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/checkout/pago" element={<CheckoutPago />} />
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
           <Route

@@ -375,6 +375,43 @@
 .confBotonPrimario:hover { background: #275a3e; }
 .confirmar:disabled { cursor: not-allowed; opacity: .5; }
 
+.panelPago { display: flex; flex-direction: column; gap: 26px; }
+.entregaPago { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.entregaPago span { color: var(--color-texto-suave); font-size: 13px; }
+.entregaPago p { max-width: 34ch; margin-top: 6px; color: var(--color-texto); font-size: 16px; line-height: 1.35; }
+.entregaPago button { padding: 0; border: 0; background: transparent; color: var(--color-acento); cursor: pointer; font: inherit; font-size: 14px; font-weight: 600; }
+.entregaPago button:hover { text-decoration: underline; }
+.separadorPago, .lineaPago { height: 1px; background: var(--color-borde-2); }
+
+.metodosPago { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.metodoPago { min-height: 182px; display: flex; flex-direction: column; align-items: flex-start; padding: 20px; border: 1px solid var(--color-borde); border-radius: var(--radio-caja); background: var(--color-superficie); opacity: .65; }
+.metodoPagoActivo { border-color: var(--color-acento); background: #f4f8f5; opacity: 1; }
+.iconoMetodo { width: 46px; height: 42px; display: grid; place-items: center; margin-bottom: 18px; border-radius: 7px; background: var(--color-crudo); color: var(--color-texto-suave); font-size: 17px; }
+.metodoPagoActivo .iconoMetodo { color: var(--color-acento); background: #dfe9e3; }
+.metodoPago strong { color: var(--color-texto); font-size: 15px; line-height: 1.3; }
+.metodoPago p { margin-top: 10px; color: var(--color-texto-suave); font-size: 13px; line-height: 1.4; }
+
+.cuotasPago h2 { color: var(--color-texto); font-size: 16px; font-weight: 600; }
+.opcionesCuotas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 11px; margin-top: 13px; }
+.opcionesCuotas span { display: flex; flex-direction: column; gap: 3px; padding: 12px 10px; border: 1px solid var(--color-borde); border-radius: var(--radio-caja); color: var(--color-texto-suave); font-size: 13px; line-height: 1.25; text-align: center; opacity: .7; }
+.opcionesCuotas strong { color: var(--color-texto); font-size: 14px; }
+.opcionesCuotas .cuotaActiva { border-color: var(--color-texto); color: var(--color-texto); opacity: 1; }
+.cuotasPago > p { margin-top: 12px; color: var(--color-texto-tenue); font-size: 12px; line-height: 1.45; }
+
+.boletaPago { display: flex; align-items: center; justify-content: space-between; gap: 18px; color: var(--color-texto-2); font-size: 14px; }
+.interruptorInactivo { width: 44px; height: 24px; display: flex; align-items: center; padding: 3px; border-radius: 999px; background: var(--color-borde-3); }
+.interruptorInactivo i { width: 18px; height: 18px; border-radius: 50%; background: #fff; }
+.terminosPago { display: flex; align-items: flex-start; gap: 11px; color: var(--color-texto-suave); font-size: 13px; line-height: 1.5; cursor: pointer; }
+.terminosPago input { width: 18px; height: 18px; flex: 0 0 auto; margin: 1px 0 0; accent-color: var(--color-texto); }
+.avisoPasarela { padding: 17px 18px; border-radius: var(--radio-caja); background: var(--color-crudo); color: var(--color-texto-suave); font-size: 13px; line-height: 1.55; }
+.itemsPago { display: flex; flex-direction: column; gap: var(--e-md); margin: 0 0 var(--e-lg); padding: 0; list-style: none; }
+.resumenPago { align-self: start; }
+.estadoPagoAusente { max-width: 500px; display: flex; flex-direction: column; align-items: center; margin: 30px auto 10px; padding: 48px 30px; text-align: center; }
+.estadoPagoAusente > span { width: 54px; height: 54px; display: grid; place-items: center; border-radius: 50%; background: var(--color-crudo); color: var(--color-texto-suave); font-size: 20px; }
+.estadoPagoAusente h1 { margin-top: 18px; font-family: var(--font-display); font-size: 34px; font-weight: 400; }
+.estadoPagoAusente p { max-width: 35ch; margin-top: 12px; color: var(--color-texto-suave); font-size: 14px; line-height: 1.5; }
+.estadoPagoAusente button { margin-top: 24px; padding: 13px 20px; border: 0; border-radius: var(--radio-control); background: var(--color-acento); color: #fff; cursor: pointer; font: inherit; font-size: 14px; font-weight: 600; }
+
 .confirmacion { max-width: 500px; margin: var(--e-2xl) auto; text-align: center; }
 .check { display: inline-grid; width: 56px; height: 56px; place-items: center; margin-bottom: var(--e-lg); border-radius: 50%; background: var(--color-acento-bg); color: var(--color-acento); font-size: 24px; }
 .confSub { margin: var(--e-sm) 0 var(--e-xl); color: var(--color-texto-suave); font-size: 14px; }
@@ -405,6 +442,7 @@
     gap: var(--e-xl);
   }
   .resumen { position: static; }
+  .metodosPago { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (max-width: 767px) {
@@ -441,6 +479,14 @@
   .resumen { position: static; }
   .opciones,
   .fila2 { grid-template-columns: 1fr; }
+  .metodosPago { grid-template-columns: 1fr; }
+  .metodoPago { min-height: 0; padding: 16px; }
+  .metodoPago p { margin-top: 5px; }
+  .iconoMetodo { width: 38px; height: 34px; margin-bottom: 10px; }
+  .entregaPago { align-items: flex-start; }
+  .opcionesCuotas { gap: 7px; }
+  .opcionesCuotas span { padding: 10px 5px; font-size: 11px; }
+  .opcionesCuotas strong { font-size: 12px; }
 
   /* Los avisos toman el mismo gutter de 16px; el error de envío vive dentro del
      resumen, así que solo anula su margen lateral heredado del desktop. */

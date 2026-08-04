@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   validarActualizacionPerfilCliente,
+  validarCambioContrasenaCliente,
   validarRegistroCliente,
 } from '../src/modules/cuenta/cuenta.validacion.js'
 
@@ -45,6 +46,34 @@ test('perfil no permite cambiar email ni agregar campos ajenos', () => {
       nombre: 'Wilnes A.',
       telefono: null,
       email: 'otro@correo.cl',
+    }).success,
+    false,
+  )
+})
+
+test('acepta un cambio de contraseña con claves distintas y seguras', () => {
+  assert.equal(
+    validarCambioContrasenaCliente({
+      contrasenaActual: 'Cliente2026!',
+      contrasenaNueva: 'Nueva clave segura 2026',
+    }).success,
+    true,
+  )
+})
+
+test('rechaza una contraseña nueva corta, igual o con campos extra', () => {
+  assert.equal(
+    validarCambioContrasenaCliente({
+      contrasenaActual: 'Cliente2026!',
+      contrasenaNueva: 'corta',
+    }).success,
+    false,
+  )
+  assert.equal(
+    validarCambioContrasenaCliente({
+      contrasenaActual: 'Cliente2026!',
+      contrasenaNueva: 'Cliente2026!',
+      clienteId: 'ajeno',
     }).success,
     false,
   )

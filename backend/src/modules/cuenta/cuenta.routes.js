@@ -6,10 +6,12 @@ import {
   obtenerSesionActiva,
   registrar,
   actualizarPerfil,
+  cambiarContrasena,
 } from './cuenta.service.js'
 import { crearRequerirCliente } from './cuenta.middleware.js'
 import {
   validarActualizacionPerfilCliente,
+  validarCambioContrasenaCliente,
   validarRegistroCliente,
 } from './cuenta.validacion.js'
 import { crearLimitadorIntentosLogin } from '../auth/limite-intentos.js'
@@ -31,7 +33,14 @@ function leerCredenciales(body) {
 }
 
 export function crearRouterCuenta(
-  servicio = { registrar, iniciarSesion, obtenerSesionActiva, cerrarSesion, actualizarPerfil },
+  servicio = {
+    registrar,
+    iniciarSesion,
+    obtenerSesionActiva,
+    cerrarSesion,
+    actualizarPerfil,
+    cambiarContrasena,
+  },
   { limitarLogin = crearLimitadorIntentosLogin() } = {},
 ) {
   const cuentaRouter = Router()
@@ -122,6 +131,35 @@ export function crearRouterCuenta(
       const cliente = await servicio.actualizarPerfil(request.cliente.id, validacion.data)
       return response.json({ data: { cliente } })
     } catch (error) {
+      return next(error)
+    }
+  })
+
+  cuentaRouter.patch('/contrasena', requerirCliente, async (request, response, next) => {
+    const validacion = validarCambioContrasenaCliente(request.body)
+    if (!validacion.success) {
+      return response.status(422).json({
+        error: {
+          code: 'INVALID_PASSWORD_CHANGE_DATA',
+          message: 'Revisa los datos de la contraseña.',
+          fields: validacion.error.issues.map((issue) => issue.path.join('.')),
+        },
+      })
+    }
+
+    try {
+      await servicio.cambiarContrasena(
+        request.cliente.id,
+        validacion.data,
+        request.tokenSesion,
+      )
+      return response.status(204).end()
+    } catch (error) {
+      if (error instanceof ErrorCuenta && error.code === 'INVALID_CURRENT_PASSWORD') {
+        return response.status(400).json({
+          error: { code: error.code, message: error.message },
+        })
+      }
       return next(error)
     }
   })

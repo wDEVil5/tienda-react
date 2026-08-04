@@ -154,6 +154,49 @@ test('PATCH /api/cuenta/perfil rechaza datos inválidos antes de llamar al servi
   assert.equal(response.body.error.code, 'INVALID_PROFILE_DATA')
 })
 
+test('PATCH /api/cuenta/contrasena cambia la clave del cliente autenticado', async () => {
+  let recibido = null
+  const app = crearApp({
+    async obtenerSesionActiva() {
+      return { cliente: { id: 'c1' } }
+    },
+    async cambiarContrasena(clienteId, datos, tokenSesion) {
+      recibido = { clienteId, datos, tokenSesion }
+    },
+  })
+
+  const response = await request(app)
+    .patch('/api/cuenta/contrasena')
+    .set('Cookie', 'sesion_cliente=tok')
+    .send({ contrasenaActual: 'Cliente2026!', contrasenaNueva: 'Nueva clave segura 2026' })
+
+  assert.equal(response.status, 204)
+  assert.deepEqual(recibido, {
+    clienteId: 'c1',
+    datos: { contrasenaActual: 'Cliente2026!', contrasenaNueva: 'Nueva clave segura 2026' },
+    tokenSesion: 'tok',
+  })
+})
+
+test('PATCH /api/cuenta/contrasena rechaza la contraseña actual incorrecta', async () => {
+  const app = crearApp({
+    async obtenerSesionActiva() {
+      return { cliente: { id: 'c1' } }
+    },
+    async cambiarContrasena() {
+      throw new ErrorCuenta('INVALID_CURRENT_PASSWORD', 'La contraseña actual no es correcta.')
+    },
+  })
+
+  const response = await request(app)
+    .patch('/api/cuenta/contrasena')
+    .set('Cookie', 'sesion_cliente=tok')
+    .send({ contrasenaActual: 'mala', contrasenaNueva: 'Nueva clave segura 2026' })
+
+  assert.equal(response.status, 400)
+  assert.equal(response.body.error.code, 'INVALID_CURRENT_PASSWORD')
+})
+
 test('POST /logout revoca la sesión y limpia la cookie', async () => {
   let revocado = false
   const app = crearApp({

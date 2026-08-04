@@ -8,6 +8,10 @@ export function crearRepositorioCuenta(db = prisma) {
       return db.cliente.findFirst({ where: { email, activo: true } })
     },
 
+    buscarClienteActivoPorId(id) {
+      return db.cliente.findFirst({ where: { id, activo: true } })
+    },
+
     crearCliente({ nombre, email, passwordHash, telefono }) {
       return db.cliente.create({
         data: { nombre, email, passwordHash, telefono },
@@ -20,6 +24,23 @@ export function crearRepositorioCuenta(db = prisma) {
       return db.cliente.update({
         where: { id },
         data: { nombre, telefono },
+      })
+    },
+
+    // La clave nueva y la revocación de OTROS dispositivos deben confirmarse
+    // juntas: una falla nunca deja la contraseña cambiada con sesiones viejas.
+    actualizarContrasenaYRevocarOtrasSesiones({ clienteId, passwordHash, tokenHashActual, ahora }) {
+      return db.$transaction(async (tx) => {
+        await tx.cliente.update({ where: { id: clienteId }, data: { passwordHash } })
+        await tx.sesionCliente.updateMany({
+          where: {
+            clienteId,
+            tokenHash: { not: tokenHashActual },
+            revocadaEn: null,
+            expiraEn: { gt: ahora },
+          },
+          data: { revocadaEn: ahora },
+        })
       })
     },
 

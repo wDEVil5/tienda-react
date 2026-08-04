@@ -107,3 +107,50 @@ test('actualizarPerfil modifica solo datos públicos del cliente de sesión', as
     telefono: '+56 9 1234 5678',
   })
 })
+
+test('cambiarContrasena verifica la actual y revoca solo las otras sesiones', async () => {
+  const passwordHash = await crearHashContrasena(CLAVE)
+  let cambio = null
+  const servicio = crearServicioCuenta({
+    async buscarClienteActivoPorId() {
+      return { id: 'c1', passwordHash }
+    },
+    async actualizarContrasenaYRevocarOtrasSesiones(datos) {
+      cambio = datos
+    },
+  })
+
+  await servicio.cambiarContrasena(
+    'c1',
+    { contrasenaActual: CLAVE, contrasenaNueva: 'Nueva clave segura 2026' },
+    'sesion-actual',
+    new Date('2026-08-04T12:00:00Z'),
+  )
+
+  assert.equal(cambio.clienteId, 'c1')
+  assert.ok(cambio.passwordHash)
+  assert.notEqual(cambio.passwordHash, 'Nueva clave segura 2026')
+  assert.ok(cambio.tokenHashActual)
+  assert.equal(cambio.ahora.toISOString(), '2026-08-04T12:00:00.000Z')
+})
+
+test('cambiarContrasena rechaza una contraseña actual incorrecta sin guardar nada', async () => {
+  const passwordHash = await crearHashContrasena(CLAVE)
+  const servicio = crearServicioCuenta({
+    async buscarClienteActivoPorId() {
+      return { id: 'c1', passwordHash }
+    },
+    async actualizarContrasenaYRevocarOtrasSesiones() {
+      throw new Error('no debería llamarse')
+    },
+  })
+
+  await assert.rejects(
+    servicio.cambiarContrasena(
+      'c1',
+      { contrasenaActual: 'clave equivocada', contrasenaNueva: 'Nueva clave segura 2026' },
+      'sesion-actual',
+    ),
+    (error) => error instanceof ErrorCuenta && error.code === 'INVALID_CURRENT_PASSWORD',
+  )
+})

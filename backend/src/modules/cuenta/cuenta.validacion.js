@@ -28,3 +28,20 @@ export const esquemaActualizacionPerfilCliente = z
 export function validarActualizacionPerfilCliente(datos) {
   return esquemaActualizacionPerfilCliente.safeParse(datos)
 }
+
+// La contraseña actual confirma que quien tiene abierta la sesión sigue siendo
+// su dueño. La nueva conserva la misma política aplicada en el registro.
+export const esquemaCambioContrasenaCliente = z
+  .object({
+    contrasenaActual: z.string().min(1).max(128),
+    contrasenaNueva: z.string().min(12).max(128),
+  })
+  .strict()
+  .refine(
+    ({ contrasenaActual, contrasenaNueva }) => contrasenaActual !== contrasenaNueva,
+    { path: ['contrasenaNueva'], message: 'La nueva contraseña debe ser distinta.' },
+  )
+
+export function validarCambioContrasenaCliente(datos) {
+  return esquemaCambioContrasenaCliente.safeParse(datos)
+}

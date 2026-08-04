@@ -83,6 +83,29 @@ export function crearServicioCuenta(repositorio = repositorioCuenta) {
       return crearClientePublico(cliente)
     },
 
+    async cambiarContrasena(
+      clienteId,
+      { contrasenaActual, contrasenaNueva },
+      tokenSesion,
+      ahora = new Date(),
+    ) {
+      const cliente = await repositorio.buscarClienteActivoPorId(clienteId)
+
+      // No devolvemos qué parte falló: aun con sesión válida, evitamos dar una
+      // pista útil si alguien tomó un navegador desbloqueado.
+      if (!cliente || !(await verificarContrasena(cliente.passwordHash, contrasenaActual))) {
+        throw new ErrorCuenta('INVALID_CURRENT_PASSWORD', 'La contraseña actual no es correcta.')
+      }
+
+      const passwordHash = await crearHashContrasena(contrasenaNueva)
+      await repositorio.actualizarContrasenaYRevocarOtrasSesiones({
+        clienteId,
+        passwordHash,
+        tokenHashActual: hashTokenSesion(tokenSesion),
+        ahora,
+      })
+    },
+
     async obtenerSesionActiva(token, ahora = new Date()) {
       if (!token) return null
 
@@ -108,3 +131,4 @@ export const iniciarSesion = servicioCuenta.iniciarSesion
 export const obtenerSesionActiva = servicioCuenta.obtenerSesionActiva
 export const cerrarSesion = servicioCuenta.cerrarSesion
 export const actualizarPerfil = servicioCuenta.actualizarPerfil
+export const cambiarContrasena = servicioCuenta.cambiarContrasena

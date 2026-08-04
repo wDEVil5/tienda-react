@@ -390,7 +390,8 @@ model Cliente {
   sesiones    SesionCliente[]
   direcciones Direccion[]
   pedidos     Pedido[]
-  avisosStock AvisoStock[]
+  avisosStock   AvisoStock[]
+  suscripciones Suscriptor[]
 
   @@index([activo])
   @@map("clientes")
@@ -462,4 +463,27 @@ model AvisoStock {
   @@index([productoId])
   @@index([clienteId])
   @@map("avisos_stock")
+}
+
+// Suscripción al boletín (newsletter del footer). A diferencia de "Avísame", no
+// depende de un producto: es un correo que quiere recibir ofertas. La baja se
+// hace con un `token` (enlace "cancelar con un clic"), sin pedir login.
+enum EstadoSuscriptor {
+  ACTIVO
+  BAJA
+}
+
+model Suscriptor {
+  id        String           @id @default(uuid()) @db.Uuid
+  email     String           @unique @db.VarChar(255)
+  estado    EstadoSuscriptor @default(ACTIVO)
+  token     String           @unique @default(uuid()) @db.Uuid
+  clienteId String?          @map("cliente_id") @db.Uuid
+  creadoEn  DateTime         @default(now()) @map("creado_en")
+  bajaEn    DateTime?        @map("baja_en")
+
+  cliente Cliente? @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+
+  @@index([clienteId])
+  @@map("suscriptores")
 }

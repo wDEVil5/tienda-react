@@ -74,8 +74,9 @@ function calcularTotales({ modalidad, comuna }, items, reglas) {
   return { subtotal, descuento, costoEnvio, total: subtotal - descuento + costoEnvio }
 }
 
-// Resumen para el listado del panel: lo justo para una fila (incluye conteos
-// de productos y unidades, y la comuna solo si es despacho).
+// Resumen para listados: conteos y, como máximo, tres miniaturas reales. Estas
+// no son snapshots del pedido: si un producto ya no existe, se omiten en vez de
+// devolver una imagen inventada. El detalle conserva los datos congelados.
 function crearResumenPedido(pedido) {
   return {
     id: pedido.id,
@@ -86,6 +87,13 @@ function crearResumenPedido(pedido) {
     comuna: pedido.modalidad === 'DESPACHO' ? pedido.dirComuna : null,
     cantidadProductos: pedido.items.length,
     cantidadUnidades: pedido.items.reduce((suma, item) => suma + item.cantidad, 0),
+    previsualizaciones: pedido.items
+      .flatMap((item) => item.producto?.imagenes?.slice(0, 1) ?? [])
+      .slice(0, 3)
+      .map((imagen) => ({
+        url: imagen.url,
+        textoAlternativo: imagen.textoAlternativo,
+      })),
     total: pedido.total,
     createdAt: pedido.createdAt,
   }

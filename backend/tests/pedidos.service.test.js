@@ -259,6 +259,7 @@ test('listarPedidos entrega resumen paginado con conteos de productos y unidades
   assert.equal(resultado.data[0].cantidadProductos, 2)
   assert.equal(resultado.data[0].cantidadUnidades, 3)
   assert.equal(resultado.data[0].comuna, 'Providencia')
+  assert.deepEqual(resultado.data[0].previsualizaciones, [])
 })
 
 test('obtenerDetallePedido arma la ficha con timeline y sin dirección en retiro', async () => {

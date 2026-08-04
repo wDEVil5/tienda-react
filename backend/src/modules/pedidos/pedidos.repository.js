@@ -44,8 +44,9 @@ export function crearRepositorioPedidos(cliente = prisma) {
       }))
     },
 
-    // Listado para el panel: el más reciente primero. Incluye la cantidad de
-    // cada ítem para poder mostrar "N productos, M unidades" sin otra consulta.
+    // Listado para panel y cuenta: además de los conteos, trae la primera imagen
+    // vigente de hasta tres productos. Evita una petición por pedido en "Mis
+    // pedidos"; si el producto se eliminó, su miniatura simplemente se omite.
     async listar({ page = 1, limit = 20, estado, clienteId } = {}) {
       const where = {
         ...(estado ? { estado } : {}),
@@ -56,7 +57,22 @@ export function crearRepositorioPedidos(cliente = prisma) {
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
-        include: { items: { select: { cantidad: true } } },
+        include: {
+          items: {
+            select: {
+              cantidad: true,
+              producto: {
+                select: {
+                  imagenes: {
+                    orderBy: { orden: 'asc' },
+                    take: 1,
+                    select: { url: true, textoAlternativo: true },
+                  },
+                },
+              },
+            },
+          },
+        },
       })
     },
 

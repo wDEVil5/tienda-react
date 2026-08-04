@@ -5,6 +5,7 @@ import ProductoDetalle from "./pages/ProductoDetalle.jsx";
 import Checkout from "./pages/Checkout.jsx";
 import { Login, Registro } from "./pages/Acceso.jsx";
 import MiCuenta from "./pages/MiCuenta.jsx";
+import MisPedidos from "./pages/MisPedidos.jsx";
 import Carrito from "./components/Carrito.jsx";
 import Toast from "./components/Toast.jsx";
 import styles from "./App.module.css";
@@ -208,7 +209,7 @@ function App() {
     fuenteCatalogo === "api" ? ofertasDestacadas : null;
   const esCheckout = ubicacion.pathname === "/checkout";
   const esAcceso = ["/login", "/registro"].includes(ubicacion.pathname);
-  const esMiCuenta = ubicacion.pathname === "/mi-cuenta";
+  const esMiCuenta = ubicacion.pathname.startsWith("/mi-cuenta");
   const esPantallaPrivada = esAcceso || esMiCuenta;
 
   //early return
@@ -298,6 +299,14 @@ function App() {
             element={
               <RutaProtegida>
                 <MiCuenta />
+              </RutaProtegida>
+            }
+          />
+          <Route
+            path="/mi-cuenta/pedidos"
+            element={
+              <RutaProtegida>
+                <MisPedidos />
               </RutaProtegida>
             }
           />

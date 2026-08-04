@@ -98,10 +98,10 @@ function MiCuenta() {
     let vigente = true;
 
     Promise.all([listarDireccionesCuenta(), listarPedidosCuenta()])
-      .then(([direccionesCuenta, pedidosCuenta]) => {
+      .then(([direccionesCuenta, respuestaPedidos]) => {
         if (!vigente) return;
         setDirecciones(direccionesCuenta ?? []);
-        setPedidos(pedidosCuenta ?? []);
+        setPedidos(respuestaPedidos?.data ?? []);
       })
       .catch(() => {
         if (vigente) setError("No pudimos cargar los datos de tu cuenta.");
@@ -269,9 +269,9 @@ function MiCuenta() {
           <button className={styles.navActiva} type="button" aria-current="page">
             Resumen
           </button>
-          <span className={styles.navPendiente} title="Se habilitará con el historial de pedidos">
+          <Link to="/mi-cuenta/pedidos">
             Mis pedidos
-          </span>
+          </Link>
           <a href="#direcciones">Direcciones</a>
           <span className={styles.navPendiente} title="Se habilitará con la edición de perfil">
             Datos y seguridad

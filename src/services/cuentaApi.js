@@ -12,7 +12,13 @@ export class ErrorCuentaApi extends Error {
 
 async function solicitarCuenta(
   ruta,
-  { method = "GET", cuerpo, fetchImpl = fetch, apiUrl = apiUrlPorDefecto() } = {},
+  {
+    method = "GET",
+    cuerpo,
+    fetchImpl = fetch,
+    apiUrl = apiUrlPorDefecto(),
+    incluirMeta = false,
+  } = {},
 ) {
   if (!apiUrl) {
     throw new ErrorCuentaApi("La cuenta requiere la API propia.", {
@@ -39,7 +45,7 @@ async function solicitarCuenta(
     );
   }
 
-  return datos?.data ?? null;
+  return incluirMeta ? datos ?? { data: null, meta: null } : datos?.data ?? null;
 }
 
 // GET /cuenta devuelve null solo para el estado normal de visitante; otros
@@ -109,5 +115,8 @@ export function listarPedidosCuenta(
   const parametros = new URLSearchParams({ page: String(page), limit: String(limit) });
   if (estado) parametros.set("estado", estado);
 
-  return solicitarCuenta(`/cuenta/pedidos?${parametros}`, opciones);
+  return solicitarCuenta(`/cuenta/pedidos?${parametros}`, {
+    ...opciones,
+    incluirMeta: true,
+  });
 }

@@ -1,0 +1,55 @@
+.pantalla {
+  width: min(100%, 1180px);
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--color-borde);
+  border-radius: 18px;
+  background: var(--color-fondo);
+  box-shadow: 0 22px 54px rgba(28, 27, 24, .1);
+}
+
+.cabecera { min-height: 108px; display: flex; align-items: center; padding: 0 42px; border-bottom: 1px solid var(--color-borde); background: var(--color-superficie); }
+.logo { color: var(--color-texto); font-family: var(--font-display); font-size: 34px; line-height: 1; text-decoration: none; }
+.logo em { color: var(--color-acento); }
+
+.cuerpo { display: grid; grid-template-columns: 236px minmax(0, 1fr); }
+.navegacion { display: flex; flex-direction: column; gap: 6px; min-height: 710px; padding: 38px 28px; border-right: 1px solid var(--color-borde); background: #fcfbf8; }
+.navegacion a, .navActiva, .navPendiente { display: block; width: 100%; padding: 12px 16px; border-radius: var(--radio-caja); color: var(--color-texto-suave); font-size: 15px; text-decoration: none; }
+.navegacion a:hover { color: var(--color-acento); }
+.navActiva { color: var(--color-texto); background: var(--color-crudo); font-weight: 650; }
+.navPendiente { cursor: help; }
+.contenidoPedidos { min-width: 0; }
+
+.encabezadoPagina { min-height: 148px; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 30px 42px; border-bottom: 1px solid var(--color-borde-2); }
+.encabezadoPagina h1 { font-family: var(--font-display); font-size: 43px; font-weight: 400; letter-spacing: -.02em; line-height: 1; }
+.filtros { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; }
+.filtros button { min-height: 50px; padding: 0 24px; border: 1px solid var(--color-borde-3); border-radius: var(--radio-pill); background: var(--color-superficie); color: var(--color-texto-2); font: inherit; font-size: 16px; cursor: pointer; transition: color .2s ease, background-color .2s ease, border-color .2s ease; }
+.filtros button:hover { border-color: var(--color-texto-suave); color: var(--color-texto); }
+.filtros .filtroActivo { border-color: var(--color-texto); background: var(--color-texto); color: #fff; }
+
+.lista { display: flex; flex-direction: column; }
+.pedido { min-height: 148px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto auto; align-items: center; gap: 26px; padding: 22px 42px; border-bottom: 1px solid var(--color-borde-2); }
+.previsualizaciones { display: flex; gap: 10px; }
+.miniatura { width: 72px; height: 72px; display: grid; place-items: center; overflow: hidden; border-radius: 9px; background: var(--color-crudo); }
+.imagenMiniatura { width: 100%; height: 100%; object-fit: contain; }
+.infoPedido { min-width: 0; }
+.identificador { color: var(--color-texto-suave); font-family: var(--font-mono); font-size: 12.5px; letter-spacing: .06em; line-height: 1.45; }
+.identificador span { margin: 0 7px; color: var(--color-texto-tenue); }
+.descripcion { margin-top: 6px; color: var(--color-texto-2); font-size: 15px; line-height: 1.45; }
+.estadoPedido { padding: 6px 13px; border-radius: 8px; background: var(--color-crudo); color: var(--color-texto-suave); font-size: 13px; font-weight: 600; white-space: nowrap; }
+.estadoENVIADO { background: var(--color-info-bg); color: var(--color-info); }
+.estadoPENDIENTE, .estadoPREPARANDO, .estadoLISTO_PARA_RETIRO { background: var(--color-aviso-bg); color: var(--color-aviso); }
+.estadoCANCELADO { background: var(--color-oferta-bg); color: var(--color-oferta); }
+.total { color: var(--color-texto); font-family: var(--font-precio); font-size: var(--tam-precio-drawer-total); font-weight: var(--peso-precio); letter-spacing: var(--tracking-precio); white-space: nowrap; }
+.verPendiente { color: var(--color-acento); cursor: help; font-size: 15px; font-weight: 600; white-space: nowrap; }
+
+.estado, .error { padding: 32px 42px; color: var(--color-texto-suave); font-size: 14px; }
+.error { color: var(--color-oferta); }
+.vacio { padding: 74px 42px; text-align: center; }
+.vacio h2 { font-family: var(--font-display); font-size: 31px; font-weight: 400; }
+.vacio p { margin-top: 10px; color: var(--color-texto-suave); font-size: 15px; }
+.vacio a { display: inline-block; margin-top: 22px; color: var(--color-acento); font-weight: 600; text-decoration: none; }
+.pieLista { display: grid; place-items: center; padding: 28px; }
+.pieLista button { border: 0; background: transparent; color: var(--color-texto-suave); font: inherit; font-size: 15px; cursor: pointer; }
+.pieLista button:hover:not(:disabled) { color: var(--color-acento); }
+.pieLista button:disabled { cursor: wait; opacity: .7; }

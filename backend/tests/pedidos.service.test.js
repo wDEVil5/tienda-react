@@ -284,8 +284,10 @@ test('obtenerDetallePedido arma la ficha con timeline y sin dirección en retiro
 
   assert.equal(detalle.direccion, null)
   assert.equal(detalle.items[0].nombre, 'Aceite')
+  assert.equal(detalle.items[0].productoActual, null)
   assert.equal(detalle.eventos.length, 2)
   assert.equal(detalle.eventos[1].estado, 'ENTREGADO')
+  assert.deepEqual(detalle.pagos, [])
 })
 
 test('obtenerDetallePedido devuelve null cuando el pedido no existe', async () => {

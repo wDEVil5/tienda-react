@@ -162,7 +162,7 @@ function MisPedidos() {
                   </div>
                   <span className={`${styles.estadoPedido} ${styles[`estado${pedido.estado}`] || ""}`}>{etiquetasEstado[pedido.estado] ?? pedido.estado}</span>
                   <strong className={styles.total}>{formatearCLP(pedido.total)}</strong>
-                  <span className={styles.verPendiente} title="El detalle del pedido se habilitará en el siguiente bloque">Ver</span>
+                  <Link className={styles.ver} to={`/mi-cuenta/pedidos/${pedido.id}`}>Ver</Link>
                 </article>
               ))}
             </div>

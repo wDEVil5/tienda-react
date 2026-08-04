@@ -120,3 +120,7 @@ export function listarPedidosCuenta(
     incluirMeta: true,
   });
 }
+
+export function obtenerPedidoCuenta(id, opciones = {}) {
+  return solicitarCuenta(`/cuenta/pedidos/${id}`, opciones);
+}

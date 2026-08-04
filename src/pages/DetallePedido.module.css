@@ -1,0 +1,55 @@
+.pantalla { width: min(100%, 1180px); margin: 0 auto; overflow: hidden; border: 1px solid var(--color-borde); border-radius: 18px; background: var(--color-fondo); box-shadow: 0 22px 54px rgba(28, 27, 24, .1); }
+.cabecera { min-height: 108px; display: flex; align-items: center; padding: 0 42px; border-bottom: 1px solid var(--color-borde); background: var(--color-superficie); }
+.logo { color: var(--color-texto); font-family: var(--font-display); font-size: 34px; line-height: 1; text-decoration: none; }
+.logo em { color: var(--color-acento); }
+.cuerpo { display: grid; grid-template-columns: 236px minmax(0, 1fr); }
+.navegacion { display: flex; flex-direction: column; gap: 6px; min-height: 760px; padding: 38px 28px; border-right: 1px solid var(--color-borde); background: #fcfbf8; }
+.navegacion a, .navPendiente { display: block; width: 100%; padding: 12px 16px; border-radius: var(--radio-caja); color: var(--color-texto-suave); font-size: 15px; text-decoration: none; }
+.navegacion a:hover { color: var(--color-acento); }
+.navegacion .navActiva { color: var(--color-texto); background: var(--color-crudo); font-weight: 650; }
+.navPendiente { cursor: help; }
+.contenidoPedido { min-width: 0; padding: 42px 54px 48px; }
+.cabeceraPedido { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.identificador { color: var(--color-texto-suave); font-family: var(--font-mono); font-size: 12.5px; letter-spacing: .07em; }
+.identificador span { margin: 0 7px; color: var(--color-texto-tenue); }
+.cabeceraPedido h1 { margin-top: 14px; color: var(--color-texto); font-family: var(--font-display); font-size: 43px; font-weight: 400; letter-spacing: -.02em; line-height: 1; }
+.estadoPedido { margin-top: 2px; padding: 6px 14px; border-radius: 8px; background: var(--color-crudo); color: var(--color-texto-suave); font-size: 13px; font-weight: 600; white-space: nowrap; }
+.estadoENVIADO { background: var(--color-info-bg); color: var(--color-info); }
+.estadoPENDIENTE, .estadoPREPARANDO, .estadoLISTO_PARA_RETIRO { background: var(--color-aviso-bg); color: var(--color-aviso); }
+.estadoCANCELADO { background: var(--color-oferta-bg); color: var(--color-oferta); }
+
+.lineaTiempo { margin: 40px 0 36px; padding: 0; list-style: none; }
+.hito { position: relative; min-height: 72px; display: grid; grid-template-columns: 34px 1fr; gap: 14px; color: var(--color-texto-tenue); }
+.hito:last-child { min-height: 32px; }
+.punto { position: relative; z-index: 1; width: 25px; height: 25px; margin-top: 1px; border-radius: 50%; background: var(--color-borde-3); }
+.linea { position: absolute; top: 26px; left: 12px; bottom: -1px; width: 2px; background: var(--color-borde-3); }
+.hitoCompletado { color: var(--color-texto); }
+.hitoCompletado .punto { background: var(--color-acento); }
+.hitoCompletado .linea { background: var(--color-acento); }
+.hitoActual { color: var(--color-texto); }
+.hitoActual .punto { border: 3px solid var(--color-acento); background: var(--color-superficie); box-shadow: inset 0 0 0 3px var(--color-superficie); }
+.hitoActual .line { background: var(--color-borde-3); }
+.hito strong { display: block; font-size: 18px; font-weight: 600; line-height: 1.3; }
+.hito p { margin-top: 4px; color: var(--color-texto-suave); font-size: 14px; line-height: 1.4; }
+
+.productosPedido { border-top: 1px solid var(--color-borde); border-bottom: 1px solid var(--color-borde); }
+.itemPedido { min-height: 110px; display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; align-items: center; gap: 18px; padding: 16px 0; }
+.itemPedido + .itemPedido { border-top: 1px solid var(--color-borde-2); }
+.imagenProducto { width: 76px; height: 76px; display: grid; place-items: center; overflow: hidden; border-radius: 9px; background: var(--color-crudo); }
+.imagenProductoReal { width: 100%; height: 100%; object-fit: contain; }
+.infoProducto p { color: var(--color-texto); font-size: 16px; line-height: 1.35; }
+.infoProducto span { display: block; margin-top: 4px; color: var(--color-texto-suave); font-size: 14px; }
+.itemPedido > strong { color: var(--color-texto); font-family: var(--font-precio); font-size: var(--tam-precio-drawer-subtotal); font-weight: var(--peso-precio); letter-spacing: var(--tracking-precio); white-space: nowrap; }
+.totales { padding-top: 28px; }
+.totales p { display: flex; justify-content: space-between; gap: 24px; color: var(--color-texto-suave); font-size: 16px; line-height: 1.9; }
+.totales .descuento { color: var(--color-oferta); }
+.totales .total { margin-top: 8px; padding-top: 14px; border-top: 1px solid var(--color-borde-3); color: var(--color-texto); font-size: 19px; }
+.totales .total strong:last-child { font-family: var(--font-precio); font-size: var(--tam-precio-checkout-total); font-weight: var(--peso-precio); letter-spacing: var(--tracking-precio); }
+.acciones { display: flex; gap: 14px; margin-top: 32px; }
+.repetir, .ayuda { min-height: 50px; display: inline-flex; align-items: center; justify-content: center; padding: 0 24px; border-radius: var(--radio-control); font: inherit; font-size: 15px; font-weight: 600; text-decoration: none; cursor: pointer; }
+.repetir { border: 1px solid var(--color-texto); background: var(--color-texto); color: #fff; }
+.repetir:hover { background: #000; }
+.ayuda { border: 1px solid var(--color-borde-3); background: var(--color-superficie); color: var(--color-texto); }
+.ayuda:hover { border-color: var(--color-texto-suave); }
+.estado, .error { padding: 36px 0; color: var(--color-texto-suave); font-size: 14px; }
+.error { color: var(--color-oferta); }

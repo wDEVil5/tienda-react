@@ -7,6 +7,7 @@ import {
   iniciarSesionCuenta,
   listarDireccionesCuenta,
   listarPedidosCuenta,
+  obtenerPedidoCuenta,
   obtenerCuenta,
   registrarCuenta,
 } from "./cuentaApi.js";
@@ -28,6 +29,23 @@ describe("cuentaApi", () => {
       expect.objectContaining({ credentials: "include" }),
     );
     expect(cliente).toEqual({ id: "c1", nombre: "Wilnes" });
+  });
+
+  it("consulta un pedido solo mediante la sesión actual", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: { id: "pedido-1" } }),
+    });
+
+    await expect(obtenerPedidoCuenta("pedido-1", {
+      fetchImpl,
+      apiUrl: "http://localhost:3000/api",
+    })).resolves.toEqual({ id: "pedido-1" });
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "http://localhost:3000/api/cuenta/pedidos/pedido-1",
+      expect.objectContaining({ credentials: "include" }),
+    );
   });
 
   it("actualiza y elimina una dirección usando su identificador técnico", async () => {

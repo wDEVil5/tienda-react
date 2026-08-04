@@ -6,6 +6,7 @@ import Checkout from "./pages/Checkout.jsx";
 import { Login, Registro } from "./pages/Acceso.jsx";
 import MiCuenta from "./pages/MiCuenta.jsx";
 import MisPedidos from "./pages/MisPedidos.jsx";
+import DetallePedido from "./pages/DetallePedido.jsx";
 import Carrito from "./components/Carrito.jsx";
 import Toast from "./components/Toast.jsx";
 import styles from "./App.module.css";
@@ -307,6 +308,14 @@ function App() {
             element={
               <RutaProtegida>
                 <MisPedidos />
+              </RutaProtegida>
+            }
+          />
+          <Route
+            path="/mi-cuenta/pedidos/:id"
+            element={
+              <RutaProtegida>
+                <DetallePedido />
               </RutaProtegida>
             }
           />

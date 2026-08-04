@@ -122,14 +122,31 @@ function crearDetallePedido(pedido) {
             instrucciones: pedido.dirInstrucciones,
           }
         : null,
-    items: pedido.items.map((item) => ({
-      nombre: item.nombre,
-      sku: item.sku,
-      cantidad: item.cantidad,
-      precioNormal: item.precioNormal,
-      precioFinal: item.precioFinal,
-      subtotal: item.subtotal,
-    })),
+    items: pedido.items.map((item) => {
+      // El histórico se pinta siempre con el snapshot. Solo exponemos el
+      // producto actual cuando sigue PUBLICADO, para no reponer borradores o
+      // productos eliminados desde un pedido antiguo.
+      const producto = item.producto?.estado === 'PUBLICADO' ? item.producto : null
+      return {
+        nombre: item.nombre,
+        sku: item.sku,
+        cantidad: item.cantidad,
+        precioNormal: item.precioNormal,
+        precioFinal: item.precioFinal,
+        subtotal: item.subtotal,
+        productoActual: producto
+          ? {
+              id: producto.id,
+              slug: producto.slug,
+              nombre: producto.nombre,
+              precio: producto.precio,
+              precioAnterior: producto.precioAnterior,
+              stock: Math.max(0, producto.stock - producto.stockReservado),
+              imagen: producto.imagenes[0]?.url ?? null,
+            }
+          : null,
+      }
+    }),
     subtotal: pedido.subtotal,
     descuento: pedido.descuento,
     costoEnvio: pedido.costoEnvio,
@@ -138,6 +155,12 @@ function crearDetallePedido(pedido) {
       estado: evento.estado,
       nota: evento.nota,
       createdAt: evento.createdAt,
+    })),
+    pagos: (pedido.pagos ?? []).map((pago) => ({
+      proveedor: pago.proveedor,
+      estado: pago.estado,
+      createdAt: pago.createdAt,
+      updatedAt: pago.updatedAt,
     })),
     createdAt: pedido.createdAt,
   }

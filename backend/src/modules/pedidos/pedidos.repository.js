@@ -91,8 +91,34 @@ export function crearRepositorioPedidos(cliente = prisma) {
       return cliente.pedido.findFirst({
         where: { id, ...(clienteId ? { clienteId } : {}) },
         include: {
-          items: true,
+          items: {
+            include: {
+              // La línea del pedido conserva su snapshot; este vínculo solo se
+              // usa para permitir "Repetir pedido" con el catálogo actual.
+              producto: {
+                select: {
+                  id: true,
+                  slug: true,
+                  nombre: true,
+                  precio: true,
+                  precioAnterior: true,
+                  stock: true,
+                  stockReservado: true,
+                  estado: true,
+                  imagenes: {
+                    orderBy: { orden: 'asc' },
+                    take: 1,
+                    select: { url: true },
+                  },
+                },
+              },
+            },
+          },
           eventos: { orderBy: { createdAt: 'asc' } },
+          pagos: {
+            select: { proveedor: true, estado: true, createdAt: true, updatedAt: true },
+            orderBy: { createdAt: 'asc' },
+          },
         },
       })
     },

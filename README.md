@@ -34,6 +34,7 @@ evoluciona con Express, PostgreSQL y Prisma.
 - Argon2id, cookies `httpOnly` y sesiones con token hasheado para el personal.
 - Cloudinary, Multer y Sharp para imágenes de productos y logos de marcas.
 - Servicio de correo con transporte inyectable (memoria/consola/proveedor real).
+- Mercado Pago Checkout Pro en modo prueba, con webhook verificado por servidor.
 - `node:test` + Supertest para reglas y contratos HTTP.
 
 ### Servicios temporales
@@ -52,7 +53,10 @@ evoluciona con Express, PostgreSQL y Prisma.
 - Banda de ofertas derivada de promociones vigentes, no de texto fijo.
 - Carrito persistente en `localStorage`: cantidades, límite por stock,
   eliminación, deshacer, vaciado y drawer accesible.
-- Checkout de invitado con contacto, retiro o despacho y cotización en vivo.
+- Checkout en dos pasos con contacto, retiro o despacho, cotización en vivo y
+  pago iniciado desde el servidor.
+- Login, registro, perfil, direcciones, historial y detalle de pedidos para
+  clientes.
 - Diseño responsive para escritorio, tablet y móvil; foco visible, navegación
   por teclado y animaciones moderadas.
 
@@ -74,6 +78,8 @@ evoluciona con Express, PostgreSQL y Prisma.
   el servidor calcula el costo de envío.
 - Notificaciones por correo con transporte inyectable: aviso de reposición al
   reponer stock y confirmación al crear un pedido.
+- Pagos de prueba con Mercado Pago: preferencia, webhook idempotente y avance
+  transaccional de stock/pedido tras la aprobación.
 
 ## Arquitectura
 
@@ -144,6 +150,8 @@ GET  /api/marcas
 GET  /api/reglas
 POST /api/pedidos/cotizar
 POST /api/pedidos
+POST /api/pagos
+GET  /api/pagos/:pagoId
 POST /api/avisos
 ```
 
@@ -162,18 +170,18 @@ npm run build
 cd backend && npm test
 ```
 
-Actualmente hay pruebas unitarias y de integración para carrito, servicios del
-frontend, catálogo, autenticación, administración, imágenes, promociones,
-pedidos, stock, transiciones de estado, cuentas de clientes, avisos de stock y
-notificaciones por correo.
+Actualmente hay 49 pruebas de frontend y 358 de backend para carrito, catálogo,
+autenticación, administración, imágenes, promociones, pedidos, stock,
+transiciones, cuentas de clientes, avisos, correo y pagos.
 
 ## Próximos pasos
 
-1. Construir la interfaz del panel administrativo y las pantallas de cuenta de
-   cliente (login, perfil, direcciones, "Mis pedidos") sobre la API ya creada.
-2. Conectar un proveedor de correo real (hoy corre con transporte de consola).
-3. Verificar la firma del webhook de Mercado Pago (`x-signature`) para endurecer
-   la recepción de notificaciones.
+1. Resolver y verificar el retorno de Mercado Pago hacia la confirmación de la
+   tienda en el entorno público HTTPS; el webhook ya es la fuente de verdad.
+2. Construir la interfaz del panel administrativo sobre los endpoints ya
+   existentes.
+3. Conectar un proveedor de correo real (hoy corre con transporte de consola) y
+   verificar la firma del webhook de Mercado Pago (`x-signature`).
 4. App móvil con React Native/Expo (fase posterior del roadmap).
 
 El alcance y las decisiones de producto se mantienen en un PRD.

@@ -88,6 +88,21 @@ export function crearDireccionCuenta(datos, opciones = {}) {
   });
 }
 
+export function actualizarDireccionCuenta(id, datos, opciones = {}) {
+  return solicitarCuenta(`/cuenta/direcciones/${id}`, {
+    ...opciones,
+    method: "PATCH",
+    cuerpo: datos,
+  });
+}
+
+export function eliminarDireccionCuenta(id, opciones = {}) {
+  return solicitarCuenta(`/cuenta/direcciones/${id}`, {
+    ...opciones,
+    method: "DELETE",
+  });
+}
+
 export function listarPedidosCuenta(
   { page = 1, limit = 50, estado, ...opciones } = {},
 ) {

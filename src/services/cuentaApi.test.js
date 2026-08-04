@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import {
   cerrarSesionCuenta,
   crearDireccionCuenta,
+  actualizarDireccionCuenta,
+  eliminarDireccionCuenta,
   iniciarSesionCuenta,
   listarDireccionesCuenta,
   listarPedidosCuenta,
@@ -26,6 +28,23 @@ describe("cuentaApi", () => {
       expect.objectContaining({ credentials: "include" }),
     );
     expect(cliente).toEqual({ id: "c1", nombre: "Wilnes" });
+  });
+
+  it("actualiza y elimina una dirección usando su identificador técnico", async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ data: { id: "d1" } }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => null });
+    const opciones = { fetchImpl, apiUrl: "http://localhost:3000/api" };
+    const datos = { calle: "Av. Matta 980", comuna: "Santiago", region: "RM" };
+
+    await actualizarDireccionCuenta("d1", datos, opciones);
+    await eliminarDireccionCuenta("d1", opciones);
+
+    expect(fetchImpl.mock.calls.map(([url, config]) => [url, config.method])).toEqual([
+      ["http://localhost:3000/api/cuenta/direcciones/d1", "PATCH"],
+      ["http://localhost:3000/api/cuenta/direcciones/d1", "DELETE"],
+    ]);
   });
 
   it("lista recursos privados sin exponer ni enviar el id del cliente", async () => {

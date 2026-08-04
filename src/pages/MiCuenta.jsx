@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCuenta } from "../context/CuentaContext.jsx";
 import {
+  actualizarDireccionCuenta,
   crearDireccionCuenta,
+  eliminarDireccionCuenta,
   listarDireccionesCuenta,
   listarPedidosCuenta,
 } from "../services/cuentaApi.js";
@@ -45,7 +47,7 @@ function esDelMesActual(fecha) {
   );
 }
 
-function TarjetaDireccion({ direccion }) {
+function TarjetaDireccion({ direccion, onEditar, onMarcarPredeterminada }) {
   const titulo = direccion.etiqueta || "Dirección";
   const segundaLinea = [direccion.calle, direccion.depto].filter(Boolean).join(", ");
 
@@ -59,6 +61,14 @@ function TarjetaDireccion({ direccion }) {
       </strong>
       <p>{segundaLinea}</p>
       <p>{[direccion.comuna, direccion.region].filter(Boolean).join(", ")}</p>
+      <div className={styles.accionesDireccion}>
+        <button type="button" onClick={() => onEditar(direccion)}>Editar</button>
+        {!direccion.predeterminada && (
+          <button type="button" onClick={() => onMarcarPredeterminada(direccion)}>
+            Predeterminada
+          </button>
+        )}
+      </div>
     </article>
   );
 }
@@ -74,10 +84,15 @@ function MiCuenta() {
   const [error, setError] = useState("");
   const [cerrandoSesion, setCerrandoSesion] = useState(false);
   const [formularioDireccionAbierto, setFormularioDireccionAbierto] = useState(false);
+  const [direccionEnEdicion, setDireccionEnEdicion] = useState(null);
+  const [direccionAEliminar, setDireccionAEliminar] = useState(null);
   const [direccionNueva, setDireccionNueva] = useState(DIRECCION_INICIAL);
   const [guardandoDireccion, setGuardandoDireccion] = useState(false);
   const [errorDireccion, setErrorDireccion] = useState("");
   const [mensajeDireccion, setMensajeDireccion] = useState("");
+
+  const ordenarDirecciones = (lista) =>
+    [...lista].sort((primera, segunda) => Number(segunda.predeterminada) - Number(primera.predeterminada));
 
   useEffect(() => {
     let vigente = true;
@@ -125,12 +140,30 @@ function MiCuenta() {
 
   const abrirFormularioDireccion = () => {
     setDireccionNueva(DIRECCION_INICIAL);
+    setDireccionEnEdicion(null);
     setErrorDireccion("");
     setFormularioDireccionAbierto(true);
   };
 
   const cerrarFormularioDireccion = () => {
-    if (!guardandoDireccion) setFormularioDireccionAbierto(false);
+    if (!guardandoDireccion) {
+      setFormularioDireccionAbierto(false);
+      setDireccionEnEdicion(null);
+    }
+  };
+
+  const editarDireccion = (direccion) => {
+    setDireccionNueva({
+      etiqueta: direccion.etiqueta ?? "",
+      calle: direccion.calle ?? "",
+      depto: direccion.depto ?? "",
+      comuna: direccion.comuna ?? "",
+      region: direccion.region ?? "",
+      instrucciones: direccion.instrucciones ?? "",
+    });
+    setDireccionEnEdicion(direccion);
+    setErrorDireccion("");
+    setFormularioDireccionAbierto(true);
   };
 
   const actualizarCampoDireccion = (evento) => {
@@ -150,12 +183,67 @@ function MiCuenta() {
     );
 
     try {
-      const creada = await crearDireccionCuenta(datos);
-      setDirecciones((actuales) => [...actuales, creada]);
-      setMensajeDireccion("Dirección guardada correctamente.");
+      if (direccionEnEdicion) {
+        const actualizada = await actualizarDireccionCuenta(direccionEnEdicion.id, datos);
+        setDirecciones((actuales) =>
+          ordenarDirecciones(actuales.map((direccion) =>
+            direccion.id === actualizada.id ? actualizada : direccion,
+          )),
+        );
+        setMensajeDireccion("Dirección actualizada correctamente.");
+      } else {
+        const creada = await crearDireccionCuenta(datos);
+        setDirecciones((actuales) => ordenarDirecciones([...actuales, creada]));
+        setMensajeDireccion("Dirección guardada correctamente.");
+      }
       setFormularioDireccionAbierto(false);
+      setDireccionEnEdicion(null);
     } catch (error) {
       setErrorDireccion(error.message || "No pudimos guardar la dirección.");
+    } finally {
+      setGuardandoDireccion(false);
+    }
+  };
+
+  const marcarPredeterminada = async (direccion) => {
+    setErrorDireccion("");
+    setMensajeDireccion("");
+    try {
+      const actualizada = await actualizarDireccionCuenta(direccion.id, {
+        etiqueta: direccion.etiqueta,
+        calle: direccion.calle,
+        depto: direccion.depto,
+        comuna: direccion.comuna,
+        region: direccion.region,
+        instrucciones: direccion.instrucciones,
+        predeterminada: true,
+      });
+      setDirecciones((actuales) =>
+        ordenarDirecciones(actuales.map((actual) => ({
+          ...actual,
+          predeterminada: actual.id === actualizada.id,
+        }))),
+      );
+      setMensajeDireccion("Actualizamos tu dirección predeterminada.");
+    } catch (error) {
+      setErrorDireccion(error.message || "No pudimos actualizar la dirección.");
+    }
+  };
+
+  const confirmarEliminarDireccion = async () => {
+    if (!direccionAEliminar) return;
+
+    setGuardandoDireccion(true);
+    setErrorDireccion("");
+    try {
+      await eliminarDireccionCuenta(direccionAEliminar.id);
+      setDirecciones((actuales) => actuales.filter((direccion) => direccion.id !== direccionAEliminar.id));
+      setMensajeDireccion("Dirección eliminada correctamente.");
+      setDireccionAEliminar(null);
+      setFormularioDireccionAbierto(false);
+      setDireccionEnEdicion(null);
+    } catch (error) {
+      setErrorDireccion(error.message || "No pudimos eliminar la dirección.");
     } finally {
       setGuardandoDireccion(false);
     }
@@ -230,7 +318,12 @@ function MiCuenta() {
             <h2 id="titulo-direcciones">Direcciones guardadas</h2>
             <div className={styles.direcciones}>
               {direcciones.slice(0, 2).map((direccion) => (
-                <TarjetaDireccion key={direccion.id} direccion={direccion} />
+                <TarjetaDireccion
+                  key={direccion.id}
+                  direccion={direccion}
+                  onEditar={editarDireccion}
+                  onMarcarPredeterminada={marcarPredeterminada}
+                />
               ))}
               <button className={styles.agregarDireccion} type="button" onClick={abrirFormularioDireccion}>
                 + Agregar
@@ -238,6 +331,9 @@ function MiCuenta() {
             </div>
             {!cargandoDatos && direcciones.length === 0 && (
               <p className={styles.sinDirecciones}>Aún no guardas direcciones.</p>
+            )}
+            {errorDireccion && !formularioDireccionAbierto && (
+              <p className={styles.errorDireccion} role="alert">{errorDireccion}</p>
             )}
             {mensajeDireccion && <p className={styles.exitoDireccion} role="status">{mensajeDireccion}</p>}
           </section>
@@ -274,7 +370,7 @@ function MiCuenta() {
             <div className={styles.modalCabecera}>
               <div>
                 <p className={styles.eyebrow}>Direcciones</p>
-                <h2 id="titulo-nueva-direccion">Agregar dirección</h2>
+                <h2 id="titulo-nueva-direccion">{direccionEnEdicion ? "Editar dirección" : "Agregar dirección"}</h2>
               </div>
               <button type="button" className={styles.cerrarModal} onClick={cerrarFormularioDireccion} aria-label="Cerrar formulario">
                 <i className="fa-solid fa-xmark" aria-hidden="true" />
@@ -312,14 +408,35 @@ function MiCuenta() {
               {errorDireccion && <p className={styles.errorDireccion} role="alert">{errorDireccion}</p>}
 
               <div className={styles.accionesModal}>
+                {direccionEnEdicion && (
+                  <button type="button" className={styles.eliminarDireccion} onClick={() => setDireccionAEliminar(direccionEnEdicion)} disabled={guardandoDireccion}>
+                    Eliminar
+                  </button>
+                )}
                 <button type="button" className={styles.cancelarDireccion} onClick={cerrarFormularioDireccion} disabled={guardandoDireccion}>
                   Cancelar
                 </button>
                 <button type="submit" className={styles.guardarDireccion} disabled={guardandoDireccion}>
-                  {guardandoDireccion ? "Guardando…" : "Guardar dirección"}
+                  {guardandoDireccion ? "Guardando…" : direccionEnEdicion ? "Guardar cambios" : "Guardar dirección"}
                 </button>
               </div>
             </form>
+          </section>
+        </div>
+      )}
+
+      {direccionAEliminar && (
+        <div className={styles.modalFondo} role="presentation" onMouseDown={() => !guardandoDireccion && setDireccionAEliminar(null)}>
+          <section className={styles.confirmarEliminar} role="dialog" aria-modal="true" aria-labelledby="titulo-eliminar-direccion" onMouseDown={(evento) => evento.stopPropagation()}>
+            <h2 id="titulo-eliminar-direccion">¿Eliminar dirección?</h2>
+            <p>Se eliminará “{direccionAEliminar.etiqueta || direccionAEliminar.calle}”. Esta acción no se puede deshacer.</p>
+            {errorDireccion && <p className={styles.errorDireccion} role="alert">{errorDireccion}</p>}
+            <div className={styles.accionesModal}>
+              <button type="button" className={styles.cancelarDireccion} onClick={() => setDireccionAEliminar(null)} disabled={guardandoDireccion}>Cancelar</button>
+              <button type="button" className={styles.confirmarEliminarBoton} onClick={confirmarEliminarDireccion} disabled={guardandoDireccion}>
+                {guardandoDireccion ? "Eliminando…" : "Eliminar dirección"}
+              </button>
+            </div>
           </section>
         </div>
       )}

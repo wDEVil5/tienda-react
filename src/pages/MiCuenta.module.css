@@ -176,6 +176,9 @@
 .direccionPredeterminada { border-color: var(--color-acento); background: #f4f8f5; }
 .direccion strong { display: block; color: var(--color-texto); font-size: 15px; line-height: 1.35; }
 .direccion p { margin-top: 8px; color: var(--color-texto-suave); font-size: 14px; line-height: 1.45; }
+.accionesDireccion { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
+.accionesDireccion button { padding: 0; border: 0; background: transparent; color: var(--color-acento); font: inherit; font-size: 12.5px; cursor: pointer; }
+.accionesDireccion button:hover { text-decoration: underline; }
 
 .agregarDireccion {
   display: grid;
@@ -257,11 +260,19 @@
 .filaCamposDireccion { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .errorDireccion { margin-top: -4px; color: var(--color-oferta); font-size: 13px; }
 .accionesModal { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
-.cancelarDireccion, .guardarDireccion { min-height: 44px; padding: 0 18px; border-radius: var(--radio-control); font: inherit; font-size: 14px; cursor: pointer; }
+.cancelarDireccion, .guardarDireccion, .eliminarDireccion, .confirmarEliminarBoton { min-height: 44px; padding: 0 18px; border-radius: var(--radio-control); font: inherit; font-size: 14px; cursor: pointer; }
 .cancelarDireccion { border: 1px solid var(--color-borde-3); background: var(--color-superficie); color: var(--color-texto-2); }
 .guardarDireccion { border: 1px solid var(--color-acento); background: var(--color-acento); color: #fff; font-weight: 600; }
 .guardarDireccion:hover:not(:disabled) { background: #285d40; }
-.cancelarDireccion:disabled, .guardarDireccion:disabled { cursor: wait; opacity: .7; }
+.eliminarDireccion { margin-right: auto; border: 0; background: transparent; color: var(--color-oferta); }
+.confirmarEliminarBoton { border: 1px solid var(--color-oferta); background: var(--color-oferta); color: #fff; font-weight: 600; }
+.confirmarEliminarBoton:hover:not(:disabled) { background: #8f3723; }
+.cancelarDireccion:disabled, .guardarDireccion:disabled, .eliminarDireccion:disabled, .confirmarEliminarBoton:disabled { cursor: wait; opacity: .7; }
+
+.confirmarEliminar { width: min(100%, 420px); padding: 30px 32px; border: 1px solid var(--color-borde); border-radius: 18px; background: var(--color-fondo); box-shadow: 0 22px 54px rgba(28, 27, 24, .24); animation: subirModal .2s ease; }
+.confirmarEliminar h2 { font-family: var(--font-display); font-size: 30px; font-weight: 400; line-height: 1; }
+.confirmarEliminar > p:not(.errorDireccion) { margin-top: 14px; color: var(--color-texto-suave); font-size: 14px; line-height: 1.55; }
+.confirmarEliminar .accionesModal { margin-top: 26px; }
 
 @keyframes aparecerModal { from { opacity: 0; } to { opacity: 1; } }
 @keyframes subirModal { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }

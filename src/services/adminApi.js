@@ -84,3 +84,30 @@ export function listarProductosAdmin(
     incluirMeta: true,
   });
 }
+
+export function obtenerProductoAdmin(id, opciones = {}) {
+  return solicitarAdmin(`/admin/productos/${encodeURIComponent(id)}`, opciones);
+}
+
+export function crearProductoAdmin(producto, opciones = {}) {
+  return solicitarAdmin("/admin/productos", {
+    ...opciones,
+    method: "POST",
+    cuerpo: producto,
+  });
+}
+
+export function actualizarProductoAdmin(id, cambios, opciones = {}) {
+  return solicitarAdmin(`/admin/productos/${encodeURIComponent(id)}`, {
+    ...opciones,
+    method: "PATCH",
+    cuerpo: cambios,
+  });
+}
+
+export function archivarProductoAdmin(id, opciones = {}) {
+  return solicitarAdmin(`/admin/productos/${encodeURIComponent(id)}`, {
+    ...opciones,
+    method: "DELETE",
+  });
+}

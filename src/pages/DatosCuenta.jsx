@@ -1,16 +1,64 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCuenta } from "../context/CuentaContext.jsx";
 import styles from "./DatosCuenta.module.css";
 
-// Esta vista consume el perfil público de la sesión. Los campos permanecen en
-// solo lectura hasta contar con un endpoint que valide y persista cada cambio.
+const crearPerfilEditable = (cliente) => ({
+  nombre: cliente?.nombre ?? "",
+  telefono: cliente?.telefono ?? "",
+});
+
+// Esta vista solo permite editar los campos respaldados por PATCH /cuenta/perfil.
+// Email y seguridad se mantienen fuera para no mezclar credenciales con perfil.
 function DatosCuenta() {
-  const { cliente, cerrarSesion } = useCuenta();
+  const { cliente, cerrarSesion, actualizarPerfil } = useCuenta();
   const navegar = useNavigate();
+  const [perfil, setPerfil] = useState(() => crearPerfilEditable(cliente));
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState("");
+  const [mensaje, setMensaje] = useState("");
+
+  const tieneCambios =
+    perfil.nombre.trim() !== (cliente?.nombre ?? "") ||
+    perfil.telefono.trim() !== (cliente?.telefono ?? "");
 
   const manejarCerrarSesion = async () => {
     await cerrarSesion();
     navegar("/", { replace: true });
+  };
+
+  const cambiarCampo = (evento) => {
+    const { name, value } = evento.target;
+    setPerfil((actual) => ({ ...actual, [name]: value }));
+    setError("");
+    setMensaje("");
+  };
+
+  const guardarPerfil = async (evento) => {
+    evento.preventDefault();
+    const nombre = perfil.nombre.trim();
+    const telefono = perfil.telefono.trim();
+
+    if (nombre.length < 2) {
+      setError("Escribe tu nombre completo.");
+      return;
+    }
+    if (telefono && telefono.length < 6) {
+      setError("Ingresa un teléfono válido o déjalo vacío.");
+      return;
+    }
+
+    setGuardando(true);
+    setError("");
+    setMensaje("");
+    try {
+      await actualizarPerfil({ nombre, telefono: telefono || null });
+      setMensaje("Tus datos se actualizaron correctamente.");
+    } catch (errorSolicitud) {
+      setError(errorSolicitud.message || "No pudimos guardar tus datos.");
+    } finally {
+      setGuardando(false);
+    }
   };
 
   return (
@@ -47,33 +95,51 @@ function DatosCuenta() {
                 <h2 id="titulo-personales">Datos personales</h2>
                 <p>Estos datos provienen de tu cuenta activa.</p>
               </div>
-              <span className={styles.estadoPendiente}>Edición próximamente</span>
+              <span className={styles.estadoDisponible}>Edición disponible</span>
             </div>
 
-            <form className={styles.formulario} aria-describedby="aviso-edicion">
+            <form className={styles.formulario} onSubmit={guardarPerfil} noValidate>
               <div className={styles.campo}>
                 <label htmlFor="nombre-cuenta">Nombre completo</label>
-                <input id="nombre-cuenta" value={cliente?.nombre ?? ""} readOnly />
+                <input
+                  id="nombre-cuenta"
+                  name="nombre"
+                  value={perfil.nombre}
+                  onChange={cambiarCampo}
+                  autoComplete="name"
+                  required
+                />
               </div>
               <div className={styles.campo}>
                 <label htmlFor="email-cuenta">Email</label>
-                <input id="email-cuenta" type="email" value={cliente?.email ?? ""} readOnly />
-                <small>Lo usas para entrar y recibir comunicaciones de tu pedido.</small>
+                <input id="email-cuenta" type="email" value={cliente?.email ?? ""} readOnly aria-describedby="nota-email" />
+                <small id="nota-email">Lo usas para entrar. Cambiarlo requerirá verificar el nuevo correo.</small>
               </div>
               <div className={styles.campo}>
                 <label htmlFor="telefono-cuenta">Teléfono</label>
-                <input id="telefono-cuenta" type="tel" value={cliente?.telefono ?? "No informado"} readOnly />
+                <input
+                  id="telefono-cuenta"
+                  name="telefono"
+                  type="tel"
+                  value={perfil.telefono}
+                  onChange={cambiarCampo}
+                  autoComplete="tel"
+                  placeholder="+56 9 1234 5678"
+                />
               </div>
 
-              <div id="aviso-edicion" className={styles.aviso}>
-                <span className={styles.iconoAviso} aria-hidden="true"><i className="fa-solid fa-lock" /></span>
-                <p>La edición se habilitará cuando la API valide los cambios de forma segura. Por ahora tus datos se muestran tal como están guardados.</p>
+              <div className={styles.aviso}>
+                <span className={styles.iconoAviso} aria-hidden="true"><i className="fa-solid fa-shield-halved" /></span>
+                <p>Nombre y teléfono se guardan en tu cuenta. El email y las opciones de seguridad tienen un flujo de verificación separado.</p>
               </div>
+
+              {error && <p className={styles.error} role="alert">{error}</p>}
+              {mensaje && <p className={styles.exito} role="status">{mensaje}</p>}
 
               <div className={styles.acciones}>
                 <Link to="/mi-cuenta">Volver al resumen</Link>
-                <button type="button" disabled title="La edición de perfil aún no está disponible">
-                  Guardar cambios
+                <button className={styles.guardarCambios} type="submit" disabled={!tieneCambios || guardando}>
+                  {guardando ? "Guardando…" : "Guardar cambios"}
                 </button>
               </div>
             </form>

@@ -134,7 +134,8 @@
   line-height: 1.45;
 }
 
-.estadoPendiente {
+.estadoPendiente,
+.estadoDisponible {
   flex: 0 0 auto;
   padding: 6px 10px;
   border-radius: 999px;
@@ -143,6 +144,8 @@
   font-size: 11.5px;
   white-space: nowrap;
 }
+
+.estadoDisponible { background: var(--color-acento-bg); color: var(--color-acento); }
 
 .formulario {
   display: grid;
@@ -212,7 +215,6 @@
 
 .acciones a:hover { text-decoration: underline; }
 
-.acciones button,
 .ajuste button {
   min-height: 46px;
   padding: 0 19px;
@@ -224,6 +226,34 @@
   font: inherit;
   font-size: 14px;
 }
+
+.guardarCambios {
+  min-height: 46px;
+  padding: 0 19px;
+  border: 1px solid var(--color-acento);
+  border-radius: var(--radio-control);
+  background: var(--color-acento);
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color .18s ease, opacity .18s ease;
+}
+
+.guardarCambios:hover:not(:disabled) { background: #285d40; }
+.guardarCambios:disabled { cursor: not-allowed; opacity: .5; }
+
+.error,
+.exito {
+  grid-column: span 2;
+  margin: -4px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.error { color: var(--color-oferta); }
+.exito { color: var(--color-acento); }
 
 .ajustesSeguridad { margin-top: 22px; border-top: 1px solid var(--color-borde-2); }
 
@@ -260,7 +290,7 @@
   .tarjeta { padding: 24px 20px; }
   .cabeceraTarjeta, .ajuste { align-items: flex-start; flex-direction: column; }
   .formulario { grid-template-columns: 1fr; }
-  .campo:first-child, .aviso, .acciones { grid-column: auto; }
+  .campo:first-child, .aviso, .error, .exito, .acciones { grid-column: auto; }
   .acciones { align-items: stretch; flex-direction: column-reverse; }
   .acciones button, .ajuste button { width: 100%; }
 }

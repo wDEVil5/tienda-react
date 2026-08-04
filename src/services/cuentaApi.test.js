@@ -3,6 +3,7 @@ import {
   cerrarSesionCuenta,
   crearDireccionCuenta,
   actualizarDireccionCuenta,
+  actualizarPerfilCuenta,
   eliminarDireccionCuenta,
   iniciarSesionCuenta,
   listarDireccionesCuenta,
@@ -63,6 +64,27 @@ describe("cuentaApi", () => {
       ["http://localhost:3000/api/cuenta/direcciones/d1", "PATCH"],
       ["http://localhost:3000/api/cuenta/direcciones/d1", "DELETE"],
     ]);
+  });
+
+  it("actualiza el perfil sin enviar una identidad de cliente", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: { cliente: { id: "c1", nombre: "Wilnes A." } } }),
+    });
+
+    await expect(actualizarPerfilCuenta(
+      { nombre: "Wilnes A.", telefono: "+56 9 1234 5678" },
+      { fetchImpl, apiUrl: "http://localhost:3000/api" },
+    )).resolves.toEqual({ cliente: { id: "c1", nombre: "Wilnes A." } });
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "http://localhost:3000/api/cuenta/perfil",
+      expect.objectContaining({
+        method: "PATCH",
+        credentials: "include",
+        body: JSON.stringify({ nombre: "Wilnes A.", telefono: "+56 9 1234 5678" }),
+      }),
+    );
   });
 
   it("lista recursos privados sin exponer ni enviar el id del cliente", async () => {

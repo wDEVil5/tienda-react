@@ -80,6 +80,16 @@ export function cerrarSesionCuenta(opciones = {}) {
   return solicitarCuenta("/cuenta/logout", { ...opciones, method: "POST" });
 }
 
+// El correo no se manda aquí: cambiar una credencial requiere confirmar la
+// propiedad del email nuevo. Este contrato solo actualiza datos de contacto.
+export function actualizarPerfilCuenta(datos, opciones = {}) {
+  return solicitarCuenta("/cuenta/perfil", {
+    ...opciones,
+    method: "PATCH",
+    cuerpo: datos,
+  });
+}
+
 // Estas colecciones pertenecen a la sesión actual: el cliente nunca envía su
 // id. La API lo obtiene desde la cookie httpOnly antes de consultar la base.
 export function listarDireccionesCuenta(opciones = {}) {

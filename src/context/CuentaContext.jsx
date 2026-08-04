@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import {
+  actualizarPerfilCuenta,
   cerrarSesionCuenta,
   iniciarSesionCuenta,
   obtenerCuenta,
@@ -63,6 +64,14 @@ export function CuentaProvider({ children }) {
     setCliente(null);
   }, []);
 
+  // Conserva el perfil actualizado en memoria para que cabecera, resumen y
+  // cualquier otra vista de cuenta reflejen el cambio sin recargar la página.
+  const actualizarPerfil = useCallback(async (datos) => {
+    const resultado = await actualizarPerfilCuenta(datos);
+    setCliente(resultado.cliente);
+    return resultado.cliente;
+  }, []);
+
   return (
     <CuentaContext.Provider
       value={{
@@ -72,6 +81,7 @@ export function CuentaProvider({ children }) {
         iniciarSesion,
         registrar,
         cerrarSesion,
+        actualizarPerfil,
         recargarSesion,
       }}
     >

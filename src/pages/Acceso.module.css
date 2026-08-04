@@ -27,7 +27,7 @@
 
 .logo em { color: var(--color-acento); }
 
-.contenido { padding: 48px 52px 52px; }
+.contenido { padding: 34px 34px 40px; }
 
 .titulo {
   color: var(--color-texto);
@@ -52,6 +52,7 @@
 }
 
 .grupo { display: flex; flex-direction: column; gap: 6px; }
+.filaNombre { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e-md); }
 
 .grupo label {
   color: var(--color-texto-2);
@@ -79,7 +80,8 @@
 }
 
 .inputError { border-color: var(--color-oferta); }
-.ayuda { margin-top: -6px; color: var(--color-texto-tenue); font-size: 12px; }
+.ayuda { margin-top: -6px; color: var(--color-texto-suave); font-size: 12.5px; }
+.errorCampo { margin-top: -6px; color: var(--color-oferta); font-size: 12.5px; line-height: 1.4; }
 
 .campoConAccion { position: relative; display: block; }
 .campoConAccion .input { padding-right: 64px; }
@@ -147,6 +149,34 @@
 
 .enlacePendiente { color: var(--color-acento); cursor: help; white-space: nowrap; }
 
+.fuerzaContrasena {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: -2px;
+}
+
+.fuerzaContrasena span { height: 4px; border-radius: 999px; background: var(--color-borde-3); }
+.fuerzaContrasena .fuerzaActiva { background: var(--color-acento); }
+
+.terminos {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e-md);
+  margin-top: var(--e-sm);
+  color: var(--color-texto-suave);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.terminos input {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  margin-top: 1px;
+  accent-color: var(--color-acento);
+}
+
 .separador {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -179,6 +209,7 @@
 .googleIcono { padding: 3px 7px; border-radius: 6px; background: var(--color-crudo); color: var(--color-texto-suave); font-family: var(--font-mono); font-size: 13px; }
 
 .notaGoogle { margin-top: var(--e-lg); color: var(--color-texto-tenue); font-size: 12.5px; line-height: 1.55; }
+.notaRegistro { padding-top: var(--e-lg); border-top: 1px solid var(--color-borde); text-align: center; }
 
 .alternativa {
   display: flex;

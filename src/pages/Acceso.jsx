@@ -8,6 +8,7 @@ import styles from "./Acceso.module.css";
 const ESTADO_INICIAL_LOGIN = { email: "", contrasena: "" };
 const ESTADO_INICIAL_REGISTRO = {
   nombre: "",
+  apellido: "",
   email: "",
   telefono: "",
   contrasena: "",
@@ -47,6 +48,8 @@ function Acceso({ modo }) {
   );
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState(null);
+  const [errores, setErrores] = useState({});
+  const [aceptaTerminos, setAceptaTerminos] = useState(false);
   const [mostrarContrasena, setMostrarContrasena] = useState(false);
 
   const destino = ubicacion.state?.desde?.pathname ?? "/";
@@ -57,19 +60,40 @@ function Acceso({ modo }) {
   }
 
   const cambiar = (campo) => (evento) => {
-    setDatos((previo) => ({ ...previo, [campo]: evento.target.value }));
+    const valor = evento.target.value;
+    setDatos((previo) => ({ ...previo, [campo]: valor }));
+    setErrores((previos) => ({ ...previos, [campo]: undefined }));
     if (error) setError(null);
   };
 
+  function validarRegistro() {
+    const siguientesErrores = {};
+    if (datos.nombre.trim().length < 2) siguientesErrores.nombre = "Ingresa tu nombre.";
+    if (datos.apellido.trim().length < 2) siguientesErrores.apellido = "Ingresa tu apellido.";
+    if (!/^\S+@\S+\.\S+$/.test(datos.email.trim())) {
+      siguientesErrores.email = "Falta el dominio: ¿wilnes@correo.cl?";
+    }
+    if (datos.contrasena.length < 12) {
+      siguientesErrores.contrasena = "La contraseña debe tener al menos 12 caracteres.";
+    }
+    if (!aceptaTerminos) siguientesErrores.terminos = "Debes aceptar los términos para crear tu cuenta.";
+    return siguientesErrores;
+  }
+
   async function enviarFormulario(evento) {
     evento.preventDefault();
+    if (esRegistro) {
+      const siguientesErrores = validarRegistro();
+      setErrores(siguientesErrores);
+      if (Object.keys(siguientesErrores).length > 0) return;
+    }
     setEnviando(true);
     setError(null);
 
     try {
       if (esRegistro) {
         await registrar({
-          nombre: datos.nombre.trim(),
+          nombre: `${datos.nombre.trim()} ${datos.apellido.trim()}`,
           email: datos.email.trim(),
           contrasena: datos.contrasena,
           ...(datos.telefono.trim() ? { telefono: datos.telefono.trim() } : {}),
@@ -102,27 +126,43 @@ function Acceso({ modo }) {
         </h1>
         <p className={styles.intro}>
           {esRegistro
-            ? "Guarda tus direcciones y revisa tus pedidos cuando quieras."
+            ? "Toma menos de un minuto."
             : "Tus pedidos, direcciones y pagos en un solo lugar."}
         </p>
 
         <form className={styles.formulario} onSubmit={enviarFormulario} noValidate>
           {esRegistro && (
-            <Campo
-              id="nombre"
-              etiqueta="Nombre"
-              type="text"
-              autoComplete="name"
-              value={datos.nombre}
-              onChange={cambiar("nombre")}
-              minLength="2"
-              maxLength="120"
-              required
-            />
+            <div className={styles.filaNombre}>
+              <Campo
+                id="nombre"
+                etiqueta="Nombre"
+                error={errores.nombre}
+                type="text"
+                autoComplete="given-name"
+                value={datos.nombre}
+                onChange={cambiar("nombre")}
+                minLength="2"
+                maxLength="60"
+                required
+              />
+              <Campo
+                id="apellido"
+                etiqueta="Apellido"
+                error={errores.apellido}
+                type="text"
+                autoComplete="family-name"
+                value={datos.apellido}
+                onChange={cambiar("apellido")}
+                minLength="2"
+                maxLength="60"
+                required
+              />
+            </div>
           )}
           <Campo
             id="email"
             etiqueta="Email"
+            error={errores.email}
             type="email"
             autoComplete="email"
             value={datos.email}
@@ -130,10 +170,11 @@ function Acceso({ modo }) {
             maxLength="255"
             required
           />
+          {errores.email && <p className={styles.errorCampo}>{errores.email}</p>}
           {esRegistro && (
             <Campo
               id="telefono"
-              etiqueta="Teléfono (opcional)"
+              etiqueta="Teléfono"
               type="tel"
               autoComplete="tel"
               value={datos.telefono}
@@ -146,7 +187,7 @@ function Acceso({ modo }) {
             <span className={styles.campoConAccion}>
               <input
                 id="contrasena"
-                className={styles.input}
+                className={errores.contrasena ? styles.inputError : styles.input}
                 type={mostrarContrasena ? "text" : "password"}
                 autoComplete={esRegistro ? "new-password" : "current-password"}
                 value={datos.contrasena}
@@ -166,7 +207,30 @@ function Acceso({ modo }) {
             </span>
           </div>
           {esRegistro && (
-            <p className={styles.ayuda}>Mínimo 12 caracteres.</p>
+            <>
+              <div className={styles.fuerzaContrasena} aria-label="Fortaleza de contraseña">
+                {[0, 1, 2, 3].map((segmento) => (
+                  <span
+                    key={segmento}
+                    className={segmento < calcularFuerza(datos.contrasena) ? styles.fuerzaActiva : ""}
+                  ></span>
+                ))}
+              </div>
+              <p className={styles.ayuda}>{textoFuerza(datos.contrasena)}</p>
+              {errores.contrasena && <p className={styles.errorCampo}>{errores.contrasena}</p>}
+              <label className={styles.terminos}>
+                <input
+                  type="checkbox"
+                  checked={aceptaTerminos}
+                  onChange={(evento) => {
+                    setAceptaTerminos(evento.target.checked);
+                    setErrores((previos) => ({ ...previos, terminos: undefined }));
+                  }}
+                />
+                <span>Acepto los términos de servicio y la política de privacidad.</span>
+              </label>
+              {errores.terminos && <p className={styles.errorCampo}>{errores.terminos}</p>}
+            </>
           )}
 
           {error && <p className={styles.error} role="alert">{error}</p>}
@@ -215,12 +279,30 @@ function Acceso({ modo }) {
           </>
         )}
 
-        <div className={styles.alternativa}>
-          <span>{esRegistro ? "¿Ya tienes una cuenta?" : "¿Primera vez por aquí?"}</span>
-          <Link to={esRegistro ? "/login" : "/registro"}>
-            {esRegistro ? "Entrar" : "Crear cuenta"}
-          </Link>
-        </div>
+        {esRegistro && (
+          <>
+            <div className={styles.separador} aria-hidden="true"><span></span>o<span></span></div>
+            <button
+              className={styles.google}
+              type="button"
+              disabled
+              title="Google se habilitará cuando exista la autenticación OAuth en el backend."
+            >
+              <span className={styles.googleIcono}>G</span>
+              Registrarme con Google
+            </button>
+            <p className={`${styles.notaGoogle} ${styles.notaRegistro}`}>
+              La validación se repite en el servidor: el frontend solo adelanta el error.
+            </p>
+          </>
+        )}
+
+        {!esRegistro && (
+          <div className={styles.alternativa}>
+            <span>¿Primera vez por aquí?</span>
+            <Link to="/registro">Crear cuenta</Link>
+          </div>
+        )}
 
         {!esRegistro && (
           <p className={styles.notaCarrito}>
@@ -232,6 +314,20 @@ function Acceso({ modo }) {
       </div>
     </section>
   );
+}
+
+function calcularFuerza(contrasena) {
+  if (!contrasena) return 0;
+  return [contrasena.length >= 12, /[A-Z]/.test(contrasena), /\d/.test(contrasena), /[^A-Za-z0-9]/.test(contrasena)]
+    .filter(Boolean)
+    .length;
+}
+
+function textoFuerza(contrasena) {
+  const fuerza = calcularFuerza(contrasena);
+  if (fuerza >= 3) return "Buena · 12 caracteres, mayúscula y número";
+  if (contrasena.length >= 12) return "Agrega una mayúscula y un número para reforzarla.";
+  return "Mínimo 12 caracteres.";
 }
 
 export function Login() {

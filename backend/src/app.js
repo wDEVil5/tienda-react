@@ -15,6 +15,14 @@ import adminRouter from './modules/admin/admin.routes.js'
 
 // La aplicación se exporta separada del servidor para probar rutas sin abrir un puerto.
 const app = express()
+
+// Detrás del proxy de Render (producción): confía en un salto de proxy para leer
+// la IP real del cliente (req.ip, que usa el limitador de login) y el protocolo
+// (req.secure), necesarios para las cookies Secure cross-site.
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1)
+}
+
 const frontendOrigin = process.env.FRONTEND_ORIGIN || 'http://localhost:5173'
 
 // Solo el frontend configurado puede leer respuestas de la API desde el navegador.

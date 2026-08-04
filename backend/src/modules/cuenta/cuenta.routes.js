@@ -9,18 +9,15 @@ import {
 import { crearRequerirCliente } from './cuenta.middleware.js'
 import { validarRegistroCliente } from './cuenta.validacion.js'
 import { crearLimitadorIntentosLogin } from '../auth/limite-intentos.js'
+import { opcionesCookieSesion } from '../../lib/cookies.js'
 
 const DURACION_COOKIE_SESION_MS = 7 * 24 * 60 * 60 * 1000
 
 // Cookie httpOnly separada de la del staff (`sesion_admin`): un comprador nunca
-// obtiene una sesión que sirva en el panel.
+// obtiene una sesión que sirva en el panel. Las opciones (SameSite/Secure) salen
+// del helper compartido para no divergir de la del staff.
 function opcionesCookie() {
-  return {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    path: '/',
-  }
+  return opcionesCookieSesion()
 }
 
 function leerCredenciales(body) {

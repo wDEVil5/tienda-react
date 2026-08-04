@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { cerrarSesion, iniciarSesion, obtenerSesionActiva } from './auth.service.js'
 import { crearRequerirSesion } from './auth.middleware.js'
 import { crearLimitadorIntentosLogin } from './limite-intentos.js'
+import { opcionesCookieSesion } from '../../lib/cookies.js'
 
 const DURACION_COOKIE_SESION_MS = 7 * 24 * 60 * 60 * 1000
 
@@ -44,13 +45,11 @@ export function crearRouterAuth(servicio = {
         })
       }
 
-      response.cookie('sesion_admin', resultado.token, {
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: DURACION_COOKIE_SESION_MS,
-        path: '/',
-      })
+      response.cookie(
+        'sesion_admin',
+        resultado.token,
+        opcionesCookieSesion({ maxAge: DURACION_COOKIE_SESION_MS }),
+      )
 
       return response.json({
         data: { usuario: resultado.usuario, expiraEn: resultado.expiraEn },
@@ -67,12 +66,7 @@ export function crearRouterAuth(servicio = {
   authRouter.post('/logout', requerirSesion, async (request, response, next) => {
     try {
       await servicio.cerrarSesion(request.tokenSesion)
-      response.clearCookie('sesion_admin', {
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
-        path: '/',
-      })
+      response.clearCookie('sesion_admin', opcionesCookieSesion())
       return response.status(204).end()
     } catch (error) {
       return next(error)

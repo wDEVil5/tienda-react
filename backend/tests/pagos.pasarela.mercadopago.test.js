@@ -36,9 +36,11 @@ test('crearPreferencia incluye notification_url solo si está configurada', asyn
   await con.crearPreferencia({ pagoId: 'p', pedidoNumero: 1, monto: 100 })
   assert.equal(cuerpoCon.body.notification_url, 'https://tunel.ngrok.app/api/pagos/webhook')
 
+  // null (no undefined) evita el parámetro por defecto que leería MP_WEBHOOK_URL
+  // del entorno: así el caso "sin URL" es determinista, corra donde corra.
   const sin = crearPasarelaMercadoPago({
     accessToken: 'x',
-    notificationUrl: undefined,
+    notificationUrl: null,
     fetchImpl: fetchImpl((cuerpoSin = {})),
   })
   await sin.crearPreferencia({ pagoId: 'p', pedidoNumero: 1, monto: 100 })

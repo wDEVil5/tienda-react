@@ -73,3 +73,18 @@ export function iniciarSesionCuenta(datos, opciones = {}) {
 export function cerrarSesionCuenta(opciones = {}) {
   return solicitarCuenta("/cuenta/logout", { ...opciones, method: "POST" });
 }
+
+// Estas colecciones pertenecen a la sesión actual: el cliente nunca envía su
+// id. La API lo obtiene desde la cookie httpOnly antes de consultar la base.
+export function listarDireccionesCuenta(opciones = {}) {
+  return solicitarCuenta("/cuenta/direcciones", opciones);
+}
+
+export function listarPedidosCuenta(
+  { page = 1, limit = 50, estado, ...opciones } = {},
+) {
+  const parametros = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (estado) parametros.set("estado", estado);
+
+  return solicitarCuenta(`/cuenta/pedidos?${parametros}`, opciones);
+}

@@ -4,11 +4,13 @@ import Home from "./pages/Home.jsx";
 import ProductoDetalle from "./pages/ProductoDetalle.jsx";
 import Checkout from "./pages/Checkout.jsx";
 import { Login, Registro } from "./pages/Acceso.jsx";
+import MiCuenta from "./pages/MiCuenta.jsx";
 import Carrito from "./components/Carrito.jsx";
 import Toast from "./components/Toast.jsx";
 import styles from "./App.module.css";
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
+import RutaProtegida from "./components/RutaProtegida.jsx";
 import { obtenerCatalogo, obtenerCategorias } from "./services/productosApi.js";
 
 const PRODUCTOS_POR_PAGINA = 10;
@@ -206,6 +208,8 @@ function App() {
     fuenteCatalogo === "api" ? ofertasDestacadas : null;
   const esCheckout = ubicacion.pathname === "/checkout";
   const esAcceso = ["/login", "/registro"].includes(ubicacion.pathname);
+  const esMiCuenta = ubicacion.pathname === "/mi-cuenta";
+  const esPantallaPrivada = esAcceso || esMiCuenta;
 
   //early return
   if (cargando) {
@@ -234,7 +238,7 @@ function App() {
 
   return (
     <div className={styles.app}>
-      {!esCheckout && !esAcceso && (
+      {!esCheckout && !esPantallaPrivada && (
         <Header
           busqueda={busqueda}
           onBuscar={setBusqueda}
@@ -250,7 +254,7 @@ function App() {
       {/* Contenido centrado: el Header y el Footer viven FUERA de este
           envoltorio para poder ir de borde a borde . */}
       <main
-        className={`${styles.contenido} ${esCheckout ? styles.contenidoCheckout : ""} ${esAcceso ? styles.contenidoAcceso : ""}`}
+        className={`${styles.contenido} ${esCheckout ? styles.contenidoCheckout : ""} ${esAcceso ? styles.contenidoAcceso : ""} ${esMiCuenta ? styles.contenidoCuenta : ""}`}
       >
         <Routes>
           <Route
@@ -289,6 +293,14 @@ function App() {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
+          <Route
+            path="/mi-cuenta"
+            element={
+              <RutaProtegida>
+                <MiCuenta />
+              </RutaProtegida>
+            }
+          />
         </Routes>
       </main>
 
@@ -313,7 +325,7 @@ function App() {
           drawer, solo el aviso con "Deshacer" se mueve al carrito. */}
       <Toast ocultarSiAccion={carritoAbierto} />
 
-      {!esCheckout && !esAcceso && (
+      {!esCheckout && !esPantallaPrivada && (
         <Footer
           productos={productos}
           onBuscar={setBusqueda}

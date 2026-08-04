@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import {
   cerrarSesionCuenta,
   iniciarSesionCuenta,
+  listarDireccionesCuenta,
+  listarPedidosCuenta,
   obtenerCuenta,
   registrarCuenta,
 } from "./cuentaApi.js";
@@ -23,6 +25,22 @@ describe("cuentaApi", () => {
       expect.objectContaining({ credentials: "include" }),
     );
     expect(cliente).toEqual({ id: "c1", nombre: "Wilnes" });
+  });
+
+  it("lista recursos privados sin exponer ni enviar el id del cliente", async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ data: [] }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ data: [] }) });
+    const opciones = { fetchImpl, apiUrl: "http://localhost:3000/api" };
+
+    await listarDireccionesCuenta(opciones);
+    await listarPedidosCuenta({ page: 2, limit: 12, ...opciones });
+
+    expect(fetchImpl.mock.calls.map(([url, config]) => [url, config.credentials])).toEqual([
+      ["http://localhost:3000/api/cuenta/direcciones", "include"],
+      ["http://localhost:3000/api/cuenta/pedidos?page=2&limit=12", "include"],
+    ]);
   });
 
   it("trata un 401 como visitante sin sesión", async () => {

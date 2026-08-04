@@ -26,6 +26,11 @@
   justify-content: center;
 }
 
+.contenidoCuenta {
+  max-width: 1400px;
+  padding: clamp(18px, 3vw, 44px);
+}
+
 /* En móvil el checkout va de borde a borde: sin padding externo. Los gutters
    los ponen los propios bloques del checkout (cabecera, layout) a 16px. */
 @media (max-width: 767px) {

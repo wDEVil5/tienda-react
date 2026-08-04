@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./Header.module.css";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
+import { useCuenta } from "../context/CuentaContext.jsx";
 import ImagenProducto from "./ImagenProducto.jsx";
 
 function Header({
@@ -15,6 +16,7 @@ function Header({
   onAbrirCarrito,
 }) {
   const { totalItems, carrito } = useCarritoContext();
+  const { estaAutenticado } = useCuenta();
   const [menuAbierto, setMenuAbierto] = useState(false); // menú hamburguesa (móvil)
   const [sugerenciasAbiertas, setSugerenciasAbiertas] = useState(false);
   const navegar = useNavigate();
@@ -216,8 +218,8 @@ function Header({
             )}
           </form>
 
-          <Link className={styles.entrar} to="/login">
-            Entrar
+          <Link className={styles.entrar} to={estaAutenticado ? "/mi-cuenta" : "/login"}>
+            {estaAutenticado ? "Mi cuenta" : "Entrar"}
           </Link>
 
           <button className={styles.carrito} onClick={onAbrirCarrito}>
@@ -272,10 +274,10 @@ function Header({
           </Link>
           <Link
             className={styles.menuEntrar}
-            to="/login"
+            to={estaAutenticado ? "/mi-cuenta" : "/login"}
             onClick={cerrarMenu}
           >
-            Entrar
+            {estaAutenticado ? "Mi cuenta" : "Entrar"}
           </Link>
       </nav>
 

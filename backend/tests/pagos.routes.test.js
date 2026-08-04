@@ -30,6 +30,40 @@ test('POST / inicia el pago y responde 201 con la URL', async () => {
   assert.equal(recibido, UUID)
 })
 
+test('GET /:pagoId expone el estado persistido para el retorno del checkout', async () => {
+  const app = crearApp({
+    async obtenerEstadoParaCheckout(pagoId) {
+      return {
+        id: pagoId,
+        estado: 'APROBADO',
+        proveedor: 'mercadopago',
+        pedido: { id: UUID, numero: 1043, estado: 'PREPARANDO', total: 20460 },
+      }
+    },
+  })
+
+  const response = await request(app).get(`/api/pagos/${UUID}`)
+
+  assert.equal(response.status, 200)
+  assert.equal(response.body.data.estado, 'APROBADO')
+  assert.equal(response.body.data.pedido.numero, 1043)
+})
+
+test('GET /:pagoId responde 404 para un id inválido o inexistente', async () => {
+  const app = crearApp({
+    async obtenerEstadoParaCheckout() {
+      return null
+    },
+  })
+
+  const invalido = await request(app).get('/api/pagos/no-es-uuid')
+  const inexistente = await request(app).get(`/api/pagos/${UUID}`)
+
+  assert.equal(invalido.status, 404)
+  assert.equal(inexistente.status, 404)
+  assert.equal(inexistente.body.error.code, 'PAYMENT_NOT_FOUND')
+})
+
 test('POST / responde 422 si el pedidoId no es un uuid', async () => {
   const app = crearApp({
     async iniciarPago() {

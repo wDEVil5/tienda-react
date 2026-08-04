@@ -1,6 +1,11 @@
 import { Router } from 'express'
-import { iniciarPago, procesarNotificacion, ErrorPago } from './pagos.service.js'
-import { validarIniciarPago } from './pagos.validacion.js'
+import {
+  iniciarPago,
+  obtenerEstadoParaCheckout,
+  procesarNotificacion,
+  ErrorPago,
+} from './pagos.service.js'
+import { validarIniciarPago, validarPagoId } from './pagos.validacion.js'
 
 // A qué código HTTP corresponde cada error de negocio del pago.
 const ESTADO_POR_CODIGO = {
@@ -12,8 +17,33 @@ const ESTADO_POR_CODIGO = {
 // Inicia el pago de un pedido y devuelve la URL a la que redirigir al cliente.
 // El id del pedido (uuid) actúa como capacidad, igual que el checkout de
 // invitado; no exige sesión.
-export function crearRouterPagos(servicio = { iniciarPago, procesarNotificacion }) {
+export function crearRouterPagos(
+  servicio = { iniciarPago, obtenerEstadoParaCheckout, procesarNotificacion },
+) {
   const router = Router()
+
+  // El retorno del navegador no acredita nada: consulta este snapshot y espera
+  // a que el webhook haya confirmado el estado real en la base de datos.
+  router.get('/:pagoId', async (request, response, next) => {
+    const validacion = validarPagoId(request.params.pagoId)
+    if (!validacion.success) {
+      return response.status(404).json({
+        error: { code: 'PAYMENT_NOT_FOUND', message: 'No encontramos el pago.' },
+      })
+    }
+
+    try {
+      const pago = await servicio.obtenerEstadoParaCheckout(validacion.data)
+      if (!pago) {
+        return response.status(404).json({
+          error: { code: 'PAYMENT_NOT_FOUND', message: 'No encontramos el pago.' },
+        })
+      }
+      return response.json({ data: pago })
+    } catch (error) {
+      return next(error)
+    }
+  })
 
   // Webhook del proveedor (servidor a servidor). SIEMPRE responde 200 para
   // acusar recibo y que el proveedor no reintente en bucle; solo un error

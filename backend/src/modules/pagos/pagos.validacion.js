@@ -11,3 +11,7 @@ export const esquemaIniciarPago = z
 export function validarIniciarPago(datos) {
   return esquemaIniciarPago.safeParse(datos)
 }
+
+export function validarPagoId(pagoId) {
+  return z.string().uuid().safeParse(pagoId)
+}

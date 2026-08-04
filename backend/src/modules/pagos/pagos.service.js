@@ -63,6 +63,10 @@ export function crearServicioPagos({
       return { pagoId: pago.id, referenciaExterna, urlPago }
     },
 
+    async obtenerEstadoParaCheckout(pagoId) {
+      return repositorio.obtenerEstadoParaCheckout(pagoId)
+    },
+
     // Procesa una notificación del proveedor (webhook). Es la ÚNICA vía por la
     // que un pago cambia de estado: el redirect del navegador no cuenta. Es
     // idempotente en dos niveles: acá (si ya está en el estado entrante, no-op) y
@@ -101,4 +105,5 @@ export function crearServicioPagos({
 const servicioPagos = crearServicioPagos()
 
 export const iniciarPago = (pedidoId) => servicioPagos.iniciarPago(pedidoId)
+export const obtenerEstadoParaCheckout = (pagoId) => servicioPagos.obtenerEstadoParaCheckout(pagoId)
 export const procesarNotificacion = (payload) => servicioPagos.procesarNotificacion(payload)

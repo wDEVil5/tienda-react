@@ -98,6 +98,24 @@ test('iniciarPago falla con ORDER_ALREADY_PAID si ya hay un pago aprobado', asyn
   )
 })
 
+test('obtenerEstadoParaCheckout delega el snapshot del pago al repositorio', async () => {
+  let pagoConsultado
+  const servicio = crearServicioPagos({
+    repositorio: {
+      async obtenerEstadoParaCheckout(pagoId) {
+        pagoConsultado = pagoId
+        return { id: pagoId, estado: 'PENDIENTE' }
+      },
+    },
+    pasarela: crearPasarelaFalsa(),
+  })
+
+  const resultado = await servicio.obtenerEstadoParaCheckout('pago-1')
+
+  assert.equal(pagoConsultado, 'pago-1')
+  assert.deepEqual(resultado, { id: 'pago-1', estado: 'PENDIENTE' })
+})
+
 // --- Webhook: procesarNotificacion ---
 
 function crearPasarelaWebhook(interpretacion) {

@@ -34,6 +34,31 @@ export function crearRepositorioPagos(db = prisma) {
       })
     },
 
+    // El id UUID del pago funciona como una capacidad efímera guardada solo en
+    // la sesión del checkout. Exponemos un snapshot mínimo para que el retorno
+    // de la pasarela pueda esperar al webhook sin decidir su estado por URL.
+    async obtenerEstadoParaCheckout(pagoId) {
+      return db.pago.findUnique({
+        where: { id: pagoId },
+        select: {
+          id: true,
+          estado: true,
+          proveedor: true,
+          pedido: {
+            select: {
+              id: true,
+              numero: true,
+              estado: true,
+              modalidad: true,
+              contactoEmail: true,
+              dirComuna: true,
+              total: true,
+            },
+          },
+        },
+      })
+    },
+
     // El webhook encuentra su pago por la referencia del proveedor.
     async buscarPorReferencia(referenciaExterna) {
       return db.pago.findUnique({

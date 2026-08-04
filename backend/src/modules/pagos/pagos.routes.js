@@ -21,7 +21,9 @@ export function crearRouterPagos(servicio = { iniciarPago, procesarNotificacion 
   // se agrega con el adaptador real (CP4).
   router.post('/webhook', async (request, response, next) => {
     try {
-      const resultado = await servicio.procesarNotificacion(request.body)
+      // MP manda la novedad en el body (webhook nuevo) o en la query (IPN viejo);
+      // se combinan para que la pasarela lea cualquiera de los dos formatos.
+      const resultado = await servicio.procesarNotificacion({ ...request.query, ...request.body })
       return response.status(200).json({ ok: true, ...resultado })
     } catch (error) {
       return next(error)

@@ -20,6 +20,31 @@ test('crearPreferencia llama a MP con el token, el monto y el external_reference
   assert.equal(capturado.body.items[0].currency_id, 'CLP')
 })
 
+test('crearPreferencia incluye notification_url solo si está configurada', async () => {
+  let cuerpoCon
+  let cuerpoSin
+  const fetchImpl = (destino) => async (_url, opciones) => {
+    destino.body = JSON.parse(opciones.body)
+    return { ok: true, async json() { return { init_point: 'https://mp/x' } } }
+  }
+
+  const con = crearPasarelaMercadoPago({
+    accessToken: 'x',
+    notificationUrl: 'https://tunel.ngrok.app/api/pagos/webhook',
+    fetchImpl: fetchImpl((cuerpoCon = {})),
+  })
+  await con.crearPreferencia({ pagoId: 'p', pedidoNumero: 1, monto: 100 })
+  assert.equal(cuerpoCon.body.notification_url, 'https://tunel.ngrok.app/api/pagos/webhook')
+
+  const sin = crearPasarelaMercadoPago({
+    accessToken: 'x',
+    notificationUrl: undefined,
+    fetchImpl: fetchImpl((cuerpoSin = {})),
+  })
+  await sin.crearPreferencia({ pagoId: 'p', pedidoNumero: 1, monto: 100 })
+  assert.equal('notification_url' in cuerpoSin.body, false)
+})
+
 test('interpretarNotificacion consulta el pago y mapea approved -> APROBADO', async () => {
   let rutaConsultada
   const fetchImpl = async (url) => {

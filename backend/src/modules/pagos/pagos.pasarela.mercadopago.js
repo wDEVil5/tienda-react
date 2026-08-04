@@ -14,6 +14,9 @@ const MAPA_ESTADO = {
 export function crearPasarelaMercadoPago({
   accessToken,
   urlBase = process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
+  // A dónde MP envía el webhook. En local necesita ser una URL pública (túnel);
+  // si no se define, MP no notifica (útil para pruebas de solo crear preferencia).
+  notificationUrl = process.env.MP_WEBHOOK_URL,
   fetchImpl = fetch,
 } = {}) {
   if (!accessToken) {
@@ -59,6 +62,8 @@ export function crearPasarelaMercadoPago({
             failure: `${urlBase}/pago/error`,
             pending: `${urlBase}/pago/pendiente`,
           },
+          // Solo se incluye si hay URL pública configurada (túnel/producción).
+          ...(notificationUrl ? { notification_url: notificationUrl } : {}),
         }),
       })
 
@@ -70,7 +75,9 @@ export function crearPasarelaMercadoPago({
     // y su external_reference (nuestro pagoId). Devuelve null si el aviso no es
     // de un pago o el estado aún no es terminal.
     async interpretarNotificacion(payload) {
-      const paymentId = payload?.data?.id
+      // MP notifica de dos formas: webhook nuevo (JSON { type, data.id }) e IPN
+      // viejo (query { topic, id }). Aceptamos ambas.
+      const paymentId = payload?.data?.id ?? payload?.id
       const tipo = payload?.type ?? payload?.topic
       if (tipo !== 'payment' || !paymentId) {
         return null

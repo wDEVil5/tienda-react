@@ -18,7 +18,7 @@ describe("pedidosApi", () => {
 
     expect(fetchImpl).toHaveBeenCalledWith(
       "http://localhost:3000/api/pedidos/cotizar",
-      expect.objectContaining({ method: "POST" }),
+      expect.objectContaining({ method: "POST", credentials: "include" }),
     );
     const cuerpo = JSON.parse(fetchImpl.mock.calls[0][1].body);
     expect(cuerpo).toEqual({
@@ -45,7 +45,7 @@ describe("pedidosApi", () => {
 
     expect(fetchImpl).toHaveBeenCalledWith(
       "http://localhost:3000/api/pedidos",
-      expect.objectContaining({ method: "POST" }),
+      expect.objectContaining({ method: "POST", credentials: "include" }),
     );
     expect(pedido.numero).toBe(7);
   });

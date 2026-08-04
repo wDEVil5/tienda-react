@@ -11,6 +11,9 @@ export function hayApiPedidos(apiUrl = apiUrlPorDefecto()) {
 async function postJson(url, cuerpo, fetchImpl) {
   const respuesta = await fetchImpl(url, {
     method: "POST",
+    // Si existe sesión, el backend asocia el pedido a esa cuenta. Para visitas
+    // invitadas no hay cookie y el mismo contrato sigue funcionando.
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(cuerpo),
   });

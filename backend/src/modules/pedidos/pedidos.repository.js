@@ -5,10 +5,11 @@ function crearPromocionVigenteDonde(ahora) {
   return { activa: true, empiezaEn: { lte: ahora }, terminaEn: { gt: ahora } }
 }
 
-// Filtro de búsqueda libre para el panel: coincide por nombre de contacto (sin
-// distinguir mayúsculas) o por número exacto. Acepta el número escrito como
-// "#SE-1043", "SE-1043" o "1043"; solo lo trata como número si, tras quitar ese
-// prefijo, quedan puros dígitos. Sin texto, no restringe.
+// Filtro de búsqueda del panel: por número EXACTO o por nombre de contacto
+// (parcial, sin distinguir mayúsculas). El número se escribe como "1043",
+// "SE-1043" o "#SE-1043"; se trata como número solo si, tras quitar ese prefijo,
+// quedan puros dígitos. Buscar "SE2" devuelve el pedido #2, no todos los que
+// contienen un "2". Sin texto, no restringe.
 function crearFiltroBusqueda(q) {
   const texto = typeof q === 'string' ? q.trim() : ''
   if (!texto) return {}

@@ -18,7 +18,8 @@ test('rechaza una calle demasiado corta', () => {
 })
 
 test('rechaza si falta la comuna', () => {
-  const { comuna, ...sinComuna } = base
+  const sinComuna = { ...base }
+  delete sinComuna.comuna
   assert.equal(validarDireccionCliente(sinComuna).success, false)
 })
 

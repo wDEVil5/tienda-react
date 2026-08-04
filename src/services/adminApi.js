@@ -26,16 +26,24 @@ async function solicitarAdmin(
     });
   }
 
-  const respuesta = await fetchImpl(`${apiUrl.replace(/\/$/, "")}${ruta}`, {
-    method,
-    credentials: "include",
-    ...(cuerpo
-      ? {
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(cuerpo),
-        }
-      : {}),
-  });
+  let respuesta;
+  try {
+    const esFormData = typeof FormData !== "undefined" && cuerpo instanceof FormData;
+    respuesta = await fetchImpl(`${apiUrl.replace(/\/$/, "")}${ruta}`, {
+      method,
+      credentials: "include",
+      ...(cuerpo
+        ? {
+            ...(esFormData ? {} : { headers: { "Content-Type": "application/json" } }),
+            body: esFormData ? cuerpo : JSON.stringify(cuerpo),
+          }
+        : {}),
+    });
+  } catch {
+    throw new ErrorAdminApi("No pudimos conectar con la API del panel. Revisa que el servidor esté disponible e inténtalo nuevamente.", {
+      code: "NETWORK_ERROR",
+    });
+  }
 
   const datos = await respuesta.json().catch(() => null);
   if (!respuesta.ok) {
@@ -109,6 +117,24 @@ export function archivarProductoAdmin(id, opciones = {}) {
   return solicitarAdmin(`/admin/productos/${encodeURIComponent(id)}`, {
     ...opciones,
     method: "DELETE",
+  });
+}
+
+export function subirImagenProductoAdmin(archivo, opciones = {}) {
+  const datos = new FormData();
+  datos.append("imagen", archivo);
+  return solicitarAdmin("/admin/imagenes", {
+    ...opciones,
+    method: "POST",
+    cuerpo: datos,
+  });
+}
+
+export function reemplazarImagenesProductoAdmin(id, imagenes, opciones = {}) {
+  return solicitarAdmin(`/admin/productos/${encodeURIComponent(id)}/imagenes`, {
+    ...opciones,
+    method: "PUT",
+    cuerpo: { imagenes },
   });
 }
 

@@ -265,6 +265,7 @@
 .accesoFormulario input:focus { outline: 0; border-color: var(--color-texto); box-shadow: 0 0 0 3px rgba(28, 27, 24, 0.1); }
 .accesoFormulario > button { min-height: 46px; margin-top: 12px; border: 0; border-radius: var(--radio-control); background: var(--color-acento); color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
 .accesoFormulario > button:disabled { cursor: wait; opacity: 0.7; }
+.botonReintentar { min-height: 42px; margin-top: 22px; padding: 0 16px; border: 0; border-radius: var(--radio-control); background: var(--color-acento); color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
 .mensajeError { margin-top: 6px; padding: 10px 12px; border-radius: var(--radio-caja); background: var(--color-oferta-bg); color: var(--color-oferta); font-size: 12.5px; }
 .comprobando { color: var(--color-texto-suave); font-size: 14px; }
 

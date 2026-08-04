@@ -7,6 +7,8 @@ import {
   iniciarSesionAdmin,
   listarProductosAdmin,
   obtenerOpcionesProductoAdmin,
+  reemplazarImagenesProductoAdmin,
+  subirImagenProductoAdmin,
   obtenerProductoAdmin,
   obtenerSesionAdmin,
 } from "./adminApi.js";
@@ -191,6 +193,41 @@ describe("adminApi", () => {
       "http://localhost:3000/api/admin/productos/prod_1",
       { method: "DELETE", credentials: "include" },
     );
+  });
+
+  it("sube una imagen como multipart y reemplaza el orden de la galería", async () => {
+    const fetchImpl = vi.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ data: { url: "https://img.test/aceite.webp", storageKey: "productos/1" } }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ data: { id: "prod_1", imagenes: [] } }) });
+    const archivo = new File(["imagen"], "aceite.webp", { type: "image/webp" });
+
+    await subirImagenProductoAdmin(archivo, { fetchImpl, apiUrl: "http://localhost:3000/api" });
+    await reemplazarImagenesProductoAdmin("prod_1", [{ url: "https://img.test/aceite.webp", storageKey: "productos/1" }], {
+      fetchImpl,
+      apiUrl: "http://localhost:3000/api",
+    });
+
+    const [, opcionesSubida] = fetchImpl.mock.calls[0];
+    expect(opcionesSubida.method).toBe("POST");
+    expect(opcionesSubida.credentials).toBe("include");
+    expect(opcionesSubida.body).toBeInstanceOf(FormData);
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      2,
+      "http://localhost:3000/api/admin/productos/prod_1/imagenes",
+      expect.objectContaining({
+        method: "PUT",
+        body: JSON.stringify({ imagenes: [{ url: "https://img.test/aceite.webp", storageKey: "productos/1" }] }),
+      }),
+    );
+  });
+
+  it("normaliza una caída de red como error accionable del panel", async () => {
+    const fetchImpl = vi.fn().mockRejectedValue(new TypeError("Failed to fetch"));
+
+    await expect(listarProductosAdmin({ fetchImpl, apiUrl: "http://localhost:3000/api" })).rejects.toMatchObject({
+      code: "NETWORK_ERROR",
+      message: expect.stringContaining("API del panel"),
+    });
   });
 
   it("conserva código y estado de los errores del backend", async () => {

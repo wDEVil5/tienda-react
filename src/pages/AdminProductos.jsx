@@ -138,22 +138,31 @@ export default function AdminProductos() {
   const [busquedaApi, setBusquedaApi] = useState("");
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
+  const [errorAcceso, setErrorAcceso] = useState(null);
   const [intento, setIntento] = useState(0);
+  const [intentoAcceso, setIntentoAcceso] = useState(0);
 
   useEffect(() => {
     let vigente = true;
     obtenerSesionAdmin()
       .then((sesion) => {
-        if (vigente) setUsuario(sesion);
+        if (vigente) {
+          setErrorAcceso(null);
+          setUsuario(sesion);
+        }
       })
       .catch((errorSesion) => {
         if (vigente) {
-          setError(errorSesion.message);
+          setErrorAcceso(
+            errorSesion instanceof ErrorAdminApi
+              ? errorSesion.message
+              : "No pudimos comprobar el acceso al panel.",
+          );
           setUsuario(null);
         }
       });
     return () => { vigente = false; };
-  }, []);
+  }, [intentoAcceso]);
 
   useEffect(() => {
     const termino = busqueda.trim();
@@ -207,6 +216,31 @@ export default function AdminProductos() {
   }
 
   if (!usuario) {
+    if (errorAcceso) {
+      return (
+        <main className={styles.accesoPantalla}>
+          <section className={styles.accesoCaja} role="alert">
+            <div className={styles.accesoMarca}>Sumarket<em>Admin</em></div>
+            <div className={styles.accesoContenido}>
+              <h1>No pudimos conectar</h1>
+              <p>{errorAcceso}</p>
+              <button
+                className={styles.botonReintentar}
+                type="button"
+                onClick={() => {
+                  setUsuario(undefined);
+                  setErrorAcceso(null);
+                  setIntentoAcceso((valor) => valor + 1);
+                }}
+              >
+                Reintentar
+              </button>
+            </div>
+          </section>
+        </main>
+      );
+    }
+
     return (
       <AccesoAdmin
         onAcceso={(sesion) => {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import AdminShell from "../components/admin/AdminShell.jsx";
 import {
@@ -8,6 +8,8 @@ import {
   obtenerOpcionesProductoAdmin,
   obtenerProductoAdmin,
   obtenerSesionAdmin,
+  reemplazarImagenesProductoAdmin,
+  subirImagenProductoAdmin,
 } from "../services/adminApi.js";
 import {
   calcularPrecioPorUnidad,
@@ -40,6 +42,90 @@ function Campo({ id, etiqueta, error, ayuda, children, requerido = false }) {
   );
 }
 
+function Switch({ id, etiqueta, ayuda, checked, disabled = false, onChange }) {
+  return (
+    <label className={`${styles.switchFila} ${disabled ? styles.switchDeshabilitado : ""}`} htmlFor={id}>
+      <span>
+        <strong>{etiqueta}</strong>
+        {ayuda && <small>{ayuda}</small>}
+      </span>
+      <span className={styles.switchControl}>
+        <input
+          id={id}
+          type="checkbox"
+          checked={checked}
+          disabled={disabled}
+          onChange={(evento) => onChange(evento.target.checked)}
+        />
+        <span className={styles.switchTrack} aria-hidden="true"><span /></span>
+      </span>
+    </label>
+  );
+}
+
+const MAXIMO_IMAGENES_PRODUCTO = 5;
+
+function GaleriaProducto({ imagenes, nombre, productoId, cargando, onSubir, onReordenar, error }) {
+  const inputRef = useRef(null);
+  const [arrastrada, setArrastrada] = useState(null);
+
+  function soltar(indiceDestino) {
+    if (arrastrada === null || arrastrada === indiceDestino) return;
+    onReordenar(arrastrada, indiceDestino);
+    setArrastrada(null);
+  }
+
+  return (
+    <div className={styles.galeriaBloque}>
+      <div className={styles.galeriaSlots}>
+        {imagenes.map((imagen, indice) => (
+          <div
+            className={`${styles.slotImagen} ${styles.slotConImagen}`}
+            key={imagen.id ?? imagen.url}
+            draggable
+            onDragStart={() => setArrastrada(indice)}
+            onDragEnd={() => setArrastrada(null)}
+            onDragOver={(evento) => evento.preventDefault()}
+            onDrop={() => soltar(indice)}
+          >
+            <img src={imagen.url} alt={imagen.textoAlternativo || `${nombre}, imagen ${indice + 1}`} />
+          </div>
+        ))}
+        {imagenes.length === 0 && <span className={styles.slotVacio} aria-hidden="true" />}
+        {imagenes.length < MAXIMO_IMAGENES_PRODUCTO && (
+          <button
+            className={styles.subirImagen}
+            type="button"
+            disabled={!productoId || cargando}
+            onClick={() => inputRef.current?.click()}
+            title={!productoId ? "Guarda el producto antes de subir imágenes" : undefined}
+          >
+            <span aria-hidden="true">+</span>
+            <small>{cargando ? "Subiendo" : "Subir"}</small>
+          </button>
+        )}
+        <input
+          ref={inputRef}
+          className={styles.inputArchivo}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={(evento) => {
+            const archivo = evento.target.files?.[0];
+            if (archivo) onSubir(archivo);
+            evento.target.value = "";
+          }}
+        />
+      </div>
+      <div className={styles.galeriaAyuda}>
+        <strong>{imagenes.length ? "Arrastra para reordenar" : "Galería del producto"}</strong>
+        <span>{imagenes.length}/{MAXIMO_IMAGENES_PRODUCTO} imágenes · la primera aparece en la tarjeta<br />JPG, PNG o WebP · máximo 5 MB · mínimo 800×800</span>
+        {!productoId && <small>Guarda el producto para activar la galería.</small>}
+        {error && <small className={styles.errorCampo}>{error}</small>}
+      </div>
+    </div>
+  );
+}
+
 function EstadoEditor({ usuario, children }) {
   return <AdminShell usuario={usuario}>{children}</AdminShell>;
 }
@@ -50,13 +136,20 @@ export default function AdminProductoEditor() {
   const esNuevo = !id;
   const [usuario, setUsuario] = useState(undefined);
   const [formulario, setFormulario] = useState(PRODUCTO_FORMULARIO_INICIAL);
-  const [referencias, setReferencias] = useState({ categorias: [], marcas: [] });
+  const [referencias, setReferencias] = useState({ categorias: [], marcas: [], etiquetas: [] });
+  const [imagenes, setImagenes] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
+  const [cargandoImagen, setCargandoImagen] = useState(false);
   const [errores, setErrores] = useState({});
   const [tocados, setTocados] = useState({});
-  const [detallesAbiertos, setDetallesAbiertos] = useState(false);
+  const [detallesAbiertos, setDetallesAbiertos] = useState(true);
   const [errorGeneral, setErrorGeneral] = useState(null);
+  const [errorGaleria, setErrorGaleria] = useState(null);
+  const [errorAcceso, setErrorAcceso] = useState(null);
+  const [errorCarga, setErrorCarga] = useState(null);
+  const [intentoAcceso, setIntentoAcceso] = useState(0);
+  const [intentoCarga, setIntentoCarga] = useState(0);
 
   const precioPorUnidad = calcularPrecioPorUnidad(
     formulario.precio,
@@ -64,50 +157,50 @@ export default function AdminProductoEditor() {
     formulario.contenidoUnidad,
   );
 
-  // La sesión se consulta de nuevo al entrar por URL directa; el listado no
-  // debe ser un requisito para proteger el editor.
   useEffect(() => {
     let vigente = true;
     obtenerSesionAdmin()
       .then((sesion) => {
-        if (vigente) setUsuario(sesion);
+        if (vigente) {
+          setErrorAcceso(null);
+          setUsuario(sesion);
+        }
       })
       .catch((error) => {
         if (vigente) {
-          setErrorGeneral(error.message);
+          setErrorAcceso(error instanceof ErrorAdminApi ? error.message : "No pudimos comprobar el acceso al panel.");
           setUsuario(null);
         }
       });
-
     return () => { vigente = false; };
-  }, []);
+  }, [intentoAcceso]);
 
-  // El editor carga referencias y detalle en paralelo. En creación no pedimos
-  // detalle; en edición el backend entrega relaciones completas para hidratar IDs.
   useEffect(() => {
     if (!usuario) return undefined;
     let vigente = true;
-
     const detalle = esNuevo ? Promise.resolve(null) : obtenerProductoAdmin(id);
+
     Promise.all([obtenerOpcionesProductoAdmin(), detalle])
       .then(([opciones, producto]) => {
         if (!vigente) return;
-        setErrorGeneral(null);
         setReferencias({
           categorias: opciones?.categorias ?? [],
           marcas: opciones?.marcas ?? [],
+          etiquetas: opciones?.etiquetas ?? [],
         });
         setFormulario(crearFormularioProducto(producto ?? {}));
+        setImagenes(producto?.imagenes ?? []);
+        setErrorCarga(null);
       })
       .catch((error) => {
-        if (vigente) setErrorGeneral(error.message);
+        if (vigente) setErrorCarga(error instanceof ErrorAdminApi ? error.message : "No pudimos abrir el editor.");
       })
       .finally(() => {
         if (vigente) setCargando(false);
       });
 
     return () => { vigente = false; };
-  }, [esNuevo, id, usuario]);
+  }, [esNuevo, id, usuario, intentoCarga]);
 
   const cambiar = (campo) => (evento) => {
     const valor = evento.target.type === "checkbox" ? evento.target.checked : evento.target.value;
@@ -117,10 +210,53 @@ export default function AdminProductoEditor() {
     setErrorGeneral(null);
   };
 
+  const cambiarValor = (campo, valor) => {
+    setFormulario((actual) => ({ ...actual, [campo]: valor }));
+    setTocados((actual) => ({ ...actual, [campo]: true }));
+    setErrores((actual) => ({ ...actual, [campo]: undefined }));
+  };
+
   const marcarTocado = (campo) => {
     setTocados((actual) => ({ ...actual, [campo]: true }));
     setErrores(validarFormularioProducto(formulario, { esNuevo }));
   };
+
+  async function subirImagen(archivo) {
+    if (!id) return;
+    setCargandoImagen(true);
+    setErrorGaleria(null);
+    try {
+      const subida = await subirImagenProductoAdmin(archivo);
+      const siguiente = [
+        ...imagenes,
+        {
+          url: subida.url,
+          storageKey: subida.storageKey,
+          textoAlternativo: formulario.nombre,
+        },
+      ].slice(0, MAXIMO_IMAGENES_PRODUCTO);
+      const producto = await reemplazarImagenesProductoAdmin(id, siguiente);
+      setImagenes(producto?.imagenes ?? siguiente);
+    } catch (error) {
+      setErrorGaleria(error instanceof ErrorAdminApi ? error.message : "No pudimos subir la imagen.");
+    } finally {
+      setCargandoImagen(false);
+    }
+  }
+
+  async function reordenarImagenes(indiceOrigen, indiceDestino) {
+    const siguiente = [...imagenes];
+    const [movida] = siguiente.splice(indiceOrigen, 1);
+    siguiente.splice(indiceDestino, 0, movida);
+    setImagenes(siguiente);
+    try {
+      const producto = await reemplazarImagenesProductoAdmin(id, siguiente);
+      setImagenes(producto?.imagenes ?? siguiente);
+    } catch (error) {
+      setErrorGaleria(error instanceof ErrorAdminApi ? error.message : "No pudimos guardar el orden de las imágenes.");
+      setImagenes(imagenes);
+    }
+  }
 
   async function guardar(evento) {
     evento.preventDefault();
@@ -131,18 +267,17 @@ export default function AdminProductoEditor() {
 
     setGuardando(true);
     setErrorGeneral(null);
-    const payload = normalizarPayloadProductoAdmin(formulario, { esNuevo });
-
     try {
-      if (esNuevo) await crearProductoAdmin(payload);
-      else await actualizarProductoAdmin(id, payload);
-      navegar("/admin/productos");
+      const payload = normalizarPayloadProductoAdmin(formulario, { esNuevo });
+      if (esNuevo) {
+        const productoCreado = await crearProductoAdmin(payload);
+        navegar(`/admin/productos/${productoCreado.id}/editar`, { replace: true });
+      } else {
+        await actualizarProductoAdmin(id, payload);
+        navegar("/admin/productos");
+      }
     } catch (error) {
-      setErrorGeneral(
-        error instanceof ErrorAdminApi
-          ? error.message
-          : "No pudimos guardar el producto. Inténtalo nuevamente.",
-      );
+      setErrorGeneral(error instanceof ErrorAdminApi ? error.message : "No pudimos guardar el producto. Inténtalo nuevamente.");
     } finally {
       setGuardando(false);
     }
@@ -152,43 +287,72 @@ export default function AdminProductoEditor() {
     return <main className={styles.estadoPantalla}><p role="status">Comprobando acceso al panel…</p></main>;
   }
 
+  if (errorAcceso) {
+    return (
+      <main className={styles.estadoPantalla}>
+        <section className={styles.estadoContenido} role="alert">
+          <h1>No pudimos conectar con el panel</h1>
+          <p>{errorAcceso}</p>
+          <button type="button" className={styles.botonPrimario} onClick={() => {
+            setUsuario(undefined);
+            setErrorAcceso(null);
+            setIntentoAcceso((actual) => actual + 1);
+          }}>Reintentar</button>
+        </section>
+      </main>
+    );
+  }
+
   if (!usuario) return <Navigate to="/admin/productos" replace />;
 
   if (cargando) {
     return (
-      <main className={styles.fondoEditor}>
-        <EstadoEditor usuario={usuario}>
+      <EstadoEditor usuario={usuario}>
+        <main className={styles.fondoEditor}>
           <div className={styles.estadoContenido} role="status">Cargando editor…</div>
-        </EstadoEditor>
-      </main>
+        </main>
+      </EstadoEditor>
     );
   }
 
-  if (errorGeneral && !Object.keys(formulario).some((campo) => formulario[campo])) {
+  if (errorCarga) {
     return (
-      <main className={styles.fondoEditor}>
-        <EstadoEditor usuario={usuario}>
-          <div className={styles.estadoContenido} role="alert">
-            <strong>No pudimos abrir el editor</strong>
-            <span>{errorGeneral}</span>
-            <Link className={styles.botonSecundario} to="/admin/productos">Volver a Productos</Link>
-          </div>
-        </EstadoEditor>
-      </main>
+      <EstadoEditor usuario={usuario}>
+        <main className={styles.fondoEditor}>
+          <section className={styles.estadoContenido} role="alert">
+            <h1>No pudimos abrir el editor</h1>
+            <p>{errorCarga}</p>
+            <div className={styles.accionesEstado}>
+              <Link className={styles.botonSecundario} to="/admin/productos">Volver a productos</Link>
+              <button type="button" className={styles.botonPrimario} onClick={() => {
+                setCargando(true);
+                setErrorCarga(null);
+                setIntentoCarga((actual) => actual + 1);
+              }}>Reintentar</button>
+            </div>
+          </section>
+        </main>
+      </EstadoEditor>
     );
   }
+
+  const nombreProducto = formulario.nombre || (esNuevo ? "Nuevo producto" : "Editar producto");
+  const slugVistaPrevia = formulario.slug || "";
+  const puedeVerEnTienda = Boolean(slugVistaPrevia) && formulario.estado === "PUBLICADO";
 
   return (
-    <main className={styles.fondoEditor}>
-      <AdminShell usuario={usuario}>
+    <AdminShell usuario={usuario}>
+      <main className={styles.fondoEditor}>
         <header className={styles.cabeceraEditor}>
           <div>
             <Link className={styles.volver} to="/admin/productos">← Productos</Link>
-            <p className={styles.eyebrow}>Catálogo · {esNuevo ? "Nuevo registro" : "Edición"}</p>
-            <h1>{esNuevo ? "Nuevo producto" : "Editar producto"}</h1>
+            <p className={styles.eyebrow}>{esNuevo ? "Nuevo · borrador" : `Editando · SKU ${formulario.sku || "—"}`}</p>
+            <h1>{nombreProducto}</h1>
           </div>
           <div className={styles.accionesCabecera}>
-            <Link className={styles.botonSecundario} to="/admin/productos">Cancelar</Link>
+            {puedeVerEnTienda ? (
+              <a className={styles.botonSecundario} href={`${import.meta.env.BASE_URL}producto/${encodeURIComponent(slugVistaPrevia)}`} target="_blank" rel="noreferrer">Ver en tienda</a>
+            ) : <span className={`${styles.botonSecundario} ${styles.botonInactivo}`} title="Se activa cuando el producto está publicado">Ver en tienda</span>}
             <button className={styles.botonPrimario} type="submit" form="formulario-producto" disabled={guardando}>
               {guardando ? "Guardando…" : "Guardar"}
             </button>
@@ -196,23 +360,19 @@ export default function AdminProductoEditor() {
         </header>
 
         <form id="formulario-producto" className={styles.formulario} onSubmit={guardar} noValidate>
-          <section className={styles.seccion} aria-labelledby="titulo-informacion">
-            <div className={styles.tituloSeccion}>
-              <p className={styles.eyebrow}>01 · Información</p>
-              <h2 id="titulo-informacion">Datos principales</h2>
-              <p>Lo que las personas verán en el catálogo.</p>
-            </div>
+          <section className={styles.superficieEditor} aria-label="Editor de producto">
+            <GaleriaProducto
+              imagenes={imagenes}
+              nombre={nombreProducto}
+              productoId={id}
+              cargando={cargandoImagen}
+              onSubir={subirImagen}
+              onReordenar={reordenarImagenes}
+              error={errorGaleria}
+            />
 
-            <Campo id="nombre" etiqueta="Nombre del producto" error={tocados.nombre && errores.nombre} requerido>
-              {(props) => (
-                <input {...props} className={styles.input} type="text" value={formulario.nombre} onChange={cambiar("nombre")} onBlur={() => marcarTocado("nombre")} maxLength="200" />
-              )}
-            </Campo>
-
-            <Campo id="descripcion" etiqueta="Descripción" error={tocados.descripcion && errores.descripcion} requerido>
-              {(props) => (
-                <textarea {...props} className={styles.textarea} value={formulario.descripcion} onChange={cambiar("descripcion")} onBlur={() => marcarTocado("descripcion")} maxLength="10000" rows="4" />
-              )}
+            <Campo id="nombre" etiqueta="Nombre" error={tocados.nombre && errores.nombre} requerido>
+              {(props) => <input {...props} className={styles.input} type="text" value={formulario.nombre} onChange={cambiar("nombre")} onBlur={() => marcarTocado("nombre")} maxLength="200" />}
             </Campo>
 
             <div className={styles.filaDos}>
@@ -224,29 +384,16 @@ export default function AdminProductoEditor() {
                   </select>
                 )}
               </Campo>
-              <Campo id="marcaId" etiqueta="Marca" error={tocados.marcaId && errores.marcaId} requerido>
-                {(props) => (
-                  <select {...props} className={styles.input} value={formulario.marcaId} onChange={cambiar("marcaId")} onBlur={() => marcarTocado("marcaId")}>
-                    <option value="">Selecciona una marca</option>
-                    {referencias.marcas.map((marca) => <option key={marca.id} value={marca.id}>{marca.nombre}</option>)}
-                  </select>
-                )}
+              <Campo id="sku" etiqueta="SKU" error={tocados.sku && errores.sku} requerido>
+                {(props) => <input {...props} className={styles.input} type="text" value={formulario.sku} onChange={cambiar("sku")} onBlur={() => marcarTocado("sku")} maxLength="80" />}
               </Campo>
-            </div>
-          </section>
-
-          <section className={styles.seccion} aria-labelledby="titulo-comercial">
-            <div className={styles.tituloSeccion}>
-              <p className={styles.eyebrow}>02 · Comercial</p>
-              <h2 id="titulo-comercial">Precio e inventario</h2>
-              <p>Montos enteros en CLP y unidades disponibles.</p>
             </div>
 
             <div className={styles.filaTres}>
-              <Campo id="precio" etiqueta="Precio actual" error={tocados.precio && errores.precio} requerido>
+              <Campo id="precio" etiqueta="Precio" error={tocados.precio && errores.precio} requerido>
                 {(props) => <input {...props} className={styles.input} type="number" min="0" step="1" value={formulario.precio} onChange={cambiar("precio")} onBlur={() => marcarTocado("precio")} />}
               </Campo>
-              <Campo id="precioAnterior" etiqueta="Precio anterior" error={tocados.precioAnterior && errores.precioAnterior} ayuda="Opcional para ofertas.">
+              <Campo id="precioAnterior" etiqueta="Precio anterior" error={tocados.precioAnterior && errores.precioAnterior} ayuda="Opcional; se muestra como precio de referencia tachado.">
                 {(props) => <input {...props} className={styles.input} type="number" min="0" step="1" value={formulario.precioAnterior} onChange={cambiar("precioAnterior")} onBlur={() => marcarTocado("precioAnterior")} />}
               </Campo>
               <Campo id="stock" etiqueta="Stock" error={tocados.stock && errores.stock} requerido>
@@ -254,102 +401,113 @@ export default function AdminProductoEditor() {
               </Campo>
             </div>
 
-            {!esNuevo && (
-              <Campo id="estado" etiqueta="Estado editorial" error={tocados.estado && errores.estado} requerido>
-                {(props) => (
-                  <select {...props} className={styles.input} value={formulario.estado} onChange={cambiar("estado")} onBlur={() => marcarTocado("estado")}>
-                    <option value="BORRADOR">Borrador</option>
-                    <option value="PUBLICADO">Publicado</option>
-                    <option value="ARCHIVADO">Archivado</option>
-                  </select>
-                )}
-              </Campo>
-            )}
+            <Campo id="descripcion" etiqueta="Descripción" error={tocados.descripcion && errores.descripcion} requerido>
+              {(props) => <textarea {...props} className={styles.textarea} value={formulario.descripcion} onChange={cambiar("descripcion")} onBlur={() => marcarTocado("descripcion")} maxLength="10000" rows="4" />}
+            </Campo>
 
-            <label className={styles.casilla}>
-              <input type="checkbox" checked={formulario.destacado} onChange={cambiar("destacado")} />
-              <span>
-                <strong>Producto destacado</strong>
-                <small>Puede aparecer en espacios editoriales del catálogo.</small>
-              </span>
-            </label>
-          </section>
+            <div className={styles.divisor} />
 
-          <section className={`${styles.seccion} ${styles.seccionDetalles}`} aria-labelledby="titulo-detalles">
-            <button
-              className={styles.detallesTrigger}
-              type="button"
-              aria-expanded={detallesAbiertos}
-              aria-controls="panel-mas-detalles"
-              onClick={() => setDetallesAbiertos((abierto) => !abierto)}
-            >
-              <span>
-                <span className={styles.eyebrow}>03 · Opcional</span>
-                <strong id="titulo-detalles">Más detalles</strong>
-              </span>
-              <span className={`${styles.chevron} ${detallesAbiertos ? styles.chevronAbierto : ""}`} aria-hidden="true">⌄</span>
-            </button>
+            <section className={styles.detallesCaja} aria-labelledby="titulo-detalles">
+              <button
+                className={styles.detallesTrigger}
+                type="button"
+                aria-expanded={detallesAbiertos}
+                aria-controls="panel-mas-detalles"
+                onClick={() => setDetallesAbiertos((abierto) => !abierto)}
+              >
+                <span>
+                  <strong id="titulo-detalles">Más detalles</strong>
+                  <small>Todo lo que la ficha del producto muestra bajo la descripción</small>
+                </span>
+                <span className={styles.detallesAccion}>{detallesAbiertos ? "Ocultar ↑" : "Mostrar ↓"}</span>
+              </button>
 
-            {detallesAbiertos && (
-              <div id="panel-mas-detalles" className={styles.detallesPanel}>
-                <p className={styles.detallesIntro}>
-                  Completa esta información para mejorar la ficha, el despacho y el cálculo por unidad.
-                </p>
-
-                <Campo id="slug" etiqueta="URL / slug" error={tocados.slug && errores.slug} ayuda="Solo minúsculas, números y guiones.">
-                  {(props) => <input {...props} className={styles.input} type="text" value={formulario.slug} onChange={cambiar("slug")} onBlur={() => marcarTocado("slug")} maxLength="180" placeholder="aceite-de-oliva-500" />}
-                </Campo>
-
-                <div className={styles.filaDos}>
-                  <Campo id="codigoBarras" etiqueta="Código de barras" error={tocados.codigoBarras && errores.codigoBarras}>
-                    {(props) => <input {...props} className={styles.input} type="text" value={formulario.codigoBarras} onChange={cambiar("codigoBarras")} onBlur={() => marcarTocado("codigoBarras")} maxLength="50" />}
-                  </Campo>
-                  <Campo id="origen" etiqueta="Origen" error={tocados.origen && errores.origen}>
-                    {(props) => <input {...props} className={styles.input} type="text" value={formulario.origen} onChange={cambiar("origen")} onBlur={() => marcarTocado("origen")} maxLength="120" placeholder="Chile" />}
-                  </Campo>
-                </div>
-
-                <div className={styles.filaTres}>
-                  <Campo id="contenidoCantidad" etiqueta="Contenido" error={tocados.contenidoCantidad && errores.contenidoCantidad}>
-                    {(props) => <input {...props} className={styles.input} type="number" min="0" step="0.001" value={formulario.contenidoCantidad} onChange={cambiar("contenidoCantidad")} onBlur={() => marcarTocado("contenidoCantidad")} />}
-                  </Campo>
-                  <Campo id="contenidoUnidad" etiqueta="Unidad" error={tocados.contenidoUnidad && errores.contenidoUnidad}>
-                    {(props) => (
-                      <select {...props} className={styles.input} value={formulario.contenidoUnidad} onChange={cambiar("contenidoUnidad")} onBlur={() => marcarTocado("contenidoUnidad")}>
-                        <option value="">Selecciona</option>
-                        <option value="g">g</option>
-                        <option value="kg">kg</option>
-                        <option value="ml">ml</option>
-                        <option value="l">l</option>
-                        <option value="un">un</option>
-                      </select>
-                    )}
-                  </Campo>
-                  <div className={styles.precioUnidad} aria-live="polite">
-                    <span>Precio por unidad</span>
-                    <strong>{precioPorUnidad ? `$${precioPorUnidad.monto.toLocaleString("es-CL")} / ${precioPorUnidad.unidad}` : "—"}</strong>
+              {detallesAbiertos && (
+                <div id="panel-mas-detalles" className={styles.detallesPanel}>
+                  <div className={styles.filaDos}>
+                    <Campo id="marcaId" etiqueta="Marca" error={tocados.marcaId && errores.marcaId} requerido>
+                      {(props) => (
+                        <select {...props} className={styles.input} value={formulario.marcaId} onChange={cambiar("marcaId")} onBlur={() => marcarTocado("marcaId")}>
+                          <option value="">Selecciona una marca</option>
+                          {referencias.marcas.map((marca) => <option key={marca.id} value={marca.id}>{marca.nombre}</option>)}
+                        </select>
+                      )}
+                    </Campo>
+                    <Campo id="origen" etiqueta="Origen" error={tocados.origen && errores.origen}>
+                      {(props) => <input {...props} className={styles.input} type="text" value={formulario.origen} onChange={cambiar("origen")} onBlur={() => marcarTocado("origen")} maxLength="120" />}
+                    </Campo>
                   </div>
-                </div>
 
-                <div className={styles.filaDos}>
-                  <Campo id="fechaVencimiento" etiqueta="Vence" error={tocados.fechaVencimiento && errores.fechaVencimiento}>
-                    {(props) => <input {...props} className={styles.input} type="date" value={formulario.fechaVencimiento} onChange={cambiar("fechaVencimiento")} onBlur={() => marcarTocado("fechaVencimiento")} />}
-                  </Campo>
-                  <Campo id="pesoDespachoGramos" etiqueta="Peso de despacho (g)" error={tocados.pesoDespachoGramos && errores.pesoDespachoGramos}>
-                    {(props) => <input {...props} className={styles.input} type="number" min="1" step="1" value={formulario.pesoDespachoGramos} onChange={cambiar("pesoDespachoGramos")} onBlur={() => marcarTocado("pesoDespachoGramos")} />}
+                  <div className={styles.filaTres}>
+                    <Campo id="contenidoCantidad" etiqueta="Contenido" error={tocados.contenidoCantidad && errores.contenidoCantidad}>
+                      {(props) => <input {...props} className={styles.input} type="number" min="0" step="0.001" value={formulario.contenidoCantidad} onChange={cambiar("contenidoCantidad")} onBlur={() => marcarTocado("contenidoCantidad")} />}
+                    </Campo>
+                    <Campo id="contenidoUnidad" etiqueta="Unidad" error={tocados.contenidoUnidad && errores.contenidoUnidad}>
+                      {(props) => (
+                        <select {...props} className={styles.input} value={formulario.contenidoUnidad} onChange={cambiar("contenidoUnidad")} onBlur={() => marcarTocado("contenidoUnidad")}>
+                          <option value="">Selecciona</option>
+                          {['g', 'kg', 'ml', 'l', 'un'].map((unidad) => <option key={unidad} value={unidad}>{unidad}</option>)}
+                        </select>
+                      )}
+                    </Campo>
+                    <Campo id="fechaVencimiento" etiqueta="Vence" error={tocados.fechaVencimiento && errores.fechaVencimiento}>
+                      {(props) => <input {...props} className={styles.input} type="date" value={formulario.fechaVencimiento} onChange={cambiar("fechaVencimiento")} onBlur={() => marcarTocado("fechaVencimiento")} />}
+                    </Campo>
+                  </div>
+
+                  <div className={styles.filaDos}>
+                    <div className={styles.campoCalculado}>
+                      <span>Precio por unidad de medida</span>
+                      <strong>{precioPorUnidad ? `$${precioPorUnidad.monto.toLocaleString("es-CL")} por ${precioPorUnidad.unidad === "L" ? "litro" : "kilo"}` : "—"}</strong>
+                      <small>Se calcula solo desde contenido y precio</small>
+                    </div>
+                    <Campo id="pesoDespachoGramos" etiqueta="Peso para despacho" error={tocados.pesoDespachoGramos && errores.pesoDespachoGramos}>
+                      {(props) => <input {...props} className={styles.input} type="number" min="1" step="1" value={formulario.pesoDespachoGramos} onChange={cambiar("pesoDespachoGramos")} onBlur={() => marcarTocado("pesoDespachoGramos")} />}
+                    </Campo>
+                  </div>
+
+                  <div className={styles.filaDos}>
+                    <Campo id="codigoBarras" etiqueta="Código de barras" error={tocados.codigoBarras && errores.codigoBarras}>
+                      {(props) => <input {...props} className={styles.input} type="text" value={formulario.codigoBarras} onChange={cambiar("codigoBarras")} onBlur={() => marcarTocado("codigoBarras")} maxLength="50" />}
+                    </Campo>
+                    <div className={styles.grupo}>
+                      <label>Etiquetas</label>
+                      <div className={styles.etiquetasCampo}>
+                        {referencias.etiquetas.map((etiqueta) => (
+                          <label className={styles.etiquetaOpcion} key={etiqueta.id}>
+                            <input type="checkbox" checked={formulario.etiquetaIds.includes(etiqueta.id)} onChange={() => cambiarValor("etiquetaIds", formulario.etiquetaIds.includes(etiqueta.id) ? formulario.etiquetaIds.filter((idEtiqueta) => idEtiqueta !== etiqueta.id) : [...formulario.etiquetaIds, etiqueta.id])} />
+                            <span>{etiqueta.nombre}</span>
+                          </label>
+                        ))}
+                        {referencias.etiquetas.length === 0 && <span className={styles.sinEtiquetas}>Sin etiquetas disponibles</span>}
+                      </div>
+                    </div>
+                  </div>
+
+                  <Campo id="slug" etiqueta="URL del producto" error={tocados.slug && errores.slug} ayuda="Se genera del nombre; editable para SEO (RNF-6)">
+                    {(props) => <input {...props} className={styles.input} type="text" value={formulario.slug} onChange={cambiar("slug")} onBlur={() => marcarTocado("slug")} maxLength="180" placeholder="aceite-de-oliva-500ml" />}
                   </Campo>
                 </div>
+              )}
+            </section>
 
-                <Campo id="alertaStockBajo" etiqueta="Avisar cuando queden" error={tocados.alertaStockBajo && errores.alertaStockBajo} ayuda="Opcional; se usa para alertas internas de inventario.">
-                  {(props) => <input {...props} className={styles.input} type="number" min="1" step="1" value={formulario.alertaStockBajo} onChange={cambiar("alertaStockBajo")} onBlur={() => marcarTocado("alertaStockBajo")} />}
-                </Campo>
-              </div>
-            )}
+            <div className={styles.divisor} />
+
+            <section className={styles.preferencias} aria-label="Opciones de publicación">
+              <Switch id="publicado" etiqueta="Publicado en la tienda" checked={formulario.estado === "PUBLICADO"} disabled={esNuevo} onChange={(activo) => cambiarValor("estado", activo ? "PUBLICADO" : "BORRADOR")} />
+              <Switch id="destacado" etiqueta="Destacar en la portada" checked={formulario.destacado} onChange={(activo) => cambiarValor("destacado", activo)} />
+              <Switch id="alerta-stock" etiqueta={`Avisar cuando el stock baje de ${formulario.alertaStockBajo || 3} unidades`} checked={Boolean(formulario.alertaStockBajo)} onChange={(activo) => cambiarValor("alertaStockBajo", activo ? (formulario.alertaStockBajo || "3") : "")} />
+            </section>
           </section>
 
-          {errorGeneral && <p className={styles.errorGeneral} role="alert">{errorGeneral}</p>}
+          {errorGeneral && (
+            <div className={styles.errorGeneral} role="alert">
+              <span>{errorGeneral}</span>
+              <button type="button" onClick={() => setErrorGeneral(null)}>Cerrar</button>
+            </div>
+          )}
         </form>
-      </AdminShell>
-    </main>
+      </main>
+    </AdminShell>
   );
 }

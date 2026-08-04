@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   cerrarSesionCuenta,
+  crearDireccionCuenta,
   iniciarSesionCuenta,
   listarDireccionesCuenta,
   listarPedidosCuenta,
@@ -31,16 +32,23 @@ describe("cuentaApi", () => {
     const fetchImpl = vi
       .fn()
       .mockResolvedValueOnce({ ok: true, json: async () => ({ data: [] }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ data: { id: "d1" } }) })
       .mockResolvedValueOnce({ ok: true, json: async () => ({ data: [] }) });
     const opciones = { fetchImpl, apiUrl: "http://localhost:3000/api" };
 
     await listarDireccionesCuenta(opciones);
+    await crearDireccionCuenta({ calle: "Av. Matta 980", comuna: "Santiago", region: "RM" }, opciones);
     await listarPedidosCuenta({ page: 2, limit: 12, ...opciones });
 
     expect(fetchImpl.mock.calls.map(([url, config]) => [url, config.credentials])).toEqual([
       ["http://localhost:3000/api/cuenta/direcciones", "include"],
+      ["http://localhost:3000/api/cuenta/direcciones", "include"],
       ["http://localhost:3000/api/cuenta/pedidos?page=2&limit=12", "include"],
     ]);
+    expect(fetchImpl.mock.calls[1][1]).toMatchObject({
+      method: "POST",
+      body: JSON.stringify({ calle: "Av. Matta 980", comuna: "Santiago", region: "RM" }),
+    });
   });
 
   it("trata un 401 como visitante sin sesión", async () => {

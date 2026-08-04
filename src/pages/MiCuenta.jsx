@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCuenta } from "../context/CuentaContext.jsx";
 import {
+  crearDireccionCuenta,
   listarDireccionesCuenta,
   listarPedidosCuenta,
 } from "../services/cuentaApi.js";
@@ -19,6 +20,15 @@ const etiquetasEstado = {
   PREPARANDO: "en preparación",
   LISTO_PARA_RETIRO: "listo para retiro",
   ENVIADO: "enviada",
+};
+
+const DIRECCION_INICIAL = {
+  etiqueta: "",
+  calle: "",
+  depto: "",
+  comuna: "",
+  region: "Región Metropolitana",
+  instrucciones: "",
 };
 
 function formatearCLP(monto) {
@@ -63,6 +73,11 @@ function MiCuenta() {
   const [cargandoDatos, setCargandoDatos] = useState(true);
   const [error, setError] = useState("");
   const [cerrandoSesion, setCerrandoSesion] = useState(false);
+  const [formularioDireccionAbierto, setFormularioDireccionAbierto] = useState(false);
+  const [direccionNueva, setDireccionNueva] = useState(DIRECCION_INICIAL);
+  const [guardandoDireccion, setGuardandoDireccion] = useState(false);
+  const [errorDireccion, setErrorDireccion] = useState("");
+  const [mensajeDireccion, setMensajeDireccion] = useState("");
 
   useEffect(() => {
     let vigente = true;
@@ -105,6 +120,44 @@ function MiCuenta() {
     } catch {
       setError("No pudimos cerrar tu sesión. Inténtalo nuevamente.");
       setCerrandoSesion(false);
+    }
+  };
+
+  const abrirFormularioDireccion = () => {
+    setDireccionNueva(DIRECCION_INICIAL);
+    setErrorDireccion("");
+    setFormularioDireccionAbierto(true);
+  };
+
+  const cerrarFormularioDireccion = () => {
+    if (!guardandoDireccion) setFormularioDireccionAbierto(false);
+  };
+
+  const actualizarCampoDireccion = (evento) => {
+    const { name, value } = evento.target;
+    setDireccionNueva((actual) => ({ ...actual, [name]: value }));
+  };
+
+  const guardarDireccion = async (evento) => {
+    evento.preventDefault();
+    setGuardandoDireccion(true);
+    setErrorDireccion("");
+
+    // Los opcionales vacíos no viajan como texto: el contrato los entiende como
+    // ausentes y la tarjeta no terminará mostrando una línea sin contenido.
+    const datos = Object.fromEntries(
+      Object.entries(direccionNueva).filter(([, valor]) => valor.trim() !== ""),
+    );
+
+    try {
+      const creada = await crearDireccionCuenta(datos);
+      setDirecciones((actuales) => [...actuales, creada]);
+      setMensajeDireccion("Dirección guardada correctamente.");
+      setFormularioDireccionAbierto(false);
+    } catch (error) {
+      setErrorDireccion(error.message || "No pudimos guardar la dirección.");
+    } finally {
+      setGuardandoDireccion(false);
     }
   };
 
@@ -179,13 +232,14 @@ function MiCuenta() {
               {direcciones.slice(0, 2).map((direccion) => (
                 <TarjetaDireccion key={direccion.id} direccion={direccion} />
               ))}
-              <span className={styles.agregarPendiente} title="La gestión de direcciones se habilitará en el siguiente bloque">
+              <button className={styles.agregarDireccion} type="button" onClick={abrirFormularioDireccion}>
                 + Agregar
-              </span>
+              </button>
             </div>
             {!cargandoDatos && direcciones.length === 0 && (
               <p className={styles.sinDirecciones}>Aún no guardas direcciones.</p>
             )}
+            {mensajeDireccion && <p className={styles.exitoDireccion} role="status">{mensajeDireccion}</p>}
           </section>
 
           <section className={`${styles.seccion} ${styles.seguridad}`} aria-labelledby="titulo-seguridad">
@@ -207,6 +261,68 @@ function MiCuenta() {
           </section>
         </div>
       </div>
+
+      {formularioDireccionAbierto && (
+        <div className={styles.modalFondo} role="presentation" onMouseDown={cerrarFormularioDireccion}>
+          <section
+            className={styles.modalDireccion}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="titulo-nueva-direccion"
+            onMouseDown={(evento) => evento.stopPropagation()}
+          >
+            <div className={styles.modalCabecera}>
+              <div>
+                <p className={styles.eyebrow}>Direcciones</p>
+                <h2 id="titulo-nueva-direccion">Agregar dirección</h2>
+              </div>
+              <button type="button" className={styles.cerrarModal} onClick={cerrarFormularioDireccion} aria-label="Cerrar formulario">
+                <i className="fa-solid fa-xmark" aria-hidden="true" />
+              </button>
+            </div>
+
+            <form className={styles.formularioDireccion} onSubmit={guardarDireccion}>
+              <label className={styles.campoDireccion}>
+                <span>Nombre de la dirección <small>Opcional</small></span>
+                <input name="etiqueta" value={direccionNueva.etiqueta} onChange={actualizarCampoDireccion} placeholder="Casa, trabajo…" maxLength="60" />
+              </label>
+              <label className={styles.campoDireccion}>
+                <span>Dirección</span>
+                <input name="calle" value={direccionNueva.calle} onChange={actualizarCampoDireccion} placeholder="Av. Providencia 1234" minLength="3" maxLength="200" required autoFocus />
+              </label>
+              <label className={styles.campoDireccion}>
+                <span>Departamento, casa u oficina <small>Opcional</small></span>
+                <input name="depto" value={direccionNueva.depto} onChange={actualizarCampoDireccion} placeholder="Depto 502" maxLength="60" />
+              </label>
+              <div className={styles.filaCamposDireccion}>
+                <label className={styles.campoDireccion}>
+                  <span>Comuna</span>
+                  <input name="comuna" value={direccionNueva.comuna} onChange={actualizarCampoDireccion} placeholder="Providencia" minLength="2" maxLength="80" required />
+                </label>
+                <label className={styles.campoDireccion}>
+                  <span>Región</span>
+                  <input name="region" value={direccionNueva.region} onChange={actualizarCampoDireccion} minLength="2" maxLength="80" required />
+                </label>
+              </div>
+              <label className={styles.campoDireccion}>
+                <span>Instrucciones para la entrega <small>Opcional</small></span>
+                <textarea name="instrucciones" value={direccionNueva.instrucciones} onChange={actualizarCampoDireccion} placeholder="Dejar en conserjería" maxLength="300" rows="3" />
+              </label>
+
+              {errorDireccion && <p className={styles.errorDireccion} role="alert">{errorDireccion}</p>}
+
+              <div className={styles.accionesModal}>
+                <button type="button" className={styles.cancelarDireccion} onClick={cerrarFormularioDireccion} disabled={guardandoDireccion}>
+                  Cancelar
+                </button>
+                <button type="submit" className={styles.guardarDireccion} disabled={guardandoDireccion}>
+                  {guardandoDireccion ? "Guardando…" : "Guardar dirección"}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
     </section>
   );
 }

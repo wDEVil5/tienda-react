@@ -165,7 +165,7 @@
 }
 
 .direccion,
-.agregarPendiente {
+.agregarDireccion {
   min-height: 194px;
   padding: 26px 24px;
   border: 1px solid var(--color-borde);
@@ -177,16 +177,22 @@
 .direccion strong { display: block; color: var(--color-texto); font-size: 15px; line-height: 1.35; }
 .direccion p { margin-top: 8px; color: var(--color-texto-suave); font-size: 14px; line-height: 1.45; }
 
-.agregarPendiente {
+.agregarDireccion {
   display: grid;
   place-items: center;
   border-style: dashed;
+  background: var(--color-superficie);
   color: var(--color-texto);
-  cursor: help;
+  font: inherit;
   font-size: 15px;
+  cursor: pointer;
+  transition: border-color .2s ease, color .2s ease, background-color .2s ease;
 }
 
+.agregarDireccion:hover { border-color: var(--color-acento); background: #f4f8f5; color: var(--color-acento); }
+
 .sinDirecciones { margin-top: 12px; color: var(--color-texto-suave); font-size: 13px; }
+.exitoDireccion { margin-top: 12px; color: var(--color-acento); font-size: 13px; }
 
 .seguridad { padding-top: 38px; border-top: 1px solid var(--color-borde); }
 .filaSeguridad { display: flex; align-items: center; justify-content: space-between; gap: var(--e-xl); margin-top: 18px; color: var(--color-texto-2); font-size: 15px; }
@@ -206,11 +212,65 @@
 .interruptorPendiente i { width: 19px; height: 19px; border-radius: 50%; background: #fff; }
 .accionPeligrosa { color: var(--color-oferta); cursor: help; }
 
+.modalFondo {
+  position: fixed;
+  z-index: 1200;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(28, 27, 24, .42);
+  animation: aparecerModal .18s ease;
+}
+
+.modalDireccion {
+  width: min(100%, 560px);
+  max-height: min(760px, calc(100vh - 48px));
+  overflow: auto;
+  border: 1px solid var(--color-borde);
+  border-radius: 18px;
+  background: var(--color-fondo);
+  box-shadow: 0 22px 54px rgba(28, 27, 24, .24);
+  animation: subirModal .2s ease;
+}
+
+.modalCabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--e-xl);
+  padding: 30px 32px 24px;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.modalCabecera h2 { margin-top: 6px; font-family: var(--font-display); font-size: 32px; font-weight: 400; line-height: 1; }
+.cerrarModal { width: 38px; height: 38px; display: grid; place-items: center; flex: 0 0 auto; border: 0; border-radius: 50%; background: var(--color-crudo); color: var(--color-texto); font-size: 16px; cursor: pointer; }
+.cerrarModal:hover { background: var(--color-borde-3); }
+
+.formularioDireccion { display: flex; flex-direction: column; gap: 18px; padding: 28px 32px 32px; }
+.campoDireccion { display: flex; flex-direction: column; gap: 7px; color: var(--color-texto-2); font-size: 13px; }
+.campoDireccion small { color: var(--color-texto-tenue); font-size: inherit; }
+.campoDireccion input, .campoDireccion textarea { width: 100%; border: 1px solid var(--color-borde); border-radius: var(--radio-campo); background: var(--color-superficie); color: var(--color-texto); font: inherit; font-size: 14px; line-height: 1.45; }
+.campoDireccion input { min-height: 46px; padding: 10px 12px; }
+.campoDireccion textarea { min-height: 84px; padding: 10px 12px; resize: vertical; }
+.campoDireccion input:focus, .campoDireccion textarea:focus { outline: none; border-color: var(--color-acento); box-shadow: 0 0 0 3px var(--color-acento-bg); }
+.filaCamposDireccion { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.errorDireccion { margin-top: -4px; color: var(--color-oferta); font-size: 13px; }
+.accionesModal { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
+.cancelarDireccion, .guardarDireccion { min-height: 44px; padding: 0 18px; border-radius: var(--radio-control); font: inherit; font-size: 14px; cursor: pointer; }
+.cancelarDireccion { border: 1px solid var(--color-borde-3); background: var(--color-superficie); color: var(--color-texto-2); }
+.guardarDireccion { border: 1px solid var(--color-acento); background: var(--color-acento); color: #fff; font-weight: 600; }
+.guardarDireccion:hover:not(:disabled) { background: #285d40; }
+.cancelarDireccion:disabled, .guardarDireccion:disabled { cursor: wait; opacity: .7; }
+
+@keyframes aparecerModal { from { opacity: 0; } to { opacity: 1; } }
+@keyframes subirModal { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
 @media (max-width: 900px) {
   .cabecera { padding: 0 26px; }
   .cuerpo { grid-template-columns: 190px minmax(0, 1fr); }
   .navegacion { padding: 30px 18px; }
   .contenido { padding: 34px 30px; }
   .metricas, .direcciones { grid-template-columns: 1fr; }
-  .metrica, .direccion, .agregarPendiente { min-height: auto; }
+  .metrica, .direccion, .agregarDireccion { min-height: auto; }
 }

@@ -80,6 +80,14 @@ export function listarDireccionesCuenta(opciones = {}) {
   return solicitarCuenta("/cuenta/direcciones", opciones);
 }
 
+export function crearDireccionCuenta(datos, opciones = {}) {
+  return solicitarCuenta("/cuenta/direcciones", {
+    ...opciones,
+    method: "POST",
+    cuerpo: datos,
+  });
+}
+
 export function listarPedidosCuenta(
   { page = 1, limit = 50, estado, ...opciones } = {},
 ) {

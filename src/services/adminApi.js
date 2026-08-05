@@ -163,3 +163,10 @@ export function cambiarEstadoPedidoAdmin(id, estado, nota, opciones = {}) {
     cuerpo: nota ? { estado, nota } : { estado },
   });
 }
+
+export function obtenerResumenAdmin({ periodo, ...opciones } = {}) {
+  const parametros = new URLSearchParams();
+  if (periodo) parametros.set("periodo", periodo);
+  const consulta = parametros.toString();
+  return solicitarAdmin(`/admin/resumen${consulta ? `?${consulta}` : ""}`, opciones);
+}

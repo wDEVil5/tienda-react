@@ -14,6 +14,7 @@ const SECCIONES = [
 // Secciones ya implementadas: su ítem del menú navega. El resto queda deshabilitado
 // hasta su entrega.
 const RUTAS = {
+  Resumen: "/admin/resumen",
   Pedidos: "/admin/pedidos",
   Productos: "/admin/productos",
 };

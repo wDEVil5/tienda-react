@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { Navigate } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import AdminShell from "../components/admin/AdminShell.jsx";
 import {
   cambiarEstadoPedidoAdmin,
@@ -12,6 +12,18 @@ import {
 import styles from "./AdminPedidos.module.css";
 
 const LIMITE = 20;
+
+// Estados válidos para el filtro (incluye "" = Todos). Se usa para aceptar el
+// estado que llega por la URL (drill-down desde el Resumen: ?estado=PENDIENTE).
+const ESTADOS_VALIDOS = new Set([
+  "",
+  "PENDIENTE",
+  "PREPARANDO",
+  "LISTO_PARA_RETIRO",
+  "ENVIADO",
+  "ENTREGADO",
+  "CANCELADO",
+]);
 
 // Los chips y badges usan los estados REALES del backend (no hay "Pagado" como
 // estado: un pago aprobado ya mueve el pedido a PREPARANDO). "Pagado" se muestra
@@ -310,9 +322,14 @@ export default function AdminPedidos() {
   const [errorAcceso, setErrorAcceso] = useState(null);
   const [intentoAcceso, setIntentoAcceso] = useState(0);
 
+  const [searchParams] = useSearchParams();
   const [pedidos, setPedidos] = useState([]);
   const [meta, setMeta] = useState(null);
-  const [estado, setEstado] = useState("");
+  // Estado inicial del filtro: el de la URL si es válido (drill-down), o Todos.
+  const [estado, setEstado] = useState(() => {
+    const inicial = searchParams.get("estado");
+    return inicial && ESTADOS_VALIDOS.has(inicial) ? inicial : "";
+  });
   const [busqueda, setBusqueda] = useState("");
   const [busquedaAplicada, setBusquedaAplicada] = useState("");
   const [seleccionado, setSeleccionado] = useState(null);

@@ -48,6 +48,12 @@ function referencia(numero) {
   return `#SE-${numero}`;
 }
 
+// Drill-down del KPI "Stock crítico": lleva al panel "Por reponer" de la misma
+// página (scroll suave dentro del área de contenido del shell).
+function irAReponer() {
+  document.getElementById("por-reponer")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 // Delta contra el período anterior. null = sin base para comparar (no fingimos
 // un +∞ ni un 100% desde cero): lo decimos con honestidad.
 function Variacion({ valor, comparacion }) {
@@ -64,7 +70,7 @@ function Variacion({ valor, comparacion }) {
   );
 }
 
-function TarjetaKpi({ etiqueta, valor, to, children }) {
+function TarjetaKpi({ etiqueta, valor, to, onActivar, children }) {
   const contenido = (
     <>
       <span className={styles.kpiEtiqueta}>{etiqueta}</span>
@@ -77,6 +83,13 @@ function TarjetaKpi({ etiqueta, valor, to, children }) {
       <Link className={`${styles.tarjeta} ${styles.tarjetaLink}`} to={to}>
         {contenido}
       </Link>
+    );
+  }
+  if (onActivar) {
+    return (
+      <button type="button" className={`${styles.tarjeta} ${styles.tarjetaLink}`} onClick={onActivar}>
+        {contenido}
+      </button>
     );
   }
   return <div className={styles.tarjeta}>{contenido}</div>;
@@ -395,6 +408,44 @@ function PanelCobros({ cobros }) {
   );
 }
 
+// Panel "Por reponer": productos publicados bajo su umbral, con enlace a editar
+// (donde se ajusta el stock). El drill-down del KPI "Stock crítico" apunta aquí.
+function PanelPorReponer({ productos }) {
+  return (
+    <section className={styles.panel} id="por-reponer">
+      <div className={styles.panelCabecera}>
+        <h2 className={styles.panelTitulo}>Por reponer</h2>
+        <span className={styles.panelNota}>stock bajo</span>
+      </div>
+      {productos.length === 0 ? (
+        <p className={styles.panelVacio}>Todo con stock sano. 👍</p>
+      ) : (
+        <ul className={styles.reponerLista}>
+          {productos.map((producto) => (
+            <li className={styles.reponerFila} key={producto.id}>
+              <div className={styles.reponerInfo}>
+                <span className={styles.reponerNombre}>{producto.nombre}</span>
+                <span
+                  className={
+                    producto.disponible === 0 ? styles.reponerAgotado : styles.reponerBajo
+                  }
+                >
+                  {producto.disponible === 0
+                    ? "Agotado"
+                    : `${producto.disponible} u. disponibles`}
+                </span>
+              </div>
+              <Link className={styles.reponerBoton} to={`/admin/productos/${producto.id}/editar`}>
+                Reponer
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 // Panel "Ingresos por modalidad": Retiro vs Despacho con barra de proporción.
 // La barra recibe su ancho como variable CSS (dato dinámico), no estilo inline.
 function PanelModalidad({ modalidad }) {
@@ -690,12 +741,19 @@ export default function AdminResumen() {
                     />
                   </TarjetaKpi>
 
-                  <TarjetaKpi etiqueta="Stock crítico" valor={resumen.stockCritico}>
+                  <TarjetaKpi
+                    etiqueta="Stock crítico"
+                    valor={resumen.stockCritico}
+                    onActivar={resumen.stockCritico > 0 ? irAReponer : undefined}
+                  >
                     <span
                       className={resumen.stockCritico > 0 ? styles.kpiNotaAlerta : styles.kpiNota}
                     >
                       {resumen.stockCritico > 0 ? "por reponer pronto" : "todo con stock sano"}
                     </span>
+                    {resumen.stockCritico > 0 && (
+                      <span className={styles.kpiEnlace}>Ver lista →</span>
+                    )}
                   </TarjetaKpi>
                 </section>
 
@@ -737,12 +795,15 @@ export default function AdminResumen() {
                   <PanelModalidad modalidad={resumen.modalidad} />
                 </div>
 
-                <PanelRequierenAccion
-                  pedidos={resumen.requierenAccion}
-                  onAccion={ejecutarAccion}
-                  cambiandoId={cambiandoId}
-                  errorAccion={errorAccion}
-                />
+                <div className={styles.panelesRow}>
+                  <PanelRequierenAccion
+                    pedidos={resumen.requierenAccion}
+                    onAccion={ejecutarAccion}
+                    cambiandoId={cambiandoId}
+                    errorAccion={errorAccion}
+                  />
+                  <PanelPorReponer productos={resumen.porReponer} />
+                </div>
               </>
             ) : null}
           </div>

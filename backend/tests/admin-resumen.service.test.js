@@ -18,6 +18,10 @@ function crearRepoFalso({
   requierenAccion = [
     { id: 'p1', numero: 2, estado: 'PENDIENTE', modalidad: 'DESPACHO', contactoNombre: 'Camila', total: 16270 },
   ],
+  porReponer = [
+    { id: 'prod-1', nombre: 'Queso', sku: 'QSO', disponible: 0, umbral: 3 },
+    { id: 'prod-2', nombre: 'Leche', sku: 'LE', disponible: 1, umbral: 3 },
+  ],
 } = {}) {
   const cola = [...ventas]
   const capturado = { rangos: [], umbral: null }
@@ -33,6 +37,7 @@ function crearRepoFalso({
     async contarPedidosPorEstado() { return pedidosPorEstado },
     async sumarPagosPorEstado() { return pagosPorEstado },
     async pedidosQueRequierenAccion() { return requierenAccion },
+    async productosPorReponer() { return porReponer },
   }
   return { repositorio, capturado }
 }
@@ -60,6 +65,10 @@ test('obtenerResumen arma KPIs, ticket promedio y variación', async () => {
   })
   assert.equal(resumen.requierenAccion.length, 1)
   assert.equal(resumen.requierenAccion[0].numero, 2)
+  assert.equal(resumen.porReponer.length, 2)
+  assert.deepEqual(resumen.porReponer[0], {
+    id: 'prod-1', nombre: 'Queso', sku: 'QSO', disponible: 0, umbral: 3,
+  })
 })
 
 test('la variación es null cuando el período anterior fue cero (sin dividir por cero)', async () => {

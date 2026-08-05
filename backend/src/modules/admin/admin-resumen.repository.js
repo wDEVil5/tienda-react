@@ -129,6 +129,21 @@ export function crearRepositorioResumen(cliente = prisma) {
       `
       return filas[0]?.total ?? 0
     },
+
+    // La LISTA de productos por reponer (los mismos que cuenta el crítico), del
+    // más urgente al menos. Alimenta el panel "Por reponer" con su enlace a editar.
+    async productosPorReponer(umbralDefecto = 3, limite = 6) {
+      return cliente.$queryRaw`
+        SELECT id, nombre, sku,
+               (stock - stock_reservado)::int AS disponible,
+               COALESCE(alerta_stock_bajo, ${umbralDefecto})::int AS umbral
+        FROM productos
+        WHERE estado = 'PUBLICADO'
+          AND stock - stock_reservado <= COALESCE(alerta_stock_bajo, ${umbralDefecto})
+        ORDER BY stock - stock_reservado ASC, nombre ASC
+        LIMIT ${limite}
+      `
+    },
   }
 }
 

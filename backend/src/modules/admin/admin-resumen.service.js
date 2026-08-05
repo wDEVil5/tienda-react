@@ -9,6 +9,9 @@ const UMBRAL_STOCK_CRITICO = Number(process.env.UMBRAL_STOCK_CRITICO) || 3
 // Cuántos pedidos mostrar en la tabla "requieren acción" del tablero.
 const LIMITE_ACCION = 6
 
+// Cuántos productos mostrar en el panel "Por reponer".
+const LIMITE_REPONER = 6
+
 const NOMBRE_MES = new Intl.DateTimeFormat('es-CL', { month: 'long' })
 
 function inicioDia(fecha) {
@@ -110,6 +113,7 @@ export function crearServicioResumen(repositorio = repositorioResumen) {
         pedidosPorEstado,
         pagosPorEstado,
         requierenAccion,
+        porReponer,
       ] = await Promise.all([
         repositorio.ventasAprobadas(actual),
         repositorio.ventasAprobadas(anterior),
@@ -120,6 +124,7 @@ export function crearServicioResumen(repositorio = repositorioResumen) {
         repositorio.contarPedidosPorEstado(),
         repositorio.sumarPagosPorEstado(),
         repositorio.pedidosQueRequierenAccion(LIMITE_ACCION),
+        repositorio.productosPorReponer(UMBRAL_STOCK_CRITICO, LIMITE_REPONER),
       ])
 
       const sinPago = { monto: 0, cantidad: 0 }
@@ -143,6 +148,15 @@ export function crearServicioResumen(repositorio = repositorioResumen) {
           variacion: variacion(ticketActual, ticketAnterior),
         },
         stockCritico,
+        // El disponible/umbral vienen del SQL crudo; se normalizan a número por
+        // si el driver los entrega como BigInt (que no serializa a JSON).
+        porReponer: porReponer.map((producto) => ({
+          id: producto.id,
+          nombre: producto.nombre,
+          sku: producto.sku,
+          disponible: Number(producto.disponible),
+          umbral: Number(producto.umbral),
+        })),
         modalidad,
         // Snapshots en vivo (no dependen del período): estado actual de la tienda.
         pedidosPorEstado,

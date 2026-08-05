@@ -119,8 +119,13 @@
   background: var(--color-superficie);
 }
 .tarjetaLink {
+  width: 100%;
+  text-align: left;
+  font: inherit;
   text-decoration: none;
   color: inherit;
+  cursor: pointer;
+  appearance: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .tarjetaLink:hover {
@@ -457,6 +462,64 @@
 .badgeCancelado {
   background: var(--color-oferta-bg);
   color: var(--color-oferta);
+}
+
+/* Panel "Por reponer". */
+.reponerLista {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  list-style: none;
+}
+.reponerFila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-borde-2);
+}
+.reponerFila:last-child {
+  border-bottom: 0;
+}
+.reponerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.reponerNombre {
+  overflow: hidden;
+  color: var(--color-texto);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.reponerBajo {
+  color: var(--color-aviso);
+  font-size: 12px;
+}
+.reponerAgotado {
+  color: var(--color-oferta);
+  font-size: 12px;
+  font-weight: 600;
+}
+.reponerBoton {
+  flex: 0 0 auto;
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 12px;
+  border: 1px solid var(--color-borde-3);
+  border-radius: var(--radio-control);
+  color: var(--color-texto-2);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.reponerBoton:hover {
+  border-color: var(--color-acento);
+  color: var(--color-acento);
 }
 
 /* Colores de barra por estado (misma paleta que los badges de Pedidos). Van

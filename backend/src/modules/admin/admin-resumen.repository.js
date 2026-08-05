@@ -116,6 +116,16 @@ export function crearRepositorioResumen(cliente = prisma) {
       })
     },
 
+    // Pedidos creados en una ventana, crudos (fecha + total). Sirve para la
+    // tendencia diaria de volumen de pedidos y del ticket (total/n) por día. El
+    // agrupado por día lo hace el servicio en JS, igual que con los pagos.
+    async pedidosCreadosEntre({ desde, hasta }) {
+      return cliente.pedido.findMany({
+        where: { createdAt: { gte: desde, lt: hasta } },
+        select: { createdAt: true, total: true },
+      })
+    },
+
     // Productos publicados cuyo disponible (stock - reservado) cayó al umbral o
     // por debajo. El umbral es por producto (alerta_stock_bajo) y, si no tiene,
     // uno global. Va en SQL crudo porque compara dos columnas entre sí, algo

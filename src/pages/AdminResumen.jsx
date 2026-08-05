@@ -141,62 +141,98 @@ function IconoRecargar({ className }) {
   );
 }
 
-/* ---------- Sparkline decorativo de las KPI (dirección = dato real) ---------- */
+/* ---------- Mini-sparkline REAL de las KPI (serie de datos, con hover) ---------- */
 
-function Sparkline({ kind, color, id }) {
-  if (kind === "down") {
-    return (
-      <svg className={styles.spark} width="80" height="40" viewBox="0 0 80 40" aria-hidden="true">
-        <path
-          d="M0,10 C12,12 20,14 28,18 C38,22 46,24 56,30 C64,34 72,34 80,36"
-          fill="none"
-          stroke={color}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2.4"
-        />
-      </svg>
-    );
+// Suaviza los puntos con splines Catmull-Rom → Bézier: el trazo queda fluido
+// como el modelo anterior, pero sobre datos reales (no una curva fija).
+function pathSuave(puntos) {
+  if (puntos.length < 2) return `M ${puntos[0].x} ${puntos[0].y}`;
+  const t = 0.16; // tensión (0 = recto, más alto = más curvo)
+  const partes = [`M ${puntos[0].x} ${puntos[0].y}`];
+  for (let i = 0; i < puntos.length - 1; i += 1) {
+    const p0 = puntos[i - 1] ?? puntos[i];
+    const p1 = puntos[i];
+    const p2 = puntos[i + 1];
+    const p3 = puntos[i + 2] ?? p2;
+    const c1x = p1.x + (p2.x - p0.x) * t;
+    const c1y = p1.y + (p2.y - p0.y) * t;
+    const c2x = p2.x - (p3.x - p1.x) * t;
+    const c2y = p2.y - (p3.y - p1.y) * t;
+    partes.push(`C ${c1x} ${c1y} ${c2x} ${c2y} ${p2.x} ${p2.y}`);
   }
-  if (kind === "flat") {
-    return (
-      <svg className={styles.spark} width="80" height="40" viewBox="0 0 80 40" aria-hidden="true">
-        <path
-          d="M0,26 C10,28 18,22 28,20 C38,18 44,24 54,16 C62,12 70,14 80,12"
-          fill="none"
-          stroke={color}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2.4"
-        />
-      </svg>
-    );
+  return partes.join(" ");
+}
+
+// Serie numérica (últimos 14 días) como área + línea SUAVE, escalada a sus
+// propios mín/máx. En reposo se ve como el sparkline anterior (curva + relleno,
+// sin punto); al pasar el mouse resalta el día bajo el cursor con su valor.
+function MiniSparkline({ serie, fechas, color, formato, id }) {
+  const [activo, setActivo] = useState(null);
+  const n = serie.length;
+  if (n === 0) return null;
+
+  const max = Math.max(...serie);
+  const min = Math.min(...serie);
+  const plano = max === min;
+  const px = (i) => (n === 1 ? 50 : (i / (n - 1)) * 100);
+  const py = (v) => (plano ? 50 : 94 - ((v - min) / (max - min)) * 88); // 6% de margen
+  const puntos = serie.map((v, i) => ({ x: px(i), y: py(v) }));
+
+  const lineaD = pathSuave(puntos);
+  const areaD = `${lineaD} L ${puntos[n - 1].x} 100 L ${puntos[0].x} 100 Z`;
+
+  function alMover(evento) {
+    const rect = evento.currentTarget.getBoundingClientRect();
+    const rel = (evento.clientX - rect.left) / rect.width;
+    setActivo(Math.min(n - 1, Math.max(0, Math.round(rel * (n - 1)))));
   }
+
   return (
-    <svg className={styles.spark} width="80" height="40" viewBox="0 0 80 40" aria-hidden="true">
-      <defs>
-        <linearGradient id={`spark-${id}`} x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.28" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path
-        d="M0,32 C10,30 18,28 26,26 C34,24 38,28 46,18 C54,10 62,12 80,6"
-        fill="none"
-        stroke={color}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2.4"
-      />
-      <path
-        d="M0,32 C10,30 18,28 26,26 C34,24 38,28 46,18 C54,10 62,12 80,6 L80,40 L0,40 Z"
-        fill={`url(#spark-${id})`}
-      />
-    </svg>
+    <div className={styles.mini} onMouseMove={alMover} onMouseLeave={() => setActivo(null)}>
+      <svg
+        className={styles.miniSvg}
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient id={`mini-${id}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.28" />
+            <stop offset="100%" stopColor={color} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={areaD} fill={`url(#mini-${id})`} />
+        <path
+          className={styles.miniLinea}
+          d={lineaD}
+          fill="none"
+          stroke={color}
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+      {activo !== null && (
+        <>
+          <span
+            className={styles.miniPunto}
+            style={{ "--x": `${puntos[activo].x}%`, "--y": `${puntos[activo].y}%`, "--c": color }}
+          />
+          {fechas && (
+            <span
+              className={styles.miniTip}
+              style={{ "--x": `${puntos[activo].x}%`, "--y": `${puntos[activo].y}%` }}
+            >
+              <b>{formato(serie[activo])}</b>
+              {" · "}
+              {FECHA_DIA.format(new Date(fechas[activo]))}
+            </span>
+          )}
+        </>
+      )}
+    </div>
   );
 }
 
-function TarjetaKpi({ etiqueta, valor, hint, hintTono, spark, sparkColor, id, enlace }) {
+function TarjetaKpi({ etiqueta, valor, hint, hintTono, sparkline, enlace }) {
   const claseHint =
     hintTono === "down"
       ? styles.kpiHintCoral
@@ -213,7 +249,7 @@ function TarjetaKpi({ etiqueta, valor, hint, hintTono, spark, sparkColor, id, en
           <div className={claseHint}>{hint}</div>
           {enlace}
         </div>
-        <Sparkline kind={spark} color={sparkColor} id={id} />
+        {sparkline}
       </div>
     </div>
   );
@@ -502,6 +538,14 @@ const CLASE_BADGE = {
   ENTREGADO: styles.badgeVerde,
   CANCELADO: styles.badgeNeutro,
 };
+// El botón de acción se colorea según el estado de origen: "Preparar" (ámbar),
+// "Marcar listo/enviado" (verde) y "Entregar" (menta). No todos verdes.
+const CLASE_ACCION = {
+  PENDIENTE: styles.accionBotonAmbar,
+  PREPARANDO: styles.accionBotonVerde,
+  LISTO_PARA_RETIRO: styles.accionBotonMenta,
+  ENVIADO: styles.accionBotonMenta,
+};
 
 // Acción principal (avance) por estado: refleja la máquina de estados del backend
 // (PREPARANDO depende de la modalidad). El servidor sigue siendo la autoridad;
@@ -519,23 +563,16 @@ function accionDe(estado, modalidad) {
   return null;
 }
 
-/* ---------- Donut SVG reutilizable (stroke-dasharray) ---------- */
+/* ---------- Donut SVG con hover (tooltip + resalte), sin librerías ---------- */
 
 const DONUT_R = 15.915; // circunferencia = 100 → los segmentos son porcentajes directos
 
-function Donut({ segmentos, centroValor, centroSub }) {
-  const total = segmentos.reduce((suma, seg) => suma + seg.valor, 0);
-
-  // Al montar dejamos que se pinte el estado "vacío" (dash 0) y en el siguiente
-  // tick fijamos el real: así el CSS transiciona el `--dash` y el anillo se
-  // dibuja. En refrescos posteriores `dibujar` ya está en true → transición
-  // suave a las nuevas proporciones.
-  const [dibujar, setDibujar] = useState(false);
-  useEffect(() => {
-    const id = setTimeout(() => setDibujar(true), 40);
-    return () => clearTimeout(id);
-  }, []);
-
+// Anillo. dasharray = `${largo} ${100 - largo}`: el patrón mide EXACTAMENTE la
+// circunferencia, así el empalme a las 12 cierra sin hueco (anillo completo). La
+// transición interpola manteniendo dash+gap=100 → nunca se ve incompleto, ni al
+// dibujarse ni al cambiar de datos.
+function Donut({ segmentos, total, activo, onHover, dibujar, centroValor, centroSub }) {
+  const activoConValor = activo !== null && segmentos[activo]?.valor > 0;
   let acumulado = 0;
 
   return (
@@ -548,16 +585,23 @@ function Donut({ segmentos, centroValor, centroSub }) {
             const largo = (seg.valor / total) * 100;
             const desfase = 25 - acumulado; // arranca a las 12 en punto
             acumulado += largo;
+            const clase = [
+              styles.donutSeg,
+              activo === indice ? styles.donutSegActivo : "",
+              activoConValor && activo !== indice ? styles.donutSegAtenuado : "",
+            ].join(" ");
             return (
               <circle
-                key={indice}
-                className={styles.donutSeg}
+                key={seg.clave}
+                className={clase}
                 cx="21"
                 cy="21"
                 r={DONUT_R}
                 stroke={seg.color}
+                strokeDasharray={dibujar ? `${largo} ${100 - largo}` : "0 100"}
                 strokeDashoffset={desfase}
-                style={{ "--dash": dibujar ? largo : 0 }}
+                onMouseEnter={() => onHover(indice)}
+                onMouseLeave={() => onHover(null)}
               />
             );
           })}
@@ -570,123 +614,181 @@ function Donut({ segmentos, centroValor, centroSub }) {
   );
 }
 
-function DonutPedidos({ pedidosPorEstado }) {
-  const filas = FLUJO_ESTADOS.map((estado) => ({
-    ...estado,
-    valor: pedidosPorEstado[estado.clave] ?? 0,
-    color: COLOR_ESTADO[estado.clave],
-  }));
-  const total = filas.reduce((suma, fila) => suma + fila.valor, 0);
+// Tarjeta completa: anillo + leyenda + tooltip, con hover compartido (pasar el
+// mouse por un segmento O por su fila de leyenda resalta y muestra el cuadro).
+function DonutCard({ titulo, nota, segmentos, total, centroValor, centroSub, leyenda }) {
+  const [activo, setActivo] = useState(null);
+  const [dibujar, setDibujar] = useState(false);
+  useEffect(() => {
+    const id = setTimeout(() => setDibujar(true), 40);
+    return () => clearTimeout(id);
+  }, []);
+
+  const seg = activo !== null ? segmentos[activo] : null;
+  const claseFila = (indice, muted) =>
+    [muted ? styles.leyendaMuted : "", activo === indice ? styles.leyendaActiva : ""].join(" ");
 
   return (
     <section className={styles.donutCard}>
       <div className={styles.donutCabecera}>
-        <h3 className={styles.donutTitulo}>Pedidos por estado</h3>
-        <span className={styles.donutNota}>ahora</span>
+        <h3 className={styles.donutTitulo}>{titulo}</h3>
+        {nota && <span className={styles.donutNota}>{nota}</span>}
       </div>
       <div className={styles.donutCuerpo}>
-        <Donut
-          segmentos={filas.map((fila) => ({ valor: fila.valor, color: fila.color }))}
-          centroValor={total}
-          centroSub="total"
-        />
-        <ul className={styles.leyenda}>
-          {filas.map((fila) => (
-            <li key={fila.clave} className={fila.valor === 0 ? styles.leyendaMuted : undefined}>
-              <span className={styles.leyendaLabel}>
-                <span className={styles.leyendaPunto} style={{ "--c": fila.color }} />
-                {fila.etiqueta}
+        <div className={styles.donutWrap}>
+          <Donut
+            segmentos={segmentos}
+            total={total}
+            activo={activo}
+            onHover={setActivo}
+            dibujar={dibujar}
+            centroValor={centroValor}
+            centroSub={centroSub}
+          />
+          {seg && (
+            <div className={styles.donutTip} role="status">
+              <span className={styles.donutTipLabel}>
+                {seg.etiqueta}
+                {seg.sub ? ` · ${seg.sub}` : ""}
               </span>
-              <span className={styles.leyendaValor}>{fila.valor}</span>
-            </li>
-          ))}
-        </ul>
+              <span className={styles.donutTipValor}>{seg.valorTexto}</span>
+            </div>
+          )}
+        </div>
+
+        {leyenda === "compacta" ? (
+          <ul className={styles.leyenda}>
+            {segmentos.map((s, indice) => (
+              <li
+                key={s.clave}
+                className={claseFila(indice, s.muted)}
+                onMouseEnter={() => setActivo(indice)}
+                onMouseLeave={() => setActivo(null)}
+              >
+                <span className={styles.leyendaLabel}>
+                  <span className={styles.leyendaPunto} style={{ "--c": s.color }} />
+                  {s.etiqueta}
+                </span>
+                <span className={styles.leyendaValor}>{s.valorTexto}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <ul className={styles.leyendaBloques}>
+            {segmentos.map((s, indice) => (
+              <li
+                key={s.clave}
+                className={activo === indice ? styles.leyendaActiva : undefined}
+                onMouseEnter={() => setActivo(indice)}
+                onMouseLeave={() => setActivo(null)}
+              >
+                <div className={styles.leyendaBloqueLabel}>
+                  <span className={styles.leyendaPunto} style={{ "--c": s.color }} />
+                  {s.etiqueta}
+                  {s.sub ? ` · ${s.sub}` : ""}
+                </div>
+                <div className={s.muted ? styles.leyendaBloqueValorMuted : styles.leyendaBloqueValor}>
+                  {s.valorTexto}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </section>
   );
 }
 
+function DonutPedidos({ pedidosPorEstado }) {
+  const segmentos = FLUJO_ESTADOS.map((estado) => {
+    const valor = pedidosPorEstado[estado.clave] ?? 0;
+    return {
+      clave: estado.clave,
+      etiqueta: estado.etiqueta,
+      color: COLOR_ESTADO[estado.clave],
+      valor,
+      valorTexto: String(valor),
+      muted: valor === 0,
+    };
+  });
+  const total = segmentos.reduce((suma, s) => suma + s.valor, 0);
+
+  return (
+    <DonutCard
+      titulo="Pedidos por estado"
+      nota="ahora"
+      segmentos={segmentos}
+      total={total}
+      centroValor={total}
+      centroSub="total"
+      leyenda="compacta"
+    />
+  );
+}
+
 function DonutCobros({ cobros }) {
-  const totalPagos = cobros.aprobado.cantidad + cobros.pendiente.cantidad;
-  const bloques = [
+  const segmentos = [
     {
       clave: "aprobado",
       etiqueta: "Cobrado",
       color: "#3d7a5d",
-      cantidad: cobros.aprobado.cantidad,
-      monto: cobros.aprobado.monto,
+      valor: cobros.aprobado.monto,
+      valorTexto: MONEDA_CLP.format(cobros.aprobado.monto),
+      sub: `${cobros.aprobado.cantidad} ${cobros.aprobado.cantidad === 1 ? "pago" : "pagos"}`,
     },
     {
       clave: "pendiente",
       etiqueta: "Por cobrar",
       color: "#c4a35a",
-      cantidad: cobros.pendiente.cantidad,
-      monto: cobros.pendiente.monto,
+      valor: cobros.pendiente.monto,
+      valorTexto: MONEDA_CLP.format(cobros.pendiente.monto),
+      sub: `${cobros.pendiente.cantidad} ${cobros.pendiente.cantidad === 1 ? "pago" : "pagos"}`,
     },
   ];
+  const total = segmentos.reduce((suma, s) => suma + s.valor, 0);
 
   return (
-    <section className={styles.donutCard}>
-      <div className={styles.donutCabecera}>
-        <h3 className={styles.donutTitulo}>Cobros</h3>
-      </div>
-      <div className={styles.donutCuerpo}>
-        <Donut
-          segmentos={bloques.map((b) => ({ valor: b.monto, color: b.color }))}
-          centroValor={totalPagos}
-          centroSub="pagos"
-        />
-        <ul className={styles.leyendaBloques}>
-          {bloques.map((b) => (
-            <li key={b.clave}>
-              <div className={styles.leyendaBloqueLabel}>
-                <span className={styles.leyendaPunto} style={{ "--c": b.color }} />
-                {b.etiqueta} · {b.cantidad} {b.cantidad === 1 ? "pago" : "pagos"}
-              </div>
-              <div className={styles.leyendaBloqueValor}>{MONEDA_CLP.format(b.monto)}</div>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
+    <DonutCard
+      titulo="Cobros"
+      segmentos={segmentos}
+      total={total}
+      centroValor={cobros.aprobado.cantidad + cobros.pendiente.cantidad}
+      centroSub="pagos"
+      leyenda="bloques"
+    />
   );
 }
 
 function DonutModalidad({ modalidad, periodo }) {
-  const total = modalidad.retiro + modalidad.despacho;
-  const bloques = [
-    { clave: "retiro", etiqueta: "Retiro en tienda", color: "#3d7a5d", monto: modalidad.retiro },
-    { clave: "despacho", etiqueta: "Despacho a domicilio", color: "#a8c4b4", monto: modalidad.despacho },
+  const segmentos = [
+    {
+      clave: "retiro",
+      etiqueta: "Retiro en tienda",
+      color: "#3d7a5d",
+      valor: modalidad.retiro,
+      valorTexto: MONEDA_CLP.format(modalidad.retiro),
+      muted: modalidad.retiro === 0,
+    },
+    {
+      clave: "despacho",
+      etiqueta: "Despacho a domicilio",
+      color: "#a8c4b4",
+      valor: modalidad.despacho,
+      valorTexto: MONEDA_CLP.format(modalidad.despacho),
+      muted: modalidad.despacho === 0,
+    },
   ];
+  const total = modalidad.retiro + modalidad.despacho;
 
   return (
-    <section className={styles.donutCard}>
-      <div className={styles.donutCabecera}>
-        <h3 className={styles.donutTitulo}>Ingresos por modalidad</h3>
-      </div>
-      <div className={styles.donutCuerpo}>
-        <Donut
-          segmentos={bloques.map((b) => ({ valor: b.monto, color: b.color }))}
-          centroValor={montoCorto(total)}
-          centroSub={periodoCorto(periodo)}
-        />
-        <ul className={styles.leyendaBloques}>
-          {bloques.map((b) => (
-            <li key={b.clave}>
-              <div className={styles.leyendaBloqueLabel}>
-                <span className={styles.leyendaPunto} style={{ "--c": b.color }} />
-                {b.etiqueta}
-              </div>
-              <div
-                className={b.monto === 0 ? styles.leyendaBloqueValorMuted : styles.leyendaBloqueValor}
-              >
-                {MONEDA_CLP.format(b.monto)}
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
+    <DonutCard
+      titulo="Ingresos por modalidad"
+      segmentos={segmentos}
+      total={total}
+      centroValor={montoCorto(total)}
+      centroSub={periodoCorto(periodo)}
+      leyenda="bloques"
+    />
   );
 }
 
@@ -741,7 +843,7 @@ function PanelRequierenAccion({ pedidos, onAccion, cambiandoId, errorAccion }) {
                 {accion ? (
                   <button
                     type="button"
-                    className={styles.accionBoton}
+                    className={`${styles.accionBoton} ${CLASE_ACCION[pedido.estado] ?? ""}`}
                     disabled={cambiando}
                     onClick={() => onAccion(pedido, accion.estado)}
                   >
@@ -999,6 +1101,11 @@ export default function AdminResumen() {
   const ticketVar =
     resumen && textoVariacion(resumen.ticketPromedio.variacion, resumen.comparacion);
 
+  // Serie diaria real (14 días) que alimenta los mini-sparklines de las KPIs.
+  // Comparte fetch/estado con el gráfico grande; si aún no cargó, no se dibujan.
+  const serieDiaria = ventasDiarias?.serie ?? null;
+  const fechasDiarias = serieDiaria?.map((dia) => dia.fecha);
+
   return (
     <main className={styles.fondo}>
       <AdminShell usuario={usuario} seccion="Resumen">
@@ -1105,9 +1212,17 @@ export default function AdminResumen() {
                     valor={MONEDA_CLP.format(resumen.ventas.actual)}
                     hint={ventasVar.texto}
                     hintTono={ventasVar.tono}
-                    spark={ventasVar.tono === "down" ? "down" : ventasVar.tono === "up" ? "up" : "flat"}
-                    sparkColor={ventasVar.tono === "down" ? "#e06b5e" : "#3d7a5d"}
-                    id="ventas"
+                    sparkline={
+                      serieDiaria && (
+                        <MiniSparkline
+                          id="ventas"
+                          serie={serieDiaria.map((dia) => dia.monto)}
+                          fechas={fechasDiarias}
+                          color={ventasVar.tono === "down" ? "#e06b5e" : "#3d7a5d"}
+                          formato={montoCorto}
+                        />
+                      )
+                    }
                   />
 
                   <TarjetaKpi
@@ -1115,9 +1230,17 @@ export default function AdminResumen() {
                     valor={resumen.pedidos.total}
                     hint={`${resumen.pedidos.pendientesPreparar} pendientes de preparar`}
                     hintTono="default"
-                    spark="up"
-                    sparkColor="#3d7a5d"
-                    id="pedidos"
+                    sparkline={
+                      serieDiaria && (
+                        <MiniSparkline
+                          id="pedidos"
+                          serie={serieDiaria.map((dia) => dia.pedidos)}
+                          fechas={fechasDiarias}
+                          color="#3d7a5d"
+                          formato={(v) => `${v} ped.`}
+                        />
+                      )
+                    }
                     enlace={
                       <Link className={styles.kpiEnlace} to="/admin/pedidos?estado=PENDIENTE">
                         Ver pendientes <IconoFlecha />
@@ -1130,9 +1253,17 @@ export default function AdminResumen() {
                     valor={MONEDA_CLP.format(resumen.ticketPromedio.actual)}
                     hint={ticketVar.texto}
                     hintTono={ticketVar.tono}
-                    spark={ticketVar.tono === "down" ? "down" : ticketVar.tono === "up" ? "up" : "flat"}
-                    sparkColor={ticketVar.tono === "down" ? "#e06b5e" : "#3d7a5d"}
-                    id="ticket"
+                    sparkline={
+                      serieDiaria && (
+                        <MiniSparkline
+                          id="ticket"
+                          serie={serieDiaria.map((dia) => dia.ticket)}
+                          fechas={fechasDiarias}
+                          color={ticketVar.tono === "down" ? "#e06b5e" : "#3d7a5d"}
+                          formato={montoCorto}
+                        />
+                      )
+                    }
                   />
 
                   <TarjetaKpi
@@ -1140,9 +1271,6 @@ export default function AdminResumen() {
                     valor={resumen.stockCritico}
                     hint={resumen.stockCritico > 0 ? "por reponer pronto" : "todo con stock sano"}
                     hintTono={resumen.stockCritico > 0 ? "down" : "muted"}
-                    spark={resumen.stockCritico > 0 ? "down" : "flat"}
-                    sparkColor={resumen.stockCritico > 0 ? "#e06b5e" : "#3d7a5d"}
-                    id="stock"
                     enlace={
                       resumen.stockCritico > 0 ? (
                         <button type="button" className={styles.kpiEnlaceBtn} onClick={irAReponer}>

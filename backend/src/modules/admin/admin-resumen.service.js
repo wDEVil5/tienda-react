@@ -175,19 +175,40 @@ export function crearServicioResumen(repositorio = repositorioResumen) {
     async obtenerVentasDiarias({ dias = 14, ahora = new Date() } = {}) {
       const hasta = sumarDias(inicioDia(ahora), 1) // fin de hoy (exclusivo)
       const desde = sumarDias(hasta, -dias)
-      const pagos = await repositorio.pagosAprobadosEntre({ desde, hasta })
+      const [pagos, pedidos] = await Promise.all([
+        repositorio.pagosAprobadosEntre({ desde, hasta }),
+        repositorio.pedidosCreadosEntre({ desde, hasta }),
+      ])
 
+      // Cada día trae: monto (ventas de pagos aprobados), pedidos (creados) y
+      // montoPedidos (suma de sus totales) para derivar el ticket del día.
       const serie = []
       for (let dia = new Date(desde); dia < hasta; dia = sumarDias(dia, 1)) {
-        serie.push({ fecha: new Date(dia), monto: 0 })
+        serie.push({ fecha: new Date(dia), monto: 0, pedidos: 0, montoPedidos: 0 })
       }
       const indicePorDia = new Map(serie.map((entrada, indice) => [claveDia(entrada.fecha), indice]))
       for (const pago of pagos) {
         const indice = indicePorDia.get(claveDia(pago.createdAt))
         if (indice !== undefined) serie[indice].monto += pago.monto
       }
+      for (const pedido of pedidos) {
+        const indice = indicePorDia.get(claveDia(pedido.createdAt))
+        if (indice !== undefined) {
+          serie[indice].pedidos += 1
+          serie[indice].montoPedidos += pedido.total
+        }
+      }
 
-      return { desde, hasta, serie }
+      // Ticket del día = total de sus pedidos / cantidad (0 si no hubo pedidos).
+      // Exponemos monto/pedidos/ticket y descartamos el auxiliar montoPedidos.
+      const serieFinal = serie.map(({ fecha, monto, pedidos: n, montoPedidos }) => ({
+        fecha,
+        monto,
+        pedidos: n,
+        ticket: n > 0 ? Math.round(montoPedidos / n) : 0,
+      }))
+
+      return { desde, hasta, serie: serieFinal }
     },
 
     // Más vendidos del período, en DOS rankings (por unidades y por ingresos):

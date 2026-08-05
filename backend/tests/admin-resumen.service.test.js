@@ -125,6 +125,13 @@ test('obtenerVentasDiarias arma la serie de N días, agrupa por jornada y rellen
         { createdAt: new Date('2026-08-03T20:00:00'), monto: 2000 },
       ]
     },
+    async pedidosCreadosEntre() {
+      return [
+        { createdAt: new Date('2026-08-04T08:00:00'), total: 8000 },
+        { createdAt: new Date('2026-08-04T12:00:00'), total: 4000 },
+        { createdAt: new Date('2026-08-03T19:00:00'), total: 2000 },
+      ]
+    },
   }
   const servicio = crearServicioResumen(repositorio)
 
@@ -135,6 +142,13 @@ test('obtenerVentasDiarias arma la serie de N días, agrupa por jornada y rellen
   assert.equal(serie[0].monto, 0) // 02 ago, sin ventas
   assert.equal(serie[1].monto, 2000) // 03 ago
   assert.equal(serie[2].monto, 8000) // 04 ago (dos pagos del día)
+  // Pedidos y ticket por día (ticket = suma de totales / cantidad)
+  assert.equal(serie[0].pedidos, 0)
+  assert.equal(serie[0].ticket, 0) // sin pedidos → 0, no división por cero
+  assert.equal(serie[1].pedidos, 1)
+  assert.equal(serie[1].ticket, 2000)
+  assert.equal(serie[2].pedidos, 2)
+  assert.equal(serie[2].ticket, 6000) // (8000 + 4000) / 2
   // ventana [02 00:00, 05 00:00): arranca 3 días atrás y termina al final de hoy
   assert.equal(ventana.desde.getDate(), 2)
   assert.equal(ventana.hasta.getDate(), 5)

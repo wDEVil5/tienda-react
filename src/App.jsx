@@ -10,6 +10,7 @@ import AdminProductoEditor from "./pages/AdminProductoEditor.jsx";
 import AdminPedidos from "./pages/AdminPedidos.jsx";
 import AdminResumen from "./pages/AdminResumen.jsx";
 import AdminCuenta from "./pages/AdminCuenta.jsx";
+import AdminAcceso from "./pages/AdminAcceso.jsx";
 import { Login, Registro } from "./pages/Acceso.jsx";
 import MiCuenta from "./pages/MiCuenta.jsx";
 import MisPedidos from "./pages/MisPedidos.jsx";
@@ -230,13 +231,15 @@ function App() {
   if (esAdmin) {
     return (
       <Routes>
+        <Route path="/admin" element={<Navigate to="/admin/resumen" replace />} />
+        <Route path="/admin/acceso" element={<AdminAcceso />} />
         <Route path="/admin/productos" element={<AdminProductos />} />
         <Route path="/admin/productos/nuevo" element={<AdminProductoEditor />} />
         <Route path="/admin/productos/:id/editar" element={<AdminProductoEditor />} />
         <Route path="/admin/pedidos" element={<AdminPedidos />} />
         <Route path="/admin/resumen" element={<AdminResumen />} />
         <Route path="/admin/cuenta" element={<AdminCuenta />} />
-        <Route path="/admin/*" element={<Navigate to="/admin/productos" replace />} />
+        <Route path="/admin/*" element={<Navigate to="/admin/resumen" replace />} />
       </Routes>
     );
   }

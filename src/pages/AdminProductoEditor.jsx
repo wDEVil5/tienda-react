@@ -303,7 +303,7 @@ export default function AdminProductoEditor() {
     );
   }
 
-  if (!usuario) return <Navigate to="/admin/productos" replace />;
+  if (!usuario) return <Navigate to="/admin/acceso" replace />;
 
   if (cargando) {
     return (

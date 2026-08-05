@@ -25,7 +25,7 @@ export default function AdminShell({ usuario, seccion = "Productos", children })
   return (
     <div className={styles.pantalla}>
       <aside className={styles.sidebar} aria-label="Navegación administrativa">
-        <a className={styles.marca} href={`${import.meta.env.BASE_URL}admin/productos`}>
+        <a className={styles.marca} href={`${import.meta.env.BASE_URL}admin/resumen`}>
           Sumarket<em>Admin</em>
         </a>
 

@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import AdminShell from "../components/admin/AdminShell.jsx";
 import {
   ErrorAdminApi,
-  iniciarSesionAdmin,
   listarProductosAdmin,
   obtenerSesionAdmin,
 } from "../services/adminApi.js";
@@ -41,76 +40,6 @@ function paginasVisibles(actual, total) {
   if (total <= 5) return Array.from({ length: total }, (_, indice) => indice + 1);
   const paginas = new Set([1, total, actual - 1, actual, actual + 1]);
   return [...paginas].filter((pagina) => pagina > 0 && pagina <= total).sort((a, b) => a - b);
-}
-
-function AccesoAdmin({ onAcceso }) {
-  const [credenciales, setCredenciales] = useState({ email: "", contrasena: "" });
-  const [enviando, setEnviando] = useState(false);
-  const [error, setError] = useState(null);
-
-  const cambiar = (campo) => (evento) => {
-    setCredenciales((actuales) => ({ ...actuales, [campo]: evento.target.value }));
-    setError(null);
-  };
-
-  async function enviar(evento) {
-    evento.preventDefault();
-    setEnviando(true);
-    setError(null);
-
-    try {
-      const usuario = await iniciarSesionAdmin({
-        email: credenciales.email.trim(),
-        contrasena: credenciales.contrasena,
-      });
-      onAcceso(usuario);
-    } catch (errorRespuesta) {
-      setError(
-        errorRespuesta instanceof ErrorAdminApi
-          ? errorRespuesta.message
-          : "No pudimos conectar con el panel. Inténtalo nuevamente.",
-      );
-    } finally {
-      setEnviando(false);
-    }
-  }
-
-  return (
-    <main className={styles.accesoPantalla}>
-      <section className={styles.accesoCaja} aria-labelledby="titulo-admin-acceso">
-        <div className={styles.accesoMarca}>Sumarket<em>Admin</em></div>
-        <div className={styles.accesoContenido}>
-          <h1 id="titulo-admin-acceso">Acceso del personal</h1>
-          <p>Ingresa con una cuenta administradora u operadora.</p>
-          <form onSubmit={enviar} className={styles.accesoFormulario}>
-            <label htmlFor="admin-email">Email</label>
-            <input
-              id="admin-email"
-              type="email"
-              autoComplete="username"
-              value={credenciales.email}
-              onChange={cambiar("email")}
-              maxLength="255"
-              required
-            />
-            <label htmlFor="admin-contrasena">Contraseña</label>
-            <input
-              id="admin-contrasena"
-              type="password"
-              autoComplete="current-password"
-              value={credenciales.contrasena}
-              onChange={cambiar("contrasena")}
-              required
-            />
-            {error && <p className={styles.mensajeError} role="alert">{error}</p>}
-            <button type="submit" disabled={enviando}>
-              {enviando ? "Comprobando…" : "Entrar al panel"}
-            </button>
-          </form>
-        </div>
-      </section>
-    </main>
-  );
 }
 
 function FilasCargando() {
@@ -241,15 +170,8 @@ export default function AdminProductos() {
       );
     }
 
-    return (
-      <AccesoAdmin
-        onAcceso={(sesion) => {
-          setCargando(true);
-          setError(null);
-          setUsuario(sesion);
-        }}
-      />
-    );
+    // El acceso del personal vive en su propia ruta; allí se inicia sesión.
+    return <Navigate to="/admin/acceso" replace />;
   }
 
   const totalPaginas = meta?.totalPages ?? 1;

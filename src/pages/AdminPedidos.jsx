@@ -464,8 +464,8 @@ export default function AdminPedidos() {
         </main>
       );
     }
-    // El acceso del personal vive en /admin/productos; allí se inicia sesión.
-    return <Navigate to="/admin/productos" replace />;
+    // El acceso del personal vive en su propia ruta.
+    return <Navigate to="/admin/acceso" replace />;
   }
 
   // Estado del detalle DERIVADO (sin setState en el efecto): "listo" cuando el

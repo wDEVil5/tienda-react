@@ -628,8 +628,8 @@ export default function AdminResumen() {
         </main>
       );
     }
-    // El acceso del personal vive en /admin/productos; allí se inicia sesión.
-    return <Navigate to="/admin/productos" replace />;
+    // El acceso del personal vive en su propia ruta.
+    return <Navigate to="/admin/acceso" replace />;
   }
 
   // Avance inline desde la tabla. Un cambio de estado afecta a varios paneles

@@ -75,7 +75,7 @@ export default function AdminCuenta() {
       );
     }
     // Sin sesión (incluye el después de cerrar sesión): al login del personal.
-    return <Navigate to="/admin/productos" replace />;
+    return <Navigate to="/admin/acceso" replace />;
   }
 
   async function cerrarSesion() {

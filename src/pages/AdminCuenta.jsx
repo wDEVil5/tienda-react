@@ -5,6 +5,7 @@ import {
   actualizarPerfilAdmin,
   cambiarContrasenaAdmin,
   cerrarSesionAdmin,
+  cerrarTodasLasSesionesAdmin,
   ErrorAdminApi,
   obtenerSesionAdmin,
 } from "../services/adminApi.js";
@@ -23,6 +24,9 @@ export default function AdminCuenta() {
 
   const [saliendo, setSaliendo] = useState(false);
   const [errorSalir, setErrorSalir] = useState(null);
+
+  const [saliendoTodos, setSaliendoTodos] = useState(false);
+  const [errorSalirTodos, setErrorSalirTodos] = useState(null);
 
   const [clave, setClave] = useState({ actual: "", nueva: "", confirmar: "" });
   const [guardando, setGuardando] = useState(false);
@@ -126,6 +130,18 @@ export default function AdminCuenta() {
     } catch {
       setErrorSalir("No pudimos cerrar la sesión. Inténtalo de nuevo.");
       setSaliendo(false);
+    }
+  }
+
+  async function cerrarTodas() {
+    setSaliendoTodos(true);
+    setErrorSalirTodos(null);
+    try {
+      await cerrarTodasLasSesionesAdmin();
+      setUsuario(null); // la sesión actual también quedó revocada → al login
+    } catch {
+      setErrorSalirTodos("No pudimos cerrar las sesiones. Inténtalo de nuevo.");
+      setSaliendoTodos(false);
     }
   }
 
@@ -297,6 +313,32 @@ export default function AdminCuenta() {
             {errorSalir && (
               <p className={styles.error} role="alert">
                 {errorSalir}
+              </p>
+            )}
+
+            <hr className={styles.separador} />
+
+            <div className={styles.fila}>
+              <div className={styles.filaInfo}>
+                <p className={styles.filaTitulo}>Cerrar en todos los dispositivos</p>
+                <p className={styles.filaNota}>
+                  Revoca todas tus sesiones activas, incluida esta. Útil si sospechas de un
+                  acceso ajeno.
+                </p>
+              </div>
+              <button
+                type="button"
+                className={styles.botonSalir}
+                onClick={cerrarTodas}
+                disabled={saliendoTodos}
+              >
+                {saliendoTodos ? "Cerrando…" : "Cerrar todo"}
+              </button>
+            </div>
+
+            {errorSalirTodos && (
+              <p className={styles.error} role="alert">
+                {errorSalirTodos}
               </p>
             )}
           </section>

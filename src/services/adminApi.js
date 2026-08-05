@@ -79,6 +79,12 @@ export function cerrarSesionAdmin(opciones = {}) {
   return solicitarAdmin("/auth/logout", { ...opciones, method: "POST" });
 }
 
+// Cierra la sesión en todos los dispositivos (revoca todas las sesiones activas,
+// incluida la actual). Tras esto la cookie ya no sirve → volver al login.
+export function cerrarTodasLasSesionesAdmin(opciones = {}) {
+  return solicitarAdmin("/auth/logout-todos", { ...opciones, method: "POST" });
+}
+
 export function cambiarContrasenaAdmin(contrasenaActual, contrasenaNueva, opciones = {}) {
   return solicitarAdmin("/auth/contrasena", {
     ...opciones,

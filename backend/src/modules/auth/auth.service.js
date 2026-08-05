@@ -54,6 +54,13 @@ export function crearServicioAuth(repositorio = repositorioAuth) {
       return repositorio.revocarSesionPorHash(hashTokenSesion(token), ahora)
     },
 
+    // Cierra TODAS las sesiones activas del usuario (incluida la actual). Útil
+    // ante sospecha de acceso ajeno: invalida cualquier dispositivo de una vez.
+    async cerrarTodasLasSesiones({ usuarioId, ahora = new Date() }) {
+      const resultado = await repositorio.revocarSesionesDeUsuario(usuarioId, ahora)
+      return { revocadas: resultado?.count ?? 0 }
+    },
+
     // Cambio de contraseña self-service: exige la contraseña actual antes de
     // fijar la nueva (así una sesión secuestrada no puede cambiarla a ciegas).
     // Devuelve { ok } para que la ruta traduzca el fallo sin filtrar detalles.
@@ -85,3 +92,4 @@ export const obtenerSesionActiva = servicioAuth.obtenerSesionActiva
 export const cerrarSesion = servicioAuth.cerrarSesion
 export const cambiarContrasenaPropia = servicioAuth.cambiarContrasenaPropia
 export const cambiarNombrePropio = servicioAuth.cambiarNombrePropio
+export const cerrarTodasLasSesiones = servicioAuth.cerrarTodasLasSesiones

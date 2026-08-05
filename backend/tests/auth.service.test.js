@@ -113,6 +113,26 @@ test('cambiarNombrePropio actualiza el nombre y devuelve solo datos públicos', 
   assert.equal('passwordHash' in usuario, false)
 })
 
+test('cerrarTodasLasSesiones revoca todas las sesiones activas del usuario', async () => {
+  let idRevocado
+  let fechaRevocada
+  const repositorio = {
+    async revocarSesionesDeUsuario(usuarioId, ahora) {
+      idRevocado = usuarioId
+      fechaRevocada = ahora
+      return { count: 3 }
+    },
+  }
+  const servicio = crearServicioAuth(repositorio)
+  const ahora = new Date('2026-08-02T12:00:00.000Z')
+
+  const resultado = await servicio.cerrarTodasLasSesiones({ usuarioId: 'u1', ahora })
+
+  assert.equal(idRevocado, 'u1')
+  assert.equal(fechaRevocada, ahora)
+  assert.deepEqual(resultado, { revocadas: 3 })
+})
+
 test('iniciarSesion no crea sesión con una contraseña incorrecta', async () => {
   let creoSesion = false
   const repositorio = {

@@ -3,6 +3,7 @@ import {
   cambiarContrasenaPropia,
   cambiarNombrePropio,
   cerrarSesion,
+  cerrarTodasLasSesiones,
   iniciarSesion,
   obtenerSesionActiva,
 } from './auth.service.js'
@@ -23,6 +24,7 @@ export function crearRouterAuth(servicio = {
   iniciarSesion,
   obtenerSesionActiva,
   cerrarSesion,
+  cerrarTodasLasSesiones,
   cambiarContrasenaPropia,
   cambiarNombrePropio,
 }, { limitarLogin = crearLimitadorIntentosLogin() } = {}) {
@@ -74,6 +76,18 @@ export function crearRouterAuth(servicio = {
   authRouter.post('/logout', requerirSesion, async (request, response, next) => {
     try {
       await servicio.cerrarSesion(request.tokenSesion)
+      response.clearCookie('sesion_admin', opcionesCookieSesion())
+      return response.status(204).end()
+    } catch (error) {
+      return next(error)
+    }
+  })
+
+  // Cierra la sesión en TODOS los dispositivos: revoca cada sesión activa del
+  // usuario (la actual incluida), por eso también borramos la cookie de aquí.
+  authRouter.post('/logout-todos', requerirSesion, async (request, response, next) => {
+    try {
+      await servicio.cerrarTodasLasSesiones({ usuarioId: request.usuario.id })
       response.clearCookie('sesion_admin', opcionesCookieSesion())
       return response.status(204).end()
     } catch (error) {

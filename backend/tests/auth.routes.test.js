@@ -170,6 +170,40 @@ test('PATCH /api/auth/perfil responde 422 si el nombre es muy corto', async () =
   assert.equal(response.body.error.code, 'INVALID_PROFILE_DATA')
 })
 
+test('POST /api/auth/logout-todos revoca todas las sesiones y borra la cookie', async () => {
+  let idRecibido
+  const app = crearAppAuth({
+    async obtenerSesionActiva() {
+      return { usuario: { id: 'usuario-1', rol: 'ADMIN' } }
+    },
+    async cerrarTodasLasSesiones({ usuarioId }) {
+      idRecibido = usuarioId
+      return { revocadas: 2 }
+    },
+  })
+
+  const response = await request(app)
+    .post('/api/auth/logout-todos')
+    .set('Cookie', 'sesion_admin=sesion-valida')
+
+  assert.equal(response.status, 204)
+  assert.equal(idRecibido, 'usuario-1') // el id sale de la sesión, no del cuerpo
+  assert.match(response.headers['set-cookie'][0], /sesion_admin=;/)
+})
+
+test('POST /api/auth/logout-todos rechaza una solicitud sin sesión', async () => {
+  let llamado = false
+  const app = crearAppAuth({
+    async obtenerSesionActiva() { return null },
+    async cerrarTodasLasSesiones() { llamado = true },
+  })
+
+  const response = await request(app).post('/api/auth/logout-todos')
+
+  assert.equal(response.status, 401)
+  assert.equal(llamado, false) // no llegó al servicio
+})
+
 test('POST /api/auth/logout revoca la sesión y borra su cookie', async () => {
   let tokenRevocado
   const app = crearAppAuth({

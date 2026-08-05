@@ -56,6 +56,13 @@ export function crearRepositorioAuth(cliente = prisma) {
         data: { revocadaEn: ahora },
       })
     },
+
+    revocarSesionesDeUsuario(usuarioId, ahora) {
+      return cliente.sesion.updateMany({
+        where: { usuarioId, revocadaEn: null },
+        data: { revocadaEn: ahora },
+      })
+    },
   }
 }
 

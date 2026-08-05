@@ -11,6 +11,7 @@ import AdminPedidos from "./pages/AdminPedidos.jsx";
 import AdminResumen from "./pages/AdminResumen.jsx";
 import AdminCuenta from "./pages/AdminCuenta.jsx";
 import AdminAcceso from "./pages/AdminAcceso.jsx";
+import AdminEquipo from "./pages/AdminEquipo.jsx";
 import { Login, Registro } from "./pages/Acceso.jsx";
 import MiCuenta from "./pages/MiCuenta.jsx";
 import MisPedidos from "./pages/MisPedidos.jsx";
@@ -239,6 +240,7 @@ function App() {
         <Route path="/admin/pedidos" element={<AdminPedidos />} />
         <Route path="/admin/resumen" element={<AdminResumen />} />
         <Route path="/admin/cuenta" element={<AdminCuenta />} />
+        <Route path="/admin/equipo" element={<AdminEquipo />} />
         <Route path="/admin/*" element={<Navigate to="/admin/resumen" replace />} />
       </Routes>
     );

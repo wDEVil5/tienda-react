@@ -17,10 +17,14 @@ const RUTAS = {
   Resumen: "/admin/resumen",
   Pedidos: "/admin/pedidos",
   Productos: "/admin/productos",
+  Equipo: "/admin/equipo",
 };
 
 export default function AdminShell({ usuario, seccion = "Productos", children }) {
   const navegar = useNavigate();
+
+  // "Equipo" es solo para ADMIN (gestión de operadores); el resto lo ve todo el staff.
+  const secciones = usuario.rol === "ADMIN" ? [...SECCIONES, "Equipo"] : SECCIONES;
 
   return (
     <div className={styles.pantalla}>
@@ -45,7 +49,7 @@ export default function AdminShell({ usuario, seccion = "Productos", children })
         </button>
 
         <nav className={styles.navegacion}>
-          {SECCIONES.map((nombre) => {
+          {secciones.map((nombre) => {
             const activa = nombre === seccion;
             const ruta = RUTAS[nombre];
             const disponible = Boolean(ruta);

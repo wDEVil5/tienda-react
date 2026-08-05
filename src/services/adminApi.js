@@ -87,6 +87,30 @@ export function cambiarContrasenaAdmin(contrasenaActual, contrasenaNueva, opcion
   });
 }
 
+// Equipo (solo ADMIN). La lista llega como { data: [...] } → solicitarAdmin la
+// desenvuelve al arreglo.
+export function listarUsuariosAdmin(opciones = {}) {
+  return solicitarAdmin("/admin/usuarios", opciones);
+}
+
+export function crearOperadorAdmin(datos, opciones = {}) {
+  return solicitarAdmin("/admin/usuarios", { ...opciones, method: "POST", cuerpo: datos });
+}
+
+export function activarUsuarioAdmin(id, opciones = {}) {
+  return solicitarAdmin(`/admin/usuarios/${encodeURIComponent(id)}/activar`, {
+    ...opciones,
+    method: "PATCH",
+  });
+}
+
+export function desactivarUsuarioAdmin(id, opciones = {}) {
+  return solicitarAdmin(`/admin/usuarios/${encodeURIComponent(id)}/desactivar`, {
+    ...opciones,
+    method: "PATCH",
+  });
+}
+
 export function listarProductosAdmin(
   { page = 1, limit = 20, busqueda = "", estado, ...opciones } = {},
 ) {

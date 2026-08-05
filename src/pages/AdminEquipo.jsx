@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import AdminShell from "../components/admin/AdminShell.jsx";
 import {
@@ -8,6 +8,7 @@ import {
   ErrorAdminApi,
   listarUsuariosAdmin,
   obtenerSesionAdmin,
+  restablecerContrasenaUsuarioAdmin,
 } from "../services/adminApi.js";
 import styles from "./AdminEquipo.module.css";
 
@@ -25,6 +26,11 @@ export default function AdminEquipo() {
 
   const [accionId, setAccionId] = useState(null);
   const [errorAccion, setErrorAccion] = useState(null);
+
+  const [reseteandoId, setReseteandoId] = useState(null);
+  const [nuevaClave, setNuevaClave] = useState("");
+  const [guardandoClave, setGuardandoClave] = useState(false);
+  const [mensajeReset, setMensajeReset] = useState(null); // { id, tipo, texto }
 
   const [form, setForm] = useState({ nombre: "", email: "", contrasena: "" });
   const [creando, setCreando] = useState(false);
@@ -132,6 +138,47 @@ export default function AdminEquipo() {
       });
     } finally {
       setAccionId(null);
+    }
+  }
+
+  function abrirReset(id) {
+    setReseteandoId(id);
+    setNuevaClave("");
+    setMensajeReset(null);
+  }
+
+  function cerrarReset() {
+    setReseteandoId(null);
+    setNuevaClave("");
+  }
+
+  async function guardarReset(fila, evento) {
+    evento.preventDefault();
+    setMensajeReset(null);
+    if (nuevaClave.length < 12) {
+      setMensajeReset({ id: fila.id, tipo: "error", texto: "Mínimo 12 caracteres." });
+      return;
+    }
+    setGuardandoClave(true);
+    try {
+      await restablecerContrasenaUsuarioAdmin(fila.id, nuevaClave);
+      setMensajeReset({ id: fila.id, tipo: "ok", texto: "Contraseña actualizada." });
+      setNuevaClave("");
+    } catch (errorRespuesta) {
+      if (errorRespuesta instanceof ErrorAdminApi && errorRespuesta.status === 401) {
+        setUsuario(null);
+        return;
+      }
+      setMensajeReset({
+        id: fila.id,
+        tipo: "error",
+        texto:
+          errorRespuesta instanceof ErrorAdminApi
+            ? errorRespuesta.message
+            : "No pudimos actualizar la contraseña.",
+      });
+    } finally {
+      setGuardandoClave(false);
     }
   }
 
@@ -281,46 +328,110 @@ export default function AdminEquipo() {
                           const gestionable = fila.rol !== "ADMIN" && !esYo;
                           const ocupado = accionId === fila.id;
                           return (
-                            <tr key={fila.id}>
-                              <td className={styles.celdaNombre}>
-                                {fila.nombre}
-                                {esYo && <span className={styles.tuChip}>tú</span>}
-                              </td>
-                              <td className={styles.celdaEmail}>{fila.email}</td>
-                              <td>
-                                <span className={styles.rolBadge}>
-                                  {ETIQUETA_ROL[fila.rol] ?? fila.rol}
-                                </span>
-                              </td>
-                              <td>
-                                <span
-                                  className={fila.activo ? styles.estadoActivo : styles.estadoInactivo}
-                                >
-                                  {fila.activo ? "Activo" : "Inactivo"}
-                                </span>
-                              </td>
-                              <td className={styles.colAccion}>
-                                {gestionable ? (
-                                  <button
-                                    type="button"
-                                    className={
-                                      fila.activo ? styles.botonDesactivar : styles.botonActivar
-                                    }
-                                    disabled={ocupado}
-                                    onClick={() => alternarActivo(fila)}
+                            <Fragment key={fila.id}>
+                              <tr>
+                                <td className={styles.celdaNombre}>
+                                  {fila.nombre}
+                                  {esYo && <span className={styles.tuChip}>tú</span>}
+                                </td>
+                                <td className={styles.celdaEmail}>{fila.email}</td>
+                                <td>
+                                  <span className={styles.rolBadge}>
+                                    {ETIQUETA_ROL[fila.rol] ?? fila.rol}
+                                  </span>
+                                </td>
+                                <td>
+                                  <span
+                                    className={fila.activo ? styles.estadoActivo : styles.estadoInactivo}
                                   >
-                                    {ocupado ? "…" : fila.activo ? "Desactivar" : "Activar"}
-                                  </button>
-                                ) : (
-                                  <span className={styles.sinAccion}>—</span>
-                                )}
-                                {errorAccion?.id === fila.id && (
-                                  <p className={styles.errorAccion} role="alert">
-                                    {errorAccion.mensaje}
-                                  </p>
-                                )}
-                              </td>
-                            </tr>
+                                    {fila.activo ? "Activo" : "Inactivo"}
+                                  </span>
+                                </td>
+                                <td className={styles.colAccion}>
+                                  {gestionable ? (
+                                    <div className={styles.accionesFila}>
+                                      <button
+                                        type="button"
+                                        className={styles.botonReset}
+                                        onClick={() =>
+                                          reseteandoId === fila.id ? cerrarReset() : abrirReset(fila.id)
+                                        }
+                                      >
+                                        Resetear
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className={
+                                          fila.activo ? styles.botonDesactivar : styles.botonActivar
+                                        }
+                                        disabled={ocupado}
+                                        onClick={() => alternarActivo(fila)}
+                                      >
+                                        {ocupado ? "…" : fila.activo ? "Desactivar" : "Activar"}
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <span className={styles.sinAccion}>—</span>
+                                  )}
+                                  {errorAccion?.id === fila.id && (
+                                    <p className={styles.errorAccion} role="alert">
+                                      {errorAccion.mensaje}
+                                    </p>
+                                  )}
+                                </td>
+                              </tr>
+
+                              {reseteandoId === fila.id && (
+                                <tr className={styles.filaReset}>
+                                  <td colSpan={5}>
+                                    <form
+                                      className={styles.resetForm}
+                                      onSubmit={(evento) => guardarReset(fila, evento)}
+                                    >
+                                      <label className={styles.campoReset}>
+                                        <span>Nueva contraseña para {fila.nombre}</span>
+                                        <input
+                                          type="password"
+                                          autoComplete="new-password"
+                                          value={nuevaClave}
+                                          onChange={(evento) => setNuevaClave(evento.target.value)}
+                                          minLength={12}
+                                          required
+                                        />
+                                      </label>
+                                      <div className={styles.resetAcciones}>
+                                        <button
+                                          type="submit"
+                                          className={styles.botonGuardarClave}
+                                          disabled={guardandoClave}
+                                        >
+                                          {guardandoClave ? "Guardando…" : "Guardar"}
+                                        </button>
+                                        <button
+                                          type="button"
+                                          className={styles.botonCancelar}
+                                          onClick={cerrarReset}
+                                        >
+                                          Cancelar
+                                        </button>
+                                        {mensajeReset?.id === fila.id && (
+                                          <span
+                                            className={
+                                              mensajeReset.tipo === "ok"
+                                                ? styles.mensajeOk
+                                                : styles.mensajeError
+                                            }
+                                            role="status"
+                                          >
+                                            {mensajeReset.texto}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </form>
+                                  </td>
+                                </tr>
+                              )}
+                            </Fragment>
                           );
                         })}
                       </tbody>

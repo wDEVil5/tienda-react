@@ -111,6 +111,14 @@ export function desactivarUsuarioAdmin(id, opciones = {}) {
   });
 }
 
+export function restablecerContrasenaUsuarioAdmin(id, contrasena, opciones = {}) {
+  return solicitarAdmin(`/admin/usuarios/${encodeURIComponent(id)}/contrasena`, {
+    ...opciones,
+    method: "PATCH",
+    cuerpo: { contrasena },
+  });
+}
+
 export function listarProductosAdmin(
   { page = 1, limit = 20, busqueda = "", estado, ...opciones } = {},
 ) {

@@ -223,6 +223,11 @@
   padding-right: 0 !important;
   text-align: right;
 }
+.accionesFila {
+  display: inline-flex;
+  gap: 8px;
+}
+.botonReset,
 .botonDesactivar,
 .botonActivar {
   min-height: 32px;
@@ -232,6 +237,14 @@
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
+}
+.botonReset {
+  border: 1px solid var(--color-borde-3);
+  background: var(--color-superficie);
+  color: var(--color-texto-2);
+}
+.botonReset:hover {
+  border-color: var(--color-texto-tenue);
 }
 .botonDesactivar {
   border: 1px solid var(--color-borde-3);
@@ -261,6 +274,76 @@
   margin-top: 6px;
   color: var(--color-oferta);
   font-size: 11.5px;
+}
+
+/* Fila expandible para resetear la contraseña de un operador. */
+.filaReset td {
+  background: var(--color-crudo);
+}
+.resetForm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 6px 0;
+}
+.campoReset {
+  display: grid;
+  gap: 5px;
+}
+.campoReset span {
+  color: var(--color-texto-2);
+  font-size: 12px;
+}
+.campoReset input {
+  min-height: 38px;
+  width: min(280px, 60vw);
+  padding: 0 12px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-campo);
+  background: var(--color-superficie);
+  color: var(--color-texto);
+  font: inherit;
+  font-size: 14px;
+}
+.campoReset input:focus-visible {
+  outline: 2px solid var(--color-acento);
+  outline-offset: 1px;
+}
+.resetAcciones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.botonGuardarClave {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--color-acento);
+  border-radius: var(--radio-control);
+  background: var(--color-acento);
+  color: #fff;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.botonGuardarClave:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+.botonCancelar {
+  min-height: 38px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--radio-control);
+  background: transparent;
+  color: var(--color-texto-suave);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.botonCancelar:hover {
+  color: var(--color-texto);
 }
 
 @media (max-width: 640px) {

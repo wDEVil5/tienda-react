@@ -66,6 +66,25 @@ export function crearRepositorioResumen(cliente = prisma) {
       }))
     },
 
+    // Pedidos que esperan acción del equipo: los que NO están en un estado final
+    // (entregado/cancelado). Más antiguos primero, porque son los más urgentes.
+    // Alimenta la tabla "Pedidos que requieren acción" del tablero.
+    async pedidosQueRequierenAccion(limite = 6) {
+      return cliente.pedido.findMany({
+        where: { estado: { in: ['PENDIENTE', 'PREPARANDO', 'LISTO_PARA_RETIRO', 'ENVIADO'] } },
+        orderBy: { createdAt: 'asc' },
+        take: limite,
+        select: {
+          id: true,
+          numero: true,
+          estado: true,
+          modalidad: true,
+          contactoNombre: true,
+          total: true,
+        },
+      })
+    },
+
     // Pipeline operativo EN VIVO: cuántos pedidos hay en cada estado ahora
     // mismo (no acotado a un período). Alimenta el gráfico "Pedidos por estado".
     async contarPedidosPorEstado() {

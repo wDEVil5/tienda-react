@@ -345,6 +345,120 @@
   color: var(--color-texto);
 }
 
+/* Tabla "Pedidos que requieren acción". */
+.verTodos {
+  color: var(--color-acento);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.verTodos:hover {
+  text-decoration: underline;
+}
+.tablaScroll {
+  overflow-x: auto;
+}
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+.tabla thead th {
+  padding: 0 12px 10px 0;
+  border-bottom: 1px solid var(--color-borde-2);
+  color: var(--color-texto-tenue);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-align: left;
+  white-space: nowrap;
+}
+.tabla tbody td {
+  padding: 12px 12px 12px 0;
+  border-bottom: 1px solid var(--color-borde-2);
+  font-size: 13px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.tabla tbody tr:last-child td {
+  border-bottom: 0;
+}
+.celdaNumero {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--color-texto);
+}
+.celdaCliente {
+  width: 100%;
+  color: var(--color-texto-2);
+}
+.colTotal {
+  text-align: right;
+  font-family: var(--font-display);
+  font-size: 15px;
+}
+.colAccion {
+  padding-right: 0 !important;
+  text-align: right;
+}
+.accionBoton {
+  min-height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--color-acento);
+  border-radius: var(--radio-control);
+  background: transparent;
+  color: var(--color-acento);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.accionBoton:hover {
+  background: var(--color-acento-bg);
+}
+.accionBoton:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+.sinAccion {
+  color: var(--color-texto-tenue);
+}
+.errorAccion {
+  margin-top: 10px;
+  color: var(--color-oferta);
+  font-size: 12px;
+}
+
+/* Badges de estado (misma paleta que los de Pedidos). */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: var(--radio-badge);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.badgePendiente {
+  background: var(--color-aviso-bg);
+  color: var(--color-aviso);
+}
+.badgePreparando {
+  background: var(--color-acento-bg);
+  color: var(--color-acento);
+}
+.badgeEnviado {
+  background: var(--color-info-bg);
+  color: var(--color-info);
+}
+.badgeEntregado {
+  background: var(--color-crudo);
+  color: var(--color-texto-2);
+}
+.badgeCancelado {
+  background: var(--color-oferta-bg);
+  color: var(--color-oferta);
+}
+
 /* Colores de barra por estado (misma paleta que los badges de Pedidos). Van
    después de las barras base para ganar el color de fondo. */
 .barraPendiente {

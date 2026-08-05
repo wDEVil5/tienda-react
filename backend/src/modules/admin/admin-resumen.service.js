@@ -6,6 +6,9 @@ export const PERIODOS_RESUMEN = ['hoy', 'semana', 'mes', 'mes-pasado']
 // Umbral global de stock crítico cuando un producto no define el suyo propio.
 const UMBRAL_STOCK_CRITICO = Number(process.env.UMBRAL_STOCK_CRITICO) || 3
 
+// Cuántos pedidos mostrar en la tabla "requieren acción" del tablero.
+const LIMITE_ACCION = 6
+
 const NOMBRE_MES = new Intl.DateTimeFormat('es-CL', { month: 'long' })
 
 function inicioDia(fecha) {
@@ -106,6 +109,7 @@ export function crearServicioResumen(repositorio = repositorioResumen) {
         stockCritico,
         pedidosPorEstado,
         pagosPorEstado,
+        requierenAccion,
       ] = await Promise.all([
         repositorio.ventasAprobadas(actual),
         repositorio.ventasAprobadas(anterior),
@@ -115,6 +119,7 @@ export function crearServicioResumen(repositorio = repositorioResumen) {
         repositorio.contarStockCritico(UMBRAL_STOCK_CRITICO),
         repositorio.contarPedidosPorEstado(),
         repositorio.sumarPagosPorEstado(),
+        repositorio.pedidosQueRequierenAccion(LIMITE_ACCION),
       ])
 
       const sinPago = { monto: 0, cantidad: 0 }
@@ -145,6 +150,7 @@ export function crearServicioResumen(repositorio = repositorioResumen) {
           aprobado: pagosPorEstado.APROBADO ?? sinPago,
           pendiente: pagosPorEstado.PENDIENTE ?? sinPago,
         },
+        requierenAccion,
       }
     },
 

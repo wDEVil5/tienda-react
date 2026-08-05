@@ -15,6 +15,9 @@ function crearRepoFalso({
     APROBADO: { monto: 20860, cantidad: 4 },
     PENDIENTE: { monto: 129510, cantidad: 18 },
   },
+  requierenAccion = [
+    { id: 'p1', numero: 2, estado: 'PENDIENTE', modalidad: 'DESPACHO', contactoNombre: 'Camila', total: 16270 },
+  ],
 } = {}) {
   const cola = [...ventas]
   const capturado = { rangos: [], umbral: null }
@@ -29,6 +32,7 @@ function crearRepoFalso({
     async contarStockCritico(umbral) { capturado.umbral = umbral; return stockCritico },
     async contarPedidosPorEstado() { return pedidosPorEstado },
     async sumarPagosPorEstado() { return pagosPorEstado },
+    async pedidosQueRequierenAccion() { return requierenAccion },
   }
   return { repositorio, capturado }
 }
@@ -54,6 +58,8 @@ test('obtenerResumen arma KPIs, ticket promedio y variación', async () => {
     aprobado: { monto: 20860, cantidad: 4 },
     pendiente: { monto: 129510, cantidad: 18 },
   })
+  assert.equal(resumen.requierenAccion.length, 1)
+  assert.equal(resumen.requierenAccion[0].numero, 2)
 })
 
 test('la variación es null cuando el período anterior fue cero (sin dividir por cero)', async () => {

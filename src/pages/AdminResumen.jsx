@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import AdminShell from "../components/admin/AdminShell.jsx";
 import {
+  cambiarEstadoPedidoAdmin,
   ErrorAdminApi,
   obtenerMasVendidosAdmin,
   obtenerResumenAdmin,
@@ -41,6 +42,10 @@ function etiquetaVentas(periodo) {
   if (periodo === "hoy") return "Ventas de hoy";
   if (periodo === "semana") return "Ventas (7 días)";
   return "Ventas del mes";
+}
+
+function referencia(numero) {
+  return `#SE-${numero}`;
 }
 
 // Delta contra el período anterior. null = sin base para comparar (no fingimos
@@ -218,6 +223,105 @@ const CLASE_BARRA_ESTADO = {
   CANCELADO: styles.barraCancelado,
 };
 
+// Etiquetas de estado (reusa el mismo texto del pipeline) y clases de badge para
+// la tabla de acción.
+const ETIQUETA_ESTADO = Object.fromEntries(FLUJO_ESTADOS.map((e) => [e.clave, e.etiqueta]));
+const CLASE_BADGE = {
+  PENDIENTE: styles.badgePendiente,
+  PREPARANDO: styles.badgePreparando,
+  LISTO_PARA_RETIRO: styles.badgePreparando,
+  ENVIADO: styles.badgeEnviado,
+  ENTREGADO: styles.badgeEntregado,
+  CANCELADO: styles.badgeCancelado,
+};
+
+// Acción principal (avance) por estado: refleja la máquina de estados del backend
+// (PREPARANDO depende de la modalidad). El servidor sigue siendo la autoridad;
+// esto solo decide qué botón ofrecer. CANCELADO no es una acción de tablero.
+function accionDe(estado, modalidad) {
+  if (estado === "PREPARANDO") {
+    return modalidad === "DESPACHO"
+      ? { estado: "ENVIADO", etiqueta: "Marcar enviado" }
+      : { estado: "LISTO_PARA_RETIRO", etiqueta: "Marcar listo" };
+  }
+  if (estado === "PENDIENTE") return { estado: "PREPARANDO", etiqueta: "Preparar" };
+  if (estado === "LISTO_PARA_RETIRO" || estado === "ENVIADO") {
+    return { estado: "ENTREGADO", etiqueta: "Entregar" };
+  }
+  return null;
+}
+
+// Tabla "Pedidos que requieren acción": cada fila ejecuta su avance inline
+// (mismo PATCH de estado que el detalle, con el aviso por correo RF-5.6).
+function PanelRequierenAccion({ pedidos, onAccion, cambiandoId, errorAccion }) {
+  return (
+    <section className={styles.panel}>
+      <div className={styles.panelCabecera}>
+        <h2 className={styles.panelTitulo}>Pedidos que requieren acción</h2>
+        <Link className={styles.verTodos} to="/admin/pedidos">
+          Ver todos →
+        </Link>
+      </div>
+
+      {pedidos.length === 0 ? (
+        <p className={styles.panelVacio}>Todo al día — no hay pedidos por atender. 🎉</p>
+      ) : (
+        <div className={styles.tablaScroll}>
+          <table className={styles.tabla}>
+            <thead>
+              <tr>
+                <th>Pedido</th>
+                <th>Cliente</th>
+                <th>Estado</th>
+                <th className={styles.colTotal}>Total</th>
+                <th className={styles.colAccion}>Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pedidos.map((pedido) => {
+                const accion = accionDe(pedido.estado, pedido.modalidad);
+                const cambiando = cambiandoId === pedido.id;
+                return (
+                  <tr key={pedido.id}>
+                    <td className={styles.celdaNumero}>{referencia(pedido.numero)}</td>
+                    <td className={styles.celdaCliente}>{pedido.contactoNombre}</td>
+                    <td>
+                      <span className={`${styles.badge} ${CLASE_BADGE[pedido.estado] ?? ""}`}>
+                        {ETIQUETA_ESTADO[pedido.estado] ?? pedido.estado}
+                      </span>
+                    </td>
+                    <td className={styles.colTotal}>{MONEDA_CLP.format(pedido.total)}</td>
+                    <td className={styles.colAccion}>
+                      {accion ? (
+                        <button
+                          type="button"
+                          className={styles.accionBoton}
+                          disabled={cambiando}
+                          onClick={() => onAccion(pedido, accion.estado)}
+                        >
+                          {cambiando ? "…" : accion.etiqueta}
+                        </button>
+                      ) : (
+                        <span className={styles.sinAccion}>—</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {errorAccion && (
+        <p className={styles.errorAccion} role="alert">
+          {errorAccion.mensaje}
+        </p>
+      )}
+    </section>
+  );
+}
+
 // Pipeline operativo: cuántos pedidos hay en cada estado ahora mismo.
 function PanelPedidosEstado({ pedidosPorEstado }) {
   const filas = FLUJO_ESTADOS.map((estado) => ({
@@ -350,6 +454,9 @@ export default function AdminResumen() {
   const [errorVendidos, setErrorVendidos] = useState(null);
   const [intentoVendidos, setIntentoVendidos] = useState(0);
 
+  const [cambiandoId, setCambiandoId] = useState(null);
+  const [errorAccion, setErrorAccion] = useState(null);
+
   useEffect(() => {
     let vigente = true;
     obtenerSesionAdmin()
@@ -472,6 +579,32 @@ export default function AdminResumen() {
     }
     // El acceso del personal vive en /admin/productos; allí se inicia sesión.
     return <Navigate to="/admin/productos" replace />;
+  }
+
+  // Avance inline desde la tabla. Un cambio de estado afecta a varios paneles
+  // (tabla, pipeline, KPIs, cobros), así que refrescamos TODO el resumen con un
+  // solo refetch (bump de `intento`).
+  async function ejecutarAccion(pedido, siguienteEstado) {
+    setCambiandoId(pedido.id);
+    setErrorAccion(null);
+    try {
+      await cambiarEstadoPedidoAdmin(pedido.id, siguienteEstado);
+      setIntento((valor) => valor + 1);
+    } catch (errorRespuesta) {
+      if (errorRespuesta instanceof ErrorAdminApi && errorRespuesta.status === 401) {
+        setUsuario(null);
+        return;
+      }
+      setErrorAccion({
+        id: pedido.id,
+        mensaje:
+          errorRespuesta instanceof ErrorAdminApi
+            ? errorRespuesta.message
+            : "No pudimos cambiar el estado del pedido.",
+      });
+    } finally {
+      setCambiandoId(null);
+    }
   }
 
   return (
@@ -603,6 +736,13 @@ export default function AdminResumen() {
                   <PanelCobros cobros={resumen.cobros} />
                   <PanelModalidad modalidad={resumen.modalidad} />
                 </div>
+
+                <PanelRequierenAccion
+                  pedidos={resumen.requierenAccion}
+                  onAccion={ejecutarAccion}
+                  cambiandoId={cambiandoId}
+                  errorAccion={errorAccion}
+                />
               </>
             ) : null}
           </div>

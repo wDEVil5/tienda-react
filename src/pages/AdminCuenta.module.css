@@ -1,0 +1,140 @@
+.fondo {
+  min-width: 320px;
+}
+
+/* Estados de acceso (sin sesión / error de red). El login vive en Productos. */
+.acceso {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: clamp(24px, 4vw, 52px);
+  background: var(--color-crudo);
+  color: var(--color-texto-suave);
+  text-align: center;
+}
+.accesoCaja {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+.accesoCaja h1 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 400;
+}
+.accesoCaja button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--color-acento);
+  border-radius: var(--radio-control);
+  background: var(--color-acento);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pagina {
+  padding: clamp(20px, 3vw, 34px);
+  max-width: 720px;
+}
+
+/* Cabecera de identidad: avatar con inicial + nombre + email + rol. */
+.cabecera {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.avatar {
+  flex: 0 0 auto;
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-acento);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 26px;
+}
+.identidad {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.nombre {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 400;
+}
+.email {
+  color: var(--color-texto-suave);
+  font-size: 13px;
+}
+.rolBadge {
+  align-self: flex-start;
+  padding: 3px 10px;
+  border-radius: var(--radio-badge);
+  background: var(--color-acento-bg);
+  color: var(--color-acento);
+  font-size: 11px;
+}
+
+/* Tarjeta de seguridad. */
+.tarjeta {
+  padding: 22px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-tarjeta);
+  background: var(--color-superficie);
+}
+.tarjetaTitulo {
+  margin-bottom: 16px;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 400;
+}
+.fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.filaInfo {
+  min-width: 0;
+}
+.filaTitulo {
+  color: var(--color-texto);
+  font-size: 14px;
+}
+.filaNota {
+  margin-top: 2px;
+  color: var(--color-texto-suave);
+  font-size: 12.5px;
+}
+.botonSalir {
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--color-borde-3);
+  border-radius: var(--radio-control);
+  background: var(--color-superficie);
+  color: var(--color-oferta);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.botonSalir:hover {
+  border-color: var(--color-oferta);
+}
+.botonSalir:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+.error {
+  margin-top: 12px;
+  color: var(--color-oferta);
+  font-size: 12.5px;
+}

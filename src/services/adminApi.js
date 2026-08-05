@@ -75,6 +75,10 @@ export async function iniciarSesionAdmin(credenciales, opciones = {}) {
   return datos?.usuario ?? null;
 }
 
+export function cerrarSesionAdmin(opciones = {}) {
+  return solicitarAdmin("/auth/logout", { ...opciones, method: "POST" });
+}
+
 export function listarProductosAdmin(
   { page = 1, limit = 20, busqueda = "", estado, ...opciones } = {},
 ) {

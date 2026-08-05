@@ -78,20 +78,60 @@
   color: #fff;
 }
 
-.usuario {
+/* Chip de perfil del staff (arriba del menú): avatar con inicial + nombre + rol.
+   Lleva a /admin/cuenta. */
+.perfilChip,
+.perfilChipActivo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.perfilChip:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.perfilChipActivo {
+  background: rgba(255, 255, 255, 0.1);
+  cursor: default;
+}
+.perfilAvatar {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-acento);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 16px;
+}
+.perfilInfo {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  margin-top: auto;
-  padding: 0 12px;
-  color: #a5a29a;
-  font-size: 12px;
+  gap: 1px;
+  min-width: 0;
 }
-
-.usuario span:last-child {
-  color: #7d7a72;
+.perfilNombre {
+  overflow: hidden;
+  color: #fff;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.perfilRol {
+  color: #a5a29a;
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .contenido {

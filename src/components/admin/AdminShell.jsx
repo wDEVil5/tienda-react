@@ -29,6 +29,21 @@ export default function AdminShell({ usuario, seccion = "Productos", children })
           Sumarket<em>Admin</em>
         </a>
 
+        <button
+          type="button"
+          className={seccion === "Cuenta" ? styles.perfilChipActivo : styles.perfilChip}
+          aria-current={seccion === "Cuenta" ? "page" : undefined}
+          onClick={seccion === "Cuenta" ? undefined : () => navegar("/admin/cuenta")}
+        >
+          <span className={styles.perfilAvatar} aria-hidden="true">
+            {usuario.nombre?.charAt(0).toUpperCase() ?? "?"}
+          </span>
+          <span className={styles.perfilInfo}>
+            <span className={styles.perfilNombre}>{usuario.nombre}</span>
+            <span className={styles.perfilRol}>{usuario.rol.toLowerCase()}</span>
+          </span>
+        </button>
+
         <nav className={styles.navegacion}>
           {SECCIONES.map((nombre) => {
             const activa = nombre === seccion;
@@ -55,11 +70,6 @@ export default function AdminShell({ usuario, seccion = "Productos", children })
             );
           })}
         </nav>
-
-        <div className={styles.usuario}>
-          <span>{usuario.nombre}</span>
-          <span>rol: {usuario.rol.toLowerCase()}</span>
-        </div>
       </aside>
 
       <section className={styles.contenido}>{children}</section>

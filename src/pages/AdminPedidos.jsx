@@ -85,6 +85,13 @@ const FECHA_LARGA = new Intl.DateTimeFormat("es-CL", {
   hour: "2-digit",
   minute: "2-digit",
 });
+const FECHA_CSV = new Intl.DateTimeFormat("es-CL", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
 
 function referencia(numero) {
   return `#SE-${numero}`;
@@ -98,6 +105,49 @@ function textoEntrega(direccion) {
   if (!direccion) return "Retiro en tienda";
   const linea = [direccion.calle, direccion.depto].filter(Boolean).join(", ");
   return `Despacho: ${linea}${direccion.comuna ? ` · ${direccion.comuna}` : ""}`;
+}
+
+// Exportación CSV de la lista (los resúmenes que ya entrega el backend). El total
+// va como entero, no formateado, para que la planilla lo trate como número.
+const COLUMNAS_CSV = [
+  "Número", "Fecha", "Cliente", "Estado", "Entrega", "Comuna", "Productos", "Unidades", "Total",
+];
+
+function filaCsv(pedido) {
+  return [
+    referencia(pedido.numero),
+    FECHA_CSV.format(new Date(pedido.createdAt)),
+    pedido.contactoNombre,
+    ETIQUETA_ESTADO[pedido.estado] ?? pedido.estado,
+    pedido.modalidad === "DESPACHO" ? "Despacho" : "Retiro",
+    pedido.comuna ?? "",
+    pedido.cantidadProductos,
+    pedido.cantidadUnidades,
+    pedido.total,
+  ];
+}
+
+function generarCsv(pedidos) {
+  // Cada celda entre comillas y con las comillas internas duplicadas: así comas,
+  // saltos de línea o comillas en un nombre no rompen las columnas.
+  const escapar = (valor) => `"${String(valor).replaceAll('"', '""')}"`;
+  const lineas = [COLUMNAS_CSV, ...pedidos.map(filaCsv)].map((fila) =>
+    fila.map(escapar).join(","),
+  );
+  // El prefijo BOM (\uFEFF) hace que Excel lea el UTF-8 y muestre bien acentos y ñ.
+  return `\uFEFF${lineas.join("\r\n")}`;
+}
+
+function descargarArchivo(texto, nombre) {
+  const blob = new Blob([texto], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const enlace = document.createElement("a");
+  enlace.href = url;
+  enlace.download = nombre;
+  document.body.appendChild(enlace);
+  enlace.click();
+  enlace.remove();
+  URL.revokeObjectURL(url);
 }
 
 function DetallePedido({ detalle, onCambiarEstado, onImprimir, cambiando, errorCambio }) {
@@ -269,6 +319,8 @@ export default function AdminPedidos() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
   const [intento, setIntento] = useState(0);
+  const [exportando, setExportando] = useState(false);
+  const [errorExportar, setErrorExportar] = useState(null);
 
   const [detalle, setDetalle] = useState(null);
   const [errorDetalle, setErrorDetalle] = useState(null);
@@ -450,6 +502,41 @@ export default function AdminPedidos() {
     }
   }
 
+  // Exporta la lista TAL COMO se ve (mismo estado + búsqueda). La lista en
+  // pantalla está paginada; aquí recorremos todas las páginas para no exportar
+  // solo las 20 visibles.
+  async function exportarCsv() {
+    setExportando(true);
+    setErrorExportar(null);
+    try {
+      const todos = [];
+      let page = 1;
+      let totalPages = 1;
+      do {
+        const resultado = await listarPedidosAdmin({
+          page,
+          limit: 100,
+          estado: estado || undefined,
+          q: busquedaAplicada || undefined,
+        });
+        todos.push(...(resultado.data ?? []));
+        totalPages = resultado.meta?.totalPages ?? 1;
+        page += 1;
+      } while (page <= totalPages);
+
+      if (todos.length === 0) return;
+      descargarArchivo(generarCsv(todos), `pedidos-${new Date().toISOString().slice(0, 10)}.csv`);
+    } catch (errorRespuesta) {
+      if (errorRespuesta instanceof ErrorAdminApi && errorRespuesta.status === 401) {
+        setUsuario(null);
+        return;
+      }
+      setErrorExportar("No pudimos exportar. Inténtalo de nuevo.");
+    } finally {
+      setExportando(false);
+    }
+  }
+
   return (
     <main className={styles.fondo}>
       <AdminShell usuario={usuario} seccion="Pedidos">
@@ -468,11 +555,21 @@ export default function AdminPedidos() {
             <button
               className={styles.exportar}
               type="button"
-              disabled
-              title="Exportar CSV disponible en un próximo checkpoint."
+              onClick={exportarCsv}
+              disabled={exportando || cargando || pedidos.length === 0}
+              title={
+                pedidos.length === 0
+                  ? "No hay pedidos para exportar."
+                  : "Descargar la lista filtrada en CSV"
+              }
             >
-              Exportar CSV
+              {exportando ? "Exportando…" : "Exportar CSV"}
             </button>
+            {errorExportar && (
+              <span className={styles.errorExportar} role="alert">
+                {errorExportar}
+              </span>
+            )}
           </div>
         </header>
 

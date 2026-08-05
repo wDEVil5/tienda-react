@@ -54,8 +54,13 @@
 }
 .acciones {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
+}
+.errorExportar {
+  color: var(--color-oferta);
+  font-size: 12px;
 }
 .buscar input {
   width: 260px;

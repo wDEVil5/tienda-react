@@ -48,6 +48,17 @@ export function crearRepositorioResumen(cliente = prisma) {
       return cliente.pedido.count({ where: { estado: 'PENDIENTE' } })
     },
 
+    // Pagos aprobados en una ventana, crudos (fecha + monto). El agrupado por
+    // día lo hace el servicio en JS: la ventana es acotada (p. ej. 14 días) y así
+    // el bucketing usa la misma zona horaria local que el resto de los rangos,
+    // sin depender de la TZ de sesión de la base.
+    async pagosAprobadosEntre({ desde, hasta }) {
+      return cliente.pago.findMany({
+        where: { estado: 'APROBADO', createdAt: { gte: desde, lt: hasta } },
+        select: { createdAt: true, monto: true },
+      })
+    },
+
     // Productos publicados cuyo disponible (stock - reservado) cayó al umbral o
     // por debajo. El umbral es por producto (alerta_stock_bajo) y, si no tiene,
     // uno global. Va en SQL crudo porque compara dos columnas entre sí, algo

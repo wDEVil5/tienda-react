@@ -170,18 +170,72 @@
   color: var(--color-texto-tenue);
 }
 
-/* Panel (Ingresos por modalidad). Mismo lenguaje que las tarjetas. */
+/* Fila de paneles: gráfico (ancho) + panel lateral (angosto). */
+.panelesRow {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+/* Panel genérico (gráfico, modalidad). Mismo lenguaje que las tarjetas. */
 .panel {
   padding: 22px;
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-tarjeta);
   background: var(--color-superficie);
 }
+.panelCabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.panelCabecera .panelTitulo {
+  margin-bottom: 0;
+}
+.panelNota {
+  color: var(--color-texto-tenue);
+  font-size: 12px;
+}
 .panelTitulo {
   margin-bottom: 16px;
   font-family: var(--font-display);
   font-size: 18px;
   font-weight: 400;
+}
+
+/* Gráfico de barras: fila de columnas alineadas al fondo. */
+.grafico {
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(4px, 1.4vw, 12px);
+  height: 180px;
+  padding-top: 8px;
+}
+.barra {
+  flex: 1;
+  min-width: 0;
+  height: var(--altura, 0%);
+  min-height: 3px;
+  border-radius: 4px 4px 0 0;
+  background: var(--color-borde-3);
+}
+.barraActual {
+  background: var(--color-texto);
+}
+.graficoPie {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  color: var(--color-texto-tenue);
+  font-size: 12px;
+}
+.graficoPie span:last-child {
+  color: var(--color-texto-suave);
 }
 .panelVacio {
   color: var(--color-texto-tenue);
@@ -251,6 +305,9 @@
   background: var(--color-crudo);
   animation: pulso 1.2s ease-in-out infinite;
 }
+.panel.skeleton {
+  min-height: 264px;
+}
 @keyframes pulso {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.55; }
@@ -259,6 +316,11 @@
 @media (max-width: 1023px) {
   .kpis {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 860px) {
+  .panelesRow {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 @media (max-width: 560px) {

@@ -66,7 +66,11 @@ import {
 } from '../pedidos/pedidos.service.js'
 import { validarCambioEstadoPedido } from '../pedidos/pedidos.validacion.js'
 import { ESTADOS_PEDIDO } from '../pedidos/pedidos.estados.js'
-import { PERIODOS_RESUMEN, obtenerResumen } from './admin-resumen.service.js'
+import {
+  PERIODOS_RESUMEN,
+  obtenerResumen,
+  obtenerVentasDiarias,
+} from './admin-resumen.service.js'
 import { actualizarReglas, obtenerReglas } from '../reglas/reglas.service.js'
 import { validarReglas } from '../reglas/reglas.validacion.js'
 
@@ -105,6 +109,7 @@ export function crearRouterAdmin({
     obtenerDetallePedido,
     cambiarEstadoPedido,
     obtenerResumen,
+    obtenerVentasDiarias,
     obtenerReglas,
     actualizarReglas,
   },
@@ -901,6 +906,27 @@ export function crearRouterAdmin({
 
       try {
         return response.json({ data: await servicio.obtenerResumen({ periodo }) })
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  // Serie de ventas por día (gráfico de tendencia). Ventana fija de N días.
+  adminRouter.get(
+    '/resumen/ventas-diarias',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      const dias = leerEnteroPositivo(request.query.dias, 14, 90)
+      if (dias === null) {
+        return response.status(400).json({
+          error: { code: 'INVALID_QUERY_PARAM', message: 'dias debe estar entre 1 y 90.' },
+        })
+      }
+
+      try {
+        return response.json({ data: await servicio.obtenerVentasDiarias({ dias }) })
       } catch (error) {
         return next(error)
       }

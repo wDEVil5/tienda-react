@@ -170,3 +170,13 @@ export function obtenerResumenAdmin({ periodo, ...opciones } = {}) {
   const consulta = parametros.toString();
   return solicitarAdmin(`/admin/resumen${consulta ? `?${consulta}` : ""}`, opciones);
 }
+
+export function obtenerVentasDiariasAdmin({ dias, ...opciones } = {}) {
+  const parametros = new URLSearchParams();
+  if (dias) parametros.set("dias", String(dias));
+  const consulta = parametros.toString();
+  return solicitarAdmin(
+    `/admin/resumen/ventas-diarias${consulta ? `?${consulta}` : ""}`,
+    opciones,
+  );
+}

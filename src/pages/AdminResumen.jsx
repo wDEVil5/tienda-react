@@ -5,6 +5,7 @@ import {
   ErrorAdminApi,
   obtenerResumenAdmin,
   obtenerSesionAdmin,
+  obtenerVentasDiariasAdmin,
 } from "../services/adminApi.js";
 import styles from "./AdminResumen.module.css";
 
@@ -23,6 +24,7 @@ const MONEDA_CLP = new Intl.NumberFormat("es-CL", {
   maximumFractionDigits: 0,
 });
 const MES = new Intl.DateTimeFormat("es-CL", { month: "long" });
+const FECHA_DIA = new Intl.DateTimeFormat("es-CL", { day: "2-digit", month: "short" });
 
 // Título grande del tablero, derivado del período (estable durante la carga).
 function tituloPeriodo(periodo) {
@@ -74,6 +76,53 @@ function TarjetaKpi({ etiqueta, valor, to, children }) {
   return <div className={styles.tarjeta}>{contenido}</div>;
 }
 
+// Gráfico de barras "Ventas por día". La altura de cada barra es un dato
+// (proporción respecto al máximo), no un estilo: va como variable CSS. La última
+// barra (hoy) se resalta. Ventana fija, independiente del selector de período.
+function GraficoVentas({ serie }) {
+  const maximo = Math.max(1, ...serie.map((dia) => dia.monto));
+  const total = serie.reduce((suma, dia) => suma + dia.monto, 0);
+  const ultimo = serie[serie.length - 1];
+
+  return (
+    <section className={styles.panel}>
+      <div className={styles.panelCabecera}>
+        <h2 className={styles.panelTitulo}>Ventas por día</h2>
+        <span className={styles.panelNota}>últimos {serie.length} días</span>
+      </div>
+
+      {total === 0 ? (
+        <p className={styles.panelVacio}>Aún no hay ventas registradas en la ventana.</p>
+      ) : (
+        <>
+          <div
+            className={styles.grafico}
+            role="img"
+            aria-label={`Ventas diarias de los últimos ${serie.length} días`}
+          >
+            {serie.map((dia, indice) => (
+              <div
+                key={dia.fecha}
+                className={`${styles.barra} ${
+                  indice === serie.length - 1 ? styles.barraActual : ""
+                }`}
+                style={{ "--altura": `${(dia.monto / maximo) * 100}%` }}
+                title={`${FECHA_DIA.format(new Date(dia.fecha))}: ${MONEDA_CLP.format(dia.monto)}`}
+              />
+            ))}
+          </div>
+          <div className={styles.graficoPie}>
+            <span>{FECHA_DIA.format(new Date(serie[0].fecha))}</span>
+            <span>
+              {FECHA_DIA.format(new Date(ultimo.fecha))} · {MONEDA_CLP.format(ultimo.monto)}
+            </span>
+          </div>
+        </>
+      )}
+    </section>
+  );
+}
+
 // Panel "Ingresos por modalidad": Retiro vs Despacho con barra de proporción.
 // La barra recibe su ancho como variable CSS (dato dinámico), no estilo inline.
 function PanelModalidad({ modalidad }) {
@@ -121,6 +170,12 @@ export default function AdminResumen() {
   const [error, setError] = useState(null);
   const [intento, setIntento] = useState(0);
 
+  // El gráfico de tendencia tiene su propio ciclo de datos (ventana fija, no
+  // depende del período): así carga y falla por su cuenta, sin arrastrar a los KPIs.
+  const [ventasDiarias, setVentasDiarias] = useState(null);
+  const [errorGrafico, setErrorGrafico] = useState(null);
+  const [intentoGrafico, setIntentoGrafico] = useState(0);
+
   useEffect(() => {
     let vigente = true;
     obtenerSesionAdmin()
@@ -167,6 +222,28 @@ export default function AdminResumen() {
 
     return () => { vigente = false; };
   }, [usuario, periodo, intento]);
+
+  useEffect(() => {
+    if (!usuario) return undefined;
+    let vigente = true;
+
+    obtenerVentasDiariasAdmin({ dias: 14 })
+      .then((data) => {
+        if (!vigente) return;
+        setVentasDiarias(data);
+        setErrorGrafico(null);
+      })
+      .catch((errorRespuesta) => {
+        if (!vigente) return;
+        if (errorRespuesta instanceof ErrorAdminApi && errorRespuesta.status === 401) {
+          setUsuario(null);
+          return;
+        }
+        setErrorGrafico(errorRespuesta.message);
+      });
+
+    return () => { vigente = false; };
+  }, [usuario, intentoGrafico]);
 
   if (usuario === undefined) {
     return (
@@ -293,7 +370,31 @@ export default function AdminResumen() {
                   </TarjetaKpi>
                 </section>
 
-                <PanelModalidad modalidad={resumen.modalidad} />
+                <div className={styles.panelesRow}>
+                  {errorGrafico ? (
+                    <section className={styles.panel}>
+                      <h2 className={styles.panelTitulo}>Ventas por día</h2>
+                      <div className={styles.estado} role="alert">
+                        <span>{errorGrafico}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setErrorGrafico(null);
+                            setIntentoGrafico((valor) => valor + 1);
+                          }}
+                        >
+                          Reintentar
+                        </button>
+                      </div>
+                    </section>
+                  ) : ventasDiarias ? (
+                    <GraficoVentas serie={ventasDiarias.serie} />
+                  ) : (
+                    <section className={`${styles.panel} ${styles.skeleton}`} aria-hidden="true" />
+                  )}
+
+                  <PanelModalidad modalidad={resumen.modalidad} />
+                </div>
               </>
             ) : null}
           </div>

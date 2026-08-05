@@ -86,3 +86,30 @@ test("el período 'hoy' arranca a medianoche y compara con ayer", async () => {
   assert.equal(actual.desde.getHours(), 0)
   assert.equal(resumen.comparacion, 'ayer')
 })
+
+test('obtenerVentasDiarias arma la serie de N días, agrupa por jornada y rellena ceros', async () => {
+  let ventana
+  const repositorio = {
+    async pagosAprobadosEntre(rango) {
+      ventana = rango
+      return [
+        { createdAt: new Date('2026-08-04T09:00:00'), monto: 5000 },
+        { createdAt: new Date('2026-08-04T14:00:00'), monto: 3000 },
+        { createdAt: new Date('2026-08-03T20:00:00'), monto: 2000 },
+      ]
+    },
+  }
+  const servicio = crearServicioResumen(repositorio)
+
+  const ahora = new Date('2026-08-04T15:00:00')
+  const { serie } = await servicio.obtenerVentasDiarias({ dias: 3, ahora })
+
+  assert.equal(serie.length, 3)
+  assert.equal(serie[0].monto, 0) // 02 ago, sin ventas
+  assert.equal(serie[1].monto, 2000) // 03 ago
+  assert.equal(serie[2].monto, 8000) // 04 ago (dos pagos del día)
+  // ventana [02 00:00, 05 00:00): arranca 3 días atrás y termina al final de hoy
+  assert.equal(ventana.desde.getDate(), 2)
+  assert.equal(ventana.hasta.getDate(), 5)
+  assert.equal(ventana.hasta.getHours(), 0)
+})

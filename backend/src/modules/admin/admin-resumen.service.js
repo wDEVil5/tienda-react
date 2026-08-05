@@ -28,6 +28,15 @@ function sumarMeses(fecha, meses) {
   return new Date(fecha.getFullYear(), fecha.getMonth() + meses, 1)
 }
 
+// Clave de día local (YYYY-MM-DD) para agrupar pagos por jornada sin ambigüedad
+// de zona horaria.
+function claveDia(fecha) {
+  const dia = new Date(fecha)
+  const mes = String(dia.getMonth() + 1).padStart(2, '0')
+  const numero = String(dia.getDate()).padStart(2, '0')
+  return `${dia.getFullYear()}-${mes}-${numero}`
+}
+
 // Devuelve el rango [desde, hasta) del período pedido, el rango equivalente
 // anterior (para la comparación "+18% vs …") y la etiqueta de ese baseline.
 function rangoPeriodo(periodo, ahora) {
@@ -120,9 +129,32 @@ export function crearServicioResumen(repositorio = repositorioResumen) {
         modalidad,
       }
     },
+
+    // Serie de ventas por día para el gráfico de tendencia. Ventana FIJA de los
+    // últimos `dias` (por defecto 14) terminando hoy, independiente del período
+    // de los KPIs: es una vista estable de la tendencia reciente. Rellena con
+    // cero los días sin ventas para que el eje temporal no tenga huecos.
+    async obtenerVentasDiarias({ dias = 14, ahora = new Date() } = {}) {
+      const hasta = sumarDias(inicioDia(ahora), 1) // fin de hoy (exclusivo)
+      const desde = sumarDias(hasta, -dias)
+      const pagos = await repositorio.pagosAprobadosEntre({ desde, hasta })
+
+      const serie = []
+      for (let dia = new Date(desde); dia < hasta; dia = sumarDias(dia, 1)) {
+        serie.push({ fecha: new Date(dia), monto: 0 })
+      }
+      const indicePorDia = new Map(serie.map((entrada, indice) => [claveDia(entrada.fecha), indice]))
+      for (const pago of pagos) {
+        const indice = indicePorDia.get(claveDia(pago.createdAt))
+        if (indice !== undefined) serie[indice].monto += pago.monto
+      }
+
+      return { desde, hasta, serie }
+    },
   }
 }
 
 const servicioResumen = crearServicioResumen()
 
 export const obtenerResumen = servicioResumen.obtenerResumen
+export const obtenerVentasDiarias = servicioResumen.obtenerVentasDiarias

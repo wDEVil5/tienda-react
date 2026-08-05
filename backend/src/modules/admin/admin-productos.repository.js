@@ -56,6 +56,18 @@ export function crearRepositorioProductosAdmin(cliente = prisma) {
       return cliente.producto.create({ data: datos, include: incluirProductoAdmin })
     },
 
+    // Cuántas líneas de pedido referencian a este producto: si es > 0 tiene
+    // ventas y no se puede eliminar en firme (solo archivar).
+    contarVentas(id) {
+      return cliente.itemPedido.count({ where: { productoId: id } })
+    },
+
+    // Borrado definitivo. Imágenes/etiquetas/promos caen en cascada; los ítems de
+    // pedido conservan su snapshot y su productoId queda en null (SetNull).
+    eliminarPorId(id) {
+      return cliente.producto.delete({ where: { id } })
+    },
+
     async existeCategoriaActiva(id) {
       const categoria = await cliente.categoria.findFirst({
         where: { id, activa: true },

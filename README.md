@@ -70,8 +70,9 @@ evoluciona con Express, PostgreSQL y Prisma.
   donuts hechos con SVG, sin librerías de terceros.
 - **Pedidos**: listado con búsqueda por número o cliente y conteos por estado,
   detalle, avance de estado, impresión de comanda y exportación a CSV.
-- **Productos**: alta, edición y archivado, con imágenes, categorías, marcas,
-  etiquetas y promociones.
+- **Productos**: alta, edición, archivado/restauración y eliminación definitiva
+  (solo sin ventas; con pedidos asociados se archiva), con imágenes, categorías,
+  marcas, etiquetas y promociones.
 - **Mi cuenta**: editar el nombre, cambiar la contraseña, cerrar sesión y cerrar
   la sesión en todos los dispositivos.
 - **Equipo** (solo administrador): crear operadores y activarlos, desactivarlos,

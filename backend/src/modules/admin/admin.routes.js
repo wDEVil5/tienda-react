@@ -5,9 +5,11 @@ import {
   actualizarProducto,
   crearProducto,
   desactivarProducto,
+  eliminarProducto,
   listarProductosAdmin,
   obtenerProductoParaEdicion,
   reemplazarImagenesProducto,
+  restaurarProducto,
 } from './admin-productos.service.js'
 import {
   validarCambiosProductoAdmin,
@@ -83,6 +85,8 @@ export function crearRouterAdmin({
     actualizarProducto,
     crearProducto,
     desactivarProducto,
+    restaurarProducto,
+    eliminarProducto,
     reemplazarImagenesProducto,
     subirImagenProducto,
     listarOpcionesProductoAdmin,
@@ -766,6 +770,48 @@ export function crearRouterAdmin({
 
         return response.status(204).end()
       } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.patch(
+    '/productos/:id/restaurar',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      try {
+        const producto = await servicio.restaurarProducto(request.params.id)
+        if (!producto) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_PRODUCT_NOT_FOUND', message: 'No encontramos el producto solicitado.' },
+          })
+        }
+        return response.json({ data: producto })
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.delete(
+    '/productos/:id/definitivo',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      try {
+        const eliminado = await servicio.eliminarProducto(request.params.id)
+        if (!eliminado) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_PRODUCT_NOT_FOUND', message: 'No encontramos el producto solicitado.' },
+          })
+        }
+        return response.status(204).end()
+      } catch (error) {
+        // Producto con ventas: no se elimina en firme, se archiva (409).
+        if (error instanceof ErrorProductoAdmin) {
+          return response.status(409).json({ error: { code: error.code, message: error.message } })
+        }
         return next(error)
       }
     },

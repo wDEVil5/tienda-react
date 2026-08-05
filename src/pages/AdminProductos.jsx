@@ -2,9 +2,12 @@ import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import AdminShell from "../components/admin/AdminShell.jsx";
 import {
+  archivarProductoAdmin,
+  eliminarProductoAdmin,
   ErrorAdminApi,
   listarProductosAdmin,
   obtenerSesionAdmin,
+  restaurarProductoAdmin,
 } from "../services/adminApi.js";
 import styles from "./AdminProductos.module.css";
 
@@ -70,6 +73,11 @@ export default function AdminProductos() {
   const [errorAcceso, setErrorAcceso] = useState(null);
   const [intento, setIntento] = useState(0);
   const [intentoAcceso, setIntentoAcceso] = useState(0);
+
+  const [accionId, setAccionId] = useState(null); // archivar/restaurar en curso
+  const [confirmarId, setConfirmarId] = useState(null); // fila mostrando "¿eliminar?"
+  const [eliminandoId, setEliminandoId] = useState(null);
+  const [mensajeAccion, setMensajeAccion] = useState(null); // { id, texto }
 
   useEffect(() => {
     let vigente = true;
@@ -181,6 +189,71 @@ export default function AdminProductos() {
     setError(null);
     setPagina(siguientePagina);
   };
+
+  // Acciones de fila. Un cambio afecta al listado (y a los conteos), así que
+  // refrescamos con un refetch (bump de `intento`). Los errores se muestran
+  // acotados a la fila (p. ej. "tiene pedidos, archívalo").
+  async function archivar(producto) {
+    setAccionId(producto.id);
+    setMensajeAccion(null);
+    try {
+      await archivarProductoAdmin(producto.id);
+      setIntento((valor) => valor + 1);
+    } catch (errorRespuesta) {
+      if (errorRespuesta instanceof ErrorAdminApi && errorRespuesta.status === 401) {
+        setUsuario(null);
+        return;
+      }
+      setMensajeAccion({
+        id: producto.id,
+        texto: errorRespuesta instanceof ErrorAdminApi ? errorRespuesta.message : "No pudimos archivar el producto.",
+      });
+    } finally {
+      setAccionId(null);
+    }
+  }
+
+  async function restaurar(producto) {
+    setAccionId(producto.id);
+    setMensajeAccion(null);
+    try {
+      await restaurarProductoAdmin(producto.id);
+      setIntento((valor) => valor + 1);
+    } catch (errorRespuesta) {
+      if (errorRespuesta instanceof ErrorAdminApi && errorRespuesta.status === 401) {
+        setUsuario(null);
+        return;
+      }
+      setMensajeAccion({
+        id: producto.id,
+        texto: errorRespuesta instanceof ErrorAdminApi ? errorRespuesta.message : "No pudimos restaurar el producto.",
+      });
+    } finally {
+      setAccionId(null);
+    }
+  }
+
+  async function eliminar(producto) {
+    setEliminandoId(producto.id);
+    setMensajeAccion(null);
+    try {
+      await eliminarProductoAdmin(producto.id);
+      setConfirmarId(null);
+      setIntento((valor) => valor + 1);
+    } catch (errorRespuesta) {
+      if (errorRespuesta instanceof ErrorAdminApi && errorRespuesta.status === 401) {
+        setUsuario(null);
+        return;
+      }
+      setConfirmarId(null);
+      setMensajeAccion({
+        id: producto.id,
+        texto: errorRespuesta instanceof ErrorAdminApi ? errorRespuesta.message : "No pudimos eliminar el producto.",
+      });
+    } finally {
+      setEliminandoId(null);
+    }
+  }
 
   return (
     <main className={styles.fondoAdmin}>
@@ -297,13 +370,73 @@ export default function AdminProductos() {
                       </span>
                     </td>
                     <td>
-                      <button
-                        className={styles.editar}
-                        type="button"
-                        onClick={() => navegar(`/admin/productos/${producto.id}/editar`)}
-                      >
-                        Editar
-                      </button>
+                      <div className={styles.acciones}>
+                        <button
+                          className={styles.editar}
+                          type="button"
+                          onClick={() => navegar(`/admin/productos/${producto.id}/editar`)}
+                        >
+                          Editar
+                        </button>
+
+                        {producto.estado === "ARCHIVADO" ? (
+                          confirmarId === producto.id ? (
+                            <>
+                              <span className={styles.confirmarTexto}>¿Eliminar?</span>
+                              <button
+                                className={styles.botonPeligroSolido}
+                                type="button"
+                                disabled={eliminandoId === producto.id}
+                                onClick={() => eliminar(producto)}
+                              >
+                                {eliminandoId === producto.id ? "…" : "Sí, eliminar"}
+                              </button>
+                              <button
+                                className={styles.botonSutil}
+                                type="button"
+                                onClick={() => setConfirmarId(null)}
+                              >
+                                Cancelar
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                className={styles.botonSutil}
+                                type="button"
+                                disabled={accionId === producto.id}
+                                onClick={() => restaurar(producto)}
+                              >
+                                {accionId === producto.id ? "…" : "Restaurar"}
+                              </button>
+                              <button
+                                className={styles.botonPeligro}
+                                type="button"
+                                onClick={() => {
+                                  setMensajeAccion(null);
+                                  setConfirmarId(producto.id);
+                                }}
+                              >
+                                Eliminar
+                              </button>
+                            </>
+                          )
+                        ) : (
+                          <button
+                            className={styles.botonSutil}
+                            type="button"
+                            disabled={accionId === producto.id}
+                            onClick={() => archivar(producto)}
+                          >
+                            {accionId === producto.id ? "…" : "Archivar"}
+                          </button>
+                        )}
+                      </div>
+                      {mensajeAccion?.id === producto.id && (
+                        <p className={styles.mensajeFila} role="alert">
+                          {mensajeAccion.texto}
+                        </p>
+                      )}
                     </td>
                   </tr>
                 ))}

@@ -197,6 +197,73 @@ test('desactivarProducto conserva el registro y quita su destacado', async () =>
   assert.deepEqual(datosActualizacion, { estado: 'ARCHIVADO', destacado: false })
 })
 
+test('restaurarProducto reactiva un archivado como borrador', async () => {
+  let datos
+  const repositorio = {
+    async obtenerPorId() { return { id: 'producto-1', estado: 'ARCHIVADO' } },
+    async actualizarPorId(_id, d) {
+      datos = d
+      return crearProductoAgotado({ estado: 'BORRADOR' })
+    },
+  }
+  const servicio = crearServicioProductosAdmin(repositorio)
+
+  const producto = await servicio.restaurarProducto('producto-1')
+
+  assert.deepEqual(datos, { estado: 'BORRADOR' })
+  assert.equal(producto.estado, 'BORRADOR')
+})
+
+test('eliminarProducto borra en firme un producto sin ventas', async () => {
+  let idEliminado
+  const repositorio = {
+    async obtenerPorId() { return { id: 'producto-1', imagenes: [] } },
+    async contarVentas() { return 0 },
+    async eliminarPorId(id) { idEliminado = id },
+  }
+  const servicio = crearServicioProductosAdmin(repositorio)
+
+  const resultado = await servicio.eliminarProducto('producto-1')
+
+  assert.equal(resultado, true)
+  assert.equal(idEliminado, 'producto-1')
+})
+
+test('eliminarProducto rechaza si el producto tiene pedidos', async () => {
+  let intentoBorrar = false
+  const repositorio = {
+    async obtenerPorId() { return { id: 'producto-1', imagenes: [] } },
+    async contarVentas() { return 3 },
+    async eliminarPorId() { intentoBorrar = true },
+  }
+  const servicio = crearServicioProductosAdmin(repositorio)
+
+  await assert.rejects(servicio.eliminarProducto('producto-1'), { code: 'PRODUCT_HAS_SALES' })
+  assert.equal(intentoBorrar, false)
+})
+
+test('eliminarProducto limpia las imágenes del producto tras borrarlo', async () => {
+  const eliminadas = []
+  const repositorio = {
+    async obtenerPorId() {
+      return { id: 'producto-1', imagenes: [{ storageKey: 'k1' }, { storageKey: 'k2' }, { storageKey: null }] }
+    },
+    async contarVentas() { return 0 },
+    async eliminarPorId() {},
+  }
+  const almacenamiento = { async eliminarImagenProducto(clave) { eliminadas.push(clave) } }
+  const servicio = crearServicioProductosAdmin(repositorio, almacenamiento)
+
+  await servicio.eliminarProducto('producto-1')
+
+  assert.deepEqual(eliminadas.sort(), ['k1', 'k2']) // ignora el storageKey nulo
+})
+
+test('eliminarProducto devuelve false si el producto no existe', async () => {
+  const servicio = crearServicioProductosAdmin({ async obtenerPorId() { return null } })
+  assert.equal(await servicio.eliminarProducto('fantasma'), false)
+})
+
 // Producto base agotado (stock 0) para probar el disparo de avisos al reponer.
 function crearProductoAgotado(overrides = {}) {
   return {

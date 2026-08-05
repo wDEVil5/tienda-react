@@ -188,6 +188,22 @@ export function archivarProductoAdmin(id, opciones = {}) {
   });
 }
 
+// Reactiva un producto archivado (vuelve a BORRADOR).
+export function restaurarProductoAdmin(id, opciones = {}) {
+  return solicitarAdmin(`/admin/productos/${encodeURIComponent(id)}/restaurar`, {
+    ...opciones,
+    method: "PATCH",
+  });
+}
+
+// Borrado definitivo (solo productos sin ventas; el server responde 409 si tiene).
+export function eliminarProductoAdmin(id, opciones = {}) {
+  return solicitarAdmin(`/admin/productos/${encodeURIComponent(id)}/definitivo`, {
+    ...opciones,
+    method: "DELETE",
+  });
+}
+
 export function subirImagenProductoAdmin(archivo, opciones = {}) {
   const datos = new FormData();
   datos.append("imagen", archivo);

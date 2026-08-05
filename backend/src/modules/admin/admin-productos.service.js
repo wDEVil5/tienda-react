@@ -246,6 +246,46 @@ export function crearServicioProductosAdmin(
       return true
     },
 
+    // Reactiva un producto archivado: vuelve a BORRADOR (no directo a publicado,
+    // para que el operador lo revise y publique con su galería vigente).
+    async restaurarProducto(id) {
+      const producto = await repositorio.obtenerPorId(id)
+      if (!producto) return null
+
+      const actualizado = await repositorio.actualizarPorId(id, { estado: 'BORRADOR' })
+      return crearProductoParaEdicion(actualizado)
+    },
+
+    // Borrado DEFINITIVO. Solo si el producto no tiene ventas (ninguna línea de
+    // pedido lo referencia): con ventas se archiva, no se elimina, para no perder
+    // la trazabilidad. Tras borrar la fila, limpia sus imágenes en Cloudinary.
+    async eliminarProducto(id) {
+      const producto = await repositorio.obtenerPorId(id)
+      if (!producto) return false
+
+      const ventas = await repositorio.contarVentas(id)
+      if (ventas > 0) {
+        throw new ErrorProductoAdmin(
+          'PRODUCT_HAS_SALES',
+          'Este producto tiene pedidos asociados: archívalo en lugar de eliminarlo.',
+        )
+      }
+
+      const claves = producto.imagenes.map((imagen) => imagen.storageKey).filter(Boolean)
+      await repositorio.eliminarPorId(id)
+
+      const limpieza = await Promise.allSettled(
+        claves.map((storageKey) => almacenamiento.eliminarImagenProducto(storageKey)),
+      )
+      limpieza.forEach((resultado, indice) => {
+        if (resultado.status === 'rejected') {
+          console.error(`No se pudo eliminar la imagen ${claves[indice]} de Cloudinary.`)
+        }
+      })
+
+      return true
+    },
+
     async reemplazarImagenesProducto(id, imagenes) {
       const productoActual = await repositorio.obtenerPorId(id)
       if (!productoActual) return null
@@ -283,4 +323,6 @@ export const obtenerProductoParaEdicion = servicioProductosAdmin.obtenerProducto
 export const actualizarProducto = servicioProductosAdmin.actualizarProducto
 export const crearProducto = servicioProductosAdmin.crearProducto
 export const desactivarProducto = servicioProductosAdmin.desactivarProducto
+export const restaurarProducto = servicioProductosAdmin.restaurarProducto
+export const eliminarProducto = servicioProductosAdmin.eliminarProducto
 export const reemplazarImagenesProducto = servicioProductosAdmin.reemplazarImagenesProducto

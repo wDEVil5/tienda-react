@@ -110,14 +110,6 @@ function IconoChevron({ className }) {
   );
 }
 
-function IconoMas() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 function IconoFlecha() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -135,9 +127,9 @@ function IconoAlerta() {
   );
 }
 
-function IconoRecargar() {
+function IconoRecargar({ className }) {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg className={className} width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path
         d="M20 11a8 8 0 10-.5 4M20 5v6h-6"
         stroke="currentColor"
@@ -230,6 +222,7 @@ function TarjetaKpi({ etiqueta, valor, hint, hintTono, spark, sparkColor, id, en
 /* ---------- Gráfico de ventas por día (SVG, sin chart.js) ---------- */
 
 function GraficoVentas({ serie }) {
+  const [activo, setActivo] = useState(null); // día bajo el cursor (o teclado)
   const n = serie.length;
   const montos = serie.map((dia) => dia.monto);
   const total = montos.reduce((suma, monto) => suma + monto, 0);
@@ -320,11 +313,55 @@ function GraficoVentas({ serie }) {
               })}
             </svg>
 
+            {activo !== null && (
+              <span className={styles.gGuia} style={{ "--x": `${puntos[activo].x}%` }} />
+            )}
+
             {total > 0 && (
               <span
                 className={styles.gPunto}
                 style={{ "--x": `${puntos[n - 1].x}%`, "--y": `${puntos[n - 1].y}%` }}
               />
+            )}
+
+            {activo !== null && (
+              <span
+                className={styles.gPuntoHover}
+                style={{ "--x": `${puntos[activo].x}%`, "--y": `${puntos[activo].y}%` }}
+              />
+            )}
+
+            <div className={styles.gHover}>
+              {serie.map((dia, indice) => (
+                <button
+                  key={dia.fecha}
+                  type="button"
+                  className={styles.gCol}
+                  onMouseEnter={() => setActivo(indice)}
+                  onMouseLeave={() => setActivo(null)}
+                  onFocus={() => setActivo(indice)}
+                  onBlur={() => setActivo(null)}
+                  aria-label={`${FECHA_DIA.format(new Date(dia.fecha))}: ${
+                    dia.monto > 0 ? MONEDA_CLP.format(dia.monto) : "sin ventas"
+                  }`}
+                />
+              ))}
+            </div>
+
+            {activo !== null && (
+              <div
+                className={styles.gTooltip}
+                style={{ "--x": `${puntos[activo].x}%`, "--y": `${puntos[activo].y}%` }}
+              >
+                <span className={styles.gTooltipFecha}>
+                  {FECHA_DIA.format(new Date(puntos[activo].fecha))}
+                </span>
+                <span className={styles.gTooltipMonto}>
+                  {puntos[activo].monto > 0
+                    ? MONEDA_CLP.format(puntos[activo].monto)
+                    : "Sin ventas"}
+                </span>
+              </div>
             )}
           </div>
 
@@ -488,6 +525,17 @@ const DONUT_R = 15.915; // circunferencia = 100 → los segmentos son porcentaje
 
 function Donut({ segmentos, centroValor, centroSub }) {
   const total = segmentos.reduce((suma, seg) => suma + seg.valor, 0);
+
+  // Al montar dejamos que se pinte el estado "vacío" (dash 0) y en el siguiente
+  // tick fijamos el real: así el CSS transiciona el `--dash` y el anillo se
+  // dibuja. En refrescos posteriores `dibujar` ya está en true → transición
+  // suave a las nuevas proporciones.
+  const [dibujar, setDibujar] = useState(false);
+  useEffect(() => {
+    const id = setTimeout(() => setDibujar(true), 40);
+    return () => clearTimeout(id);
+  }, []);
+
   let acumulado = 0;
 
   return (
@@ -508,8 +556,8 @@ function Donut({ segmentos, centroValor, centroSub }) {
                 cy="21"
                 r={DONUT_R}
                 stroke={seg.color}
-                strokeDasharray={`${largo} ${100 - largo}`}
                 strokeDashoffset={desfase}
+                style={{ "--dash": dibujar ? largo : 0 }}
               />
             );
           })}
@@ -937,6 +985,16 @@ export default function AdminResumen() {
     }
   }
 
+  // Refresco manual del tablero: vuelve a pedir los tres orígenes a la vez. No
+  // muestra el esqueleto (ya hay datos en pantalla): solo gira el icono mientras
+  // `cargando` está activo; los paneles se reemplazan cuando llega lo nuevo.
+  function refrescar() {
+    setCargando(true);
+    setIntento((valor) => valor + 1);
+    setIntentoGrafico((valor) => valor + 1);
+    setIntentoVendidos((valor) => valor + 1);
+  }
+
   const ventasVar = resumen && textoVariacion(resumen.ventas.variacion, resumen.comparacion);
   const ticketVar =
     resumen && textoVariacion(resumen.ticketPromedio.variacion, resumen.comparacion);
@@ -970,9 +1028,15 @@ export default function AdminResumen() {
                   </select>
                   <IconoChevron className={styles.selectorChevron} />
                 </label>
-                <Link className={styles.botonNuevo} to="/admin/productos/nuevo">
-                  <IconoMas /> Nuevo producto
-                </Link>
+                <button
+                  type="button"
+                  className={styles.botonRefrescar}
+                  onClick={refrescar}
+                  disabled={cargando}
+                >
+                  <IconoRecargar className={cargando ? styles.girando : undefined} />
+                  {cargando ? "Actualizando…" : "Actualizar"}
+                </button>
               </div>
             </header>
 

@@ -60,6 +60,25 @@ evoluciona con Express, PostgreSQL y Prisma.
 - Diseño responsive para escritorio, tablet y móvil; foco visible, navegación
   por teclado y animaciones moderadas.
 
+### Panel de administración (staff)
+
+- **Resumen**: tablero con KPIs por período y su variación (ventas de pagos
+  aprobados, pedidos, ticket promedio, stock crítico), gráfico de ventas por día,
+  ranking de más vendidos, pipeline de pedidos por estado, cobros e ingresos por
+  modalidad. Trae acciones inline sobre los pedidos que requieren atención, panel
+  de productos por reponer, selector de período y refresco en vivo; gráficos y
+  donuts hechos con SVG, sin librerías de terceros.
+- **Pedidos**: listado con búsqueda por número o cliente y conteos por estado,
+  detalle, avance de estado, impresión de comanda y exportación a CSV.
+- **Productos**: alta, edición y archivado, con imágenes, categorías, marcas,
+  etiquetas y promociones.
+- **Mi cuenta**: editar el nombre, cambiar la contraseña, cerrar sesión y cerrar
+  la sesión en todos los dispositivos.
+- **Equipo** (solo administrador): crear operadores y activarlos, desactivarlos o
+  restablecer su contraseña; gestionar una cuenta revoca sus sesiones.
+- Navegación lateral con iconos, acceso directo a la tienda pública, login en su
+  propia ruta y control por rol (`ADMIN` / `OPERADOR`).
+
 ### API propia
 
 - Productos publicados con búsqueda sin tildes, categorías, marcas, imágenes,
@@ -170,7 +189,7 @@ npm run build
 cd backend && npm test
 ```
 
-Actualmente hay 49 pruebas de frontend y 358 de backend para carrito, catálogo,
+Actualmente hay 69 pruebas de frontend y 388 de backend para carrito, catálogo,
 autenticación, administración, imágenes, promociones, pedidos, stock,
 transiciones, cuentas de clientes, avisos, correo y pagos.
 
@@ -178,8 +197,8 @@ transiciones, cuentas de clientes, avisos, correo y pagos.
 
 1. Resolver y verificar el retorno de Mercado Pago hacia la confirmación de la
    tienda en el entorno público HTTPS; el webhook ya es la fuente de verdad.
-2. Construir la interfaz del panel administrativo sobre los endpoints ya
-   existentes.
+2. Completar las secciones del panel aún pendientes (Inventario, Clientes,
+   Identidad y Contenido) sobre los endpoints ya existentes.
 3. Conectar un proveedor de correo real (hoy corre con transporte de consola) y
    verificar la firma del webhook de Mercado Pago (`x-signature`).
 4. App móvil con React Native/Expo (fase posterior del roadmap).

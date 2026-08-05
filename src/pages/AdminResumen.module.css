@@ -72,7 +72,9 @@
   display: flex;
   flex-direction: column;
   gap: 22px;
+  width: 100%;
   max-width: 1240px;
+  margin-inline: auto;
   padding: clamp(20px, 3vw, 30px);
 }
 
@@ -129,22 +131,37 @@
   color: var(--k-ink-faint);
   pointer-events: none;
 }
-.botonNuevo {
+.botonRefrescar {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   height: 40px;
-  padding: 0 20px;
+  padding: 0 18px;
+  border: 1px solid var(--k-sage-border);
   border-radius: 999px;
-  background: var(--k-sage);
-  color: #fff;
+  background: #fff;
+  color: var(--k-ink-soft);
+  font: inherit;
   font-size: 13px;
-  font-weight: 600;
-  text-decoration: none;
-  box-shadow: var(--k-shadow-btn);
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(33, 46, 36, 0.04);
 }
-.botonNuevo:hover {
-  filter: brightness(0.97);
+.botonRefrescar:hover {
+  border-color: var(--k-sage);
+  color: var(--k-sage);
+}
+.botonRefrescar:disabled {
+  cursor: wait;
+  color: var(--k-ink-faint);
+}
+.girando {
+  animation: girar 0.8s linear infinite;
+}
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Chips "Atención hoy" */
@@ -403,7 +420,83 @@
   background: var(--k-sage);
   border: 2px solid #fff;
   transform: translate(-50%, -50%);
+  pointer-events: none;
   box-shadow: 0 0 0 1px rgba(61, 122, 93, 0.18);
+}
+
+/* Interacción del gráfico: columnas invisibles capturan el hover/foco por día;
+   la guía, el punto activo y el tooltip se posicionan por variables de dato. */
+.gHover {
+  position: absolute;
+  inset: 0;
+  display: flex;
+}
+.gCol {
+  flex: 1;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.gCol:focus-visible {
+  outline: 2px solid var(--k-sage);
+  outline-offset: -2px;
+  border-radius: 4px;
+}
+.gGuia {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--x);
+  width: 1px;
+  background: rgba(61, 122, 93, 0.3);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.gPuntoHover {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--k-sage);
+  border: 2px solid #fff;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  box-shadow: 0 0 0 4px rgba(61, 122, 93, 0.15);
+}
+.gTooltip {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  transform: translate(-50%, calc(-100% - 12px));
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #212e24;
+  color: #fff;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 2;
+  box-shadow: 0 6px 16px rgba(33, 46, 36, 0.25);
+  animation: aparecerTip 0.12s ease-out;
+}
+.gTooltipFecha {
+  font-size: 10.5px;
+  color: rgba(255, 255, 255, 0.6);
+}
+.gTooltipMonto {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+@keyframes aparecerTip {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-100% - 6px));
+  }
 }
 .gX {
   display: flex;
@@ -503,6 +596,13 @@
   width: var(--proporcion);
   border-radius: 999px;
   background: var(--k-sage);
+  transition: width 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: crecerBarra 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes crecerBarra {
+  from {
+    width: 0;
+  }
 }
 .vendidosNota {
   margin-top: 22px;
@@ -567,6 +667,8 @@
 .donutSeg {
   fill: none;
   stroke-width: 4.6;
+  stroke-dasharray: var(--dash) 100;
+  transition: stroke-dasharray 0.9s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .donutCentro {
   position: absolute;
@@ -960,6 +1062,66 @@
 @keyframes brillo {
   to {
     transform: translateX(100%);
+  }
+}
+
+/* Entrada del tablero: las tarjetas aparecen con un fade-up escalonado. Usa
+   `backwards` (no `forwards`) para ocultarlas durante su delay sin bloquear el
+   hover luego. */
+.kpi,
+.panel,
+.panelVerde,
+.donutCard,
+.panelPlano,
+.panelReponer {
+  animation: aparecer 0.45s ease-out backwards;
+}
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+.kpis .kpi:nth-child(2) {
+  animation-delay: 0.06s;
+}
+.kpis .kpi:nth-child(3) {
+  animation-delay: 0.12s;
+}
+.kpis .kpi:nth-child(4) {
+  animation-delay: 0.18s;
+}
+.donuts > *:nth-child(2) {
+  animation-delay: 0.08s;
+}
+.donuts > *:nth-child(3) {
+  animation-delay: 0.16s;
+}
+
+/* Realce al pasar el cursor sobre las tarjetas-tile. */
+.kpi,
+.donutCard {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.kpi:hover,
+.donutCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(61, 122, 93, 0.12);
+}
+
+/* Accesibilidad: quien pide menos movimiento ve el estado final sin animación. */
+@media (prefers-reduced-motion: reduce) {
+  .kpi,
+  .panel,
+  .panelVerde,
+  .donutCard,
+  .panelPlano,
+  .panelReponer,
+  .progresoBarra,
+  .donutSeg,
+  .gTooltip {
+    animation: none;
+    transition: none;
   }
 }
 

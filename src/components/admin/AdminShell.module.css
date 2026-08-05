@@ -40,6 +40,9 @@
 .enlaceActivo,
 .enlace,
 .enlacePendiente {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   width: 100%;
   min-height: 38px;
   padding: 9px 12px;
@@ -49,6 +52,12 @@
   font: inherit;
   font-size: 13px;
   text-align: left;
+}
+
+/* Icono de la sección: hereda el color del texto (activo/enlace/pendiente). */
+.navIcono {
+  flex: 0 0 auto;
+  opacity: 0.85;
 }
 
 .enlaceActivo {
@@ -132,6 +141,59 @@
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+
+/* Tarjeta al fondo del sidebar: identidad de la tienda + acceso al storefront
+   público (abre en otra pestaña, sin perder la sesión del panel). */
+.tiendaCard {
+  margin-top: auto;
+  display: block;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  text-decoration: none;
+}
+.tiendaCard:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.tiendaEyebrow {
+  display: block;
+  color: rgba(255, 255, 255, 0.4);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.tiendaNombre {
+  display: block;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  font-weight: 500;
+}
+.tiendaEstado {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 7px;
+  color: var(--color-acento-claro);
+  font-size: 11px;
+}
+.tiendaPunto {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-acento-claro);
+  box-shadow: 0 0 0 3px rgba(143, 199, 168, 0.18);
+}
+.tiendaFlecha {
+  margin-left: auto;
+  color: rgba(255, 255, 255, 0.5);
+}
+.tiendaCard:hover .tiendaFlecha {
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .contenido {

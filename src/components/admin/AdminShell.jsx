@@ -1,5 +1,26 @@
 import { useNavigate } from "react-router-dom";
+import {
+  IconoClientes,
+  IconoContenido,
+  IconoEquipo,
+  IconoIdentidad,
+  IconoInventario,
+  IconoPedidos,
+  IconoProductos,
+  IconoResumen,
+} from "./iconosPanel.jsx";
 import styles from "./AdminShell.module.css";
+
+const ICONOS_SECCION = {
+  Resumen: IconoResumen,
+  Pedidos: IconoPedidos,
+  Productos: IconoProductos,
+  Inventario: IconoInventario,
+  Clientes: IconoClientes,
+  Identidad: IconoIdentidad,
+  Contenido: IconoContenido,
+  Equipo: IconoEquipo,
+};
 
 const SECCIONES = [
   "Resumen",
@@ -58,6 +79,7 @@ export default function AdminShell({ usuario, seccion = "Productos", children })
               : disponible
                 ? styles.enlace
                 : styles.enlacePendiente;
+            const Icono = ICONOS_SECCION[nombre];
 
             return (
               <button
@@ -69,11 +91,40 @@ export default function AdminShell({ usuario, seccion = "Productos", children })
                 title={disponible ? undefined : `${nombre} se implementará en una próxima entrega.`}
                 onClick={disponible && !activa ? () => navegar(ruta) : undefined}
               >
-                {nombre}
+                {Icono && <Icono className={styles.navIcono} />}
+                <span>{nombre}</span>
               </button>
             );
           })}
         </nav>
+
+        <a
+          className={styles.tiendaCard}
+          href={import.meta.env.BASE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span className={styles.tiendaEyebrow}>Tienda</span>
+          <span className={styles.tiendaNombre}>SumarketExpress</span>
+          <span className={styles.tiendaEstado}>
+            <span className={styles.tiendaPunto} aria-hidden="true" />
+            en línea
+            <svg
+              className={styles.tiendaFlecha}
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M7 17 17 7M9 7h8v8" />
+            </svg>
+          </span>
+        </a>
       </aside>
 
       <section className={styles.contenido}>{children}</section>

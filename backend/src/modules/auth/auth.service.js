@@ -1,5 +1,5 @@
 import { repositorioAuth } from './auth.repository.js'
-import { verificarContrasena } from './contrasena.js'
+import { crearHashContrasena, verificarContrasena } from './contrasena.js'
 import {
   crearTokenSesion,
   crearVencimientoSesion,
@@ -53,6 +53,20 @@ export function crearServicioAuth(repositorio = repositorioAuth) {
 
       return repositorio.revocarSesionPorHash(hashTokenSesion(token), ahora)
     },
+
+    // Cambio de contraseña self-service: exige la contraseña actual antes de
+    // fijar la nueva (así una sesión secuestrada no puede cambiarla a ciegas).
+    // Devuelve { ok } para que la ruta traduzca el fallo sin filtrar detalles.
+    async cambiarContrasenaPropia({ usuarioId, contrasenaActual, contrasenaNueva }) {
+      const usuario = await repositorio.buscarUsuarioActivoPorId(usuarioId)
+      if (!usuario || !(await verificarContrasena(usuario.passwordHash, contrasenaActual))) {
+        return { ok: false }
+      }
+
+      const passwordHash = await crearHashContrasena(contrasenaNueva)
+      await repositorio.actualizarContrasena(usuarioId, passwordHash)
+      return { ok: true }
+    },
   }
 }
 
@@ -61,3 +75,4 @@ const servicioAuth = crearServicioAuth()
 export const iniciarSesion = servicioAuth.iniciarSesion
 export const obtenerSesionActiva = servicioAuth.obtenerSesionActiva
 export const cerrarSesion = servicioAuth.cerrarSesion
+export const cambiarContrasenaPropia = servicioAuth.cambiarContrasenaPropia

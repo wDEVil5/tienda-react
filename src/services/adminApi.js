@@ -79,6 +79,14 @@ export function cerrarSesionAdmin(opciones = {}) {
   return solicitarAdmin("/auth/logout", { ...opciones, method: "POST" });
 }
 
+export function cambiarContrasenaAdmin(contrasenaActual, contrasenaNueva, opciones = {}) {
+  return solicitarAdmin("/auth/contrasena", {
+    ...opciones,
+    method: "PATCH",
+    cuerpo: { contrasenaActual, contrasenaNueva },
+  });
+}
+
 export function listarProductosAdmin(
   { page = 1, limit = 20, busqueda = "", estado, ...opciones } = {},
 ) {

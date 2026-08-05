@@ -1,5 +1,10 @@
 import { Router } from 'express'
-import { cerrarSesion, iniciarSesion, obtenerSesionActiva } from './auth.service.js'
+import {
+  cambiarContrasenaPropia,
+  cerrarSesion,
+  iniciarSesion,
+  obtenerSesionActiva,
+} from './auth.service.js'
 import { crearRequerirSesion } from './auth.middleware.js'
 import { crearLimitadorIntentosLogin } from './limite-intentos.js'
 import { opcionesCookieSesion } from '../../lib/cookies.js'
@@ -17,6 +22,7 @@ export function crearRouterAuth(servicio = {
   iniciarSesion,
   obtenerSesionActiva,
   cerrarSesion,
+  cambiarContrasenaPropia,
 }, { limitarLogin = crearLimitadorIntentosLogin() } = {}) {
   const authRouter = Router()
   const requerirSesion = crearRequerirSesion(servicio)
@@ -67,6 +73,45 @@ export function crearRouterAuth(servicio = {
     try {
       await servicio.cerrarSesion(request.tokenSesion)
       response.clearCookie('sesion_admin', opcionesCookieSesion())
+      return response.status(204).end()
+    } catch (error) {
+      return next(error)
+    }
+  })
+
+  // Cambio de contraseña de la propia cuenta. La sesión identifica al usuario
+  // (jamás se recibe el id por el cuerpo). La nueva debe cumplir la política.
+  authRouter.patch('/contrasena', requerirSesion, async (request, response, next) => {
+    const contrasenaActual =
+      typeof request.body?.contrasenaActual === 'string' ? request.body.contrasenaActual : ''
+    const contrasenaNueva =
+      typeof request.body?.contrasenaNueva === 'string' ? request.body.contrasenaNueva : ''
+
+    if (!contrasenaActual || contrasenaNueva.length < 12 || contrasenaNueva.length > 128) {
+      return response.status(422).json({
+        error: {
+          code: 'INVALID_PASSWORD_DATA',
+          message: 'La nueva contraseña debe tener entre 12 y 128 caracteres.',
+        },
+      })
+    }
+
+    try {
+      const resultado = await servicio.cambiarContrasenaPropia({
+        usuarioId: request.usuario.id,
+        contrasenaActual,
+        contrasenaNueva,
+      })
+
+      if (!resultado.ok) {
+        return response.status(400).json({
+          error: {
+            code: 'INVALID_CURRENT_PASSWORD',
+            message: 'La contraseña actual no es correcta.',
+          },
+        })
+      }
+
       return response.status(204).end()
     } catch (error) {
       return next(error)

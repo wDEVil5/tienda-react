@@ -41,6 +41,47 @@ test('iniciarSesion crea una sesión y devuelve solo datos públicos', async () 
   assert.equal('passwordHash' in resultado.usuario, false)
 })
 
+test('cambiarContrasenaPropia verifica la actual y guarda la nueva hasheada', async () => {
+  let hashGuardado
+  const repositorio = {
+    async buscarUsuarioActivoPorId() {
+      return { id: 'u1', passwordHash: await crearHashContrasena('Clave-actual-2026') }
+    },
+    async actualizarContrasena(id, passwordHash) { hashGuardado = passwordHash },
+  }
+  const servicio = crearServicioAuth(repositorio)
+
+  const resultado = await servicio.cambiarContrasenaPropia({
+    usuarioId: 'u1',
+    contrasenaActual: 'Clave-actual-2026',
+    contrasenaNueva: 'Clave-nueva-distinta-2026',
+  })
+
+  assert.equal(resultado.ok, true)
+  assert.ok(hashGuardado) // se guardó algo
+  assert.notEqual(hashGuardado, 'Clave-nueva-distinta-2026') // hasheada, no en texto plano
+})
+
+test('cambiarContrasenaPropia rechaza si la contraseña actual no coincide', async () => {
+  let actualizado = false
+  const repositorio = {
+    async buscarUsuarioActivoPorId() {
+      return { id: 'u1', passwordHash: await crearHashContrasena('Clave-correcta-2026') }
+    },
+    async actualizarContrasena() { actualizado = true },
+  }
+  const servicio = crearServicioAuth(repositorio)
+
+  const resultado = await servicio.cambiarContrasenaPropia({
+    usuarioId: 'u1',
+    contrasenaActual: 'Clave-equivocada-2026',
+    contrasenaNueva: 'Clave-nueva-distinta-2026',
+  })
+
+  assert.equal(resultado.ok, false)
+  assert.equal(actualizado, false) // no tocó el repositorio
+})
+
 test('iniciarSesion no crea sesión con una contraseña incorrecta', async () => {
   let creoSesion = false
   const repositorio = {

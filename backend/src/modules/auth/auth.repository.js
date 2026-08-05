@@ -8,6 +8,19 @@ export function crearRepositorioAuth(cliente = prisma) {
       })
     },
 
+    buscarUsuarioActivoPorId(id) {
+      return cliente.usuario.findFirst({
+        where: { id, activo: true },
+      })
+    },
+
+    actualizarContrasena(id, passwordHash) {
+      return cliente.usuario.update({
+        where: { id },
+        data: { passwordHash },
+      })
+    },
+
     crearSesion({ usuarioId, tokenHash, expiraEn }) {
       return cliente.sesion.create({
         data: { usuarioId, tokenHash, expiraEn },

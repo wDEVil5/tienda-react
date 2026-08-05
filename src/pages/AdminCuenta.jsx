@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import AdminShell from "../components/admin/AdminShell.jsx";
 import {
+  cambiarContrasenaAdmin,
   cerrarSesionAdmin,
   ErrorAdminApi,
   obtenerSesionAdmin,
@@ -17,6 +18,10 @@ export default function AdminCuenta() {
 
   const [saliendo, setSaliendo] = useState(false);
   const [errorSalir, setErrorSalir] = useState(null);
+
+  const [clave, setClave] = useState({ actual: "", nueva: "", confirmar: "" });
+  const [guardando, setGuardando] = useState(false);
+  const [mensaje, setMensaje] = useState(null); // { tipo: "ok" | "error", texto }
 
   useEffect(() => {
     let vigente = true;
@@ -85,6 +90,42 @@ export default function AdminCuenta() {
     }
   }
 
+  async function cambiarContrasena(evento) {
+    evento.preventDefault();
+    setMensaje(null);
+
+    // Validación en el cliente antes de molestar al servidor (que igual valida).
+    if (clave.nueva.length < 12) {
+      setMensaje({ tipo: "error", texto: "La nueva contraseña debe tener al menos 12 caracteres." });
+      return;
+    }
+    if (clave.nueva !== clave.confirmar) {
+      setMensaje({ tipo: "error", texto: "La confirmación no coincide con la nueva contraseña." });
+      return;
+    }
+
+    setGuardando(true);
+    try {
+      await cambiarContrasenaAdmin(clave.actual, clave.nueva);
+      setMensaje({ tipo: "ok", texto: "Contraseña actualizada." });
+      setClave({ actual: "", nueva: "", confirmar: "" });
+    } catch (errorRespuesta) {
+      if (errorRespuesta instanceof ErrorAdminApi && errorRespuesta.status === 401) {
+        setUsuario(null);
+        return;
+      }
+      setMensaje({
+        tipo: "error",
+        texto:
+          errorRespuesta instanceof ErrorAdminApi
+            ? errorRespuesta.message
+            : "No pudimos cambiar la contraseña.",
+      });
+    } finally {
+      setGuardando(false);
+    }
+  }
+
   return (
     <main className={styles.fondo}>
       <AdminShell usuario={usuario} seccion="Cuenta">
@@ -102,6 +143,62 @@ export default function AdminCuenta() {
 
           <section className={styles.tarjeta}>
             <h2 className={styles.tarjetaTitulo}>Seguridad</h2>
+
+            <form className={styles.formulario} onSubmit={cambiarContrasena}>
+              <p className={styles.filaTitulo}>Cambiar contraseña</p>
+              <label className={styles.campo}>
+                <span>Contraseña actual</span>
+                <input
+                  type="password"
+                  autoComplete="current-password"
+                  value={clave.actual}
+                  onChange={(evento) =>
+                    setClave((previo) => ({ ...previo, actual: evento.target.value }))
+                  }
+                  required
+                />
+              </label>
+              <label className={styles.campo}>
+                <span>Nueva contraseña</span>
+                <input
+                  type="password"
+                  autoComplete="new-password"
+                  value={clave.nueva}
+                  onChange={(evento) =>
+                    setClave((previo) => ({ ...previo, nueva: evento.target.value }))
+                  }
+                  minLength={12}
+                  required
+                />
+              </label>
+              <label className={styles.campo}>
+                <span>Confirmar nueva</span>
+                <input
+                  type="password"
+                  autoComplete="new-password"
+                  value={clave.confirmar}
+                  onChange={(evento) =>
+                    setClave((previo) => ({ ...previo, confirmar: evento.target.value }))
+                  }
+                  required
+                />
+              </label>
+              <div className={styles.formAcciones}>
+                <button type="submit" className={styles.botonGuardar} disabled={guardando}>
+                  {guardando ? "Guardando…" : "Actualizar contraseña"}
+                </button>
+                {mensaje && (
+                  <span
+                    className={mensaje.tipo === "ok" ? styles.mensajeOk : styles.mensajeError}
+                    role="status"
+                  >
+                    {mensaje.texto}
+                  </span>
+                )}
+              </div>
+            </form>
+
+            <hr className={styles.separador} />
 
             <div className={styles.fila}>
               <div className={styles.filaInfo}>

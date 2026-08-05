@@ -80,6 +80,58 @@ test('GET /api/auth/me rechaza una solicitud sin sesión', async () => {
   assert.equal(response.body.error.code, 'AUTH_REQUIRED')
 })
 
+test('PATCH /api/auth/contrasena cambia la contraseña de la sesión actual', async () => {
+  let recibido
+  const app = crearAppAuth({
+    async obtenerSesionActiva() {
+      return { usuario: { id: 'usuario-1', rol: 'OPERADOR' } }
+    },
+    async cambiarContrasenaPropia(datos) {
+      recibido = datos
+      return { ok: true }
+    },
+  })
+
+  const response = await request(app)
+    .patch('/api/auth/contrasena')
+    .set('Cookie', 'sesion_admin=sesion-valida')
+    .send({ contrasenaActual: 'clave-actual-2026', contrasenaNueva: 'clave-nueva-larga-2026' })
+
+  assert.equal(response.status, 204)
+  assert.equal(recibido.usuarioId, 'usuario-1') // el id sale de la sesión, no del cuerpo
+  assert.equal(recibido.contrasenaNueva, 'clave-nueva-larga-2026')
+})
+
+test('PATCH /api/auth/contrasena responde 400 si la contraseña actual es incorrecta', async () => {
+  const app = crearAppAuth({
+    async obtenerSesionActiva() { return { usuario: { id: 'usuario-1' } } },
+    async cambiarContrasenaPropia() { return { ok: false } },
+  })
+
+  const response = await request(app)
+    .patch('/api/auth/contrasena')
+    .set('Cookie', 'sesion_admin=sesion-valida')
+    .send({ contrasenaActual: 'mala', contrasenaNueva: 'clave-nueva-larga-2026' })
+
+  assert.equal(response.status, 400)
+  assert.equal(response.body.error.code, 'INVALID_CURRENT_PASSWORD')
+})
+
+test('PATCH /api/auth/contrasena responde 422 si la nueva es muy corta', async () => {
+  const app = crearAppAuth({
+    async obtenerSesionActiva() { return { usuario: { id: 'usuario-1' } } },
+    async cambiarContrasenaPropia() { throw new Error('no debería llamarse') },
+  })
+
+  const response = await request(app)
+    .patch('/api/auth/contrasena')
+    .set('Cookie', 'sesion_admin=sesion-valida')
+    .send({ contrasenaActual: 'clave-actual-2026', contrasenaNueva: 'corta' })
+
+  assert.equal(response.status, 422)
+  assert.equal(response.body.error.code, 'INVALID_PASSWORD_DATA')
+})
+
 test('POST /api/auth/logout revoca la sesión y borra su cookie', async () => {
   let tokenRevocado
   const app = crearAppAuth({

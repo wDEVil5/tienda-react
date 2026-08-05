@@ -95,6 +95,73 @@
   font-size: 18px;
   font-weight: 400;
 }
+/* Form de cambio de contraseña. */
+.formulario {
+  display: grid;
+  gap: 12px;
+  max-width: 360px;
+}
+.campo {
+  display: grid;
+  gap: 5px;
+}
+.campo span {
+  color: var(--color-texto-2);
+  font-size: 12.5px;
+}
+.campo input {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-campo);
+  background: var(--color-superficie);
+  color: var(--color-texto);
+  font: inherit;
+  font-size: 14px;
+}
+.campo input:focus-visible {
+  outline: 2px solid var(--color-acento);
+  outline-offset: 1px;
+}
+.formAcciones {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 2px;
+}
+.botonGuardar {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--color-acento);
+  border-radius: var(--radio-control);
+  background: var(--color-acento);
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.botonGuardar:hover {
+  filter: brightness(0.96);
+}
+.botonGuardar:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+.mensajeOk {
+  color: var(--color-acento);
+  font-size: 12.5px;
+}
+.mensajeError {
+  color: var(--color-oferta);
+  font-size: 12.5px;
+}
+.separador {
+  margin: 22px 0;
+  border: 0;
+  border-top: 1px solid var(--color-borde-2);
+}
+
 .fila {
   display: flex;
   align-items: center;

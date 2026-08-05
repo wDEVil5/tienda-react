@@ -51,6 +51,7 @@ import {
   activarUsuarioAdmin,
   crearOperadorAdmin,
   desactivarUsuarioAdmin,
+  eliminarUsuarioAdmin,
   listarUsuariosAdmin,
   restablecerContrasenaUsuarioAdmin,
 } from './admin-usuarios.service.js'
@@ -104,6 +105,7 @@ export function crearRouterAdmin({
     desactivarUsuarioAdmin,
     activarUsuarioAdmin,
     restablecerContrasenaUsuarioAdmin,
+    eliminarUsuarioAdmin,
     desactivarPromocionAdmin,
     obtenerPromocionParaEdicionAdmin,
     listarPedidos,
@@ -193,6 +195,29 @@ export function crearRouterAdmin({
           })
         }
         return response.json({ data: usuario })
+      } catch (error) {
+        if (error instanceof ErrorUsuarioAdmin) {
+          return response.status(422).json({ error: { code: error.code, message: error.message } })
+        }
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.delete(
+    '/usuarios/:id',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      try {
+        // El id de quien pide sale de la sesión: la guarda "no a ti mismo" es real.
+        const usuario = await servicio.eliminarUsuarioAdmin(request.params.id, request.usuario.id)
+        if (!usuario) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_USER_NOT_FOUND', message: 'No encontramos el usuario solicitado.' },
+          })
+        }
+        return response.status(204).end()
       } catch (error) {
         if (error instanceof ErrorUsuarioAdmin) {
           return response.status(422).json({ error: { code: error.code, message: error.message } })

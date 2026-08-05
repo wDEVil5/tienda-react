@@ -60,6 +60,15 @@ export function crearRepositorioUsuariosAdmin(cliente = prisma) {
         select: { id: true, nombre: true, email: true, rol: true, activo: true, createdAt: true },
       })
     },
+
+    // Borrado definitivo. Las sesiones del usuario se eliminan en cascada
+    // (onDelete: Cascade en el esquema); nada más referencia al staff.
+    eliminarPorId(id) {
+      return cliente.usuario.delete({
+        where: { id },
+        select: { id: true, nombre: true, email: true, rol: true },
+      })
+    },
   }
 }
 

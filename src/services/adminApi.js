@@ -136,6 +136,13 @@ export function restablecerContrasenaUsuarioAdmin(id, contrasena, opciones = {})
   });
 }
 
+export function eliminarUsuarioAdmin(id, opciones = {}) {
+  return solicitarAdmin(`/admin/usuarios/${encodeURIComponent(id)}`, {
+    ...opciones,
+    method: "DELETE",
+  });
+}
+
 export function listarProductosAdmin(
   { page = 1, limit = 20, busqueda = "", estado, ...opciones } = {},
 ) {

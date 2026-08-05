@@ -5,6 +5,7 @@ import {
   activarUsuarioAdmin,
   crearOperadorAdmin,
   desactivarUsuarioAdmin,
+  eliminarUsuarioAdmin,
   ErrorAdminApi,
   listarUsuariosAdmin,
   obtenerSesionAdmin,
@@ -31,6 +32,9 @@ export default function AdminEquipo() {
   const [nuevaClave, setNuevaClave] = useState("");
   const [guardandoClave, setGuardandoClave] = useState(false);
   const [mensajeReset, setMensajeReset] = useState(null); // { id, tipo, texto }
+
+  const [confirmarId, setConfirmarId] = useState(null); // fila mostrando "¿eliminar?"
+  const [eliminandoId, setEliminandoId] = useState(null);
 
   const [form, setForm] = useState({ nombre: "", email: "", contrasena: "" });
   const [creando, setCreando] = useState(false);
@@ -142,6 +146,7 @@ export default function AdminEquipo() {
   }
 
   function abrirReset(id) {
+    setConfirmarId(null); // no dejar dos paneles abiertos a la vez
     setReseteandoId(id);
     setNuevaClave("");
     setMensajeReset(null);
@@ -179,6 +184,30 @@ export default function AdminEquipo() {
       });
     } finally {
       setGuardandoClave(false);
+    }
+  }
+
+  async function eliminar(fila) {
+    setEliminandoId(fila.id);
+    setErrorAccion(null);
+    try {
+      await eliminarUsuarioAdmin(fila.id);
+      setConfirmarId(null);
+      setIntento((valor) => valor + 1); // recarga la lista
+    } catch (errorRespuesta) {
+      if (errorRespuesta instanceof ErrorAdminApi && errorRespuesta.status === 401) {
+        setUsuario(null);
+        return;
+      }
+      setErrorAccion({
+        id: fila.id,
+        mensaje:
+          errorRespuesta instanceof ErrorAdminApi
+            ? errorRespuesta.message
+            : "No pudimos eliminar la cuenta.",
+      });
+    } finally {
+      setEliminandoId(null);
     }
   }
 
@@ -348,7 +377,30 @@ export default function AdminEquipo() {
                                   </span>
                                 </td>
                                 <td className={styles.colAccion}>
-                                  {gestionable ? (
+                                  {!gestionable ? (
+                                    <span className={styles.sinAccion}>—</span>
+                                  ) : confirmarId === fila.id ? (
+                                    <div className={styles.confirmarFila}>
+                                      <span className={styles.confirmarTexto}>
+                                        ¿Eliminar a {fila.nombre}?
+                                      </span>
+                                      <button
+                                        type="button"
+                                        className={styles.botonEliminarConfirmar}
+                                        disabled={eliminandoId === fila.id}
+                                        onClick={() => eliminar(fila)}
+                                      >
+                                        {eliminandoId === fila.id ? "Eliminando…" : "Sí, eliminar"}
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className={styles.botonCancelar}
+                                        onClick={() => setConfirmarId(null)}
+                                      >
+                                        Cancelar
+                                      </button>
+                                    </div>
+                                  ) : (
                                     <div className={styles.accionesFila}>
                                       <button
                                         type="button"
@@ -369,9 +421,17 @@ export default function AdminEquipo() {
                                       >
                                         {ocupado ? "…" : fila.activo ? "Desactivar" : "Activar"}
                                       </button>
+                                      <button
+                                        type="button"
+                                        className={styles.botonEliminar}
+                                        onClick={() => {
+                                          cerrarReset();
+                                          setConfirmarId(fila.id);
+                                        }}
+                                      >
+                                        Eliminar
+                                      </button>
                                     </div>
-                                  ) : (
-                                    <span className={styles.sinAccion}>—</span>
                                   )}
                                   {errorAccion?.id === fila.id && (
                                     <p className={styles.errorAccion} role="alert">

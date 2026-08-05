@@ -74,6 +74,23 @@ export function crearServicioUsuariosAdmin(
         activo: true,
       })
     },
+
+    async eliminarUsuario(id, solicitadoPorId) {
+      const usuario = await repositorio.obtenerPorId(id)
+      if (!usuario) return null
+
+      if (usuario.id === solicitadoPorId) {
+        throw new ErrorUsuarioAdmin('CANNOT_DELETE_SELF', 'No puedes eliminar tu propia cuenta.')
+      }
+      if (usuario.rol === 'ADMIN') {
+        throw new ErrorUsuarioAdmin(
+          'CANNOT_DELETE_ADMIN',
+          'No puedes eliminar una cuenta administradora desde esta ruta.',
+        )
+      }
+
+      return repositorio.eliminarPorId(id)
+    },
   }
 }
 
@@ -84,3 +101,4 @@ export const listarUsuariosAdmin = servicioUsuariosAdmin.listarUsuarios
 export const desactivarUsuarioAdmin = servicioUsuariosAdmin.desactivarUsuario
 export const activarUsuarioAdmin = servicioUsuariosAdmin.activarUsuario
 export const restablecerContrasenaUsuarioAdmin = servicioUsuariosAdmin.restablecerContrasena
+export const eliminarUsuarioAdmin = servicioUsuariosAdmin.eliminarUsuario

@@ -74,8 +74,9 @@ evoluciona con Express, PostgreSQL y Prisma.
   etiquetas y promociones.
 - **Mi cuenta**: editar el nombre, cambiar la contraseña, cerrar sesión y cerrar
   la sesión en todos los dispositivos.
-- **Equipo** (solo administrador): crear operadores y activarlos, desactivarlos o
-  restablecer su contraseña; gestionar una cuenta revoca sus sesiones.
+- **Equipo** (solo administrador): crear operadores y activarlos, desactivarlos,
+  restablecer su contraseña o eliminarlos; gestionar una cuenta revoca sus
+  sesiones.
 - Navegación lateral con iconos, acceso directo a la tienda pública, login en su
   propia ruta y control por rol (`ADMIN` / `OPERADOR`).
 
@@ -129,6 +130,17 @@ El frontend se publica con `npm run deploy` (build + `gh-pages`). La API corre e
 Render y aplica las migraciones durante el build. Como el plan gratuito de Render
 suspende el servicio tras unos minutos de inactividad, la primera visita puede
 tardar unos segundos en responder mientras despierta.
+
+> **Limitación conocida — sesión en Safari (y navegadores con cookies de
+> terceros bloqueadas).** En este despliegue el frontend (`github.io`) y la API
+> (`onrender.com`) son **sitios distintos**, así que la cookie de sesión viaja
+> *cross-site* (`SameSite=None; Secure`). Chrome aún la acepta, pero Safari la
+> bloquea por defecto (*Evitar el rastreo entre sitios*): el login responde 200
+> pero el navegador descarta la cookie y la siguiente petición da 401. Afecta a la
+> sesión del panel y a las cuentas de clientes. Se resuelve sirviendo front y API
+> desde el **mismo origen** (o un dominio propio con subdominio para la API), o
+> migrando la auth del panel a *token* en cabecera. En local no ocurre:
+> `localhost:5173` y `localhost:3000` son el mismo sitio.
 
 ## Ejecutar localmente
 

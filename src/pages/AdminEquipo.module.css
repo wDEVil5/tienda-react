@@ -229,7 +229,8 @@
 }
 .botonReset,
 .botonDesactivar,
-.botonActivar {
+.botonActivar,
+.botonEliminar {
   min-height: 32px;
   padding: 0 14px;
   border-radius: var(--radio-control);
@@ -264,6 +265,47 @@
 }
 .botonDesactivar:disabled,
 .botonActivar:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+.botonEliminar {
+  border: 1px solid var(--color-borde-3);
+  background: var(--color-superficie);
+  color: var(--color-oferta);
+}
+.botonEliminar:hover {
+  border-color: var(--color-oferta);
+  background: var(--color-oferta-bg);
+}
+
+/* Confirmación inline de borrado (paso destructivo → doble intención). */
+.confirmarFila {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.confirmarTexto {
+  color: var(--color-texto-2);
+  font-size: 12.5px;
+}
+.botonEliminarConfirmar {
+  min-height: 32px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radio-control);
+  background: var(--color-oferta);
+  color: #fff;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.botonEliminarConfirmar:hover {
+  filter: brightness(0.96);
+}
+.botonEliminarConfirmar:disabled {
   cursor: wait;
   opacity: 0.6;
 }

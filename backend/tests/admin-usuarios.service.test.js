@@ -26,6 +26,54 @@ test('desactivarUsuario impide que el administrador se desactive a sí mismo', a
   )
 })
 
+test('eliminarUsuario borra a un operador', async () => {
+  let idEliminado
+  const servicio = crearServicioUsuariosAdmin({
+    async obtenerPorId() { return { id: 'usuario-2', rol: 'OPERADOR' } },
+    async eliminarPorId(id) { idEliminado = id; return { id, rol: 'OPERADOR' } },
+  })
+
+  const usuario = await servicio.eliminarUsuario('usuario-2', 'usuario-1')
+
+  assert.equal(idEliminado, 'usuario-2')
+  assert.equal(usuario.id, 'usuario-2')
+})
+
+test('eliminarUsuario impide borrarse a sí mismo', async () => {
+  let intentoBorrar = false
+  const servicio = crearServicioUsuariosAdmin({
+    async obtenerPorId() { return { id: 'usuario-1', rol: 'ADMIN' } },
+    async eliminarPorId() { intentoBorrar = true },
+  })
+
+  await assert.rejects(
+    servicio.eliminarUsuario('usuario-1', 'usuario-1'),
+    { code: 'CANNOT_DELETE_SELF' },
+  )
+  assert.equal(intentoBorrar, false)
+})
+
+test('eliminarUsuario no borra una cuenta administradora', async () => {
+  const servicio = crearServicioUsuariosAdmin({
+    async obtenerPorId() { return { id: 'usuario-3', rol: 'ADMIN' } },
+    async eliminarPorId() { throw new Error('no debería llamarse') },
+  })
+
+  await assert.rejects(
+    servicio.eliminarUsuario('usuario-3', 'usuario-1'),
+    { code: 'CANNOT_DELETE_ADMIN' },
+  )
+})
+
+test('eliminarUsuario devuelve null si el usuario no existe', async () => {
+  const servicio = crearServicioUsuariosAdmin({
+    async obtenerPorId() { return null },
+    async eliminarPorId() { throw new Error('no debería llamarse') },
+  })
+
+  assert.equal(await servicio.eliminarUsuario('fantasma', 'usuario-1'), null)
+})
+
 test('activarUsuario recupera un operador sin restaurar sesiones previas', async () => {
   let usuarioActivado
   const servicio = crearServicioUsuariosAdmin({

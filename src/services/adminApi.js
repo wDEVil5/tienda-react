@@ -87,6 +87,17 @@ export function cambiarContrasenaAdmin(contrasenaActual, contrasenaNueva, opcion
   });
 }
 
+// Edita el propio nombre. Devuelve el usuario actualizado ({ id, nombre, email,
+// rol }) para refrescar el estado del panel sin volver a pedir la sesión.
+export async function actualizarPerfilAdmin(nombre, opciones = {}) {
+  const datos = await solicitarAdmin("/auth/perfil", {
+    ...opciones,
+    method: "PATCH",
+    cuerpo: { nombre },
+  });
+  return datos?.usuario ?? null;
+}
+
 // Equipo (solo ADMIN). La lista llega como { data: [...] } → solicitarAdmin la
 // desenvuelve al arreglo.
 export function listarUsuariosAdmin(opciones = {}) {

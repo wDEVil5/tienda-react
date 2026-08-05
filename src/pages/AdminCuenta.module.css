@@ -89,6 +89,9 @@
   border-radius: var(--radio-tarjeta);
   background: var(--color-superficie);
 }
+.tarjeta + .tarjeta {
+  margin-top: 22px;
+}
 .tarjetaTitulo {
   margin-bottom: 16px;
   font-family: var(--font-display);

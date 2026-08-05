@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import {
   cambiarContrasenaPropia,
+  cambiarNombrePropio,
   cerrarSesion,
   iniciarSesion,
   obtenerSesionActiva,
@@ -23,6 +24,7 @@ export function crearRouterAuth(servicio = {
   obtenerSesionActiva,
   cerrarSesion,
   cambiarContrasenaPropia,
+  cambiarNombrePropio,
 }, { limitarLogin = crearLimitadorIntentosLogin() } = {}) {
   const authRouter = Router()
   const requerirSesion = crearRequerirSesion(servicio)
@@ -113,6 +115,31 @@ export function crearRouterAuth(servicio = {
       }
 
       return response.status(204).end()
+    } catch (error) {
+      return next(error)
+    }
+  })
+
+  // Edición del propio perfil (por ahora solo el nombre). El id sale de la
+  // sesión; el cuerpo únicamente aporta el nombre a mostrar.
+  authRouter.patch('/perfil', requerirSesion, async (request, response, next) => {
+    const nombre = typeof request.body?.nombre === 'string' ? request.body.nombre.trim() : ''
+
+    if (nombre.length < 2 || nombre.length > 120) {
+      return response.status(422).json({
+        error: {
+          code: 'INVALID_PROFILE_DATA',
+          message: 'El nombre debe tener entre 2 y 120 caracteres.',
+        },
+      })
+    }
+
+    try {
+      const usuario = await servicio.cambiarNombrePropio({
+        usuarioId: request.usuario.id,
+        nombre,
+      })
+      return response.json({ data: { usuario } })
     } catch (error) {
       return next(error)
     }

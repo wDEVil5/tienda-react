@@ -67,6 +67,14 @@ export function crearServicioAuth(repositorio = repositorioAuth) {
       await repositorio.actualizarContrasena(usuarioId, passwordHash)
       return { ok: true }
     },
+
+    // Edición del propio nombre. La sesión identifica al usuario; devolvemos el
+    // usuario público actualizado para que el cliente refresque su estado sin
+    // volver a pedir /auth/me.
+    async cambiarNombrePropio({ usuarioId, nombre }) {
+      const usuario = await repositorio.actualizarNombre(usuarioId, nombre)
+      return crearUsuarioPublico(usuario)
+    },
   }
 }
 
@@ -76,3 +84,4 @@ export const iniciarSesion = servicioAuth.iniciarSesion
 export const obtenerSesionActiva = servicioAuth.obtenerSesionActiva
 export const cerrarSesion = servicioAuth.cerrarSesion
 export const cambiarContrasenaPropia = servicioAuth.cambiarContrasenaPropia
+export const cambiarNombrePropio = servicioAuth.cambiarNombrePropio

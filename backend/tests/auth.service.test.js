@@ -82,6 +82,37 @@ test('cambiarContrasenaPropia rechaza si la contraseña actual no coincide', asy
   assert.equal(actualizado, false) // no tocó el repositorio
 })
 
+test('cambiarNombrePropio actualiza el nombre y devuelve solo datos públicos', async () => {
+  let idActualizado
+  let nombreGuardado
+  const repositorio = {
+    async actualizarNombre(id, nombre) {
+      idActualizado = id
+      nombreGuardado = nombre
+      return {
+        id,
+        nombre,
+        email: 'wilnes@example.test',
+        rol: 'ADMIN',
+        passwordHash: 'no-debe-salir',
+      }
+    },
+  }
+  const servicio = crearServicioAuth(repositorio)
+
+  const usuario = await servicio.cambiarNombrePropio({ usuarioId: 'u1', nombre: 'Wilnes Dev' })
+
+  assert.equal(idActualizado, 'u1')
+  assert.equal(nombreGuardado, 'Wilnes Dev')
+  assert.deepEqual(usuario, {
+    id: 'u1',
+    nombre: 'Wilnes Dev',
+    email: 'wilnes@example.test',
+    rol: 'ADMIN',
+  })
+  assert.equal('passwordHash' in usuario, false)
+})
+
 test('iniciarSesion no crea sesión con una contraseña incorrecta', async () => {
   let creoSesion = false
   const repositorio = {

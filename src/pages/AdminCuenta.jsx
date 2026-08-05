@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import AdminShell from "../components/admin/AdminShell.jsx";
 import {
+  actualizarPerfilAdmin,
   cambiarContrasenaAdmin,
   cerrarSesionAdmin,
   ErrorAdminApi,
@@ -15,6 +16,10 @@ export default function AdminCuenta() {
   const [usuario, setUsuario] = useState(undefined);
   const [errorAcceso, setErrorAcceso] = useState(null);
   const [intentoAcceso, setIntentoAcceso] = useState(0);
+
+  const [nombre, setNombre] = useState("");
+  const [guardandoNombre, setGuardandoNombre] = useState(false);
+  const [mensajeNombre, setMensajeNombre] = useState(null); // { tipo, texto }
 
   const [saliendo, setSaliendo] = useState(false);
   const [errorSalir, setErrorSalir] = useState(null);
@@ -30,6 +35,7 @@ export default function AdminCuenta() {
         if (vigente) {
           setErrorAcceso(null);
           setUsuario(sesion);
+          if (sesion) setNombre(sesion.nombre);
         }
       })
       .catch((errorSesion) => {
@@ -76,6 +82,39 @@ export default function AdminCuenta() {
     }
     // Sin sesión (incluye el después de cerrar sesión): al login del personal.
     return <Navigate to="/admin/acceso" replace />;
+  }
+
+  async function guardarNombre(evento) {
+    evento.preventDefault();
+    setMensajeNombre(null);
+
+    const limpio = nombre.trim();
+    if (limpio.length < 2) {
+      setMensajeNombre({ tipo: "error", texto: "El nombre debe tener al menos 2 caracteres." });
+      return;
+    }
+
+    setGuardandoNombre(true);
+    try {
+      const actualizado = await actualizarPerfilAdmin(limpio);
+      setUsuario(actualizado); // refresca cabecera y el chip del panel
+      setNombre(actualizado.nombre);
+      setMensajeNombre({ tipo: "ok", texto: "Nombre actualizado." });
+    } catch (errorRespuesta) {
+      if (errorRespuesta instanceof ErrorAdminApi && errorRespuesta.status === 401) {
+        setUsuario(null);
+        return;
+      }
+      setMensajeNombre({
+        tipo: "error",
+        texto:
+          errorRespuesta instanceof ErrorAdminApi
+            ? errorRespuesta.message
+            : "No pudimos actualizar el nombre.",
+      });
+    } finally {
+      setGuardandoNombre(false);
+    }
   }
 
   async function cerrarSesion() {
@@ -140,6 +179,46 @@ export default function AdminCuenta() {
               <span className={styles.rolBadge}>{ETIQUETA_ROL[usuario.rol] ?? usuario.rol}</span>
             </div>
           </header>
+
+          <section className={styles.tarjeta}>
+            <h2 className={styles.tarjetaTitulo}>Perfil</h2>
+
+            <form className={styles.formulario} onSubmit={guardarNombre}>
+              <label className={styles.campo}>
+                <span>Nombre para mostrar</span>
+                <input
+                  type="text"
+                  autoComplete="name"
+                  value={nombre}
+                  onChange={(evento) => setNombre(evento.target.value)}
+                  minLength={2}
+                  maxLength={120}
+                  required
+                />
+              </label>
+              <div className={styles.formAcciones}>
+                <button
+                  type="submit"
+                  className={styles.botonGuardar}
+                  disabled={
+                    guardandoNombre ||
+                    nombre.trim().length < 2 ||
+                    nombre.trim() === usuario.nombre
+                  }
+                >
+                  {guardandoNombre ? "Guardando…" : "Guardar nombre"}
+                </button>
+                {mensajeNombre && (
+                  <span
+                    className={mensajeNombre.tipo === "ok" ? styles.mensajeOk : styles.mensajeError}
+                    role="status"
+                  >
+                    {mensajeNombre.texto}
+                  </span>
+                )}
+              </div>
+            </form>
+          </section>
 
           <section className={styles.tarjeta}>
             <h2 className={styles.tarjetaTitulo}>Seguridad</h2>

@@ -132,6 +132,44 @@ test('PATCH /api/auth/contrasena responde 422 si la nueva es muy corta', async (
   assert.equal(response.body.error.code, 'INVALID_PASSWORD_DATA')
 })
 
+test('PATCH /api/auth/perfil actualiza el nombre usando el id de la sesión', async () => {
+  let recibido
+  const app = crearAppAuth({
+    async obtenerSesionActiva() {
+      return { usuario: { id: 'usuario-1', nombre: 'Wilnes', email: 'wilnes@example.test', rol: 'ADMIN' } }
+    },
+    async cambiarNombrePropio(datos) {
+      recibido = datos
+      return { id: 'usuario-1', nombre: datos.nombre, email: 'wilnes@example.test', rol: 'ADMIN' }
+    },
+  })
+
+  const response = await request(app)
+    .patch('/api/auth/perfil')
+    .set('Cookie', 'sesion_admin=sesion-valida')
+    .send({ nombre: '  Wilnes Dev  ' })
+
+  assert.equal(response.status, 200)
+  assert.equal(recibido.usuarioId, 'usuario-1') // el id sale de la sesión, no del cuerpo
+  assert.equal(recibido.nombre, 'Wilnes Dev') // recortado
+  assert.equal(response.body.data.usuario.nombre, 'Wilnes Dev')
+})
+
+test('PATCH /api/auth/perfil responde 422 si el nombre es muy corto', async () => {
+  const app = crearAppAuth({
+    async obtenerSesionActiva() { return { usuario: { id: 'usuario-1' } } },
+    async cambiarNombrePropio() { throw new Error('no debería llamarse') },
+  })
+
+  const response = await request(app)
+    .patch('/api/auth/perfil')
+    .set('Cookie', 'sesion_admin=sesion-valida')
+    .send({ nombre: 'A' })
+
+  assert.equal(response.status, 422)
+  assert.equal(response.body.error.code, 'INVALID_PROFILE_DATA')
+})
+
 test('POST /api/auth/logout revoca la sesión y borra su cookie', async () => {
   let tokenRevocado
   const app = crearAppAuth({

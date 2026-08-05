@@ -21,6 +21,13 @@ export function crearRepositorioAuth(cliente = prisma) {
       })
     },
 
+    actualizarNombre(id, nombre) {
+      return cliente.usuario.update({
+        where: { id },
+        data: { nombre },
+      })
+    },
+
     crearSesion({ usuarioId, tokenHash, expiraEn }) {
       return cliente.sesion.create({
         data: { usuarioId, tokenHash, expiraEn },

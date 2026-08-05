@@ -86,3 +86,28 @@ test('GET /api/admin/resumen/ventas-diarias rechaza dias fuera de rango', async 
   assert.equal(response.status, 400)
   assert.equal(response.body.error.code, 'INVALID_QUERY_PARAM')
 })
+
+test('GET /api/admin/resumen/mas-vendidos entrega los dos rankings', async () => {
+  let recibido
+  const app = crearApp({
+    async obtenerMasVendidos(opciones) {
+      recibido = opciones
+      return { porUnidades: [{ nombre: 'Leche', unidades: 84 }], porIngresos: [] }
+    },
+  })
+
+  const response = await request(app).get('/api/admin/resumen/mas-vendidos?periodo=semana')
+
+  assert.equal(response.status, 200)
+  assert.equal(recibido.periodo, 'semana')
+  assert.equal(response.body.data.porUnidades[0].nombre, 'Leche')
+})
+
+test('GET /api/admin/resumen/mas-vendidos rechaza un período inválido', async () => {
+  const app = crearApp({ async obtenerMasVendidos() { return {} } })
+
+  const response = await request(app).get('/api/admin/resumen/mas-vendidos?periodo=siglo')
+
+  assert.equal(response.status, 400)
+  assert.equal(response.body.error.code, 'INVALID_QUERY_PARAM')
+})

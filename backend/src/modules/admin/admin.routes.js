@@ -68,6 +68,7 @@ import { validarCambioEstadoPedido } from '../pedidos/pedidos.validacion.js'
 import { ESTADOS_PEDIDO } from '../pedidos/pedidos.estados.js'
 import {
   PERIODOS_RESUMEN,
+  obtenerMasVendidos,
   obtenerResumen,
   obtenerVentasDiarias,
 } from './admin-resumen.service.js'
@@ -110,6 +111,7 @@ export function crearRouterAdmin({
     cambiarEstadoPedido,
     obtenerResumen,
     obtenerVentasDiarias,
+    obtenerMasVendidos,
     obtenerReglas,
     actualizarReglas,
   },
@@ -927,6 +929,32 @@ export function crearRouterAdmin({
 
       try {
         return response.json({ data: await servicio.obtenerVentasDiarias({ dias }) })
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  // Más vendidos del período (dos rankings: unidades e ingresos).
+  adminRouter.get(
+    '/resumen/mas-vendidos',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      const periodo =
+        typeof request.query.periodo === 'string' ? request.query.periodo : 'mes'
+
+      if (!PERIODOS_RESUMEN.includes(periodo)) {
+        return response.status(400).json({
+          error: {
+            code: 'INVALID_QUERY_PARAM',
+            message: `periodo debe ser uno de: ${PERIODOS_RESUMEN.join(', ')}.`,
+          },
+        })
+      }
+
+      try {
+        return response.json({ data: await servicio.obtenerMasVendidos({ periodo }) })
       } catch (error) {
         return next(error)
       }

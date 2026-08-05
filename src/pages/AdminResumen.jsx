@@ -3,6 +3,7 @@ import { Link, Navigate } from "react-router-dom";
 import AdminShell from "../components/admin/AdminShell.jsx";
 import {
   ErrorAdminApi,
+  obtenerMasVendidosAdmin,
   obtenerResumenAdmin,
   obtenerSesionAdmin,
   obtenerVentasDiariasAdmin,
@@ -123,6 +124,173 @@ function GraficoVentas({ serie }) {
   );
 }
 
+// Panel en estado de error, reutilizable (gráfico, más vendidos): conserva el
+// título para que el hueco siga teniendo contexto.
+function PanelError({ titulo, mensaje, onReintentar }) {
+  return (
+    <section className={styles.panel}>
+      <h2 className={styles.panelTitulo}>{titulo}</h2>
+      <div className={styles.estado} role="alert">
+        <span>{mensaje}</span>
+        <button type="button" onClick={onReintentar}>
+          Reintentar
+        </button>
+      </div>
+    </section>
+  );
+}
+
+// "Más vendidos" con toggle Unidades / Ingresos. El backend entrega los dos
+// rankings ya ordenados; el toggle solo elige cuál mostrar (sin volver a pedir).
+function PanelMasVendidos({ datos }) {
+  const [metrica, setMetrica] = useState("unidades");
+  const porUnidades = metrica === "unidades";
+  const lista = porUnidades ? datos.porUnidades : datos.porIngresos;
+  const valorDe = (item) => (porUnidades ? item.unidades : item.ingresos);
+  const maximo = Math.max(1, ...lista.map(valorDe));
+
+  return (
+    <section className={styles.panel}>
+      <div className={styles.panelCabecera}>
+        <h2 className={styles.panelTitulo}>Más vendidos</h2>
+        <div className={styles.toggle} role="group" aria-label="Métrica del ranking">
+          <button
+            type="button"
+            className={porUnidades ? styles.toggleActivo : styles.toggleBoton}
+            aria-pressed={porUnidades}
+            onClick={() => setMetrica("unidades")}
+          >
+            Unidades
+          </button>
+          <button
+            type="button"
+            className={!porUnidades ? styles.toggleActivo : styles.toggleBoton}
+            aria-pressed={!porUnidades}
+            onClick={() => setMetrica("ingresos")}
+          >
+            Ingresos
+          </button>
+        </div>
+      </div>
+
+      {lista.length === 0 ? (
+        <p className={styles.panelVacio}>Aún no hay ventas en el período.</p>
+      ) : (
+        <ul className={styles.vendidosLista}>
+          {lista.map((item) => (
+            <li className={styles.vendidoFila} key={item.nombre}>
+              <div className={styles.vendidoEncabezado}>
+                <span className={styles.vendidoNombre}>{item.nombre}</span>
+                <span className={styles.vendidoValor}>
+                  {porUnidades ? `${item.unidades} u.` : MONEDA_CLP.format(item.ingresos)}
+                </span>
+              </div>
+              <div className={styles.progresoPista}>
+                <div
+                  className={styles.progresoBarra}
+                  style={{ "--proporcion": `${(valorDe(item) / maximo) * 100}%` }}
+                />
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+// Orden del flujo de pedidos para el pipeline. Cada estado colorea su barra con
+// la misma paleta que los badges de Pedidos (coherencia en toda la app).
+const FLUJO_ESTADOS = [
+  { clave: "PENDIENTE", etiqueta: "Pendiente" },
+  { clave: "PREPARANDO", etiqueta: "Preparando" },
+  { clave: "LISTO_PARA_RETIRO", etiqueta: "Listo p/ retiro" },
+  { clave: "ENVIADO", etiqueta: "Enviado" },
+  { clave: "ENTREGADO", etiqueta: "Entregado" },
+  { clave: "CANCELADO", etiqueta: "Cancelado" },
+];
+const CLASE_BARRA_ESTADO = {
+  PENDIENTE: styles.barraPendiente,
+  PREPARANDO: styles.barraPreparando,
+  LISTO_PARA_RETIRO: styles.barraPreparando,
+  ENVIADO: styles.barraEnviado,
+  ENTREGADO: styles.barraEntregado,
+  CANCELADO: styles.barraCancelado,
+};
+
+// Pipeline operativo: cuántos pedidos hay en cada estado ahora mismo.
+function PanelPedidosEstado({ pedidosPorEstado }) {
+  const filas = FLUJO_ESTADOS.map((estado) => ({
+    ...estado,
+    valor: pedidosPorEstado[estado.clave] ?? 0,
+  }));
+  const maximo = Math.max(1, ...filas.map((fila) => fila.valor));
+  const total = filas.reduce((suma, fila) => suma + fila.valor, 0);
+
+  return (
+    <section className={styles.panel}>
+      <div className={styles.panelCabecera}>
+        <h2 className={styles.panelTitulo}>Pedidos por estado</h2>
+        <span className={styles.panelNota}>ahora</span>
+      </div>
+      {total === 0 ? (
+        <p className={styles.panelVacio}>Aún no hay pedidos.</p>
+      ) : (
+        <ul className={styles.estadoLista}>
+          {filas.map((fila) => (
+            <li className={styles.estadoFila} key={fila.clave}>
+              <span className={styles.estadoEtiqueta}>{fila.etiqueta}</span>
+              <div className={styles.estadoPista}>
+                <div
+                  className={`${styles.estadoBarra} ${CLASE_BARRA_ESTADO[fila.clave]}`}
+                  style={{ "--proporcion": `${(fila.valor / maximo) * 100}%` }}
+                />
+              </div>
+              <span className={styles.estadoValor}>{fila.valor}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+// Foto financiera: cobrado vs por cobrar (pagos aprobados vs pendientes).
+function PanelCobros({ cobros }) {
+  const maximo = Math.max(1, cobros.aprobado.monto, cobros.pendiente.monto);
+  const filas = [
+    { clave: "aprobado", etiqueta: "Cobrado", datos: cobros.aprobado, clase: "" },
+    { clave: "pendiente", etiqueta: "Por cobrar", datos: cobros.pendiente, clase: styles.barraPendiente },
+  ];
+
+  return (
+    <section className={styles.panel}>
+      <h2 className={styles.panelTitulo}>Cobros</h2>
+      <ul className={styles.cobrosLista}>
+        {filas.map((fila) => (
+          <li className={styles.cobroFila} key={fila.clave}>
+            <div className={styles.cobroEncabezado}>
+              <span>
+                {fila.etiqueta}{" "}
+                <small className={styles.cobroCantidad}>
+                  · {fila.datos.cantidad} {fila.datos.cantidad === 1 ? "pago" : "pagos"}
+                </small>
+              </span>
+              <span className={styles.cobroMonto}>{MONEDA_CLP.format(fila.datos.monto)}</span>
+            </div>
+            <div className={styles.progresoPista}>
+              <div
+                className={`${styles.progresoBarra} ${fila.clase}`}
+                style={{ "--proporcion": `${(fila.datos.monto / maximo) * 100}%` }}
+              />
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 // Panel "Ingresos por modalidad": Retiro vs Despacho con barra de proporción.
 // La barra recibe su ancho como variable CSS (dato dinámico), no estilo inline.
 function PanelModalidad({ modalidad }) {
@@ -145,9 +313,9 @@ function PanelModalidad({ modalidad }) {
                 <span>{fila.etiqueta}</span>
                 <span className={styles.modalidadMonto}>{MONEDA_CLP.format(fila.monto)}</span>
               </div>
-              <div className={styles.modalidadPista}>
+              <div className={styles.progresoPista}>
                 <div
-                  className={styles.modalidadBarra}
+                  className={styles.progresoBarra}
                   style={{ "--proporcion": `${(fila.monto / total) * 100}%` }}
                 />
               </div>
@@ -175,6 +343,12 @@ export default function AdminResumen() {
   const [ventasDiarias, setVentasDiarias] = useState(null);
   const [errorGrafico, setErrorGrafico] = useState(null);
   const [intentoGrafico, setIntentoGrafico] = useState(0);
+
+  // Más vendidos SÍ depende del período (a diferencia del gráfico), pero mantiene
+  // su propio estado para cargar/errar sin arrastrar a los KPIs.
+  const [masVendidos, setMasVendidos] = useState(null);
+  const [errorVendidos, setErrorVendidos] = useState(null);
+  const [intentoVendidos, setIntentoVendidos] = useState(0);
 
   useEffect(() => {
     let vigente = true;
@@ -244,6 +418,28 @@ export default function AdminResumen() {
 
     return () => { vigente = false; };
   }, [usuario, intentoGrafico]);
+
+  useEffect(() => {
+    if (!usuario) return undefined;
+    let vigente = true;
+
+    obtenerMasVendidosAdmin({ periodo })
+      .then((data) => {
+        if (!vigente) return;
+        setMasVendidos(data);
+        setErrorVendidos(null);
+      })
+      .catch((errorRespuesta) => {
+        if (!vigente) return;
+        if (errorRespuesta instanceof ErrorAdminApi && errorRespuesta.status === 401) {
+          setUsuario(null);
+          return;
+        }
+        setErrorVendidos(errorRespuesta.message);
+      });
+
+    return () => { vigente = false; };
+  }, [usuario, periodo, intentoVendidos]);
 
   if (usuario === undefined) {
     return (
@@ -372,27 +568,39 @@ export default function AdminResumen() {
 
                 <div className={styles.panelesRow}>
                   {errorGrafico ? (
-                    <section className={styles.panel}>
-                      <h2 className={styles.panelTitulo}>Ventas por día</h2>
-                      <div className={styles.estado} role="alert">
-                        <span>{errorGrafico}</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setErrorGrafico(null);
-                            setIntentoGrafico((valor) => valor + 1);
-                          }}
-                        >
-                          Reintentar
-                        </button>
-                      </div>
-                    </section>
+                    <PanelError
+                      titulo="Ventas por día"
+                      mensaje={errorGrafico}
+                      onReintentar={() => {
+                        setErrorGrafico(null);
+                        setIntentoGrafico((valor) => valor + 1);
+                      }}
+                    />
                   ) : ventasDiarias ? (
                     <GraficoVentas serie={ventasDiarias.serie} />
                   ) : (
                     <section className={`${styles.panel} ${styles.skeleton}`} aria-hidden="true" />
                   )}
 
+                  {errorVendidos ? (
+                    <PanelError
+                      titulo="Más vendidos"
+                      mensaje={errorVendidos}
+                      onReintentar={() => {
+                        setErrorVendidos(null);
+                        setIntentoVendidos((valor) => valor + 1);
+                      }}
+                    />
+                  ) : masVendidos ? (
+                    <PanelMasVendidos datos={masVendidos} />
+                  ) : (
+                    <section className={`${styles.panel} ${styles.skeleton}`} aria-hidden="true" />
+                  )}
+                </div>
+
+                <div className={styles.panelesTrio}>
+                  <PanelPedidosEstado pedidosPorEstado={resumen.pedidosPorEstado} />
+                  <PanelCobros cobros={resumen.cobros} />
                   <PanelModalidad modalidad={resumen.modalidad} />
                 </div>
               </>

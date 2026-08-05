@@ -180,3 +180,13 @@ export function obtenerVentasDiariasAdmin({ dias, ...opciones } = {}) {
     opciones,
   );
 }
+
+export function obtenerMasVendidosAdmin({ periodo, ...opciones } = {}) {
+  const parametros = new URLSearchParams();
+  if (periodo) parametros.set("periodo", periodo);
+  const consulta = parametros.toString();
+  return solicitarAdmin(
+    `/admin/resumen/mas-vendidos${consulta ? `?${consulta}` : ""}`,
+    opciones,
+  );
+}

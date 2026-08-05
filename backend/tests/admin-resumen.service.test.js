@@ -10,6 +10,11 @@ function crearRepoFalso({
   pedidos = 14,
   pendientes = 9,
   stockCritico = 2,
+  pedidosPorEstado = { PENDIENTE: 9, PREPARANDO: 4, ENTREGADO: 1 },
+  pagosPorEstado = {
+    APROBADO: { monto: 20860, cantidad: 4 },
+    PENDIENTE: { monto: 129510, cantidad: 18 },
+  },
 } = {}) {
   const cola = [...ventas]
   const capturado = { rangos: [], umbral: null }
@@ -22,6 +27,8 @@ function crearRepoFalso({
     async contarPedidos() { return pedidos },
     async contarPendientesPreparar() { return pendientes },
     async contarStockCritico(umbral) { capturado.umbral = umbral; return stockCritico },
+    async contarPedidosPorEstado() { return pedidosPorEstado },
+    async sumarPagosPorEstado() { return pagosPorEstado },
   }
   return { repositorio, capturado }
 }
@@ -42,6 +49,11 @@ test('obtenerResumen arma KPIs, ticket promedio y variación', async () => {
   assert.equal(resumen.pedidos.pendientesPreparar, 9)
   assert.equal(resumen.stockCritico, 2)
   assert.deepEqual(resumen.modalidad, { retiro: 12000, despacho: 8000 })
+  assert.deepEqual(resumen.pedidosPorEstado, { PENDIENTE: 9, PREPARANDO: 4, ENTREGADO: 1 })
+  assert.deepEqual(resumen.cobros, {
+    aprobado: { monto: 20860, cantidad: 4 },
+    pendiente: { monto: 129510, cantidad: 18 },
+  })
 })
 
 test('la variación es null cuando el período anterior fue cero (sin dividir por cero)', async () => {
@@ -112,4 +124,23 @@ test('obtenerVentasDiarias arma la serie de N días, agrupa por jornada y rellen
   assert.equal(ventana.desde.getDate(), 2)
   assert.equal(ventana.hasta.getDate(), 5)
   assert.equal(ventana.hasta.getHours(), 0)
+})
+
+test('obtenerMasVendidos ordena distinto por unidades y por ingresos', async () => {
+  const repositorio = {
+    async masVendidos() {
+      return [
+        { nombre: 'Leche', unidades: 84, ingresos: 50400 },
+        { nombre: 'Aceite', unidades: 20, ingresos: 159800 }, // pocas cajas, mucha plata
+        { nombre: 'Arroz', unidades: 52, ingresos: 41600 },
+      ]
+    },
+  }
+  const servicio = crearServicioResumen(repositorio)
+
+  const { porUnidades, porIngresos } = await servicio.obtenerMasVendidos({ periodo: 'mes', limite: 2 })
+
+  assert.deepEqual(porUnidades.map((p) => p.nombre), ['Leche', 'Arroz'])
+  assert.deepEqual(porIngresos.map((p) => p.nombre), ['Aceite', 'Leche'])
+  assert.equal(porUnidades.length, 2) // respeta el límite
 })

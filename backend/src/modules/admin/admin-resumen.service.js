@@ -97,15 +97,27 @@ export function crearServicioResumen(repositorio = repositorioResumen) {
     async obtenerResumen({ periodo = 'mes', ahora = new Date() } = {}) {
       const { actual, anterior, comparacion } = rangoPeriodo(periodo, ahora)
 
-      const [ventasActual, ventasAnterior, modalidad, pedidos, pendientes, stockCritico] =
-        await Promise.all([
-          repositorio.ventasAprobadas(actual),
-          repositorio.ventasAprobadas(anterior),
-          repositorio.ventasPorModalidad(actual),
-          repositorio.contarPedidos(actual),
-          repositorio.contarPendientesPreparar(),
-          repositorio.contarStockCritico(UMBRAL_STOCK_CRITICO),
-        ])
+      const [
+        ventasActual,
+        ventasAnterior,
+        modalidad,
+        pedidos,
+        pendientes,
+        stockCritico,
+        pedidosPorEstado,
+        pagosPorEstado,
+      ] = await Promise.all([
+        repositorio.ventasAprobadas(actual),
+        repositorio.ventasAprobadas(anterior),
+        repositorio.ventasPorModalidad(actual),
+        repositorio.contarPedidos(actual),
+        repositorio.contarPendientesPreparar(),
+        repositorio.contarStockCritico(UMBRAL_STOCK_CRITICO),
+        repositorio.contarPedidosPorEstado(),
+        repositorio.sumarPagosPorEstado(),
+      ])
+
+      const sinPago = { monto: 0, cantidad: 0 }
 
       const ticketActual = promedio(ventasActual.monto, ventasActual.pagos)
       const ticketAnterior = promedio(ventasAnterior.monto, ventasAnterior.pagos)
@@ -127,6 +139,12 @@ export function crearServicioResumen(repositorio = repositorioResumen) {
         },
         stockCritico,
         modalidad,
+        // Snapshots en vivo (no dependen del período): estado actual de la tienda.
+        pedidosPorEstado,
+        cobros: {
+          aprobado: pagosPorEstado.APROBADO ?? sinPago,
+          pendiente: pagosPorEstado.PENDIENTE ?? sinPago,
+        },
       }
     },
 
@@ -151,6 +169,17 @@ export function crearServicioResumen(repositorio = repositorioResumen) {
 
       return { desde, hasta, serie }
     },
+
+    // Más vendidos del período, en DOS rankings (por unidades y por ingresos):
+    // el líder en cajas no siempre es el que más plata deja, y el toggle del
+    // frontend cambia entre ambos sin volver a pedir datos.
+    async obtenerMasVendidos({ periodo = 'mes', limite = 6, ahora = new Date() } = {}) {
+      const { actual } = rangoPeriodo(periodo, ahora)
+      const filas = await repositorio.masVendidos(actual)
+      const mejores = (clave) =>
+        [...filas].sort((a, b) => b[clave] - a[clave]).slice(0, limite)
+      return { porUnidades: mejores('unidades'), porIngresos: mejores('ingresos') }
+    },
   }
 }
 
@@ -158,3 +187,4 @@ const servicioResumen = crearServicioResumen()
 
 export const obtenerResumen = servicioResumen.obtenerResumen
 export const obtenerVentasDiarias = servicioResumen.obtenerVentasDiarias
+export const obtenerMasVendidos = servicioResumen.obtenerMasVendidos

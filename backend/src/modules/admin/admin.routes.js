@@ -66,6 +66,7 @@ import {
 } from '../pedidos/pedidos.service.js'
 import { validarCambioEstadoPedido } from '../pedidos/pedidos.validacion.js'
 import { ESTADOS_PEDIDO } from '../pedidos/pedidos.estados.js'
+import { PERIODOS_RESUMEN, obtenerResumen } from './admin-resumen.service.js'
 import { actualizarReglas, obtenerReglas } from '../reglas/reglas.service.js'
 import { validarReglas } from '../reglas/reglas.validacion.js'
 
@@ -103,6 +104,7 @@ export function crearRouterAdmin({
     listarPedidos,
     obtenerDetallePedido,
     cambiarEstadoPedido,
+    obtenerResumen,
     obtenerReglas,
     actualizarReglas,
   },
@@ -873,6 +875,33 @@ export function crearRouterAdmin({
         if (error instanceof ErrorPedido) {
           return response.status(409).json({ error: { code: error.code, message: error.message } })
         }
+        return next(error)
+      }
+    },
+  )
+
+  // Tablero de Resumen: métricas del período (ventas, pedidos, ticket) más
+  // señales operativas vivas (pendientes, stock crítico). Lo ve el equipo.
+  adminRouter.get(
+    '/resumen',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      const periodo =
+        typeof request.query.periodo === 'string' ? request.query.periodo : 'mes'
+
+      if (!PERIODOS_RESUMEN.includes(periodo)) {
+        return response.status(400).json({
+          error: {
+            code: 'INVALID_QUERY_PARAM',
+            message: `periodo debe ser uno de: ${PERIODOS_RESUMEN.join(', ')}.`,
+          },
+        })
+      }
+
+      try {
+        return response.json({ data: await servicio.obtenerResumen({ periodo }) })
+      } catch (error) {
         return next(error)
       }
     },

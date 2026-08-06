@@ -38,8 +38,14 @@ async function solicitarNewsletter(
       let mensajeError = "Error inesperado al contactar con el servidor.";
       try {
         const errorJson = await respuesta.json();
-        if (errorJson && errorJson.error) {
-          mensajeError = errorJson.error;
+        // El backend responde { error: { code, message } }. Toleramos también la
+        // forma antigua { error: "texto" } por si algún endpoint la usa. Si no,
+        // meter el objeto en new Error() lo convierte en "[object Object]".
+        const detalle = errorJson?.error;
+        if (typeof detalle === "string") {
+          mensajeError = detalle;
+        } else if (detalle?.message) {
+          mensajeError = detalle.message;
         }
       } catch {
         // Fallback genérico si no es JSON

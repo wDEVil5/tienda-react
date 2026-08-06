@@ -31,7 +31,21 @@ describe("newsletterApi", () => {
       ).rejects.toThrow(ErrorNewsletterApi);
     });
 
-    it("lanza ErrorNewsletterApi con mensaje del servidor si hay error 422", async () => {
+    it("extrae el mensaje del error del backend { error: { code, message } }", async () => {
+      const fetchImpl = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 409,
+        json: async () => ({
+          error: { code: "ALREADY_SUBSCRIBED", message: "Este correo ya está suscrito." },
+        }),
+      });
+
+      await expect(
+        suscribirNewsletter("test@example.com", { fetchImpl, apiUrl })
+      ).rejects.toThrowError("Este correo ya está suscrito.");
+    });
+
+    it("tolera la forma antigua { error: \"texto\" }", async () => {
       const fetchImpl = vi.fn().mockResolvedValue({
         ok: false,
         status: 422,

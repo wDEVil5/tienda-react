@@ -6,8 +6,10 @@ export const PERIODOS_RESUMEN = ['hoy', 'semana', 'mes', 'mes-pasado']
 // Umbral global de stock crítico cuando un producto no define el suyo propio.
 const UMBRAL_STOCK_CRITICO = Number(process.env.UMBRAL_STOCK_CRITICO) || 3
 
-// Cuántos pedidos mostrar en la tabla "requieren acción" del tablero.
-const LIMITE_ACCION = 6
+// Cuántos pedidos traer para la cola "requieren acción" del tablero. La cola
+// muestra y filtra (Todos/Urgentes/Pendientes/Preparando) sobre esta ventana;
+// el resto se ve en "Ver todos" (/admin/pedidos).
+const LIMITE_ACCION = 12
 
 // Cuántos productos mostrar en el panel "Por reponer".
 const LIMITE_REPONER = 6
@@ -164,7 +166,19 @@ export function crearServicioResumen(repositorio = repositorioResumen) {
           aprobado: pagosPorEstado.APROBADO ?? sinPago,
           pendiente: pagosPorEstado.PENDIENTE ?? sinPago,
         },
-        requierenAccion,
+        // Cola operativa: además de estado/modalidad/total, el frontend usa
+        // createdAt (antigüedad → "hace 2h" y marca de urgente) e items (líneas)
+        // para el detalle "3 ítems". Aplanamos el _count a un número simple.
+        requierenAccion: requierenAccion.map((pedido) => ({
+          id: pedido.id,
+          numero: pedido.numero,
+          estado: pedido.estado,
+          modalidad: pedido.modalidad,
+          contactoNombre: pedido.contactoNombre,
+          total: pedido.total,
+          items: pedido._count?.items ?? 0,
+          createdAt: pedido.createdAt,
+        })),
       }
     },
 

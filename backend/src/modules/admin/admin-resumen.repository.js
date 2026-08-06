@@ -81,6 +81,9 @@ export function crearRepositorioResumen(cliente = prisma) {
           modalidad: true,
           contactoNombre: true,
           total: true,
+          createdAt: true,
+          // Nº de líneas del pedido para el detalle "3 ítems" de la cola.
+          _count: { select: { items: true } },
         },
       })
     },

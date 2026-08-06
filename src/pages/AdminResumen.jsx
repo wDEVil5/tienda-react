@@ -71,17 +71,6 @@ function referencia(numero) {
   return `#SE-${numero}`;
 }
 
-// Iniciales del contacto para el avatar de la tabla de acción.
-function iniciales(nombre) {
-  const limpio = (nombre ?? "").trim();
-  if (!limpio) return "?";
-  return limpio
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((parte) => parte.charAt(0).toUpperCase())
-    .join("");
-}
-
 // Drill-down del KPI "Stock crítico": lleva al panel "Por reponer" de la misma
 // página (scroll suave dentro del área de contenido del shell).
 function irAReponer() {
@@ -538,13 +527,14 @@ const CLASE_BADGE = {
   ENTREGADO: styles.badgeVerde,
   CANCELADO: styles.badgeNeutro,
 };
-// El botón de acción se colorea según el estado de origen: "Preparar" (ámbar),
-// "Marcar listo/enviado" (verde) y "Entregar" (menta). No todos verdes.
-const CLASE_ACCION = {
-  PENDIENTE: styles.accionBotonAmbar,
-  PREPARANDO: styles.accionBotonVerde,
-  LISTO_PARA_RETIRO: styles.accionBotonMenta,
-  ENVIADO: styles.accionBotonMenta,
+// El botón de acción se estiliza según la variante de avance (no todos iguales):
+// "Preparar" resalta como acción principal (negro), "Marcar listo" es el avance
+// del retiro (verde) y "Marcar enviado"/"Entregar" son secundarios (contorno).
+const CLASE_ACCION_BTN = {
+  preparar: styles.botonPreparar,
+  listo: styles.botonListo,
+  enviar: styles.botonEnviar,
+  entregar: styles.botonEntregar,
 };
 
 // Acción principal (avance) por estado: refleja la máquina de estados del backend
@@ -553,14 +543,52 @@ const CLASE_ACCION = {
 function accionDe(estado, modalidad) {
   if (estado === "PREPARANDO") {
     return modalidad === "DESPACHO"
-      ? { estado: "ENVIADO", etiqueta: "Marcar enviado" }
-      : { estado: "LISTO_PARA_RETIRO", etiqueta: "Marcar listo" };
+      ? { estado: "ENVIADO", etiqueta: "Marcar enviado", variante: "enviar" }
+      : { estado: "LISTO_PARA_RETIRO", etiqueta: "Marcar listo", variante: "listo" };
   }
-  if (estado === "PENDIENTE") return { estado: "PREPARANDO", etiqueta: "Preparar" };
+  if (estado === "PENDIENTE") {
+    return { estado: "PREPARANDO", etiqueta: "Preparar", variante: "preparar" };
+  }
   if (estado === "LISTO_PARA_RETIRO" || estado === "ENVIADO") {
-    return { estado: "ENTREGADO", etiqueta: "Entregar" };
+    return { estado: "ENTREGADO", etiqueta: "Entregar", variante: "entregar" };
   }
   return null;
+}
+
+// Etiqueta de la modalidad para el detalle de cada fila de la cola.
+const MODALIDAD_LABEL = {
+  RETIRO: "Retiro en tienda",
+  DESPACHO: "Despacho a domicilio",
+};
+
+// Filtros de la cola operativa (pestañas superiores del panel).
+const FILTROS_ACCION = [
+  { clave: "todos", etiqueta: "Todos" },
+  { clave: "urgentes", etiqueta: "Urgentes" },
+  { clave: "pendientes", etiqueta: "Pendientes" },
+  { clave: "preparando", etiqueta: "Preparando" },
+];
+
+function minutosDesde(fecha) {
+  return (Date.now() - new Date(fecha).getTime()) / 60000;
+}
+
+// Un pedido es "urgente" cuando lleva demasiado esperando su primer paso: sigue
+// PENDIENTE (nadie lo tomó) y ya pasaron ≥15 min desde que entró. En cuanto se
+// pone a preparar ya está en manos de alguien, así que deja de ser urgente.
+const MIN_URGENTE = 15;
+function esUrgente(pedido) {
+  return pedido.estado === "PENDIENTE" && minutosDesde(pedido.createdAt) >= MIN_URGENTE;
+}
+
+// Antigüedad legible del pedido: "hace 45m", "hace 2h", "hace 3d".
+function tiempoRelativo(fecha) {
+  const min = Math.floor(minutosDesde(fecha));
+  if (min < 1) return "recién";
+  if (min < 60) return `hace ${min}m`;
+  const horas = Math.floor(min / 60);
+  if (horas < 24) return `hace ${horas}h`;
+  return `hace ${Math.floor(horas / 24)}d`;
 }
 
 /* ---------- Donut SVG con hover (tooltip + resalte), sin librerías ---------- */
@@ -792,19 +820,33 @@ function DonutModalidad({ modalidad, periodo }) {
   );
 }
 
-// Tabla "Pedidos que requieren acción": cada fila ejecuta su avance inline
-// (mismo PATCH de estado que el detalle, con el aviso por correo RF-5.6).
+// Cola operativa "Pedidos que requieren acción": pestañas de filtro con conteos
+// y filas con su avance inline (mismo PATCH de estado que el detalle, con el
+// aviso por correo RF-5.6). Los conteos y el filtro se derivan de la misma lista
+// cargada, así lo que la pestaña anuncia coincide con lo que muestra.
 function PanelRequierenAccion({ pedidos, onAccion, cambiandoId, errorAccion }) {
+  const [filtro, setFiltro] = useState("todos");
+
+  const conteos = {
+    todos: pedidos.length,
+    urgentes: pedidos.filter(esUrgente).length,
+    pendientes: pedidos.filter((pedido) => pedido.estado === "PENDIENTE").length,
+    preparando: pedidos.filter((pedido) => pedido.estado === "PREPARANDO").length,
+  };
+
+  const visibles = pedidos.filter((pedido) => {
+    if (filtro === "urgentes") return esUrgente(pedido);
+    if (filtro === "pendientes") return pedido.estado === "PENDIENTE";
+    if (filtro === "preparando") return pedido.estado === "PREPARANDO";
+    return true;
+  });
+
   return (
-    <section className={styles.panelPlano}>
-      <div className={styles.panelCabeceraPlana}>
+    <section className={styles.cola}>
+      <div className={styles.colaCabecera}>
         <div>
-          <h2 className={styles.panelTitulo}>Pedidos que requieren acción</h2>
-          <p className={styles.panelSub}>
-            {pedidos.length === 0
-              ? "Sin pendientes por atender"
-              : `${pedidos.length} ${pedidos.length === 1 ? "pedido espera" : "pedidos esperan"} tu siguiente paso`}
-          </p>
+          <h2 className={styles.colaTitulo}>Pedidos que requieren acción</h2>
+          <p className={styles.colaSub}>Cola operativa · prioridad de tienda</p>
         </div>
         <Link className={styles.verTodos} to="/admin/pedidos">
           Ver todos <IconoFlecha />
@@ -814,48 +856,88 @@ function PanelRequierenAccion({ pedidos, onAccion, cambiandoId, errorAccion }) {
       {pedidos.length === 0 ? (
         <p className={styles.panelVacioPad}>Todo al día — no hay pedidos por atender. 🎉</p>
       ) : (
-        <div className={styles.listaAccion}>
-          {pedidos.map((pedido) => {
-            const accion = accionDe(pedido.estado, pedido.modalidad);
-            const cambiando = cambiandoId === pedido.id;
-            return (
-              <div className={styles.filaAccion} key={pedido.id}>
-                <span
-                  className={`${styles.avatar} ${
-                    pedido.estado === "PENDIENTE" ? styles.avatarGold : styles.avatarSage
-                  }`}
-                  aria-hidden="true"
-                >
-                  {iniciales(pedido.contactoNombre)}
+        <>
+          <div className={styles.colaTabs} role="tablist" aria-label="Filtrar la cola">
+            {FILTROS_ACCION.map((f) => (
+              <button
+                key={f.clave}
+                type="button"
+                role="tab"
+                aria-selected={filtro === f.clave}
+                className={filtro === f.clave ? styles.colaTabActiva : styles.colaTab}
+                onClick={() => setFiltro(f.clave)}
+              >
+                {f.etiqueta}
+                <span className={`${styles.colaTabCount} ${styles[`count_${f.clave}`]}`}>
+                  {conteos[f.clave]}
                 </span>
-                <div className={styles.filaAccionInfo}>
-                  <div className={styles.filaAccionLinea1}>
-                    <span className={styles.filaAccionNumero}>{referencia(pedido.numero)}</span>
-                    <span className={styles.filaAccionCliente}>{pedido.contactoNombre}</span>
-                  </div>
-                  <div className={styles.filaAccionLinea2}>
-                    <span className={`${styles.badge} ${CLASE_BADGE[pedido.estado] ?? ""}`}>
+              </button>
+            ))}
+          </div>
+
+          <div className={styles.colaLista}>
+            {visibles.length === 0 ? (
+              <p className={styles.colaVacioFiltro}>Nada en esta vista.</p>
+            ) : (
+              visibles.map((pedido) => {
+                const accion = accionDe(pedido.estado, pedido.modalidad);
+                const cambiando = cambiandoId === pedido.id;
+                const urgente = esUrgente(pedido);
+                return (
+                  <div
+                    key={pedido.id}
+                    className={`${styles.colaFila} ${urgente ? styles.colaFilaUrgente : ""}`}
+                  >
+                    <div className={styles.colaInfo}>
+                      <div className={styles.colaLinea1}>
+                        <span className={styles.colaNumero}>
+                          {referencia(pedido.numero)}
+                          {urgente && (
+                            <span className={styles.colaFuego} aria-hidden="true">
+                              🔥
+                            </span>
+                          )}
+                        </span>
+                        <span className={urgente ? styles.colaTiempoUrgente : styles.colaTiempo}>
+                          {"· "}
+                          {tiempoRelativo(pedido.createdAt)}
+                          {urgente ? " · urgente" : ""}
+                        </span>
+                      </div>
+                      <div className={styles.colaLinea2}>
+                        <span className={styles.colaNombre}>{pedido.contactoNombre}</span>
+                        <span className={styles.colaDetalle}>
+                          {" · "}
+                          {pedido.items} {pedido.items === 1 ? "ítem" : "ítems"} ·{" "}
+                          {MODALIDAD_LABEL[pedido.modalidad] ?? pedido.modalidad}
+                        </span>
+                      </div>
+                    </div>
+
+                    <span className={`${styles.colaBadge} ${CLASE_BADGE[pedido.estado] ?? ""}`}>
                       {ETIQUETA_ESTADO[pedido.estado] ?? pedido.estado}
                     </span>
-                    <span className={styles.filaAccionTotal}>{MONEDA_CLP.format(pedido.total)}</span>
+
+                    <span className={styles.colaTotal}>{MONEDA_CLP.format(pedido.total)}</span>
+
+                    {accion ? (
+                      <button
+                        type="button"
+                        className={`${styles.colaBoton} ${CLASE_ACCION_BTN[accion.variante] ?? ""}`}
+                        disabled={cambiando}
+                        onClick={() => onAccion(pedido, accion.estado)}
+                      >
+                        {cambiando ? "…" : accion.etiqueta}
+                      </button>
+                    ) : (
+                      <span className={styles.sinAccion}>—</span>
+                    )}
                   </div>
-                </div>
-                {accion ? (
-                  <button
-                    type="button"
-                    className={`${styles.accionBoton} ${CLASE_ACCION[pedido.estado] ?? ""}`}
-                    disabled={cambiando}
-                    onClick={() => onAccion(pedido, accion.estado)}
-                  >
-                    {cambiando ? "…" : accion.etiqueta}
-                  </button>
-                ) : (
-                  <span className={styles.sinAccion}>—</span>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                );
+              })
+            )}
+          </div>
+        </>
       )}
 
       {errorAccion && (
@@ -1319,7 +1401,7 @@ export default function AdminResumen() {
                   <DonutModalidad modalidad={resumen.modalidad} periodo={periodo} />
                 </div>
 
-                <div className={styles.filaAccionReponer}>
+                <div className={styles.filaColaReponer}>
                   <PanelRequierenAccion
                     pedidos={resumen.requierenAccion}
                     onAccion={ejecutarAccion}

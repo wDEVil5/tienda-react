@@ -16,7 +16,16 @@ function crearRepoFalso({
     PENDIENTE: { monto: 129510, cantidad: 18 },
   },
   requierenAccion = [
-    { id: 'p1', numero: 2, estado: 'PENDIENTE', modalidad: 'DESPACHO', contactoNombre: 'Camila', total: 16270 },
+    {
+      id: 'p1',
+      numero: 2,
+      estado: 'PENDIENTE',
+      modalidad: 'DESPACHO',
+      contactoNombre: 'Camila',
+      total: 16270,
+      createdAt: new Date('2026-08-05T09:00:00'),
+      _count: { items: 3 },
+    },
   ],
   porReponer = [
     { id: 'prod-1', nombre: 'Queso', sku: 'QSO', disponible: 0, umbral: 3 },
@@ -65,6 +74,9 @@ test('obtenerResumen arma KPIs, ticket promedio y variación', async () => {
   })
   assert.equal(resumen.requierenAccion.length, 1)
   assert.equal(resumen.requierenAccion[0].numero, 2)
+  // El _count se aplana a un número simple y createdAt viaja para la cola.
+  assert.equal(resumen.requierenAccion[0].items, 3)
+  assert.equal(resumen.requierenAccion[0].createdAt.getTime(), new Date('2026-08-05T09:00:00').getTime())
   assert.equal(resumen.porReponer.length, 2)
   assert.deepEqual(resumen.porReponer[0], {
     id: 'prod-1', nombre: 'Queso', sku: 'QSO', disponible: 0, umbral: 3,

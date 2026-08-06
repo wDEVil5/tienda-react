@@ -127,7 +127,11 @@ function GaleriaProducto({ imagenes, nombre, productoId, cargando, onSubir, onRe
 }
 
 function EstadoEditor({ usuario, children }) {
-  return <AdminShell usuario={usuario}>{children}</AdminShell>;
+  return (
+    <main className={styles.fondoEditor}>
+      <AdminShell usuario={usuario}>{children}</AdminShell>
+    </main>
+  );
 }
 
 export default function AdminProductoEditor() {
@@ -308,9 +312,9 @@ export default function AdminProductoEditor() {
   if (cargando) {
     return (
       <EstadoEditor usuario={usuario}>
-        <main className={styles.fondoEditor}>
+        <div className={styles.paginaEditor}>
           <div className={styles.estadoContenido} role="status">Cargando editor…</div>
-        </main>
+        </div>
       </EstadoEditor>
     );
   }
@@ -318,7 +322,7 @@ export default function AdminProductoEditor() {
   if (errorCarga) {
     return (
       <EstadoEditor usuario={usuario}>
-        <main className={styles.fondoEditor}>
+        <div className={styles.paginaEditor}>
           <section className={styles.estadoContenido} role="alert">
             <h1>No pudimos abrir el editor</h1>
             <p>{errorCarga}</p>
@@ -331,7 +335,7 @@ export default function AdminProductoEditor() {
               }}>Reintentar</button>
             </div>
           </section>
-        </main>
+        </div>
       </EstadoEditor>
     );
   }
@@ -341,9 +345,10 @@ export default function AdminProductoEditor() {
   const puedeVerEnTienda = Boolean(slugVistaPrevia) && formulario.estado === "PUBLICADO";
 
   return (
-    <AdminShell usuario={usuario}>
-      <main className={styles.fondoEditor}>
-        <header className={styles.cabeceraEditor}>
+    <main className={styles.fondoEditor}>
+      <AdminShell usuario={usuario}>
+        <div className={styles.paginaEditor}>
+          <header className={styles.cabeceraEditor}>
           <div>
             <Link className={styles.volver} to="/admin/productos">← Productos</Link>
             <p className={styles.eyebrow}>{esNuevo ? "Nuevo · borrador" : `Editando · SKU ${formulario.sku || "—"}`}</p>
@@ -507,7 +512,8 @@ export default function AdminProductoEditor() {
             </div>
           )}
         </form>
-      </main>
-    </AdminShell>
+        </div>
+      </AdminShell>
+    </main>
   );
 }

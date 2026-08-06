@@ -7,19 +7,16 @@ function NewsletterBaja() {
   const [parametros] = useSearchParams();
   const token = parametros.get("token");
   
-  const [cargando, setCargando] = useState(true);
+  // El caso "sin token" es estado derivable, no un efecto: se resuelve en el
+  // inicializador (sin token → ni cargando ni éxito, con el error listo). El
+  // efecto solo corre la baja asíncrona cuando SÍ hay token.
+  const [cargando, setCargando] = useState(Boolean(token));
   const [exito, setExito] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(token ? null : "No se proporcionó un token válido.");
   const procesado = useRef(false);
 
   useEffect(() => {
-    if (!token) {
-      setError("No se proporcionó un token válido.");
-      setCargando(false);
-      return;
-    }
-
-    if (procesado.current) return;
+    if (!token || procesado.current) return;
     procesado.current = true;
 
     bajaNewsletter(token)

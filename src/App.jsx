@@ -11,6 +11,7 @@ import AdminPedidos from "./pages/AdminPedidos.jsx";
 import AdminResumen from "./pages/AdminResumen.jsx";
 import AdminCuenta from "./pages/AdminCuenta.jsx";
 import AdminAcceso from "./pages/AdminAcceso.jsx";
+import { AdminRecuperarContrasena, AdminRestablecerContrasena } from "./pages/AdminRecuperar.jsx";
 import AdminEquipo from "./pages/AdminEquipo.jsx";
 import { Login, Registro } from "./pages/Acceso.jsx";
 import { RecuperarContrasena, RestablecerContrasena } from "./pages/RecuperarCuenta.jsx";
@@ -236,6 +237,8 @@ function App() {
       <Routes>
         <Route path="/admin" element={<Navigate to="/admin/resumen" replace />} />
         <Route path="/admin/acceso" element={<AdminAcceso />} />
+        <Route path="/admin/recuperar-contrasena" element={<AdminRecuperarContrasena />} />
+        <Route path="/admin/recuperar" element={<AdminRestablecerContrasena />} />
         <Route path="/admin/productos" element={<AdminProductos />} />
         <Route path="/admin/productos/nuevo" element={<AdminProductoEditor />} />
         <Route path="/admin/productos/:id/editar" element={<AdminProductoEditor />} />

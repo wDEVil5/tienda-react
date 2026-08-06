@@ -91,3 +91,37 @@
   color: var(--color-oferta);
   font-size: 12.5px;
 }
+
+/* Enlace secundario centrado (volver al acceso, olvidé mi contraseña). Sirve
+   tanto para <a> como para <button>. */
+.enlaceVolver {
+  display: block;
+  margin-top: 16px;
+  border: 0;
+  background: none;
+  color: var(--color-acento);
+  font: inherit;
+  font-size: 13px;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+.enlaceVolver:hover {
+  text-decoration: underline;
+}
+
+/* Fila de casilla "Mostrar contraseña": anula el estilo de label de bloque del
+   formulario y devuelve la casilla a su tamaño normal. */
+.accesoFormulario .mostrarClave {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  color: var(--color-texto-2);
+  font-size: 13px;
+  cursor: pointer;
+}
+.accesoFormulario .mostrarClave input {
+  width: auto;
+  min-height: 0;
+}

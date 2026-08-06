@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import {
   ErrorAdminApi,
   iniciarSesionAdmin,
@@ -94,6 +94,9 @@ export default function AdminAcceso() {
               {enviando ? "Comprobando…" : "Entrar al panel"}
             </button>
           </form>
+          <Link className={styles.enlaceVolver} to="/admin/recuperar-contrasena">
+            Olvidé mi contraseña
+          </Link>
         </div>
       </section>
     </main>

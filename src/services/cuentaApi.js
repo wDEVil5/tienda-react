@@ -76,6 +76,16 @@ export function iniciarSesionCuenta(datos, opciones = {}) {
   });
 }
 
+// Login con Google: manda el ID token que devuelve Google al backend, que lo
+// verifica y responde con la misma sesión (cookie) que el login normal.
+export function iniciarSesionConGoogleCuenta(idToken, opciones = {}) {
+  return solicitarCuenta("/cuenta/google", {
+    ...opciones,
+    method: "POST",
+    cuerpo: { idToken },
+  });
+}
+
 export function cerrarSesionCuenta(opciones = {}) {
   return solicitarCuenta("/cuenta/logout", { ...opciones, method: "POST" });
 }

@@ -5,6 +5,7 @@ import {
   cerrarTodasLasSesionesCuenta,
   cerrarSesionCuenta,
   iniciarSesionCuenta,
+  iniciarSesionConGoogleCuenta,
   obtenerCuenta,
   registrarCuenta,
 } from "../services/cuentaApi.js";
@@ -61,6 +62,12 @@ export function CuentaProvider({ children }) {
     return resultado.cliente;
   }, []);
 
+  const iniciarConGoogle = useCallback(async (idToken) => {
+    const resultado = await iniciarSesionConGoogleCuenta(idToken);
+    setCliente(resultado.cliente);
+    return resultado.cliente;
+  }, []);
+
   const cerrarSesion = useCallback(async () => {
     await cerrarSesionCuenta();
     setCliente(null);
@@ -91,6 +98,7 @@ export function CuentaProvider({ children }) {
         cargandoSesion,
         iniciarSesion,
         registrar,
+        iniciarConGoogle,
         cerrarSesion,
         actualizarPerfil,
         cambiarContrasena,

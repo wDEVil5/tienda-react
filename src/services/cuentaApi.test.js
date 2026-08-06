@@ -8,6 +8,7 @@ import {
   cerrarTodasLasSesionesCuenta,
   eliminarDireccionCuenta,
   iniciarSesionCuenta,
+  iniciarSesionConGoogleCuenta,
   listarDireccionesCuenta,
   listarPedidosCuenta,
   obtenerPedidoCuenta,
@@ -225,5 +226,21 @@ describe("cuentaApi", () => {
       ["http://localhost:3000/api/cuenta/login", "POST"],
       ["http://localhost:3000/api/cuenta/logout", "POST"],
     ]);
+  });
+
+  it("iniciarSesionConGoogleCuenta envía el ID token a /cuenta/google", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: { cliente: { id: "c1", email: "w@gmail.com" } } }),
+    });
+    const opciones = { fetchImpl, apiUrl: "http://localhost:3000/api" };
+
+    const resultado = await iniciarSesionConGoogleCuenta("id-token-123", opciones);
+
+    const [url, config] = fetchImpl.mock.calls[0];
+    expect(url).toBe("http://localhost:3000/api/cuenta/google");
+    expect(config.method).toBe("POST");
+    expect(JSON.parse(config.body)).toEqual({ idToken: "id-token-123" });
+    expect(resultado.cliente.email).toBe("w@gmail.com");
   });
 });

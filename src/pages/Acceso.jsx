@@ -3,6 +3,7 @@ import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { ErrorCuentaApi } from "../services/cuentaApi.js";
 import { useCuenta } from "../context/CuentaContext.jsx";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
+import BotonGoogle from "../components/BotonGoogle.jsx";
 import styles from "./Acceso.module.css";
 
 const ESTADO_INICIAL_LOGIN = { email: "", contrasena: "" };
@@ -20,6 +21,12 @@ function mensajeDeError(error, esRegistro) {
   }
   if (error.code === "EMAIL_TAKEN") return "Ya existe una cuenta con este correo.";
   if (error.code === "INVALID_CREDENTIALS") return "Email o contraseña incorrectos.";
+  if (error.code === "INVALID_GOOGLE_TOKEN") {
+    return "No pudimos validar tu cuenta de Google. Inténtalo de nuevo.";
+  }
+  if (error.code === "GOOGLE_EMAIL_UNVERIFIED") {
+    return "Tu correo de Google no está verificado.";
+  }
   if (error.code === "INVALID_ACCOUNT_DATA") {
     return esRegistro
       ? "Revisa los datos ingresados. La contraseña debe tener al menos 12 caracteres."
@@ -41,7 +48,7 @@ function Acceso({ modo }) {
   const esRegistro = modo === "registro";
   const navegar = useNavigate();
   const ubicacion = useLocation();
-  const { iniciarSesion, registrar, estaAutenticado } = useCuenta();
+  const { iniciarSesion, registrar, iniciarConGoogle, estaAutenticado } = useCuenta();
   const { totalItems } = useCarritoContext();
   const [datos, setDatos] = useState(
     esRegistro ? ESTADO_INICIAL_REGISTRO : ESTADO_INICIAL_LOGIN,
@@ -111,6 +118,19 @@ function Acceso({ modo }) {
       setError(mensajeDeError(errorRespuesta, esRegistro));
     } finally {
       setEnviando(false);
+    }
+  }
+
+  // Recibe el ID token que entrega Google y lo canjea por una sesión en el
+  // backend. La misma pantalla sirve para login y registro: si la cuenta no
+  // existe, el backend la crea (solo-Google); si existe, la fusiona por email.
+  async function entrarConGoogle(idToken) {
+    setError(null);
+    try {
+      await iniciarConGoogle(idToken);
+      navegar(destino, { replace: true });
+    } catch (errorRespuesta) {
+      setError(mensajeDeError(errorRespuesta, esRegistro));
     }
   }
 
@@ -260,41 +280,14 @@ function Acceso({ modo }) {
           </button>
         </form>
 
-        {!esRegistro && (
-          <>
-            <div className={styles.separador} aria-hidden="true"><span></span>o<span></span></div>
-            <button
-              className={styles.google}
-              type="button"
-              disabled
-              title="Google se habilitará cuando exista la autenticación OAuth en el backend."
-            >
-              <span className={styles.googleIcono}>G</span>
-              Continuar con Google
-            </button>
-            <p className={styles.notaGoogle}>
-              Con Google no necesitas contraseña · el acceso se habilitará pronto.
-            </p>
-          </>
-        )}
-
-        {esRegistro && (
-          <>
-            <div className={styles.separador} aria-hidden="true"><span></span>o<span></span></div>
-            <button
-              className={styles.google}
-              type="button"
-              disabled
-              title="Google se habilitará cuando exista la autenticación OAuth en el backend."
-            >
-              <span className={styles.googleIcono}>G</span>
-              Registrarme con Google
-            </button>
-            <p className={`${styles.notaGoogle} ${styles.notaRegistro}`}>
-              La validación se repite en el servidor: el frontend solo adelanta el error.
-            </p>
-          </>
-        )}
+        <div className={styles.separador} aria-hidden="true"><span></span>o<span></span></div>
+        <BotonGoogle
+          onCredencial={entrarConGoogle}
+          texto={esRegistro ? "signup_with" : "continue_with"}
+        />
+        <p className={styles.notaGoogle}>
+          Con Google no necesitas contraseña · usamos solo tu nombre y correo.
+        </p>
 
         {!esRegistro && (
           <div className={styles.alternativa}>

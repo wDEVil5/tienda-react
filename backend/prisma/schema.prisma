@@ -61,6 +61,7 @@ model Usuario {
   createdAt    DateTime   @default(now()) @map("created_at")
   updatedAt    DateTime   @updatedAt @map("updated_at")
   sesiones     Sesion[]
+  tokensRecuperacion TokenRecuperacion[]
 
   @@index([activo])
   @@map("usuarios")
@@ -392,6 +393,7 @@ model Cliente {
   pedidos     Pedido[]
   avisosStock   AvisoStock[]
   suscripciones Suscriptor[]
+  tokensRecuperacion TokenRecuperacion[]
 
   @@index([activo])
   @@map("clientes")
@@ -437,6 +439,29 @@ model SesionCliente {
   @@index([clienteId])
   @@index([expiraEn])
   @@map("sesiones_cliente")
+}
+
+// Token de recuperación de contraseña. Igual que las sesiones: la base guarda
+// solo el HASH del token, nunca el token que viaja en el enlace del correo.
+// Un solo uso (`usadoEn`) + vencimiento (`expiraEn`). Sirve a AMBOS dominios:
+// enlaza a un Cliente O a un Usuario (exactamente uno, garantizado en el
+// servicio); ambos con borrado en cascada para no dejar tokens huérfanos.
+model TokenRecuperacion {
+  id        String    @id @default(uuid()) @db.Uuid
+  tokenHash String    @unique @map("token_hash") @db.VarChar(64)
+  expiraEn  DateTime  @map("expira_en")
+  usadoEn   DateTime? @map("usado_en")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  clienteId String?  @map("cliente_id") @db.Uuid
+  cliente   Cliente? @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  usuarioId String?  @map("usuario_id") @db.Uuid
+  usuario   Usuario? @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([clienteId])
+  @@index([usuarioId])
+  @@index([expiraEn])
+  @@map("tokens_recuperacion")
 }
 
 // "Avísame": un interesado deja su correo para que le avisemos cuando un

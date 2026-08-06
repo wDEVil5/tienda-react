@@ -11,6 +11,7 @@
     "preadmin:create": "prisma generate",
     "admin:create": "node --env-file=.env src/scripts/crearAdmin.js",
     "avisos:enviar": "node --env-file=.env src/scripts/enviarAvisos.js",
+    "correo:test": "node --env-file=.env src/scripts/probarCorreo.js",
     "pedidos:expirar": "node --env-file=.env src/scripts/expirarPedidos.js",
     "pago:demo": "node --env-file=.env src/scripts/pagoDemo.js",
     "pago:estado": "node --env-file=.env src/scripts/pagoEstado.js"

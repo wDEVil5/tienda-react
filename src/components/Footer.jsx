@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { suscribirNewsletter, ErrorNewsletterApi } from "../services/newsletterApi.js";
 import styles from "./Footer.module.css";
 
 const LIMITE_CATEGORIAS_FOOTER = 4;
@@ -50,6 +51,31 @@ function Footer({
     onCambiarSoloOfertas(false);
   };
 
+  const [emailNL, setEmailNL] = useState("");
+  const [cargandoNL, setCargandoNL] = useState(false);
+  const [exitoNL, setExitoNL] = useState(false);
+  const [errorNL, setErrorNL] = useState(null);
+
+  const onSubmitNL = async (e) => {
+    e.preventDefault();
+    if (!emailNL.trim()) return;
+    setCargandoNL(true);
+    setErrorNL(null);
+    try {
+      await suscribirNewsletter(emailNL);
+      setExitoNL(true);
+      setEmailNL("");
+    } catch (err) {
+      setErrorNL(
+        err instanceof ErrorNewsletterApi
+          ? err.message
+          : "Error al suscribirte. Intenta de nuevo."
+      );
+    } finally {
+      setCargandoNL(false);
+    }
+  };
+
   return (
     <footer id="footer" className={styles.footer}>
       <div className={styles.contenedor}>
@@ -71,20 +97,33 @@ function Footer({
               </p>
             </div>
             <div className={styles.nlFormWrap}>
-              <form
-                className={styles.nlForm}
-                onSubmit={(e) => e.preventDefault()}
-              >
-                <input
-                  type="email"
-                  placeholder="tu@correo.cl"
-                  aria-label="Tu correo electrónico"
-                />
-                <button type="submit">Suscribirme</button>
-              </form>
-              <p className={styles.nlNota}>
-                Al suscribirte aceptas la política de privacidad.
-              </p>
+              {exitoNL ? (
+                <div className={styles.nlExito}>
+                  <strong>¡Gracias por suscribirte!</strong>
+                  <p>Pronto recibirás nuestras ofertas.</p>
+                </div>
+              ) : (
+                <form className={styles.nlForm} onSubmit={onSubmitNL}>
+                  <input
+                    type="email"
+                    placeholder="tu@correo.cl"
+                    aria-label="Tu correo electrónico"
+                    required
+                    value={emailNL}
+                    onChange={(e) => setEmailNL(e.target.value)}
+                    disabled={cargandoNL}
+                  />
+                  <button type="submit" disabled={cargandoNL}>
+                    {cargandoNL ? "Enviando..." : "Suscribirme"}
+                  </button>
+                </form>
+              )}
+              {errorNL && <p className={styles.nlError} role="alert">{errorNL}</p>}
+              {!exitoNL && (
+                <p className={styles.nlNota}>
+                  Al suscribirte aceptas la política de privacidad.
+                </p>
+              )}
             </div>
           </div>
           {/* Nota solo-móvil: va debajo del form (en escritorio se usan las dos

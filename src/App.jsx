@@ -13,6 +13,7 @@ import AdminCuenta from "./pages/AdminCuenta.jsx";
 import AdminAcceso from "./pages/AdminAcceso.jsx";
 import AdminEquipo from "./pages/AdminEquipo.jsx";
 import { Login, Registro } from "./pages/Acceso.jsx";
+import NewsletterBaja from "./pages/NewsletterBaja.jsx";
 import MiCuenta from "./pages/MiCuenta.jsx";
 import MisPedidos from "./pages/MisPedidos.jsx";
 import DetallePedido from "./pages/DetallePedido.jsx";
@@ -332,6 +333,7 @@ function App() {
           <Route path="/pago/error" element={<EstadoPago />} />
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
+          <Route path="/newsletter/baja" element={<NewsletterBaja />} />
           <Route
             path="/mi-cuenta"
             element={

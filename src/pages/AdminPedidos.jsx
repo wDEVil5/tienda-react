@@ -170,68 +170,83 @@ function DetallePedido({ detalle, onCambiarEstado, onImprimir, cambiando, errorC
 
   return (
     <div className={styles.detalleContenido}>
-      <div className={styles.detalleCabecera}>
-        <span className={styles.numeroDetalle}>{referencia(detalle.numero)}</span>
-        <span className={styles.badges}>
-          {pagoAprobado && <span className={`${styles.badge} ${styles.estadoPagado}`}>Pagado</span>}
-          <span className={`${styles.badge} ${CLASE_ESTADO[detalle.estado] ?? ""}`}>
-            {ETIQUETA_ESTADO[detalle.estado] ?? detalle.estado}
-          </span>
-        </span>
-      </div>
-
-      <p className={styles.detalleCliente}>{detalle.contacto.nombre}</p>
-      <div className={styles.detalleDatos}>
-        {detalle.contacto.telefono && <span>{detalle.contacto.telefono}</span>}
-        <span>{detalle.contacto.email}</span>
-        <span>{textoEntrega(detalle.direccion)}</span>
-        {pagoAprobado && (
-          <span>
-            {nombreProveedor(pagoAprobado.proveedor)} · verificado{" "}
-            {HORA.format(new Date(pagoAprobado.updatedAt))}
-          </span>
-        )}
-      </div>
-
-      <ul className={styles.items}>
-        {detalle.items.map((item, indice) => (
-          <li className={styles.item} key={`${item.sku}-${indice}`}>
-            {item.productoActual?.imagen ? (
-              <img className={styles.itemImagen} src={item.productoActual.imagen} alt="" />
-            ) : (
-              <span className={styles.itemImagenVacia} aria-hidden="true" />
-            )}
-            <span className={styles.itemNombre}>
-              {item.nombre}
-              <small>× {item.cantidad}</small>
-            </span>
-            <span className={styles.itemSubtotal}>{MONEDA_CLP.format(item.subtotal)}</span>
-          </li>
-        ))}
-      </ul>
-
-      <dl className={styles.totales}>
-        <div>
-          <dt>Subtotal</dt>
-          <dd>{MONEDA_CLP.format(detalle.subtotal)}</dd>
-        </div>
-        {detalle.descuento > 0 && (
+      <div className={styles.seccion}>
+        <div className={styles.detalleCabecera}>
           <div>
-            <dt>Descuento</dt>
-            <dd>−{MONEDA_CLP.format(detalle.descuento)}</dd>
+            <span className={styles.numeroDetalle}>Detalles del Pedido</span>
+            <span className={styles.detalleCliente}>{referencia(detalle.numero)}</span>
           </div>
-        )}
-        <div>
-          <dt>Envío</dt>
-          <dd>{detalle.costoEnvio > 0 ? MONEDA_CLP.format(detalle.costoEnvio) : "Gratis"}</dd>
+          <span className={styles.badges}>
+            {pagoAprobado && <span className={`${styles.badge} ${styles.estadoPagado}`}>Pagado</span>}
+            <span className={`${styles.badge} ${CLASE_ESTADO[detalle.estado] ?? ""}`}>
+              {ETIQUETA_ESTADO[detalle.estado] ?? detalle.estado}
+            </span>
+          </span>
         </div>
-        <div className={styles.totalFinal}>
-          <dt>{pagoAprobado ? "Total pagado" : "Total"}</dt>
-          <dd>{MONEDA_CLP.format(detalle.total)}</dd>
+      </div>
+      <div className={`${styles.seccion} ${styles.detalleDatos}`}>
+        <div className={styles.colDatos}>
+          <strong>Información del Cliente</strong>
+          <span className={styles.clienteNombre}>{detalle.contacto.nombre}</span>
+          <span>{detalle.contacto.email}</span>
+          {detalle.contacto.telefono && <span>{detalle.contacto.telefono}</span>}
         </div>
-      </dl>
+        <div className={`${styles.colDatos} ${styles.envio}`}>
+          <strong>Dirección de Envío</strong>
+          <span>{textoEntrega(detalle.direccion)}</span>
+          {pagoAprobado && (
+            <span>
+              {nombreProveedor(pagoAprobado.proveedor)} · verificado{" "}
+              {HORA.format(new Date(pagoAprobado.updatedAt))}
+            </span>
+          )}
+        </div>
+      </div>
+      <div className={styles.seccion}>
+        <h2 className={styles.seccionTitulo}>Productos ({detalle.cantidadProductos})</h2>
+        <ul className={styles.items}>
+          {detalle.items.map((item, indice) => (
+            <li className={styles.item} key={`${item.sku}-${indice}`}>
+              {item.productoActual?.imagen ? (
+                <img className={styles.itemImagen} src={item.productoActual.imagen} alt="" />
+              ) : (
+                <span className={styles.itemImagenVacia} aria-hidden="true" />
+              )}
+              <span className={styles.itemNombre}>
+                {item.nombre}
+                <small>Qt. {item.cantidad}</small>
+              </span>
+              <span className={styles.itemSubtotal}>{MONEDA_CLP.format(item.subtotal)}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
 
-      <div className={styles.cambiarEstado}>
+      <div className={styles.seccion}>
+        <h2 className={styles.seccionTitulo}>Resumen del Pedido</h2>
+        <dl className={styles.totales}>
+          <div>
+            <dt>Subtotal</dt>
+            <dd>{MONEDA_CLP.format(detalle.subtotal)}</dd>
+          </div>
+          {detalle.descuento > 0 && (
+            <div>
+              <dt>Descuento</dt>
+              <dd>−{MONEDA_CLP.format(detalle.descuento)}</dd>
+            </div>
+          )}
+          <div>
+            <dt>Envío</dt>
+            <dd>{detalle.costoEnvio > 0 ? MONEDA_CLP.format(detalle.costoEnvio) : "Gratis"}</dd>
+          </div>
+          <div className={styles.totalFinal}>
+            <dt>{pagoAprobado ? "TOTAL PAGADO" : "TOTAL"}</dt>
+            <dd>{MONEDA_CLP.format(detalle.total)}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div className={`${styles.seccion} ${styles.cambiarEstado}`}>
         {avances.length > 0 && (
           <>
             <p className={styles.accionesTitulo}>Cambiar estado</p>
@@ -256,7 +271,7 @@ function DetallePedido({ detalle, onCambiarEstado, onImprimir, cambiando, errorC
         {errorCambio && <p className={styles.errorCambio} role="alert">{errorCambio}</p>}
         <div className={styles.accionesSecundarias}>
           <button className={styles.botonImprimir} type="button" onClick={onImprimir}>
-            Imprimir
+            Descargar Factura
           </button>
           {puedeCancelar && (
             <button

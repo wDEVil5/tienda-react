@@ -361,8 +361,8 @@
   }
 
   /* La banda del newsletter ya deja su propio separador: evitar una segunda
-     línea antes del primer acordeón. */
-  .col:first-of-type {
+     línea justo debajo si utilidades es lo que sigue en móvil. */
+  .banda.utilidades {
     border-top: none;
   }
 

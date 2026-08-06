@@ -1,0 +1,91 @@
+.contenedor {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 80px - 400px); /* Aproximadamente altura de pantalla menos header/footer */
+  padding: 48px 24px;
+  background-color: var(--color-crudo);
+}
+
+.tarjeta {
+  background: var(--color-superficie);
+  padding: 48px 40px;
+  border-radius: var(--radio-tarjeta);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+}
+
+.estadoCargando,
+.estadoExito,
+.estadoError {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--color-borde);
+  border-top-color: var(--color-acento);
+  border-radius: 50%;
+  animation: girar 0.8s linear infinite;
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.iconoExito {
+  font-size: 48px;
+  color: var(--color-exito-texto, #0f5132);
+}
+
+.iconoError {
+  font-size: 48px;
+  color: var(--color-error, #d93025);
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--color-texto);
+  margin: 0;
+}
+
+p {
+  color: var(--color-texto-suave);
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 0 0 16px;
+}
+
+.botonVolver,
+.botonVolverSecundario {
+  display: inline-block;
+  padding: 12px 24px;
+  border-radius: var(--radio-input);
+  font-weight: 500;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.botonVolver {
+  background: var(--color-acento);
+  color: white;
+}
+
+.botonVolverSecundario {
+  background: var(--color-borde);
+  color: var(--color-texto);
+}
+
+.botonVolver:hover,
+.botonVolverSecundario:hover {
+  opacity: 0.9;
+}

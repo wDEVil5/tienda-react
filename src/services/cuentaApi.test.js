@@ -13,6 +13,8 @@ import {
   obtenerPedidoCuenta,
   obtenerCuenta,
   registrarCuenta,
+  restablecerContrasenaCuenta,
+  solicitarRecuperacionCuenta,
 } from "./cuentaApi.js";
 
 describe("cuentaApi", () => {
@@ -32,6 +34,49 @@ describe("cuentaApi", () => {
       expect.objectContaining({ credentials: "include" }),
     );
     expect(cliente).toEqual({ id: "c1", nombre: "Wilnes" });
+  });
+
+  it("solicita la recuperación de contraseña con el correo", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 202,
+      json: async () => ({ data: { mensaje: "Si el correo está registrado…" } }),
+    });
+
+    await solicitarRecuperacionCuenta("ana@correo.cl", {
+      fetchImpl,
+      apiUrl: "http://localhost:3000/api",
+    });
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "http://localhost:3000/api/cuenta/contrasena/recuperacion",
+      expect.objectContaining({
+        method: "POST",
+        credentials: "include",
+        body: JSON.stringify({ email: "ana@correo.cl" }),
+      }),
+    );
+  });
+
+  it("restablece la contraseña con el token del enlace", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 204,
+      json: async () => null,
+    });
+
+    await restablecerContrasenaCuenta("tok-abc", "ClaveLarga123", {
+      fetchImpl,
+      apiUrl: "http://localhost:3000/api",
+    });
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "http://localhost:3000/api/cuenta/contrasena/restablecer",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ token: "tok-abc", contrasenaNueva: "ClaveLarga123" }),
+      }),
+    );
   });
 
   it("consulta un pedido solo mediante la sesión actual", async () => {

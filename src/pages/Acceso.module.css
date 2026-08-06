@@ -148,6 +148,8 @@
 }
 
 .enlacePendiente { color: var(--color-acento); cursor: help; white-space: nowrap; }
+.olvide { color: var(--color-acento); white-space: nowrap; text-decoration: none; }
+.olvide:hover { text-decoration: underline; }
 
 .fuerzaContrasena {
   display: grid;

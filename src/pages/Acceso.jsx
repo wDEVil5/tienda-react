@@ -245,12 +245,9 @@ function Acceso({ modo }) {
                 </span>
                 Mantener sesión
               </span>
-              <span
-                className={styles.enlacePendiente}
-                title="La recuperación de contraseña se habilitará con su endpoint de backend."
-              >
+              <Link className={styles.olvide} to="/recuperar-contrasena">
                 Olvidé mi contraseña
-              </span>
+              </Link>
             </div>
           )}
 

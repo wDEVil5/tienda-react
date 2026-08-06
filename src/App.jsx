@@ -13,6 +13,7 @@ import AdminCuenta from "./pages/AdminCuenta.jsx";
 import AdminAcceso from "./pages/AdminAcceso.jsx";
 import AdminEquipo from "./pages/AdminEquipo.jsx";
 import { Login, Registro } from "./pages/Acceso.jsx";
+import { RecuperarContrasena, RestablecerContrasena } from "./pages/RecuperarCuenta.jsx";
 import NewsletterBaja from "./pages/NewsletterBaja.jsx";
 import MiCuenta from "./pages/MiCuenta.jsx";
 import MisPedidos from "./pages/MisPedidos.jsx";
@@ -224,7 +225,7 @@ function App() {
     fuenteCatalogo === "api" ? ofertasDestacadas : null;
   const esCheckout = ubicacion.pathname.startsWith("/checkout");
   const esEstadoPago = ubicacion.pathname.startsWith("/pago/");
-  const esAcceso = ["/login", "/registro"].includes(ubicacion.pathname);
+  const esAcceso = ["/login", "/registro", "/recuperar-contrasena", "/recuperar"].includes(ubicacion.pathname);
   const esMiCuenta = ubicacion.pathname.startsWith("/mi-cuenta");
   const esPantallaPrivada = esAcceso || esMiCuenta || esEstadoPago;
 
@@ -333,6 +334,8 @@ function App() {
           <Route path="/pago/error" element={<EstadoPago />} />
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
+          <Route path="/recuperar-contrasena" element={<RecuperarContrasena />} />
+          <Route path="/recuperar" element={<RestablecerContrasena />} />
           <Route path="/newsletter/baja" element={<NewsletterBaja />} />
           <Route
             path="/mi-cuenta"

@@ -11,6 +11,8 @@ import {
   subirImagenProductoAdmin,
   obtenerProductoAdmin,
   obtenerSesionAdmin,
+  restablecerContrasenaConTokenAdmin,
+  solicitarRecuperacionAdmin,
 } from "./adminApi.js";
 
 describe("adminApi", () => {
@@ -41,6 +43,49 @@ describe("adminApi", () => {
     await expect(
       obtenerSesionAdmin({ fetchImpl, apiUrl: "http://localhost:3000/api" }),
     ).resolves.toBeNull();
+  });
+
+  it("solicita la recuperación de contraseña del staff", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 202,
+      json: async () => ({ data: { mensaje: "Si el correo está registrado…" } }),
+    });
+
+    await solicitarRecuperacionAdmin("ana@correo.cl", {
+      fetchImpl,
+      apiUrl: "http://localhost:3000/api",
+    });
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "http://localhost:3000/api/auth/contrasena/recuperacion",
+      expect.objectContaining({
+        method: "POST",
+        credentials: "include",
+        body: JSON.stringify({ email: "ana@correo.cl" }),
+      }),
+    );
+  });
+
+  it("restablece la contraseña del staff con el token del enlace", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 204,
+      json: async () => null,
+    });
+
+    await restablecerContrasenaConTokenAdmin("tok-abc", "ClaveLarga123", {
+      fetchImpl,
+      apiUrl: "http://localhost:3000/api",
+    });
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "http://localhost:3000/api/auth/contrasena/restablecer",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ token: "tok-abc", contrasenaNueva: "ClaveLarga123" }),
+      }),
+    );
   });
 
   it("inicia sesión con el contrato real de personal", async () => {

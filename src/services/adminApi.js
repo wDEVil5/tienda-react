@@ -143,6 +143,26 @@ export function eliminarUsuarioAdmin(id, opciones = {}) {
   });
 }
 
+// Recuperación de contraseña del propio staff (olvidé mi clave, sin sesión). No
+// confundir con restablecerContrasenaUsuarioAdmin (un ADMIN resetea a un operador).
+// La API responde SIEMPRE igual, exista o no el correo.
+export function solicitarRecuperacionAdmin(email, opciones = {}) {
+  return solicitarAdmin("/auth/contrasena/recuperacion", {
+    ...opciones,
+    method: "POST",
+    cuerpo: { email },
+  });
+}
+
+// Restablece con el token del enlace del correo (204 sin cuerpo).
+export function restablecerContrasenaConTokenAdmin(token, contrasenaNueva, opciones = {}) {
+  return solicitarAdmin("/auth/contrasena/restablecer", {
+    ...opciones,
+    method: "POST",
+    cuerpo: { token, contrasenaNueva },
+  });
+}
+
 export function listarProductosAdmin(
   { page = 1, limit = 20, busqueda = "", estado, ...opciones } = {},
 ) {

@@ -104,6 +104,25 @@ export function cerrarTodasLasSesionesCuenta(opciones = {}) {
   return solicitarCuenta("/cuenta/sesiones", { ...opciones, method: "DELETE" });
 }
 
+// Recuperación de contraseña (olvidé mi clave). La API responde SIEMPRE igual,
+// exista o no el correo: la interfaz nunca sabe (ni muestra) si está registrado.
+export function solicitarRecuperacionCuenta(email, opciones = {}) {
+  return solicitarCuenta("/cuenta/contrasena/recuperacion", {
+    ...opciones,
+    method: "POST",
+    cuerpo: { email },
+  });
+}
+
+// Restablece con el token que viajó en el enlace del correo (204 sin cuerpo).
+export function restablecerContrasenaCuenta(token, contrasenaNueva, opciones = {}) {
+  return solicitarCuenta("/cuenta/contrasena/restablecer", {
+    ...opciones,
+    method: "POST",
+    cuerpo: { token, contrasenaNueva },
+  });
+}
+
 // Estas colecciones pertenecen a la sesión actual: el cliente nunca envía su
 // id. La API lo obtiene desde la cookie httpOnly antes de consultar la base.
 export function listarDireccionesCuenta(opciones = {}) {

@@ -44,6 +44,19 @@ export function crearRepositorioCuenta(db = prisma) {
       })
     },
 
+    // Recuperación de contraseña: cambia la clave y revoca TODAS las sesiones
+    // (no hay sesión "actual" que preservar, a diferencia del cambio con la clave
+    // vigente). Transaccional: nunca deja la clave nueva con sesiones viejas vivas.
+    restablecerContrasena({ clienteId, passwordHash, ahora }) {
+      return db.$transaction(async (tx) => {
+        await tx.cliente.update({ where: { id: clienteId }, data: { passwordHash } })
+        await tx.sesionCliente.updateMany({
+          where: { clienteId, revocadaEn: null, expiraEn: { gt: ahora } },
+          data: { revocadaEn: ahora },
+        })
+      })
+    },
+
     crearSesion({ clienteId, tokenHash, expiraEn }) {
       return db.sesionCliente.create({
         data: { clienteId, tokenHash, expiraEn },

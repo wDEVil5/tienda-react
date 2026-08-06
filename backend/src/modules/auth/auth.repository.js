@@ -63,6 +63,18 @@ export function crearRepositorioAuth(cliente = prisma) {
         data: { revocadaEn: ahora },
       })
     },
+
+    // Recuperación de contraseña: cambia la clave y revoca TODAS las sesiones del
+    // usuario, transaccional (no hay sesión "actual" que preservar).
+    restablecerContrasena({ usuarioId, passwordHash, ahora }) {
+      return cliente.$transaction(async (tx) => {
+        await tx.usuario.update({ where: { id: usuarioId }, data: { passwordHash } })
+        await tx.sesion.updateMany({
+          where: { usuarioId, revocadaEn: null },
+          data: { revocadaEn: ahora },
+        })
+      })
+    },
   }
 }
 

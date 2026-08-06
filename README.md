@@ -32,8 +32,10 @@ evoluciona con Express, PostgreSQL y Prisma.
 - PostgreSQL 16, Prisma 7 y migraciones versionadas.
 - Zod para contratos y validación de entradas.
 - Argon2id, cookies `httpOnly` y sesiones con token hasheado para el personal.
+- Login con Google para clientes (Google Identity Services + verificación del ID
+  token en el servidor).
 - Cloudinary, Multer y Sharp para imágenes de productos y logos de marcas.
-- Servicio de correo con transporte inyectable (memoria/consola/proveedor real).
+- Correo con transporte inyectable (memoria/consola en desarrollo, Brevo en producción).
 - Mercado Pago Checkout Pro en modo prueba, con webhook verificado por servidor.
 - `node:test` + Supertest para reglas y contratos HTTP.
 
@@ -55,8 +57,9 @@ evoluciona con Express, PostgreSQL y Prisma.
   eliminación, deshacer, vaciado y drawer accesible.
 - Checkout en dos pasos con contacto, retiro o despacho, cotización en vivo y
   pago iniciado desde el servidor.
-- Login, registro, perfil, direcciones, historial y detalle de pedidos para
-  clientes.
+- Login (con correo o con Google), registro, recuperación de contraseña, perfil,
+  direcciones, historial y detalle de pedidos para clientes.
+- Suscripción al boletín desde el footer, con correo de bienvenida y baja en un clic.
 - Diseño responsive para escritorio, tablet y móvil; foco visible, navegación
   por teclado y animaciones moderadas.
 
@@ -90,15 +93,17 @@ evoluciona con Express, PostgreSQL y Prisma.
 - Administración protegida de productos, categorías, marcas, logos, etiquetas,
   promociones y operadores.
 - Sesiones de administrador/operador, roles y limitador de intentos de login.
-- Cuentas de clientes como dominio separado del staff: registro, login y logout
-  con cookie de sesión propia, direcciones guardadas e historial de pedidos.
+- Cuentas de clientes como dominio separado del staff: registro, login (con correo
+  o con Google), recuperación de contraseña por correo y logout con cookie de sesión
+  propia, direcciones guardadas e historial de pedidos.
 - Pedidos con montos recalculados por el servidor, snapshots históricos,
   reserva atómica de stock y máquina de estados por modalidad de entrega.
 - Reglas de entrega editables por el administrador (umbral de envío gratis,
   tarifa base, tarifas por comuna y corte de retiro), persistidas en la base;
   el servidor calcula el costo de envío.
-- Notificaciones por correo con transporte inyectable: aviso de reposición al
-  reponer stock y confirmación al crear un pedido.
+- Notificaciones por correo con transporte inyectable (Brevo en producción): aviso
+  de reposición, confirmación de pedido, bienvenida al boletín y recuperación de
+  contraseña.
 - Pagos de prueba con Mercado Pago: preferencia, webhook idempotente y avance
   transaccional de stock/pedido tras la aprobación.
 
@@ -202,18 +207,13 @@ npm run build
 cd backend && npm test
 ```
 
-Actualmente hay 69 pruebas de frontend y 388 de backend para carrito, catálogo,
-autenticación, administración, imágenes, promociones, pedidos, stock,
-transiciones, cuentas de clientes, avisos, correo y pagos.
-
 ## Próximos pasos
 
 1. Resolver y verificar el retorno de Mercado Pago hacia la confirmación de la
    tienda en el entorno público HTTPS; el webhook ya es la fuente de verdad.
 2. Completar las secciones del panel aún pendientes (Inventario, Clientes,
    Identidad y Contenido) sobre los endpoints ya existentes.
-3. Conectar un proveedor de correo real (hoy corre con transporte de consola) y
-   verificar la firma del webhook de Mercado Pago (`x-signature`).
+3. Verificar la firma del webhook de Mercado Pago (`x-signature`) en producción.
 4. App móvil con React Native/Expo (fase posterior del roadmap).
 
 El alcance y las decisiones de producto se mantienen en un PRD.

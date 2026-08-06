@@ -64,7 +64,9 @@ async function solicitarNewsletter(
 }
 
 export async function suscribirNewsletter(email, dependencias) {
-  return solicitarNewsletter("/api/newsletter", {
+  // VITE_API_URL ya incluye el prefijo /api (igual que el resto de servicios),
+  // por eso la ruta empieza en /newsletter, no en /api/newsletter.
+  return solicitarNewsletter("/newsletter", {
     method: "POST",
     cuerpo: { email },
     ...dependencias,
@@ -72,7 +74,7 @@ export async function suscribirNewsletter(email, dependencias) {
 }
 
 export async function bajaNewsletter(token, dependencias) {
-  return solicitarNewsletter("/api/newsletter/baja", {
+  return solicitarNewsletter("/newsletter/baja", {
     method: "POST",
     cuerpo: { token },
     ...dependencias,

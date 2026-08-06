@@ -2,7 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import { suscribirNewsletter, bajaNewsletter, ErrorNewsletterApi } from "./newsletterApi.js";
 
 describe("newsletterApi", () => {
-  const apiUrl = "http://localhost:3000";
+  // VITE_API_URL siempre incluye el prefijo /api; los tests usan la misma forma.
+  const apiUrl = "http://localhost:3000/api";
 
   describe("suscribirNewsletter", () => {
     it("llama al endpoint de suscripción con el email correcto", async () => {
@@ -17,7 +18,7 @@ describe("newsletterApi", () => {
         apiUrl,
       });
 
-      expect(fetchImpl).toHaveBeenCalledWith(`${apiUrl}/api/newsletter`, {
+      expect(fetchImpl).toHaveBeenCalledWith(`${apiUrl}/newsletter`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: "test@example.com" }),
@@ -76,7 +77,7 @@ describe("newsletterApi", () => {
 
       await bajaNewsletter("token-123", { fetchImpl, apiUrl });
 
-      expect(fetchImpl).toHaveBeenCalledWith(`${apiUrl}/api/newsletter/baja`, {
+      expect(fetchImpl).toHaveBeenCalledWith(`${apiUrl}/newsletter/baja`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: "token-123" }),

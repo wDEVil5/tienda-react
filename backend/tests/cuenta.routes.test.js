@@ -233,3 +233,46 @@ test('POST /logout revoca la sesión y limpia la cookie', async () => {
   assert.equal(response.status, 204)
   assert.equal(revocado, true)
 })
+
+test('POST /google abre sesión y setea la cookie de cliente', async () => {
+  const app = crearApp({
+    async iniciarConGoogle({ idToken }) {
+      assert.equal(idToken, 'id-token-google')
+      return { token: 'tokg', expiraEn: new Date(), cliente: { id: 'c1', email: 'w@gmail.com' } }
+    },
+  })
+
+  const response = await request(app)
+    .post('/api/cuenta/google')
+    .send({ idToken: 'id-token-google' })
+
+  assert.equal(response.status, 200)
+  assert.equal(response.body.data.cliente.email, 'w@gmail.com')
+  assert.match(response.headers['set-cookie'][0], /sesion_cliente=tokg/)
+})
+
+test('POST /google responde 400 si falta el idToken', async () => {
+  const app = crearApp({
+    async iniciarConGoogle() {
+      throw new Error('no debería llamarse')
+    },
+  })
+
+  const response = await request(app).post('/api/cuenta/google').send({})
+
+  assert.equal(response.status, 400)
+  assert.equal(response.body.error.code, 'INVALID_GOOGLE_TOKEN')
+})
+
+test('POST /google responde 401 si el token es inválido', async () => {
+  const app = crearApp({
+    async iniciarConGoogle() {
+      throw new ErrorCuenta('INVALID_GOOGLE_TOKEN', 'No pudimos validar tu cuenta de Google.')
+    },
+  })
+
+  const response = await request(app).post('/api/cuenta/google').send({ idToken: 'malo' })
+
+  assert.equal(response.status, 401)
+  assert.equal(response.body.error.code, 'INVALID_GOOGLE_TOKEN')
+})

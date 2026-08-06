@@ -3,6 +3,7 @@ import {
   ErrorCuenta,
   cerrarSesion,
   iniciarSesion,
+  iniciarConGoogle,
   obtenerSesionActiva,
   registrar,
   actualizarPerfil,
@@ -37,6 +38,7 @@ export function crearRouterCuenta(
   servicio = {
     registrar,
     iniciarSesion,
+    iniciarConGoogle,
     obtenerSesionActiva,
     cerrarSesion,
     actualizarPerfil,
@@ -107,6 +109,38 @@ export function crearRouterCuenta(
         data: { cliente: resultado.cliente, expiraEn: resultado.expiraEn },
       })
     } catch (error) {
+      return next(error)
+    }
+  })
+
+  // Login con Google: recibe el ID token del frontend y desemboca en la misma
+  // cookie de sesión que el login por contraseña. Sin sesión previa requerida.
+  cuentaRouter.post('/google', async (request, response, next) => {
+    const idToken = typeof request.body?.idToken === 'string' ? request.body.idToken : ''
+    if (!idToken) {
+      return response.status(400).json({
+        error: { code: 'INVALID_GOOGLE_TOKEN', message: 'Falta el token de Google.' },
+      })
+    }
+
+    try {
+      const resultado = await servicio.iniciarConGoogle({ idToken })
+      response.cookie('sesion_cliente', resultado.token, {
+        ...opcionesCookie(),
+        maxAge: DURACION_COOKIE_SESION_MS,
+      })
+      return response.json({
+        data: { cliente: resultado.cliente, expiraEn: resultado.expiraEn },
+      })
+    } catch (error) {
+      if (error instanceof ErrorCuenta) {
+        // EMAIL_TAKEN es conflicto (409); token inválido o correo sin verificar
+        // son fallos de autenticación (401).
+        const status = error.code === 'EMAIL_TAKEN' ? 409 : 401
+        return response.status(status).json({
+          error: { code: error.code, message: error.message },
+        })
+      }
       return next(error)
     }
   })

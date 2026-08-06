@@ -18,6 +18,27 @@ export function crearRepositorioCuenta(db = prisma) {
       })
     },
 
+    buscarClienteActivoPorGoogleId(googleId) {
+      return db.cliente.findFirst({ where: { googleId, activo: true } })
+    },
+
+    // Cuenta creada solo con Google: sin passwordHash (login por contraseña queda
+    // deshabilitado hasta que el cliente defina una por "recuperar contraseña").
+    crearClienteGoogle({ nombre, email, googleId }) {
+      return db.cliente.create({
+        data: { nombre, email, googleId },
+      })
+    },
+
+    // Fusión por email: enlaza la cuenta existente con su Google sin tocar la
+    // contraseña. A partir de aquí el cliente puede entrar por ambos caminos.
+    enlazarGoogle(id, googleId) {
+      return db.cliente.update({
+        where: { id },
+        data: { googleId },
+      })
+    },
+
     // El id viene siempre de una sesión validada; nunca de un campo enviado
     // por el navegador. Email y passwordHash no pertenecen a este update.
     actualizarPerfilCliente(id, { nombre, telefono }) {

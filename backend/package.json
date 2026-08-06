@@ -23,6 +23,7 @@
     "cloudinary": "^2.10.0",
     "cors": "^2.8.6",
     "express": "^5.1.0",
+    "google-auth-library": "^11.0.0",
     "multer": "^2.2.0",
     "pg": "^8.22.0",
     "sharp": "^0.35.3",

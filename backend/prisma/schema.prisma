@@ -382,7 +382,13 @@ model Cliente {
   id           String   @id @default(uuid()) @db.Uuid
   nombre       String   @db.VarChar(120)
   email        String   @unique @db.VarChar(255)
-  passwordHash String   @map("password_hash") @db.VarChar(255)
+  // Opcional: una cuenta creada solo con Google no tiene contraseña. Con Google +
+  // contraseña conviven (cuenta fusionada). Si es null, el login por contraseña
+  // debe rechazarse con el mismo error genérico que credenciales inválidas.
+  passwordHash String?  @map("password_hash") @db.VarChar(255)
+  // Identificador estable del usuario en Google (claim `sub` del ID token). Único
+  // para que dos clientes no puedan enlazar la misma cuenta de Google.
+  googleId     String?  @unique @map("google_id") @db.VarChar(255)
   telefono     String?  @db.VarChar(40)
   activo       Boolean  @default(true)
   createdAt    DateTime @default(now()) @map("created_at")

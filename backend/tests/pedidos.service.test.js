@@ -445,3 +445,73 @@ test('obtenerPedidoDeCliente pasa el clienteId y devuelve null si no es suyo', a
   const detalle = await servicioPropio.obtenerPedidoDeCliente('cli-1', 'p1')
   assert.equal(detalle.numero, 5)
 })
+
+test('obtenerDetallePedido agrega stats del cliente y marca frecuente con >=3 pagados', async () => {
+  let statsPedidas = null
+  const servicio = crearServicioPedidos({
+    async obtenerPorId() {
+      return {
+        id: 'ped-9', numero: 9, estado: 'PREPARANDO', modalidad: 'DESPACHO', clienteId: 'cli-1',
+        contactoNombre: 'Sebastián', contactoEmail: 's@correo.cl', contactoTelefono: '+56 9',
+        dirCalle: 'Av 285', dirDepto: '502', dirComuna: 'Providencia', dirRegion: 'RM', dirInstrucciones: null,
+        subtotal: 57190, descuento: 4290, costoEnvio: 0, total: 52900,
+        createdAt: new Date('2026-08-06T22:27:00.000Z'),
+        items: [{ nombre: 'Leche', sku: 'LE', cantidad: 3, precioNormal: 4290, precioFinal: 4290, subtotal: 12870 }],
+        eventos: [],
+        pagos: [{ proveedor: 'MERCADO_PAGO', estado: 'APROBADO', createdAt: new Date(), updatedAt: new Date() }],
+      }
+    },
+    async estadisticasCliente(clienteId, opciones) {
+      statsPedidas = { clienteId, opciones }
+      return { pedidosAnteriores: 8, pedidosPagados: 4, totalGastado: 278450 }
+    },
+  })
+
+  const detalle = await servicio.obtenerDetallePedido('ped-9')
+
+  // Se consultó por el cliente del pedido, excluyendo el pedido actual.
+  assert.deepEqual(statsPedidas, { clienteId: 'cli-1', opciones: { excluyendoId: 'ped-9' } })
+  assert.equal(detalle.cliente.pedidosAnteriores, 8)
+  assert.equal(detalle.cliente.totalGastado, 278450)
+  assert.equal(detalle.cliente.frecuente, true) // 4 pagados >= 3
+})
+
+test('obtenerDetallePedido: cliente NO frecuente con menos de 3 pagados', async () => {
+  const servicio = crearServicioPedidos({
+    async obtenerPorId() {
+      return {
+        id: 'ped-2', numero: 2, estado: 'PENDIENTE', modalidad: 'RETIRO', clienteId: 'cli-2',
+        contactoNombre: 'Ana', contactoEmail: 'a@c.cl', contactoTelefono: '+56 9',
+        dirCalle: null, dirDepto: null, dirComuna: null, dirRegion: null, dirInstrucciones: null,
+        subtotal: 5000, descuento: 0, costoEnvio: 0, total: 5000,
+        createdAt: new Date(), items: [], eventos: [],
+      }
+    },
+    async estadisticasCliente() {
+      return { pedidosAnteriores: 1, pedidosPagados: 2, totalGastado: 9000 }
+    },
+  })
+
+  const detalle = await servicio.obtenerDetallePedido('ped-2')
+  assert.equal(detalle.cliente.frecuente, false) // 2 < 3
+})
+
+test('obtenerDetallePedido: pedido de invitado (sin clienteId) deja cliente en null', async () => {
+  let llamado = false
+  const servicio = crearServicioPedidos({
+    async obtenerPorId() {
+      return {
+        id: 'ped-inv', numero: 3, estado: 'PENDIENTE', modalidad: 'RETIRO', clienteId: null,
+        contactoNombre: 'Invitado', contactoEmail: 'inv@c.cl', contactoTelefono: '+56 9',
+        dirCalle: null, dirDepto: null, dirComuna: null, dirRegion: null, dirInstrucciones: null,
+        subtotal: 5000, descuento: 0, costoEnvio: 0, total: 5000,
+        createdAt: new Date(), items: [], eventos: [],
+      }
+    },
+    async estadisticasCliente() { llamado = true; return {} },
+  })
+
+  const detalle = await servicio.obtenerDetallePedido('ped-inv')
+  assert.equal(detalle.cliente, null)
+  assert.equal(llamado, false)
+})

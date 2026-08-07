@@ -147,6 +147,9 @@ function crearDetallePedido(pedido) {
           : null,
       }
     }),
+    // Stats del cliente (pedidos previos, total gastado, frecuente). Lo llena el
+    // servicio en el detalle del panel; null para invitados o vistas de cliente.
+    cliente: null,
     subtotal: pedido.subtotal,
     descuento: pedido.descuento,
     costoEnvio: pedido.costoEnvio,
@@ -170,6 +173,11 @@ function crearDetallePedido(pedido) {
 // libera su reserva. Configurable por entorno; 24 h es holgado para no cancelar
 // pedidos legítimos que el dueño todavía no alcanzó a aceptar.
 const MINUTOS_EXPIRACION_PENDIENTE = Number(process.env.MINUTOS_EXPIRACION_PENDIENTE) || 24 * 60
+
+// A partir de cuántos pedidos pagados un cliente se marca como "frecuente" en el
+// panel. Umbral de negocio, fácil de ajustar; 3 es el punto típico de "cliente
+// que ya volvió más de una vez".
+const UMBRAL_CLIENTE_FRECUENTE = 3
 
 export function crearServicioPedidos(
   repositorio = repositorioPedidos,
@@ -274,7 +282,23 @@ export function crearServicioPedidos(
 
     async obtenerDetallePedido(id) {
       const pedido = await repositorio.obtenerPorId(id)
-      return pedido ? crearDetallePedido(pedido) : null
+      if (!pedido) return null
+
+      const detalle = crearDetallePedido(pedido)
+
+      // Stats del cliente para el panel: solo si el pedido tiene cuenta asociada
+      // (los de invitado no se pueden agregar de forma confiable). "Frecuente" es
+      // una regla de negocio que vive aquí, no en el repositorio.
+      if (pedido.clienteId) {
+        const stats = await repositorio.estadisticasCliente(pedido.clienteId, { excluyendoId: id })
+        detalle.cliente = {
+          pedidosAnteriores: stats.pedidosAnteriores,
+          totalGastado: stats.totalGastado,
+          frecuente: stats.pedidosPagados >= UMBRAL_CLIENTE_FRECUENTE,
+        }
+      }
+
+      return detalle
     },
 
     // Historial del cliente: mismas formas que el panel, pero SIEMPRE acotadas a

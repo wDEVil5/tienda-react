@@ -268,6 +268,31 @@ export function crearRepositorioPedidos(cliente = prisma) {
         })
       })
     },
+
+    // Estadísticas del cliente para el detalle del panel: cuántos pedidos previos
+    // tiene y cuánto lleva gastado. "Anteriores" excluye el pedido actual y los
+    // cancelados; "pagados" y "gastado" cuentan solo pedidos con pago APROBADO
+    // (ingreso real). Devuelve conteos crudos: la regla de "frecuente" (umbral)
+    // la decide el servicio. Solo se llama con clienteId (los invitados no pasan).
+    async estadisticasCliente(clienteId, { excluyendoId } = {}) {
+      const wherePagado = { clienteId, pagos: { some: { estado: 'APROBADO' } } }
+      const [pedidosAnteriores, pedidosPagados, gastado] = await Promise.all([
+        cliente.pedido.count({
+          where: {
+            clienteId,
+            estado: { not: 'CANCELADO' },
+            ...(excluyendoId ? { id: { not: excluyendoId } } : {}),
+          },
+        }),
+        cliente.pedido.count({ where: wherePagado }),
+        cliente.pedido.aggregate({ _sum: { total: true }, where: wherePagado }),
+      ])
+      return {
+        pedidosAnteriores,
+        pedidosPagados,
+        totalGastado: gastado._sum.total ?? 0,
+      }
+    },
   }
 }
 

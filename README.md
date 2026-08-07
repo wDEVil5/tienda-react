@@ -6,7 +6,7 @@ evoluciona con Express, PostgreSQL y Prisma.
 
 ## Demo
 
-[Ver demo pública](https://sumarketexpress.pages.dev/)
+[Ver demo pública](https://sumarketexpress.sumarket.workers.dev/)
 
 > La demo en vivo consume la **API propia desplegada** (Render + PostgreSQL en
 > Supabase). Si esa API gratuita está dormida y la primera petición se pasa de
@@ -127,7 +127,7 @@ La aplicación está desplegada de forma gratuita (portafolio):
 
 | Capa | Servicio | URL |
 |---|---|---|
-| Frontend | Cloudflare Pages | https://sumarketexpress.pages.dev/ |
+| Frontend | Cloudflare Pages (Workers) | https://sumarketexpress.sumarket.workers.dev/ |
 | API | Render | https://sumarket-express-api.onrender.com/api |
 | Base de datos | Supabase (PostgreSQL) | — |
 | Pagos | Mercado Pago (pruebas) | — |
@@ -139,7 +139,7 @@ inactividad, la primera visita puede tardar unos segundos en responder mientras
 despierta.
 
 > **Limitación conocida — sesión en Safari (y navegadores con cookies de
-> terceros bloqueadas).** El frontend (`pages.dev`) y la API (`onrender.com`)
+> terceros bloqueadas).** El frontend (`workers.dev`) y la API (`onrender.com`)
 > son **sitios distintos**, así que la cookie de sesión viaja *cross-site*
 > (`SameSite=None; Secure`). Chrome la acepta, pero Safari la bloquea por
 > defecto. Se resuelve sirviendo front y API desde el **mismo origen** (dominio

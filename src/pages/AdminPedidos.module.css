@@ -405,21 +405,28 @@
 /* Cliente */
 .clienteEncabezado {
   display: flex;
-  align-items: center;
-  gap: 14px;
+  align-items: flex-start;
+  gap: 20px;
 }
 
 .avatar {
   display: grid;
   place-items: center;
-  width: 46px;
-  height: 46px;
+  width: 62px;
+  height: 62px;
   flex: 0 0 auto;
   border-radius: 50%;
   background: var(--color-acento);
   color: #fff;
-  font-size: 15px;
+  font-size: 22px;
   font-weight: 600;
+}
+
+.clienteDetalles {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 4px;
 }
 
 .clienteIdentidad {
@@ -433,7 +440,7 @@
 .clienteNombre {
   color: var(--color-texto);
   font-size: 17px;
-  font-weight: 500;
+  font-weight: 600;
   text-transform: capitalize;
 }
 
@@ -444,19 +451,18 @@
   padding: 3px 10px;
   border: 1px solid var(--color-acento);
   border-radius: var(--radio-pill);
-  background: transparent;
+  background: var(--color-acento-bg);
   color: var(--color-acento);
   font-size: 11.5px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .clienteContacto {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 18px;
+  gap: 12px;
   color: var(--color-texto-suave);
-  font-size: 13px;
+  font-size: 13.5px;
 }
 
 .contactoLinea {
@@ -475,16 +481,24 @@
 .clienteStats {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
   margin-top: 22px;
   padding-top: 22px;
-  border-top: 1px solid var(--color-borde-2);
+  border-top: 1px dashed var(--color-borde-2);
 }
 
 .statCaja {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.statCaja:first-child {
+  padding-right: 20px;
+}
+
+.statCaja:last-child {
+  padding-left: 24px;
+  border-left: 1px dashed var(--color-borde-2);
 }
 
 .statIcono {

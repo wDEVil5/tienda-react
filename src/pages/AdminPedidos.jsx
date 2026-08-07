@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Navigate, useSearchParams } from "react-router-dom";
 import AdminShell from "../components/admin/AdminShell.jsx";
+import { useReglas } from "../context/ReglasContext.jsx";
 import {
   cambiarEstadoPedidoAdmin,
   ErrorAdminApi,
@@ -89,7 +90,6 @@ const FECHA = new Intl.DateTimeFormat("es-CL", {
   hour: "2-digit",
   minute: "2-digit",
 });
-const HORA = new Intl.DateTimeFormat("es-CL", { hour: "2-digit", minute: "2-digit" });
 const FECHA_LARGA = new Intl.DateTimeFormat("es-CL", {
   day: "2-digit",
   month: "long",
@@ -162,129 +162,430 @@ function descargarArchivo(texto, nombre) {
   URL.revokeObjectURL(url);
 }
 
-function DetallePedido({ detalle, onCambiarEstado, onImprimir, cambiando, errorCambio }) {
+// Ventana de entrega a nivel tienda (igual para todos los despachos). Constante
+// por ahora; se vuelve dinámica cuando exista una regla/campo real.
+const HORARIO_ENTREGA = "Lun a Vie · 09:00 a 18:00";
+
+// Progresión de estados por modalidad, para el stepper de "Estado del pedido".
+const FLUJO_ESTADOS = {
+  DESPACHO: ["PENDIENTE", "PREPARANDO", "ENVIADO", "ENTREGADO"],
+  RETIRO: ["PENDIENTE", "PREPARANDO", "LISTO_PARA_RETIRO", "ENTREGADO"],
+};
+
+function iniciales(nombre) {
+  return (nombre ?? "")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((parte) => parte[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
+function tipoEnvio(modalidad) {
+  return modalidad === "DESPACHO" ? "Despacho a domicilio" : "Retiro en tienda";
+}
+
+function lineaDireccion(direccion) {
+  return [direccion.calle, direccion.comuna, direccion.region].filter(Boolean).join(", ");
+}
+
+// Arma los pasos del stepper (hecho / actual / pendiente) con su fecha, tomada de
+// los eventos. El primer paso se muestra como "Pagado" cuando hay pago aprobado.
+function construirPasos(detalle, pagoAprobado) {
+  const flujo = FLUJO_ESTADOS[detalle.modalidad] ?? FLUJO_ESTADOS.DESPACHO;
+  const indiceActual = flujo.indexOf(detalle.estado);
+  const fechaDe = new Map((detalle.eventos ?? []).map((evento) => [evento.estado, evento.createdAt]));
+  return flujo.map((estado, indice) => {
+    const primero = indice === 0;
+    const fecha = primero && pagoAprobado ? pagoAprobado.updatedAt : fechaDe.get(estado);
+    const hecho = indiceActual > indice;
+    const actual = indiceActual === indice;
+    return {
+      estado,
+      label: primero && pagoAprobado ? "Pagado" : ETIQUETA_ESTADO[estado],
+      hecho,
+      actual,
+      fecha: (hecho || actual) && fecha ? FECHA.format(new Date(fecha)) : null,
+    };
+  });
+}
+
+// Iconos inline (trazo, 24×24) — sin dependencias ni estilos inline.
+function Ico({ d, size = 16, relleno = false }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill={relleno ? "currentColor" : "none"}
+      stroke={relleno ? "none" : "currentColor"}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {d}
+    </svg>
+  );
+}
+const ICO_USUARIO = (
+  <>
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </>
+);
+const ICO_CAMION = (
+  <>
+    <path d="M1 3h15v13H1z" />
+    <path d="M16 8h4l3 3v5h-7z" />
+    <circle cx="5.5" cy="18.5" r="2.5" />
+    <circle cx="18.5" cy="18.5" r="2.5" />
+  </>
+);
+const ICO_MAIL = (
+  <>
+    <rect x="2" y="4" width="20" height="16" rx="2" />
+    <path d="m22 7-10 6L2 7" />
+  </>
+);
+const ICO_TEL = (
+  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
+);
+const ICO_CHECK = <path d="M20 6 9 17l-5-5" />;
+const ICO_ESTRELLA = (
+  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+);
+const ICO_CASA = (
+  <>
+    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+    <path d="M9 22V12h6v10" />
+  </>
+);
+const ICO_TIENDA = (
+  <>
+    <path d="M3 9 4.5 3h15L21 9" />
+    <path d="M4 9v11a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9" />
+    <path d="M3 9h18" />
+  </>
+);
+const ICO_CALENDARIO = (
+  <>
+    <rect x="3" y="4" width="18" height="18" rx="2" />
+    <path d="M16 2v4M8 2v4M3 10h18" />
+  </>
+);
+const ICO_BOLSA = (
+  <>
+    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+    <path d="M3 6h18" />
+    <path d="M16 10a4 4 0 0 1-8 0" />
+  </>
+);
+const ICO_BILLETERA = (
+  <>
+    <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+    <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+    <path d="M18 12a2 2 0 0 0 0 4h4v-4z" />
+  </>
+);
+const ICO_INFO = (
+  <>
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 16v-4M12 8h.01" />
+  </>
+);
+const ICO_AVION = (
+  <>
+    <path d="m22 2-7 20-4-9-9-4z" />
+    <path d="M22 2 11 13" />
+  </>
+);
+const ICO_BASURA = (
+  <>
+    <path d="M3 6h18" />
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+  </>
+);
+const ICO_DESCARGA = (
+  <>
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <path d="m7 10 5 5 5-5" />
+    <path d="M12 15V3" />
+  </>
+);
+
+function DetallePedido({ detalle, umbralEnvioGratis, onCambiarEstado, onImprimir, cambiando, errorCambio }) {
   const pagoAprobado = (detalle.pagos ?? []).find((pago) => pago.estado === "APROBADO");
   const transiciones = TRANSICIONES[detalle.modalidad]?.[detalle.estado] ?? [];
-  const avances = transiciones.filter((estadoDestino) => estadoDestino !== "CANCELADO");
+  const siguiente = transiciones.find((estadoDestino) => estadoDestino !== "CANCELADO") ?? null;
   const puedeCancelar = transiciones.includes("CANCELADO");
+  const stats = detalle.cliente;
+  const cancelado = detalle.estado === "CANCELADO";
+  const pasos = cancelado ? [] : construirPasos(detalle, pagoAprobado);
 
   return (
     <div className={styles.detalleContenido}>
-      <div className={styles.seccion}>
-        <div className={styles.detalleCabecera}>
-          <div>
-            <span className={styles.numeroDetalle}>Detalles del Pedido</span>
-            <span className={styles.detalleCliente}>{referencia(detalle.numero)}</span>
-          </div>
-          <span className={styles.badges}>
-            {pagoAprobado && <span className={`${styles.badge} ${styles.estadoPagado}`}>Pagado</span>}
-            <span className={`${styles.badge} ${CLASE_ESTADO[detalle.estado] ?? ""}`}>
-              {ETIQUETA_ESTADO[detalle.estado] ?? detalle.estado}
+      <header className={styles.detalleCabecera}>
+        <h2 className={styles.detalleTitulo}>Detalles del Pedido {referencia(detalle.numero)}</h2>
+        <div className={styles.badges}>
+          {pagoAprobado && (
+            <span className={styles.badgePagado}>
+              <Ico d={ICO_CHECK} size={13} /> Pagado
             </span>
+          )}
+          <span className={`${styles.badge} ${CLASE_ESTADO[detalle.estado] ?? ""}`}>
+            {ETIQUETA_ESTADO[detalle.estado] ?? detalle.estado}
           </span>
         </div>
-      </div>
-      <div className={`${styles.seccion} ${styles.detalleDatos}`}>
-        <div className={styles.colDatos}>
-          <strong>Información del Cliente</strong>
-          <span className={styles.clienteNombre}>{detalle.contacto.nombre}</span>
-          <span>{detalle.contacto.email}</span>
-          {detalle.contacto.telefono && <span>{detalle.contacto.telefono}</span>}
-        </div>
-        <div className={`${styles.colDatos} ${styles.envio}`}>
-          <strong>Dirección de Envío</strong>
-          <span>{textoEntrega(detalle.direccion)}</span>
-          {pagoAprobado && (
-            <span>
-              {nombreProveedor(pagoAprobado.proveedor)} · verificado{" "}
-              {HORA.format(new Date(pagoAprobado.updatedAt))}
-            </span>
-          )}
-        </div>
-      </div>
-      <div className={styles.seccion}>
-        <h2 className={styles.seccionTitulo}>Productos ({detalle.cantidadProductos})</h2>
-        <ul className={styles.items}>
-          {detalle.items.map((item, indice) => (
-            <li className={styles.item} key={`${item.sku}-${indice}`}>
-              {item.productoActual?.imagen ? (
-                <img className={styles.itemImagen} src={item.productoActual.imagen} alt="" />
-              ) : (
-                <span className={styles.itemImagenVacia} aria-hidden="true" />
-              )}
-              <span className={styles.itemNombre}>
-                {item.nombre}
-                <small>Qt. {item.cantidad}</small>
-              </span>
-              <span className={styles.itemSubtotal}>{MONEDA_CLP.format(item.subtotal)}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+      </header>
 
-      <div className={styles.seccion}>
-        <h2 className={styles.seccionTitulo}>Resumen del Pedido</h2>
-        <dl className={styles.totales}>
-          <div>
-            <dt>Subtotal</dt>
-            <dd>{MONEDA_CLP.format(detalle.subtotal)}</dd>
+      <div className={styles.tarjetasInfo}>
+        <section className={styles.tarjeta}>
+          <h3 className={styles.tarjetaTitulo}>
+            <Ico d={ICO_USUARIO} size={18} /> Información del cliente
+          </h3>
+          <div className={styles.clienteEncabezado}>
+            <span className={styles.avatar} aria-hidden="true">{iniciales(detalle.contacto.nombre)}</span>
+            <div className={styles.clienteIdentidad}>
+              <span className={styles.clienteNombre}>{detalle.contacto.nombre}</span>
+              {stats?.frecuente && (
+                <span className={styles.badgeFrecuente}>
+                  <Ico d={ICO_ESTRELLA} size={12} relleno /> Cliente frecuente
+                </span>
+              )}
+            </div>
           </div>
-          {detalle.descuento > 0 && (
-            <div>
-              <dt>Descuento</dt>
-              <dd>−{MONEDA_CLP.format(detalle.descuento)}</dd>
+          <div className={styles.clienteContacto}>
+            <span className={styles.contactoLinea}>
+              <Ico d={ICO_MAIL} size={15} /> {detalle.contacto.email}
+            </span>
+            {detalle.contacto.telefono && (
+              <span className={styles.contactoLinea}>
+                <Ico d={ICO_TEL} size={15} /> {detalle.contacto.telefono}
+              </span>
+            )}
+          </div>
+          {stats && (
+            <div className={styles.clienteStats}>
+              <div className={styles.statCaja}>
+                <span className={styles.statIcono}><Ico d={ICO_BOLSA} size={18} /></span>
+                <span className={styles.statTexto}>
+                  <span className={styles.statLabel}>Pedidos anteriores</span>
+                  <span className={styles.statValor}>{stats.pedidosAnteriores}</span>
+                </span>
+              </div>
+              <div className={styles.statCaja}>
+                <span className={styles.statIcono}><Ico d={ICO_BILLETERA} size={18} /></span>
+                <span className={styles.statTexto}>
+                  <span className={styles.statLabel}>Total gastado</span>
+                  <span className={styles.statValor}>{MONEDA_CLP.format(stats.totalGastado)}</span>
+                </span>
+              </div>
             </div>
           )}
-          <div>
-            <dt>Envío</dt>
-            <dd>{detalle.costoEnvio > 0 ? MONEDA_CLP.format(detalle.costoEnvio) : "Gratis"}</dd>
-          </div>
-          <div className={styles.totalFinal}>
-            <dt>{pagoAprobado ? "TOTAL PAGADO" : "TOTAL"}</dt>
-            <dd>{MONEDA_CLP.format(detalle.total)}</dd>
-          </div>
-        </dl>
+        </section>
+
+        <section className={styles.tarjeta}>
+          <h3 className={styles.tarjetaTitulo}>
+            <Ico d={ICO_CAMION} size={18} /> Modalidad de envío y pago
+          </h3>
+          <dl className={styles.datosEnvio}>
+            <div className={styles.filaEnvio}>
+              <dt>Tipo de envío</dt>
+              <dd>
+                <Ico d={detalle.modalidad === "DESPACHO" ? ICO_CASA : ICO_TIENDA} size={15} />
+                {tipoEnvio(detalle.modalidad)}
+              </dd>
+            </div>
+            {detalle.modalidad === "DESPACHO" && detalle.direccion && (
+              <>
+                <div className={styles.filaEnvio}>
+                  <dt>Dirección de envío</dt>
+                  <dd>{lineaDireccion(detalle.direccion)}</dd>
+                </div>
+                {detalle.direccion.depto && (
+                  <div className={styles.filaEnvio}>
+                    <dt>Referencia</dt>
+                    <dd>{detalle.direccion.depto}</dd>
+                  </div>
+                )}
+                <div className={styles.filaEnvio}>
+                  <dt>Horario de entrega</dt>
+                  <dd>
+                    <Ico d={ICO_CALENDARIO} size={15} />
+                    {HORARIO_ENTREGA}
+                  </dd>
+                </div>
+              </>
+            )}
+            <div className={styles.filaEnvio}>
+              <dt>Método de pago</dt>
+              <dd>
+                {pagoAprobado ? (
+                  <>
+                    {nombreProveedor(pagoAprobado.proveedor)}
+                    <span className={styles.chipVerificado}>Verificado</span>
+                  </>
+                ) : (
+                  "Pendiente"
+                )}
+              </dd>
+            </div>
+            {pagoAprobado && (
+              <div className={styles.filaEnvio}>
+                <dt>Pago confirmado</dt>
+                <dd>
+                  <Ico d={ICO_CALENDARIO} size={15} />
+                  {FECHA.format(new Date(pagoAprobado.updatedAt))}
+                </dd>
+              </div>
+            )}
+          </dl>
+        </section>
       </div>
 
-      <div className={`${styles.seccion} ${styles.cambiarEstado}`}>
-        {avances.length > 0 && (
-          <>
-            <p className={styles.accionesTitulo}>Cambiar estado</p>
-            <div className={styles.accionesBotones}>
-              {avances.map((estadoDestino) => (
+      <div className={styles.productosResumen}>
+        <section className={styles.tarjeta}>
+          <h3 className={styles.tarjetaTitulo}>Productos ({detalle.items.length})</h3>
+          <div className={styles.tablaScroll}>
+            <table className={styles.tablaProductos}>
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th className={styles.colCant}>Cantidad</th>
+                  <th className={styles.colNum}>Precio unit.</th>
+                  <th className={styles.colNum}>Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {detalle.items.map((item, indice) => (
+                  <tr key={`${item.sku}-${indice}`}>
+                    <td className={styles.celdaProducto}>
+                      {item.productoActual?.imagen ? (
+                        <img className={styles.itemImagen} src={item.productoActual.imagen} alt="" />
+                      ) : (
+                        <span className={styles.itemImagenVacia} aria-hidden="true" />
+                      )}
+                      <span className={styles.itemNombre}>{item.nombre}</span>
+                    </td>
+                    <td className={styles.colCant}>{item.cantidad}</td>
+                    <td className={styles.colNum}>{MONEDA_CLP.format(item.precioFinal)}</td>
+                    <td className={styles.colNum}>{MONEDA_CLP.format(item.subtotal)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className={`${styles.tarjeta} ${styles.tarjetaResumen}`}>
+          <h3 className={styles.tarjetaTitulo}>Resumen del pedido</h3>
+          <dl className={styles.totales}>
+            <div>
+              <dt>Subtotal</dt>
+              <dd>{MONEDA_CLP.format(detalle.subtotal)}</dd>
+            </div>
+            {detalle.descuento > 0 && (
+              <div className={styles.filaDescuento}>
+                <dt>Descuento</dt>
+                <dd>−{MONEDA_CLP.format(detalle.descuento)}</dd>
+              </div>
+            )}
+            <div>
+              <dt>Envío</dt>
+              <dd>{detalle.costoEnvio > 0 ? MONEDA_CLP.format(detalle.costoEnvio) : "Gratis"}</dd>
+            </div>
+          </dl>
+          <div className={styles.totalCaja}>
+            <div className={styles.totalFinal}>
+              <span>Total</span>
+              <strong>{MONEDA_CLP.format(detalle.total)}</strong>
+            </div>
+            {detalle.costoEnvio === 0 && detalle.modalidad === "DESPACHO" && (
+              <div className={styles.notaEnvioGratis}>
+                <Ico d={ICO_CAMION} size={18} />
+                <div>
+                  <strong>Envío gratuito</strong>
+                  <span>Por compras sobre {MONEDA_CLP.format(umbralEnvioGratis)}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
+
+      <section className={styles.tarjeta}>
+        <h3 className={styles.tarjetaTitulo}>Estado del pedido</h3>
+        <p className={styles.estadoSub}>Gestiona y actualiza el estado del pedido.</p>
+
+        {cancelado ? (
+          <p className={styles.avisoCancelado}>Este pedido fue cancelado y su stock reservado se liberó.</p>
+        ) : (
+          <div className={styles.gestionEstado}>
+            <ol className={styles.stepper}>
+              {pasos.map((paso, indice) => (
+                <li
+                  key={paso.estado}
+                  className={`${styles.paso} ${paso.hecho ? styles.pasoHecho : ""} ${paso.actual ? styles.pasoActual : ""}`}
+                >
+                  <span className={styles.pasoMarcador}>
+                    {paso.hecho ? <Ico d={ICO_CHECK} size={13} /> : indice + 1}
+                  </span>
+                  <span className={styles.pasoNombre}>{paso.label}</span>
+                  <span className={styles.pasoFecha}>
+                    {paso.actual ? "Actual" : paso.fecha ?? "Pendiente"}
+                  </span>
+                </li>
+              ))}
+            </ol>
+
+            {siguiente && (
+              <div className={styles.accionPrimaria}>
+                <div className={styles.accionResumen}>
+                  <span>
+                    Estado actual
+                    <strong>{ETIQUETA_ESTADO[detalle.estado]}</strong>
+                  </span>
+                  <span className={styles.accionFlecha} aria-hidden="true">→</span>
+                  <span>
+                    Siguiente paso
+                    <strong>Marcar como {ETIQUETA_ESTADO[siguiente].toLowerCase()}</strong>
+                  </span>
+                </div>
                 <button
-                  key={estadoDestino}
-                  className={styles.botonAvance}
+                  className={styles.botonPrimario}
                   type="button"
                   disabled={cambiando}
-                  onClick={() => onCambiarEstado(estadoDestino)}
+                  onClick={() => onCambiarEstado(siguiente)}
                 >
-                  {ETIQUETA_ESTADO[estadoDestino]}
+                  <Ico d={ICO_AVION} size={16} /> Marcar como {ETIQUETA_ESTADO[siguiente].toLowerCase()}
                 </button>
-              ))}
-            </div>
-            <p className={styles.notaCorreo}>
-              Al cambiar el estado, el cliente recibe un aviso por correo.
-            </p>
-          </>
+              </div>
+            )}
+          </div>
         )}
+
+        <p className={styles.notaCorreo}>
+          <Ico d={ICO_INFO} size={14} /> El cliente recibirá una notificación por correo al cambiar el estado.
+        </p>
         {errorCambio && <p className={styles.errorCambio} role="alert">{errorCambio}</p>}
-        <div className={styles.accionesSecundarias}>
-          <button className={styles.botonImprimir} type="button" onClick={onImprimir}>
-            Descargar Factura
+
+        <div className={styles.footerAcciones}>
+          <button className={styles.botonSecundario} type="button" onClick={onImprimir}>
+            <Ico d={ICO_DESCARGA} size={15} /> Descargar factura
           </button>
           {puedeCancelar && (
             <button
-              className={styles.botonCancelar}
+              className={styles.botonPeligro}
               type="button"
               disabled={cambiando}
               onClick={() => onCambiarEstado("CANCELADO")}
             >
-              Cancelar pedido
+              <Ico d={ICO_BASURA} size={15} /> Cancelar pedido
             </button>
           )}
         </div>
-      </div>
+      </section>
 
       {/* Comanda para imprimir: se monta oculta en el <body> (portal) y solo se
           ve al imprimir. Refleja el pedido seleccionado (ver estilos en index.css). */}
@@ -333,6 +634,7 @@ function DetallePedido({ detalle, onCambiarEstado, onImprimir, cambiando, errorC
 }
 
 export default function AdminPedidos() {
+  const reglas = useReglas();
   const [usuario, setUsuario] = useState(undefined);
   const [errorAcceso, setErrorAcceso] = useState(null);
   const [intentoAcceso, setIntentoAcceso] = useState(0);
@@ -703,6 +1005,7 @@ export default function AdminPedidos() {
             ) : detalleListo ? (
               <DetallePedido
                 detalle={detalle}
+                umbralEnvioGratis={reglas.envioGratisDesde}
                 onCambiarEstado={cambiarEstado}
                 onImprimir={() => window.print()}
                 cambiando={cambiando}

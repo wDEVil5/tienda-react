@@ -1,4 +1,5 @@
 import { servicioCorreo as servicioCorreoPorDefecto } from '../correo/correo.service.js'
+import { plantillaBaseHTML } from '../correo/correo.html.js'
 
 // Plantilla del correo de recuperación. Pura: se prueba el contenido sin enviar.
 // No incluye datos de la cuenta más allá del nombre para no filtrar nada si el
@@ -15,12 +16,24 @@ export function plantillaRecuperacion({ nombre, enlace }) {
     '',
     'Si no lo pediste, ignora este correo: tu contraseña no cambia.',
   ].join('\n')
-  const html = [
-    `<p>${saludo}</p>`,
-    '<p>Recibimos una solicitud para restablecer tu contraseña en <strong>SumarketExpress</strong>.</p>',
-    `<p><a href="${enlace}">Elegir una nueva contraseña</a> (el enlace vence en 1 hora).</p>`,
-    '<p>Si no lo pediste, ignora este correo: tu contraseña no cambia.</p>',
-  ].join('')
+  const contenido = `
+    <h2>${saludo}</h2>
+    <p>Recibimos una solicitud para restablecer tu contraseña en <strong>SumarketExpress</strong>.</p>
+    <p>Si fuiste tú, haz clic en el siguiente botón para elegir una nueva (el enlace vence en 1 hora):</p>
+    <br/>
+    <div style="text-align: center;">
+      <a href="${enlace}" class="btn">Restablecer mi contraseña</a>
+    </div>
+    <br/>
+    <p style="font-size: 14px; color: #6f6d64;">Si no lo pediste, ignora este correo: tu contraseña no cambiará.</p>
+  `
+
+  const html = plantillaBaseHTML({
+    titulo: 'Restablece tu contraseña · SumarketExpress',
+    preheader: 'Instrucciones para restablecer tu contraseña en SumarketExpress',
+    contenido
+  })
+
   return { asunto: 'Restablece tu contraseña · SumarketExpress', texto, html }
 }
 

@@ -1,4 +1,5 @@
 import { servicioCorreo as servicioCorreoPorDefecto } from '../correo/correo.service.js'
+import { plantillaBaseHTML } from '../correo/correo.html.js'
 
 // Formatea un entero CLP como "$1.290" (miles con punto). Manual, sin depender
 // de Intl/ICU, para que el contenido sea determinista en las pruebas.
@@ -33,14 +34,43 @@ export function plantillaConfirmacionPedido(pedido) {
   ].join('\n')
 
   const filas = pedido.items
-    .map((item) => `<li>${item.cantidad}× ${item.nombre} — ${formatearCLP(item.subtotal)}</li>`)
+    .map(
+      (item) => `
+      <tr>
+        <td>${item.cantidad}× ${item.nombre}</td>
+        <td class="precio">${formatearCLP(item.subtotal)}</td>
+      </tr>`,
+    )
     .join('')
-  const html = [
-    `<p>¡Gracias por tu compra, <strong>${pedido.contactoNombre}</strong>!</p>`,
-    `<p>Pedido <strong>${referencia}</strong> · ${entrega}</p>`,
-    `<ul>${filas}</ul>`,
-    `<p><strong>Total: ${formatearCLP(pedido.total)}</strong></p>`,
-  ].join('')
+    
+  const contenido = `
+    <h2>¡Gracias por tu compra, ${pedido.contactoNombre}!</h2>
+    <p>Estamos procesando tu pedido <strong>${referencia}</strong> con modalidad de <strong>${entrega}</strong>.</p>
+    
+    <table class="tabla-items" cellpadding="0" cellspacing="0" role="presentation">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th style="text-align: right;">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${filas}
+        <tr class="total-row">
+          <td>Total</td>
+          <td class="precio">${formatearCLP(pedido.total)}</td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <p>Te avisaremos por correo cuando cambie el estado de tu pedido.</p>
+  `
+
+  const html = plantillaBaseHTML({
+    titulo: `Confirmación de tu pedido ${referencia}`,
+    preheader: `Tu pedido ${referencia} está confirmado por un total de ${formatearCLP(pedido.total)}.`,
+    contenido
+  })
 
   return { asunto: `Confirmación de tu pedido ${referencia}`, texto, html }
 }
@@ -75,11 +105,17 @@ export function plantillaCambioEstado(pedido) {
     `Tu pedido ${referencia} cambió de estado: ${etiqueta}.`,
     mensaje,
   ].join('\n')
-  const html = [
-    `<p>Hola <strong>${pedido.contactoNombre}</strong>,</p>`,
-    `<p>Tu pedido <strong>${referencia}</strong> cambió de estado: <strong>${etiqueta}</strong>.</p>`,
-    `<p>${mensaje}</p>`,
-  ].join('')
+  const contenido = `
+    <h2>Hola ${pedido.contactoNombre},</h2>
+    <p>Tu pedido <strong>${referencia}</strong> cambió de estado a: <strong style="color: #2f6b4a;">${etiqueta}</strong>.</p>
+    <p>${mensaje}</p>
+  `
+
+  const html = plantillaBaseHTML({
+    titulo: `Tu pedido ${referencia} · ${etiqueta}`,
+    preheader: `Actualización de estado: ${etiqueta}`,
+    contenido
+  })
 
   return { asunto: `Tu pedido ${referencia} · ${etiqueta}`, texto, html }
 }

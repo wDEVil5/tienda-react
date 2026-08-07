@@ -17,6 +17,9 @@ export const REGLAS_POR_DEFECTO = {
   // hoy". El pedido en sí no persiste estos valores.
   corteRetiroHoy: '19:00',
   preparacionHoras: 2,
+  // Ventana de entrega a domicilio (texto libre). Se muestra en el detalle del
+  // pedido; el dueño la edita desde las reglas.
+  horarioEntrega: 'Lun a Vie · 09:00 a 18:00',
   // Tarifas de despacho por comuna. `comuna` va normalizada (sin tildes, en
   // minúsculas) para buscarla desde el nombre tal como lo escribe el comprador
   // ("Ñuñoa", "LAS CONDES", ...); `nombre` es el rótulo visible.

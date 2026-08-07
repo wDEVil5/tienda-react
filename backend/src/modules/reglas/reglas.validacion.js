@@ -25,6 +25,7 @@ export const esquemaReglas = z
       .trim()
       .regex(horaHHMM, 'Usa el formato HH:MM (24h).'),
     preparacionHoras: z.number().int().min(0).max(240),
+    horarioEntrega: z.string().trim().min(2).max(120),
     tarifasComuna: z
       .array(esquemaTarifa)
       .max(200)

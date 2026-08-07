@@ -7,6 +7,7 @@ const base = {
   tarifaBase: 2990,
   corteRetiroHoy: '19:00',
   preparacionHoras: 2,
+  horarioEntrega: 'Lun a Vie · 09:00 a 18:00',
   tarifasComuna: [{ nombre: 'Providencia', tarifa: 2990, plazoHoras: 24 }],
 }
 

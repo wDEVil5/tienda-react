@@ -352,6 +352,9 @@ model ConfiguracionTienda {
   tarifaBase       Int      @map("tarifa_base")
   corteRetiroHoy   String   @map("corte_retiro_hoy") @db.VarChar(5)
   preparacionHoras Int      @map("preparacion_horas")
+  // Ventana de entrega a domicilio, texto libre (ej. "Lun a Vie · 09:00 a 18:00").
+  // Se muestra en el detalle del pedido; editable desde el panel de reglas.
+  horarioEntrega   String   @map("horario_entrega") @db.VarChar(120)
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 

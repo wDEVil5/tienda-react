@@ -27,6 +27,7 @@ const reglasValidas = {
   tarifaBase: 3500,
   corteRetiroHoy: '20:00',
   preparacionHoras: 3,
+  horarioEntrega: 'Sáb y Dom · 10:00 a 14:00',
   tarifasComuna: [{ nombre: 'Ñuñoa', tarifa: 1990, plazoHoras: 12 }],
 }
 

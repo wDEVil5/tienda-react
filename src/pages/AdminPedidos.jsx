@@ -162,10 +162,6 @@ function descargarArchivo(texto, nombre) {
   URL.revokeObjectURL(url);
 }
 
-// Ventana de entrega a nivel tienda (igual para todos los despachos). Constante
-// por ahora; se vuelve dinámica cuando exista una regla/campo real.
-const HORARIO_ENTREGA = "Lun a Vie · 09:00 a 18:00";
-
 // Progresión de estados por modalidad, para el stepper de "Estado del pedido".
 const FLUJO_ESTADOS = {
   DESPACHO: ["PENDIENTE", "PREPARANDO", "ENVIADO", "ENTREGADO"],
@@ -314,7 +310,7 @@ const ICO_DESCARGA = (
   </>
 );
 
-function DetallePedido({ detalle, umbralEnvioGratis, onCambiarEstado, onImprimir, cambiando, errorCambio }) {
+function DetallePedido({ detalle, umbralEnvioGratis, horarioEntrega, onCambiarEstado, onImprimir, cambiando, errorCambio }) {
   const pagoAprobado = (detalle.pagos ?? []).find((pago) => pago.estado === "APROBADO");
   const transiciones = TRANSICIONES[detalle.modalidad]?.[detalle.estado] ?? [];
   const siguiente = transiciones.find((estadoDestino) => estadoDestino !== "CANCELADO") ?? null;
@@ -415,7 +411,7 @@ function DetallePedido({ detalle, umbralEnvioGratis, onCambiarEstado, onImprimir
                   <dt>Horario de entrega</dt>
                   <dd>
                     <Ico d={ICO_CALENDARIO} size={15} />
-                    {HORARIO_ENTREGA}
+                    {horarioEntrega}
                   </dd>
                 </div>
               </>
@@ -1012,6 +1008,7 @@ export default function AdminPedidos() {
               <DetallePedido
                 detalle={detalle}
                 umbralEnvioGratis={reglas.envioGratisDesde}
+                horarioEntrega={reglas.horarioEntrega}
                 onCambiarEstado={cambiarEstado}
                 onImprimir={() => window.print()}
                 cambiando={cambiando}

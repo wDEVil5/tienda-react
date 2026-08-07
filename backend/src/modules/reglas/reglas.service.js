@@ -21,6 +21,7 @@ export function crearServicioReglas(repositorio = repositorioReglas) {
       tarifaBase: base.tarifaBase,
       corteRetiroHoy: base.corteRetiroHoy,
       preparacionHoras: base.preparacionHoras,
+      horarioEntrega: base.horarioEntrega,
       tarifasComuna: filas.map((tarifa) => ({
         comuna: tarifa.comuna,
         nombre: tarifa.nombre,

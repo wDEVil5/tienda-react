@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/tienda-react/',
+  base: '/',
   test: {
     // El backend usa node:test desde backend/; Vitest solo debe descubrir pruebas de React.
     include: ['src/**/*.{test,spec}.{js,jsx}'],

@@ -159,8 +159,8 @@ function Catalogo({
   });
 
   // En desarrollo `orden` también se envía a Express. Mantenemos este orden
-  // derivado durante la transición: GitHub Pages aún usa Fake Store y necesita
-  // ofrecer el mismo control aunque no tenga API propia desplegada.
+  // derivado como respaldo: el fallback a Fake Store necesita ofrecer el mismo
+  // control aunque no tenga API propia desplegada.
   const productosOrdenados = [...productosFiltrados];
   if (orden === "precio-asc") {
     productosOrdenados.sort((a, b) => a.precio - b.precio);

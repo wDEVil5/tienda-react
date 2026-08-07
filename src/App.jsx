@@ -124,7 +124,7 @@ function App() {
         setMetaCatalogo(resultado.meta);
         setFuenteCatalogo(resultado.fuente);
 
-        // En GitHub Pages no existe /categorias. Fake Store llega completo, por
+        // Sin API propia no existe /categorias. Fake Store llega completo, por
         // lo que podemos conservar una lista temporal con el mismo contrato.
         if (resultado.fuente === "fallback") {
           const conteos = new Map();

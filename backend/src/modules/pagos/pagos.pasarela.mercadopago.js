@@ -8,9 +8,8 @@ const MAPA_ESTADO = {
   cancelled: 'RECHAZADO',
 }
 
-// GitHub Pages sirve el index de la app, pero no reescribe rutas internas de
-// BrowserRouter (por ejemplo `/pago/exito`). Volvemos a la raíz publicada y el
-// frontend transforma `checkout_return` en su ruta interna sin recargar.
+// El retorno de MP vuelve a la raíz publicada con `?checkout_return=resultado`
+// y el frontend transforma ese parámetro en su ruta interna sin recargar.
 function crearUrlsRetorno(urlBase) {
   const crearUrl = (resultado) => {
     const url = new URL(urlBase)
@@ -30,8 +29,8 @@ function crearUrlsRetorno(urlBase) {
 // de pagos no cambia. `fetchImpl` es inyectable para probar sin llamar a la API.
 export function crearPasarelaMercadoPago({
   accessToken,
-  // FRONTEND_ORIGIN es solo CORS (sin ruta); la app puede vivir bajo un base
-  // path, como GitHub Pages /tienda-react/, por eso el retorno usa otra URL.
+  // FRONTEND_ORIGIN es solo CORS (sin ruta); FRONTEND_APP_URL es la URL pública
+  // completa de la app a la que vuelve MP tras el pago.
   urlBase = process.env.FRONTEND_APP_URL || process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
   // A dónde MP envía el webhook. En local necesita ser una URL pública (túnel);
   // si no se define, MP no notifica (útil para pruebas de solo crear preferencia).

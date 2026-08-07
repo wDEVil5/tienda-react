@@ -6,7 +6,7 @@ evoluciona con Express, PostgreSQL y Prisma.
 
 ## Demo
 
-[Ver demo pública](https://wdevil5.github.io/tienda-react/)
+[Ver demo pública](https://sumarketexpress.pages.dev/)
 
 > La demo en vivo consume la **API propia desplegada** (Render + PostgreSQL en
 > Supabase). Si esa API gratuita está dormida y la primera petición se pasa de
@@ -24,7 +24,7 @@ evoluciona con Express, PostgreSQL y Prisma.
 - CSS Modules y design tokens CSS para el sistema visual responsive.
 - Font Awesome para iconografía.
 - Vitest + React Testing Library.
-- GitHub Pages + `gh-pages` para la demo pública.
+- Cloudflare Pages para la demo pública.
 
 ### Backend y datos
 
@@ -127,26 +127,24 @@ La aplicación está desplegada de forma gratuita (portafolio):
 
 | Capa | Servicio | URL |
 |---|---|---|
-| Frontend | GitHub Pages | https://wdevil5.github.io/tienda-react/ |
+| Frontend | Cloudflare Pages | https://sumarketexpress.pages.dev/ |
 | API | Render | https://sumarket-express-api.onrender.com/api |
 | Base de datos | Supabase (PostgreSQL) | — |
 | Pagos | Mercado Pago (pruebas) | — |
 
-El frontend se publica con `npm run deploy` (build + `gh-pages`). La API corre en
-Render y aplica las migraciones durante el build. Como el plan gratuito de Render
-suspende el servicio tras unos minutos de inactividad, la primera visita puede
-tardar unos segundos en responder mientras despierta.
+El frontend se publica automáticamente con cada push a `main` (Cloudflare Pages
+hace build + deploy). La API corre en Render y aplica las migraciones durante el
+build. Como el plan gratuito de Render suspende el servicio tras unos minutos de
+inactividad, la primera visita puede tardar unos segundos en responder mientras
+despierta.
 
 > **Limitación conocida — sesión en Safari (y navegadores con cookies de
-> terceros bloqueadas).** En este despliegue el frontend (`github.io`) y la API
-> (`onrender.com`) son **sitios distintos**, así que la cookie de sesión viaja
-> *cross-site* (`SameSite=None; Secure`). Chrome aún la acepta, pero Safari la
-> bloquea por defecto (*Evitar el rastreo entre sitios*): el login responde 200
-> pero el navegador descarta la cookie y la siguiente petición da 401. Afecta a la
-> sesión del panel y a las cuentas de clientes. Se resuelve sirviendo front y API
-> desde el **mismo origen** (o un dominio propio con subdominio para la API), o
-> migrando la auth del panel a *token* en cabecera. En local no ocurre:
-> `localhost:5173` y `localhost:3000` son el mismo sitio.
+> terceros bloqueadas).** El frontend (`pages.dev`) y la API (`onrender.com`)
+> son **sitios distintos**, así que la cookie de sesión viaja *cross-site*
+> (`SameSite=None; Secure`). Chrome la acepta, pero Safari la bloquea por
+> defecto. Se resuelve sirviendo front y API desde el **mismo origen** (dominio
+> propio con subdominio para la API). En local no ocurre: `localhost:5173` y
+> `localhost:3000` son el mismo sitio.
 
 ## Ejecutar localmente
 
@@ -159,7 +157,7 @@ npm install
 npm run dev
 ```
 
-Frontend: `http://localhost:5173/tienda-react/`
+Frontend: `http://localhost:5173/`
 
 ### 2. API y base de datos
 

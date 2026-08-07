@@ -3,9 +3,8 @@ import { repositorioCuenta } from '../cuenta/cuenta.repository.js'
 import { crearNotificadorRecuperacion } from './recuperacion.notificaciones.js'
 import { crearServicioRecuperacion } from './recuperacion.service.js'
 
-// Base pública del frontend; el enlace del correo apunta a sus pantallas. En
-// producción incluye la ruta de GitHub Pages (…/tienda-react).
-const URL_APP = process.env.FRONTEND_APP_URL || 'http://localhost:5173/tienda-react'
+// Base pública del frontend; el enlace del correo apunta a sus pantallas.
+const URL_APP = process.env.FRONTEND_APP_URL || 'http://localhost:5173'
 
 // Adaptador de dominio: CLIENTES (compradores). Traduce la interfaz genérica del
 // servicio a los repos de `cuenta`.

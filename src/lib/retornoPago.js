@@ -5,9 +5,9 @@ const RUTAS_RETORNO = {
 };
 
 // Mercado Pago añade sus parámetros a la URL pública configurada en back_urls.
-// GitHub Pages solo entrega `index.html` en la raíz, así que convertimos ese
-// retorno en una navegación interna de React sin perder payment_id, status ni
-// external_reference.
+// El backend vuelve a la raíz con `?checkout_return=success|failure|pending` y
+// este helper convierte ese retorno en una navegación interna de React sin
+// perder payment_id, status ni external_reference.
 export function obtenerRutaRetornoPago(urlActual) {
   const url = new URL(urlActual);
   const resultado = url.searchParams.get("checkout_return");

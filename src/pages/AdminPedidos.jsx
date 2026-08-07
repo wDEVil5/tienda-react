@@ -346,24 +346,26 @@ function DetallePedido({ detalle, umbralEnvioGratis, onCambiarEstado, onImprimir
           </h3>
           <div className={styles.clienteEncabezado}>
             <span className={styles.avatar} aria-hidden="true">{iniciales(detalle.contacto.nombre)}</span>
-            <div className={styles.clienteIdentidad}>
-              <span className={styles.clienteNombre}>{detalle.contacto.nombre}</span>
-              {stats?.frecuente && (
-                <span className={styles.badgeFrecuente}>
-                  <Ico d={ICO_ESTRELLA} size={12} relleno /> Cliente frecuente
+            <div className={styles.clienteDetalles}>
+              <div className={styles.clienteIdentidad}>
+                <span className={styles.clienteNombre}>{detalle.contacto.nombre}</span>
+                {stats?.frecuente && (
+                  <span className={styles.badgeFrecuente}>
+                    <Ico d={ICO_ESTRELLA} size={12} relleno /> Cliente frecuente
+                  </span>
+                )}
+              </div>
+              <div className={styles.clienteContacto}>
+                <span className={styles.contactoLinea}>
+                  <Ico d={ICO_MAIL} size={15} /> {detalle.contacto.email}
                 </span>
-              )}
+                {detalle.contacto.telefono && (
+                  <span className={styles.contactoLinea}>
+                    <Ico d={ICO_TEL} size={15} /> {detalle.contacto.telefono}
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
-          <div className={styles.clienteContacto}>
-            <span className={styles.contactoLinea}>
-              <Ico d={ICO_MAIL} size={15} /> {detalle.contacto.email}
-            </span>
-            {detalle.contacto.telefono && (
-              <span className={styles.contactoLinea}>
-                <Ico d={ICO_TEL} size={15} /> {detalle.contacto.telefono}
-              </span>
-            )}
           </div>
           {stats && (
             <div className={styles.clienteStats}>
@@ -387,7 +389,7 @@ function DetallePedido({ detalle, umbralEnvioGratis, onCambiarEstado, onImprimir
 
         <section className={styles.tarjeta}>
           <h3 className={styles.tarjetaTitulo}>
-            <Ico d={ICO_CAMION} size={18} /> Modalidad de envío y pago
+            <span className={styles.statIcono}><Ico d={ICO_CAMION} size={18} /></span> Modalidad de envío y pago
           </h3>
           <dl className={styles.datosEnvio}>
             <div className={styles.filaEnvio}>
@@ -423,7 +425,11 @@ function DetallePedido({ detalle, umbralEnvioGratis, onCambiarEstado, onImprimir
               <dd>
                 {pagoAprobado ? (
                   <>
-                    {nombreProveedor(pagoAprobado.proveedor)}
+                    {pagoAprobado.proveedor === "mercado_pago" ? (
+                      <img src="https://http2.mlstatic.com/frontend-assets/ui-navigation/5.19.1/mercadopago/logo__small@2x.png" alt="Mercado Pago" className={styles.logoMercadoPago} />
+                    ) : (
+                      nombreProveedor(pagoAprobado.proveedor)
+                    )}
                     <span className={styles.chipVerificado}>Verificado</span>
                   </>
                 ) : (

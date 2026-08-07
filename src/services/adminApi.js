@@ -268,6 +268,30 @@ export function cambiarEstadoPedidoAdmin(id, estado, nota, opciones = {}) {
   });
 }
 
+// Reglas de la tienda / Envíos (solo ADMIN). GET trae el formulario completo;
+// las tarifas vienen con `comuna` (clave normalizada) que el PUT NO acepta (su
+// contrato es estricto y deriva la clave del nombre). Por eso al guardar se
+// envían solo { nombre, tarifa, plazoHoras }.
+export function obtenerReglasAdmin(opciones = {}) {
+  return solicitarAdmin("/admin/reglas", opciones);
+}
+
+export function guardarReglasAdmin(reglas, opciones = {}) {
+  const cuerpo = {
+    envioGratisDesde: reglas.envioGratisDesde,
+    tarifaBase: reglas.tarifaBase,
+    corteRetiroHoy: reglas.corteRetiroHoy,
+    preparacionHoras: reglas.preparacionHoras,
+    horarioEntrega: reglas.horarioEntrega,
+    tarifasComuna: (reglas.tarifasComuna ?? []).map(({ nombre, tarifa, plazoHoras }) => ({
+      nombre,
+      tarifa,
+      plazoHoras: plazoHoras ?? null,
+    })),
+  };
+  return solicitarAdmin("/admin/reglas", { ...opciones, method: "PUT", cuerpo });
+}
+
 export function obtenerResumenAdmin({ periodo, ...opciones } = {}) {
   const parametros = new URLSearchParams();
   if (periodo) parametros.set("periodo", periodo);

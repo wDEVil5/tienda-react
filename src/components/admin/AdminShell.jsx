@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import {
   IconoClientes,
   IconoContenido,
+  IconoEnvios,
   IconoEquipo,
   IconoIdentidad,
   IconoInventario,
@@ -18,6 +19,7 @@ const ICONOS_SECCION = {
   Inventario: IconoInventario,
   Clientes: IconoClientes,
   Identidad: IconoIdentidad,
+  Envíos: IconoEnvios,
   Contenido: IconoContenido,
   Equipo: IconoEquipo,
 };
@@ -29,6 +31,7 @@ const SECCIONES = [
   "Inventario",
   "Clientes",
   "Identidad",
+  "Envíos",
   "Contenido",
 ];
 
@@ -38,6 +41,7 @@ const RUTAS = {
   Resumen: "/admin/resumen",
   Pedidos: "/admin/pedidos",
   Productos: "/admin/productos",
+  Envíos: "/admin/envios",
   Equipo: "/admin/equipo",
 };
 

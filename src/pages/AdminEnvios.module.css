@@ -1,0 +1,291 @@
+.fondo {
+  min-width: 320px;
+}
+
+/* Estados de acceso (sin sesión / error de red). El login vive en su ruta. */
+.acceso {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: clamp(24px, 4vw, 52px);
+  background: var(--color-crudo);
+  color: var(--color-texto-suave);
+  text-align: center;
+}
+.accesoCaja {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+.accesoCaja h1 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 400;
+}
+.accesoCaja button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--color-acento);
+  border-radius: var(--radio-control);
+  background: var(--color-acento);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pagina {
+  padding: clamp(20px, 3vw, 34px);
+  max-width: 920px;
+}
+.cabecera {
+  margin-bottom: 22px;
+}
+.titulo {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 400;
+}
+.subtitulo {
+  margin-top: 6px;
+  max-width: 60ch;
+  color: var(--color-texto-suave);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.tarjeta {
+  padding: 22px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-tarjeta);
+  background: var(--color-superficie);
+}
+.tarjetaCabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.tarjetaTitulo {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 400;
+}
+.tarjeta > .tarjetaTitulo {
+  margin-bottom: 16px;
+}
+.soloAdmin {
+  color: var(--color-texto-suave);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+/* Campos. */
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.campo {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+.campo > span {
+  color: var(--color-texto-2);
+  font-size: 12.5px;
+}
+.campo input {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-campo);
+  background: var(--color-superficie);
+  color: var(--color-texto);
+  font: inherit;
+  font-size: 14px;
+}
+.campo input:focus-visible {
+  outline: 2px solid var(--color-acento);
+  outline-offset: 1px;
+}
+.ayuda {
+  color: var(--color-texto-tenue);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+/* Tarifas por comuna. */
+.botonAgregar {
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--color-acento);
+  border-radius: var(--radio-control);
+  background: transparent;
+  color: var(--color-acento);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.botonAgregar:hover {
+  background: var(--color-acento-bg);
+}
+.vacio {
+  color: var(--color-texto-suave);
+  font-size: 13px;
+}
+.tablaScroll {
+  overflow-x: auto;
+}
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+.tabla thead th {
+  padding: 0 10px 10px 0;
+  border-bottom: 1px solid var(--color-borde-2);
+  color: var(--color-texto-tenue);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-align: left;
+  white-space: nowrap;
+}
+.tabla tbody td {
+  padding: 8px 10px 8px 0;
+  border-bottom: 1px solid var(--color-borde-2);
+  vertical-align: middle;
+}
+.tabla tbody tr:last-child td {
+  border-bottom: 0;
+}
+.colNum {
+  text-align: right;
+  width: 150px;
+}
+.colAccion {
+  width: 44px;
+  padding-right: 0 !important;
+  text-align: right;
+}
+.inputCelda,
+.inputCeldaNum {
+  min-height: 36px;
+  width: 100%;
+  padding: 0 10px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-campo);
+  background: var(--color-superficie);
+  color: var(--color-texto);
+  font: inherit;
+  font-size: 13.5px;
+}
+.inputCeldaNum {
+  text-align: right;
+}
+.inputCelda:focus-visible,
+.inputCeldaNum:focus-visible {
+  outline: 2px solid var(--color-acento);
+  outline-offset: 1px;
+}
+.botonQuitar {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--color-borde-3);
+  border-radius: var(--radio-control);
+  background: var(--color-superficie);
+  color: var(--color-texto-tenue);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+.botonQuitar:hover {
+  border-color: var(--color-oferta);
+  color: var(--color-oferta);
+  background: var(--color-oferta-bg);
+}
+.notaPlazo {
+  margin-top: 12px;
+  color: var(--color-texto-tenue);
+  font-size: 11.5px;
+}
+
+/* Barra de guardado. */
+.barraGuardar {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0 2px;
+  background: linear-gradient(to top, var(--color-fondo) 70%, transparent);
+}
+.botonGuardar {
+  min-height: 42px;
+  padding: 0 22px;
+  border: 1px solid var(--color-acento);
+  border-radius: var(--radio-control);
+  background: var(--color-acento);
+  color: #fff;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.botonGuardar:hover {
+  filter: brightness(0.96);
+}
+.botonGuardar:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+.mensajeOk {
+  color: var(--color-acento);
+  font-size: 12.5px;
+}
+.mensajeError {
+  color: var(--color-oferta);
+  font-size: 12.5px;
+}
+
+/* Estado de carga/error. */
+.estado {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-texto-suave);
+  font-size: 13px;
+}
+.estado button {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--color-borde-3);
+  border-radius: var(--radio-control);
+  background: var(--color-superficie);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+@media (max-width: 720px) {
+  .grid2,
+  .grid3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -10,7 +10,9 @@ import {
   reemplazarImagenesProductoAdmin,
   subirImagenProductoAdmin,
   obtenerProductoAdmin,
+  obtenerReglasAdmin,
   obtenerSesionAdmin,
+  guardarReglasAdmin,
   restablecerContrasenaConTokenAdmin,
   solicitarRecuperacionAdmin,
 } from "./adminApi.js";
@@ -298,6 +300,58 @@ describe("adminApi", () => {
   it("informa con claridad cuando no existe URL de API", async () => {
     await expect(listarProductosAdmin({ apiUrl: "" })).rejects.toBeInstanceOf(
       ErrorAdminApi,
+    );
+  });
+
+  it("obtiene las reglas de envío del panel", async () => {
+    const reglas = { envioGratisDesde: 20000, tarifasComuna: [] };
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: reglas }),
+    });
+
+    await expect(
+      obtenerReglasAdmin({ fetchImpl, apiUrl: "http://localhost:3000/api" }),
+    ).resolves.toEqual(reglas);
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "http://localhost:3000/api/admin/reglas",
+      { method: "GET", credentials: "include" },
+    );
+  });
+
+  it("guarda las reglas quitando la clave `comuna` (el PUT es estricto)", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: {} }),
+    });
+
+    await guardarReglasAdmin(
+      {
+        envioGratisDesde: 25000,
+        tarifaBase: 3500,
+        corteRetiroHoy: "20:00",
+        preparacionHoras: 3,
+        horarioEntrega: "Lun a Vie · 09:00 a 18:00",
+        // viene de GET con `comuna` (clave normalizada) y `plazoHoras` ausente:
+        tarifasComuna: [{ comuna: "nunoa", nombre: "Ñuñoa", tarifa: 1990 }],
+      },
+      { fetchImpl, apiUrl: "http://localhost:3000/api" },
+    );
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "http://localhost:3000/api/admin/reglas",
+      expect.objectContaining({
+        method: "PUT",
+        credentials: "include",
+        body: JSON.stringify({
+          envioGratisDesde: 25000,
+          tarifaBase: 3500,
+          corteRetiroHoy: "20:00",
+          preparacionHoras: 3,
+          horarioEntrega: "Lun a Vie · 09:00 a 18:00",
+          tarifasComuna: [{ nombre: "Ñuñoa", tarifa: 1990, plazoHoras: null }],
+        }),
+      }),
     );
   });
 });

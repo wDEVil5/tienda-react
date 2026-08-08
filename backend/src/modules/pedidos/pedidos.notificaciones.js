@@ -1,5 +1,5 @@
 import { servicioCorreo as servicioCorreoPorDefecto } from '../correo/correo.service.js'
-import { plantillaBaseHTML } from '../correo/correo.html.js'
+import { plantillaBaseHTML, calloutHTML, chipHTML } from '../correo/correo.html.js'
 
 // Formatea un entero CLP como "$1.290" (miles con punto). Manual, sin depender
 // de Intl/ICU, para que el contenido sea determinista en las pruebas.
@@ -37,33 +37,37 @@ export function plantillaConfirmacionPedido(pedido) {
     .map(
       (item) => `
       <tr>
-        <td>${item.cantidad}× ${item.nombre}</td>
+        <td><strong style="font-weight:600;">${item.nombre}</strong><br><span style="color:#9a978d;font-size:13px;">Cantidad: ${item.cantidad}</span></td>
         <td class="precio">${formatearCLP(item.subtotal)}</td>
       </tr>`,
     )
     .join('')
-    
+
   const contenido = `
     <h2>¡Gracias por tu compra, ${pedido.contactoNombre}!</h2>
-    <p>Estamos procesando tu pedido <strong>${referencia}</strong> con modalidad de <strong>${entrega}</strong>.</p>
-    
+    <p class="muted">Recibimos tu pedido y ya lo estamos procesando. Aquí tienes el resumen:</p>
+    <div style="margin:0 0 8px;">${chipHTML(referencia)}${chipHTML(entrega)}</div>
+
     <table class="tabla-items" cellpadding="0" cellspacing="0" role="presentation">
       <thead>
         <tr>
           <th>Producto</th>
-          <th style="text-align: right;">Subtotal</th>
+          <th class="precio">Subtotal</th>
         </tr>
       </thead>
       <tbody>
         ${filas}
-        <tr class="total-row">
+        <tr class="total">
           <td>Total</td>
-          <td class="precio">${formatearCLP(pedido.total)}</td>
+          <td class="precio"><strong>Total: ${formatearCLP(pedido.total)}</strong></td>
         </tr>
       </tbody>
     </table>
-    
-    <p>Te avisaremos por correo cuando cambie el estado de tu pedido.</p>
+
+    ${calloutHTML({
+      tono: 'neutro',
+      contenido: 'Te avisaremos por correo en cuanto cambie el estado de tu pedido.',
+    })}
   `
 
   const html = plantillaBaseHTML({
@@ -105,10 +109,20 @@ export function plantillaCambioEstado(pedido) {
     `Tu pedido ${referencia} cambió de estado: ${etiqueta}.`,
     mensaje,
   ].join('\n')
+
+  // Un color por familia de estado: verde = avanza bien, gris = neutral,
+  // rojo = cancelado. El badge da el "estado de un vistazo".
+  const cancelado = pedido.estado === 'CANCELADO'
+  const colorBadge = cancelado
+    ? { bg: '#f7e7e2', texto: '#9c3a24' }
+    : { bg: '#e6efe8', texto: '#255a3d' }
+  const badge = `<span style="display:inline-block;padding:6px 16px;border-radius:999px;background-color:${colorBadge.bg};color:${colorBadge.texto};font-size:14px;font-weight:700;">${etiqueta}</span>`
+
   const contenido = `
     <h2>Hola ${pedido.contactoNombre},</h2>
-    <p>Tu pedido <strong>${referencia}</strong> cambió de estado a: <strong style="color: #2f6b4a;">${etiqueta}</strong>.</p>
-    <p>${mensaje}</p>
+    <p class="muted">El estado de tu pedido <strong style="color:#1c1b18;">${referencia}</strong> se actualizó:</p>
+    <div style="margin:4px 0 20px;">${badge}</div>
+    ${calloutHTML({ tono: cancelado ? 'seguridad' : 'exito', contenido: mensaje })}
   `
 
   const html = plantillaBaseHTML({

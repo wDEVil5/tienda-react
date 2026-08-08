@@ -1,5 +1,5 @@
 import { servicioCorreo as servicioCorreoPorDefecto } from '../correo/correo.service.js'
-import { plantillaBaseHTML } from '../correo/correo.html.js'
+import { plantillaBaseHTML, botonHTML } from '../correo/correo.html.js'
 
 // URL pública de la tienda para armar el enlace de baja. Reutiliza la misma
 // variable que CORS: el frontend vive en ese origen.
@@ -10,12 +10,24 @@ const URL_TIENDA = process.env.FRONTEND_ORIGIN || 'http://localhost:5173'
 // apunta a la página del frontend, que a su vez llama a POST /api/newsletter/baja.
 export function plantillaBienvenida({ token, urlBase = URL_TIENDA }) {
   const urlBaja = `${urlBase}/newsletter/baja?token=${token}`
+  const item = (texto) =>
+    `<tr><td style="padding:6px 0;font-size:15px;line-height:1.5;"><span style="color:#2f6b4a;font-weight:700;">✓</span>&nbsp;&nbsp;${texto}</td></tr>`
+
   const contenido = `
-    <h2>¡Bienvenido al boletín!</h2>
-    <p>A partir de ahora, cada lunes te enviaremos nuestras mejores ofertas y novedades directamente a tu bandeja de entrada.</p>
-    <br/>
-    <p style="font-size: 14px; color: #6f6d64;">¿Cambiaste de opinión y ya no quieres recibirlas?</p>
-    <a href="${urlBaja}" class="btn" style="background-color: #f2efe9; color: #1c1b18 !important; border: 1px solid #ddd9cf;">Cancelar suscripción</a>
+    <h2>¡Bienvenido al boletín! 🎉</h2>
+    <p class="muted">Cada lunes te llegan nuestras mejores ofertas y novedades, directo a tu bandeja de entrada. Esto es lo que vas a recibir:</p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:8px 0 20px;">
+      ${item('Ofertas de la semana antes que nadie')}
+      ${item('Descuentos exclusivos para suscriptores')}
+      ${item('Novedades y productos que vuelven a stock')}
+    </table>
+
+    ${botonHTML({ href: urlBase, texto: 'Ver ofertas de hoy' })}
+
+    <p class="muted" style="margin-top:24px;text-align:center;">
+      ¿Ya no quieres recibirlas? <a href="${urlBaja}" style="color:#6f6d64;">Cancela tu suscripción</a> con un clic.
+    </p>
   `
 
   const html = plantillaBaseHTML({

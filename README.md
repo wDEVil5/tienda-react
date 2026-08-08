@@ -35,7 +35,8 @@ evoluciona con Express, PostgreSQL y Prisma.
 - Login con Google para clientes (Google Identity Services + verificación del ID
   token en el servidor).
 - Cloudinary, Multer y Sharp para imágenes de productos y logos de marcas.
-- Correo con transporte inyectable (memoria/consola en desarrollo, Brevo en producción).
+- Correo transaccional con plantillas HTML profesionales y transporte inyectable
+  (memoria/consola en desarrollo, Brevo en producción).
 - Mercado Pago Checkout Pro en modo prueba, con webhook verificado por servidor.
 - `node:test` + Supertest para reglas y contratos HTTP.
 
@@ -101,9 +102,10 @@ evoluciona con Express, PostgreSQL y Prisma.
 - Reglas de entrega editables por el administrador (umbral de envío gratis,
   tarifa base, tarifas por comuna y corte de retiro), persistidas en la base;
   el servidor calcula el costo de envío.
-- Notificaciones por correo con transporte inyectable (Brevo en producción): aviso
-  de reposición, confirmación de pedido, bienvenida al boletín y recuperación de
-  contraseña.
+- Correo transaccional con plantillas HTML profesionales (tablas, botones CTA,
+  dark mode) y transporte inyectable (Brevo en producción): confirmación de
+  pedido, cambio de estado, bienvenida al boletín, recuperación de contraseña
+  y aviso de reposición de stock.
 - Pagos de prueba con Mercado Pago: preferencia, webhook idempotente y avance
   transaccional de stock/pedido tras la aprobación.
 
@@ -130,6 +132,8 @@ La aplicación está desplegada de forma gratuita (portafolio):
 | Frontend | Cloudflare Pages (Workers) | https://sumarketexpress.sumarket.workers.dev/ |
 | API | Render | https://sumarket-express-api.onrender.com/api |
 | Base de datos | Supabase (PostgreSQL) | — |
+| Imágenes | Cloudinary | — |
+| Correo | Brevo (Sendinblue) | — |
 | Pagos | Mercado Pago (pruebas) | — |
 
 El frontend se publica automáticamente con cada push a `main` (Cloudflare Pages
@@ -188,6 +192,7 @@ POST /api/pedidos
 POST /api/pagos
 GET  /api/pagos/:pagoId
 POST /api/avisos
+POST /api/newsletter
 ```
 
 Las cuentas de clientes viven bajo `/api/cuenta` (registro, login, logout,
@@ -212,7 +217,9 @@ cd backend && npm test
 2. Completar las secciones del panel aún pendientes (Inventario, Clientes,
    Identidad y Contenido) sobre los endpoints ya existentes.
 3. Verificar la firma del webhook de Mercado Pago (`x-signature`) en producción.
-4. App móvil con React Native/Expo (fase posterior del roadmap).
+4. Dominio propio para unificar front y API bajo el mismo origen y resolver la
+   limitación de cookies cross-site en Safari.
+5. App móvil con React Native/Expo (fase posterior del roadmap).
 
 El alcance y las decisiones de producto se mantienen en un PRD.
 

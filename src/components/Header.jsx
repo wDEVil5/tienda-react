@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import styles from "./Header.module.css";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 import { useCuenta } from "../context/CuentaContext.jsx";
+import { useReglas } from "../context/ReglasContext.jsx";
 import ImagenProducto from "./ImagenProducto.jsx";
 
 function Header({
@@ -17,6 +18,7 @@ function Header({
 }) {
   const { totalItems, carrito } = useCarritoContext();
   const { estaAutenticado } = useCuenta();
+  const { corteRetiroHoy } = useReglas();
   const [menuAbierto, setMenuAbierto] = useState(false); // menú hamburguesa (móvil)
   const [sugerenciasAbiertas, setSugerenciasAbiertas] = useState(false);
   const navegar = useNavigate();
@@ -300,8 +302,9 @@ function Header({
         </div>
       </nav>
 
-      {/* Barra de estado. "Tienda abierta" será dinámico cuando exista la
-          lógica de horario/corte de las reglas de la tienda (Fase 5). */}
+      {/* Barra de estado. El corte de retiro sale de las reglas de la tienda
+          (editable en /admin/envios). "Tienda abierta" será dinámico cuando
+          exista la lógica de horario. */}
       <div className={styles.estado}>
         <div className={styles.contenedor}>
           <span className={styles.estadoInfo}>
@@ -309,10 +312,10 @@ function Header({
             <span>
               <strong>Tienda abierta</strong>
               <span className={styles.estadoLargo}>
-                {" "}· pedidos hasta las 19:00 se retiran hoy mismo
+                {" "}· pedidos hasta las {corteRetiroHoy} se retiran hoy mismo
               </span>
               <span className={styles.estadoCorto}>
-                {" "}· retira hoy hasta las 19:00
+                {" "}· retira hoy hasta las {corteRetiroHoy}
               </span>
             </span>
           </span>

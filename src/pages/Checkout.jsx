@@ -15,9 +15,10 @@ import { guardarCheckoutPendiente } from "../services/checkoutPendiente.js";
 // partan en dos líneas dentro de los resúmenes angostos.
 const clp = (n) => `$\u202F${(n ?? 0).toLocaleString("es-CL")}`;
 
-// Comunas con tarifa conocida (espejo de reglasTienda.js). Es solo una ayuda de
-// autocompletado: el costo real y la validación siempre los decide el servidor.
-const COMUNAS_SUGERIDAS = ["Providencia", "Ñuñoa", "Las Condes", "Maipú"];
+// Respaldo si las reglas aún no traen comunas (API dormida o sin configurar).
+// Lo normal es que las comunas vengan de useReglas().tarifasComuna, que es lo que
+// el admin edita en /admin/envios. El costo real siempre lo decide el servidor.
+const COMUNAS_RESPALDO = ["Providencia", "Ñuñoa", "Las Condes", "Maipú"];
 
 const CONTACTO_INICIAL = { nombre: "", email: "", telefono: "" };
 const DIRECCION_INICIAL = {
@@ -30,8 +31,18 @@ const DIRECCION_INICIAL = {
 
 function Checkout() {
   const { carrito } = useCarritoContext();
-  const { envioGratisDesde } = useReglas();
+  const { envioGratisDesde, tarifasComuna } = useReglas();
   const navegar = useNavigate();
+
+  // Comunas del desplegable: las que el dueño configuró en /admin/envios. Así,
+  // agregar una comuna en el panel la deja disponible en el checkout sin tocar
+  // código. Si aún no hay ninguna, caemos a la lista de respaldo.
+  const comunasDisponibles = useMemo(() => {
+    const nombres = (tarifasComuna ?? [])
+      .map((tarifa) => tarifa.nombre?.trim())
+      .filter(Boolean);
+    return nombres.length > 0 ? nombres : COMUNAS_RESPALDO;
+  }, [tarifasComuna]);
 
   const [contacto, setContacto] = useState(CONTACTO_INICIAL);
   const [modalidad, setModalidad] = useState("DESPACHO");
@@ -349,7 +360,7 @@ function Checkout() {
                       required
                     >
                       <option value="" disabled>Selecciona comuna</option>
-                      {COMUNAS_SUGERIDAS.map((comuna) => (
+                      {comunasDisponibles.map((comuna) => (
                         <option key={comuna} value={comuna}>
                           {comuna}
                         </option>

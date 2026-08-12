@@ -44,7 +44,7 @@ function Campo({ id, etiqueta, error, ...props }) {
   );
 }
 
-function Acceso({ modo, enModal = false, alCompletar }) {
+function Acceso({ modo, enModal = false, alCompletar, alCambiarModo }) {
   const esRegistro = modo === "registro";
   const navegar = useNavigate();
   const ubicacion = useLocation();
@@ -287,7 +287,13 @@ function Acceso({ modo, enModal = false, alCompletar }) {
         {!esRegistro && (
           <div className={styles.alternativa}>
             <span>¿Primera vez por aquí?</span>
-            <Link to="/registro" state={ubicacion.state}>Crear cuenta</Link>
+            {enModal ? (
+              <button className={styles.alternativaBoton} type="button" onClick={() => alCambiarModo?.("registro")}>
+                Crear cuenta
+              </button>
+            ) : (
+              <Link to="/registro" state={ubicacion.state}>Crear cuenta</Link>
+            )}
           </div>
         )}
 

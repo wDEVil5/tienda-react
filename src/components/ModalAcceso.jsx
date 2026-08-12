@@ -1,11 +1,12 @@
-import { useEffect, useRef } from "react";
-import { Login } from "../pages/Acceso.jsx";
+import { useEffect, useRef, useState } from "react";
+import { Login, Registro } from "../pages/Acceso.jsx";
 import styles from "./ModalAcceso.module.css";
 
 // Capa de acceso para visitantes: reutiliza el formulario y contrato de sesión
 // de /login, por lo que no crea un segundo flujo de autenticación que mantener.
 function ModalAcceso({ alCerrar }) {
   const dialogoRef = useRef(null);
+  const [modo, setModo] = useState("login");
 
   useEffect(() => {
     const overflowAnterior = document.body.style.overflow;
@@ -20,7 +21,7 @@ function ModalAcceso({ alCerrar }) {
       document.body.style.overflow = overflowAnterior;
       document.removeEventListener("keydown", alTeclado);
     };
-  }, [alCerrar]);
+  }, [alCerrar, modo]);
 
   return (
     <div
@@ -43,7 +44,37 @@ function ModalAcceso({ alCerrar }) {
             ×
           </button>
         </header>
-        <Login enModal alCompletar={alCerrar} />
+        <div className={styles.pestanas} role="tablist" aria-label="Acceso a tu cuenta">
+          <button
+            id="pestana-iniciar-sesion"
+            className={`${styles.pestana} ${modo === "login" ? styles.pestanaActiva : ""}`}
+            type="button"
+            role="tab"
+            aria-selected={modo === "login"}
+            aria-controls="panel-acceso"
+            onClick={() => setModo("login")}
+          >
+            Iniciar sesión
+          </button>
+          <button
+            id="pestana-crear-cuenta"
+            className={`${styles.pestana} ${modo === "registro" ? styles.pestanaActiva : ""}`}
+            type="button"
+            role="tab"
+            aria-selected={modo === "registro"}
+            aria-controls="panel-acceso"
+            onClick={() => setModo("registro")}
+          >
+            Crear cuenta
+          </button>
+        </div>
+        <div id="panel-acceso" role="tabpanel" aria-labelledby={modo === "login" ? "pestana-iniciar-sesion" : "pestana-crear-cuenta"}>
+          {modo === "login" ? (
+            <Login key="login" enModal alCompletar={alCerrar} alCambiarModo={setModo} />
+          ) : (
+            <Registro key="registro" enModal alCompletar={alCerrar} alCambiarModo={setModo} />
+          )}
+        </div>
       </section>
     </div>
   );

@@ -209,6 +209,16 @@
 
 .alternativa a { color: var(--color-acento); font-weight: 600; text-decoration: none; }
 .alternativa a:hover { text-decoration: underline; }
+.alternativaBoton {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-acento);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.alternativaBoton:hover { text-decoration: underline; }
 
 .notaCarrito {
   margin-top: var(--e-xl);

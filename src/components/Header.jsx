@@ -125,6 +125,11 @@ function Header({
   const [posicionCuenta, setPosicionCuenta] = useState({ top: 0, left: 0 });
   const cerrarMenu = () => setMenuAbierto(false);
   const cerrarCuenta = () => setCuentaAbierta(false);
+  // El perfil guarda el nombre completo; en la cabecera usamos solo el primero
+  // para que el acceso conserve una anchura estable y sea más personal.
+  const etiquetaCuenta = estaAutenticado && cliente?.nombre?.trim()
+    ? cliente.nombre.trim().split(/\s+/)[0]
+    : "Mi cuenta";
 
   // El panel se monta en document.body para que el clip-path de .acciones no
   // recorte sus opciones. Estas coordenadas lo conservan anclado al botón.
@@ -325,7 +330,7 @@ function Header({
                 }}
               >
                 <IconoUsuario />
-                <span>Mi cuenta</span>
+                <span>{etiquetaCuenta}</span>
                 <IconoChevron />
               </button>
             </div>
@@ -377,7 +382,7 @@ function Header({
         <div className={styles.menuAcceso}>
           {estaAutenticado ? (
             <Link className={styles.menuEntrar} to="/mi-cuenta" onClick={cerrarMenu}>
-              Mi cuenta
+              {etiquetaCuenta}
             </Link>
           ) : (
             <>

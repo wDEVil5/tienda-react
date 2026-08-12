@@ -44,7 +44,12 @@ function ModalAcceso({ alCerrar, modoInicial = "login" }) {
             ×
           </button>
         </header>
-        <div className={styles.pestanas} role="tablist" aria-label="Acceso a tu cuenta">
+        <div
+          className={`${styles.pestanas} ${modo === "registro" ? styles.pestanasRegistro : ""}`}
+          role="tablist"
+          aria-label="Acceso a tu cuenta"
+        >
+          <span className={styles.indicadorPestana} aria-hidden="true" />
           <button
             id="pestana-iniciar-sesion"
             className={`${styles.pestana} ${modo === "login" ? styles.pestanaActiva : ""}`}
@@ -68,7 +73,13 @@ function ModalAcceso({ alCerrar, modoInicial = "login" }) {
             Crear cuenta
           </button>
         </div>
-        <div id="panel-acceso" role="tabpanel" aria-labelledby={modo === "login" ? "pestana-iniciar-sesion" : "pestana-crear-cuenta"}>
+        <div
+          key={modo}
+          id="panel-acceso"
+          className={styles.panelModo}
+          role="tabpanel"
+          aria-labelledby={modo === "login" ? "pestana-iniciar-sesion" : "pestana-crear-cuenta"}
+        >
           {modo === "login" ? (
             <Login key="login" enModal alCompletar={alCerrar} alCambiarModo={setModo} />
           ) : (

@@ -80,7 +80,7 @@ function Acceso({ modo, enModal = false, alCompletar, alCambiarModo }) {
     if (datos.nombre.trim().length < 2) siguientesErrores.nombre = "Ingresa tu nombre.";
     if (datos.apellido.trim().length < 2) siguientesErrores.apellido = "Ingresa tu apellido.";
     if (!/^\S+@\S+\.\S+$/.test(datos.email.trim())) {
-      siguientesErrores.email = "Falta el dominio: ¿wilnes@correo.cl?";
+      siguientesErrores.email = "Ingresa un correo válido, por ejemplo nombre@correo.cl.";
     }
     if (datos.contrasena.length < 12) {
       siguientesErrores.contrasena = "La contraseña debe tener al menos 12 caracteres.";

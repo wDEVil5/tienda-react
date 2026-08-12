@@ -142,6 +142,11 @@
   gap: 8px;
   flex-shrink: 0;
 }
+.accionesPlegables {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
 .comuna {
   display: inline-flex;
@@ -426,7 +431,7 @@
     transition: transform 70ms linear;
   }
   .capsula,
-  .acciones {
+  .accionesPlegables {
     transition:
       transform 520ms cubic-bezier(0.16, 1, 0.3, 1),
       clip-path 420ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -440,7 +445,7 @@
     transform: scale(1);
     transform-origin: center;
   }
-  .acciones {
+  .accionesPlegables {
     clip-path: inset(0 0 0 0);
     transform: translateX(0) scale(1);
     transform-origin: right center;
@@ -454,7 +459,7 @@
     transform: scale(0.9);
     transition-delay: 0ms;
   }
-  .condensado .acciones {
+  .condensado .accionesPlegables {
     clip-path: inset(0 100% 0 0);
     transform: translateX(10px) scale(0.96);
     transition-delay: 40ms;
@@ -475,15 +480,13 @@
       clip-path 620ms cubic-bezier(0.16, 1, 0.3, 1);
   }
   .condBuscador,
-  .condComuna,
-  .barraCondensada .carrito {
+  .condComuna {
     transform: scale(0.94);
     transition:
       transform 520ms cubic-bezier(0.16, 1, 0.3, 1);
   }
   .condBuscador { transform-origin: center; }
-  .condComuna,
-  .barraCondensada .carrito { transform-origin: right center; }
+  .condComuna { transform-origin: right center; }
 
   .condensado .barraCondensada {
     transform: scaleX(1) scaleY(1);
@@ -491,20 +494,22 @@
     pointer-events: auto;
   }
   .condensado .condBuscador,
-  .condensado .condComuna,
-  .condensado .barraCondensada .carrito {
+  .condensado .condComuna {
     transform: scale(1);
   }
   .condensado .condBuscador { transition-delay: 80ms; }
   .condensado .condComuna { transition-delay: 160ms; }
-  .condensado .barraCondensada .carrito { transition-delay: 190ms; }
   .condensado .barra { pointer-events: none; }
   .condensado .logo { pointer-events: auto; }
+  /* El mismo carrito de la barra completa se mantiene sobre la composición
+     sticky: no se recorta ni se sustituye por una copia que parezca fundirse. */
+  .condensado .barra .carrito { pointer-events: auto; }
+  .barraCondensada .carrito { visibility: hidden; }
 
   /* Al volver arriba, la barra sticky se repliega antes de que regresen las
      acciones, evitando que ambos estados compitan visualmente. */
   .header:not(.condensado) .barraCondensada { transition-delay: 100ms; }
-  .header:not(.condensado) .acciones { transition-delay: 190ms; }
+  .header:not(.condensado) .accionesPlegables { transition-delay: 190ms; }
   .header:not(.condensado) .capsula { transition-delay: 150ms; }
 }
 
@@ -512,9 +517,7 @@
 /* Tablet y móvil: la cápsula de nav y los enlaces de cuenta se van al menú. */
 @media (max-width: 1023px) {
   .capsula,
-  .comuna,
-  .sepAcciones,
-  .cuentaMenu {
+  .accionesPlegables {
     display: none;
   }
   .hamburguesa {

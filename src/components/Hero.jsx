@@ -101,6 +101,7 @@ function Hero({
 
         {/* Buscador destacado tipo cápsula blanca con botón circular de envío. */}
         <form
+          id="buscador-hero"
           className={styles.buscador}
           role="search"
           onSubmit={(e) => {

@@ -7,6 +7,10 @@
 
 .pantalla {
   width: min(100%, 840px);
+  /* La ruta protegida comparte el contenedor amplio de Mi cuenta. Este margen
+     centra su tarjeta sin afectar las vistas autenticadas que usan ese mismo
+     contenedor. */
+  margin-inline: auto;
   min-height: 644px;
   display: flex;
   flex-direction: column;

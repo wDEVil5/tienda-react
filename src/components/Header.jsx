@@ -66,12 +66,34 @@ const NAV = [
 
 const INICIO_REDUCCION_LOGO = 40;
 const FIN_REDUCCION_LOGO = 180;
+const ALTURA_HEADER_ESCRITORIO = 68;
 
 function obtenerProgresoLogo(scrollY = 0) {
   return Math.min(
     1,
     Math.max(0, (scrollY - INICIO_REDUCCION_LOGO) / (FIN_REDUCCION_LOGO - INICIO_REDUCCION_LOGO)),
   );
+}
+
+function obtenerEstadoCondensado(scrollY = 0) {
+  const buscadorHero = document.getElementById("buscador-hero");
+
+  // En las páginas sin Hero se conserva el umbral general. En el inicio, la
+  // transición comienza solo cuando el buscador destacado ya pasó bajo header.
+  if (!buscadorHero) {
+    return {
+      condensado: scrollY > 140,
+      progresoLogo: obtenerProgresoLogo(scrollY),
+    };
+  }
+
+  const distanciaTrasBuscador = ALTURA_HEADER_ESCRITORIO - buscadorHero.getBoundingClientRect().bottom;
+  return {
+    condensado: distanciaTrasBuscador > 0,
+    // Tras pasar el buscador, la marca termina de escalar durante 140px para
+    // que el cambio mantenga la progresión ligada al scroll.
+    progresoLogo: Math.min(1, Math.max(0, distanciaTrasBuscador / (FIN_REDUCCION_LOGO - INICIO_REDUCCION_LOGO))),
+  };
 }
 
 function Header({
@@ -92,10 +114,10 @@ function Header({
   // Estado condensado: el valor inicial se calcula del scroll actual para no
   // hacer un setState sincrónico dentro del efecto (solo suscribimos el listener).
   const [condensado, setCondensado] = useState(
-    () => typeof window !== "undefined" && window.scrollY > 140,
+    () => typeof window !== "undefined" && obtenerEstadoCondensado(window.scrollY).condensado,
   );
   const [progresoLogo, setProgresoLogo] = useState(
-    () => typeof window !== "undefined" ? obtenerProgresoLogo(window.scrollY) : 0,
+    () => typeof window !== "undefined" ? obtenerEstadoCondensado(window.scrollY).progresoLogo : 0,
   );
   const cuentaRef = useRef(null);
   const botonCuentaRef = useRef(null);
@@ -127,16 +149,17 @@ function Header({
   useEffect(() => {
     const alScroll = () => {
       const scrollY = window.scrollY;
-      const siguienteProgresoLogo = obtenerProgresoLogo(scrollY);
+      const siguienteEstado = obtenerEstadoCondensado(scrollY);
 
       setCondensado((actual) => {
-        const siguiente = scrollY > 140;
+        const siguiente = siguienteEstado.condensado;
         return actual === siguiente ? actual : siguiente;
       });
       setProgresoLogo((actual) => (
-        Math.abs(actual - siguienteProgresoLogo) < 0.01 ? actual : siguienteProgresoLogo
+        Math.abs(actual - siguienteEstado.progresoLogo) < 0.01 ? actual : siguienteEstado.progresoLogo
       ));
     };
+    alScroll();
     window.addEventListener("scroll", alScroll, { passive: true });
     return () => window.removeEventListener("scroll", alScroll);
   }, []);
@@ -274,34 +297,38 @@ function Header({
         </nav>
 
         <div className={styles.acciones}>
-          {/* Selector de comuna (placeholder: el picker real llega con el
-              contexto de modo de entrega). */}
-          <button className={styles.comuna} type="button">
-            <IconoPin />
-            <span>Providencia</span>
-            <IconoChevron />
-          </button>
-
-          <span className={styles.sepAcciones} aria-hidden="true" />
-
-          {/* Menú de cuenta: un solo botón que abre las acciones con su beneficio. */}
-          <div className={styles.cuentaMenu} ref={cuentaRef}>
-            <button
-              ref={botonCuentaRef}
-              className={styles.cuentaBoton}
-              type="button"
-              aria-haspopup="menu"
-              aria-expanded={cuentaAbierta}
-              aria-controls="menu-cuenta"
-              onClick={() => {
-                if (!cuentaAbierta) actualizarPosicionCuenta();
-                setCuentaAbierta((abierta) => !abierta);
-              }}
-            >
-              <IconoUsuario />
-              <span>Mi cuenta</span>
+          {/* Este grupo se repliega al condensar. El carrito queda fuera para
+              conservar el mismo botón durante toda la transición sticky. */}
+          <div className={styles.accionesPlegables}>
+            {/* Selector de comuna (placeholder: el picker real llega con el
+                contexto de modo de entrega). */}
+            <button className={styles.comuna} type="button">
+              <IconoPin />
+              <span>Providencia</span>
               <IconoChevron />
             </button>
+
+            <span className={styles.sepAcciones} aria-hidden="true" />
+
+            {/* Menú de cuenta: un solo botón que abre las acciones con su beneficio. */}
+            <div className={styles.cuentaMenu} ref={cuentaRef}>
+              <button
+                ref={botonCuentaRef}
+                className={styles.cuentaBoton}
+                type="button"
+                aria-haspopup="menu"
+                aria-expanded={cuentaAbierta}
+                aria-controls="menu-cuenta"
+                onClick={() => {
+                  if (!cuentaAbierta) actualizarPosicionCuenta();
+                  setCuentaAbierta((abierta) => !abierta);
+                }}
+              >
+                <IconoUsuario />
+                <span>Mi cuenta</span>
+                <IconoChevron />
+              </button>
+            </div>
           </div>
 
           <button className={styles.carrito} type="button" onClick={onAbrirCarrito}>

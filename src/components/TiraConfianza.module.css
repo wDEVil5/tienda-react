@@ -1,59 +1,45 @@
-/* 4 columnas separadas por hairlines de 1px. El gap de 1px sobre un fondo del
-   color del borde crea las líneas entre celdas; border-block cierra arriba y
-   abajo. El dato en serif es el protagonista. */
+/* Franja clara con 4 argumentos en una fila, cada uno en una sola línea.
+   Repartidos a lo ancho; sin líneas divisorias (banda limpia). */
 .tira {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1px;
-  margin: 56px 0;
-  background-color: var(--bnv-borde);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 16px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 24px;
   border-block: 1px solid var(--bnv-borde);
 }
 
 .celda {
-  background-color: var(--bnv-crema);
-  padding: 32px 24px;
+  font-family: var(--bnv-sans);
+  font-size: 13.5px;
+  line-height: 1.4;
+  white-space: nowrap;
 }
 
-.rotulo {
-  font-family: var(--bnv-mono);
-  font-size: 10.5px;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--bnv-tenue);
-}
-
-.dato {
-  margin-top: 12px;
-  font-family: var(--bnv-serif);
-  font-weight: 400;
-  font-size: 40px;
-  line-height: 1;
-  letter-spacing: -0.025em;
+.titulo {
+  font-weight: 600;
   color: var(--bnv-tinta);
-  text-wrap: balance;
 }
 
 .detalle {
-  margin-top: 12px;
-  font-family: var(--bnv-sans);
-  font-size: 13.5px;
-  line-height: 1.5;
   color: var(--bnv-texto-2);
 }
 
-/* Móvil: 2×2. La línea vertical central y las horizontales las siguen dando el
-   gap + border-block. */
+.sep {
+  color: var(--bnv-tenue);
+}
+
+/* Móvil: 2×2. Cada celda ocupa ~media fila. */
 @media (max-width: 767px) {
   .tira {
-    grid-template-columns: repeat(2, 1fr);
-    margin: 40px 0;
+    gap: 12px 24px;
+    padding: 16px;
   }
   .celda {
-    padding: 24px 16px;
-  }
-  .dato {
-    font-size: 32px;
+    flex: 1 1 45%;
+    white-space: normal;
+    font-size: 13px;
   }
 }

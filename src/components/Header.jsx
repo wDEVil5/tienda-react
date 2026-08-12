@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "./Header.module.css";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
@@ -34,6 +34,12 @@ const IconoChevron = () => (
     <path d="m6 9 6 6 6-6" />
   </Svg>
 );
+const IconoUsuario = () => (
+  <Svg size={16}>
+    <circle cx="12" cy="8" r="3.4" />
+    <path d="M5.5 20a6.5 6.5 0 0 1 13 0" />
+  </Svg>
+);
 const IconoCarrito = () => (
   <Svg size={17}>
     <circle cx="9" cy="20" r="1.4" />
@@ -53,10 +59,33 @@ const NAV = [
 
 function Header({ onVerOfertas, onVerCatalogo, onAbrirCarrito }) {
   const { totalItems } = useCarritoContext();
-  const { estaAutenticado } = useCuenta();
+  const { estaAutenticado, cliente, cerrarSesion } = useCuenta();
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const [cuentaAbierta, setCuentaAbierta] = useState(false);
   const [activo, setActivo] = useState("Catálogo");
+  const cuentaRef = useRef(null);
   const cerrarMenu = () => setMenuAbierto(false);
+  const cerrarCuenta = () => setCuentaAbierta(false);
+
+  // El menú de cuenta se cierra al hacer clic fuera o con Escape. Es una
+  // suscripción a eventos del documento (no un setState en el cuerpo del efecto).
+  useEffect(() => {
+    if (!cuentaAbierta) return undefined;
+    const alClicFuera = (evento) => {
+      if (cuentaRef.current && !cuentaRef.current.contains(evento.target)) {
+        setCuentaAbierta(false);
+      }
+    };
+    const alEscape = (evento) => {
+      if (evento.key === "Escape") setCuentaAbierta(false);
+    };
+    document.addEventListener("mousedown", alClicFuera);
+    document.addEventListener("keydown", alEscape);
+    return () => {
+      document.removeEventListener("mousedown", alClicFuera);
+      document.removeEventListener("keydown", alEscape);
+    };
+  }, [cuentaAbierta]);
 
   const alNavegar = (item) => {
     setActivo(item.etiqueta);
@@ -99,20 +128,72 @@ function Header({ onVerOfertas, onVerCatalogo, onAbrirCarrito }) {
 
           <span className={styles.sepAcciones} aria-hidden="true" />
 
-          {estaAutenticado ? (
-            <Link className={styles.entrar} to="/mi-cuenta">
-              Mi cuenta
-            </Link>
-          ) : (
-            <>
-              <Link className={styles.entrar} to="/login">
-                Entrar
+          {/* Menú de cuenta: un solo botón que abre las acciones con su beneficio. */}
+          <div className={styles.cuentaMenu} ref={cuentaRef}>
+            <button
+              className={styles.cuentaBoton}
+              type="button"
+              aria-haspopup="menu"
+              aria-expanded={cuentaAbierta}
+              onClick={() => setCuentaAbierta((abierta) => !abierta)}
+            >
+              <IconoUsuario />
+              <span>Mi cuenta</span>
+              <IconoChevron />
+            </button>
+
+            <div
+              className={`${styles.cuentaPanel} ${cuentaAbierta ? styles.cuentaPanelAbierto : ""}`}
+              role="menu"
+              aria-hidden={!cuentaAbierta}
+              inert={!cuentaAbierta}
+            >
+              {estaAutenticado ? (
+                <>
+                  <p className={styles.cuentaTitulo}>Hola{cliente?.nombre ? `, ${cliente.nombre}` : ""}</p>
+                  <p className={styles.cuentaBeneficio}>Gestiona tus pedidos y tus datos.</p>
+                  <Link className={styles.cuentaAccionPrimaria} to="/mi-cuenta" role="menuitem" onClick={cerrarCuenta}>
+                    Ir a mi cuenta
+                  </Link>
+                  <button
+                    className={styles.cuentaAccionSecundaria}
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      cerrarCuenta();
+                      cerrarSesion();
+                    }}
+                  >
+                    Cerrar sesión
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className={styles.cuentaTitulo}>Entra a tu cuenta</p>
+                  <p className={styles.cuentaBeneficio}>
+                    Guarda tus productos habituales y repite el pedido en un clic.
+                  </p>
+                  <Link className={styles.cuentaAccionPrimaria} to="/login" role="menuitem" onClick={cerrarCuenta}>
+                    Iniciar sesión
+                  </Link>
+                  <Link className={styles.cuentaAccionSecundaria} to="/registro" role="menuitem" onClick={cerrarCuenta}>
+                    Crear cuenta
+                  </Link>
+                </>
+              )}
+
+              <div className={styles.cuentaSeparador} />
+              <Link className={styles.cuentaEnlace} to="/mi-cuenta/pedidos" role="menuitem" onClick={cerrarCuenta}>
+                Mis pedidos
               </Link>
-              <Link className={styles.crearCuenta} to="/registro">
-                Crear cuenta
+              <Link className={styles.cuentaEnlace} to="/mi-cuenta" role="menuitem" onClick={cerrarCuenta}>
+                Mis listas de compra
               </Link>
-            </>
-          )}
+              <button className={styles.cuentaEnlace} type="button" role="menuitem" onClick={cerrarCuenta}>
+                Comuna de entrega
+              </button>
+            </div>
+          </div>
 
           <button className={styles.carrito} type="button" onClick={onAbrirCarrito}>
             <IconoCarrito />

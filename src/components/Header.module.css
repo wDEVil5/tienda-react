@@ -1,5 +1,11 @@
-/* Header claro de una sola fila, fondo crema. Objetivos cliqueables de 44px. */
+/* Header claro de una sola fila, fondo crema. Objetivos cliqueables de 44px.
+   Fijo: acompaña el scroll pegado al borde superior. z-index alto para quedar
+   sobre el hero y el catálogo; los drawers/modales van por encima con su propio
+   z-index. El fondo es opaco para que el contenido no se transparente detrás. */
 .header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
   background-color: var(--bnv-crema);
   border-bottom: 1px solid var(--bnv-borde);
   font-family: var(--bnv-sans);
@@ -99,38 +105,121 @@
   background-color: var(--bnv-borde);
 }
 
-.entrar {
+/* ---- Menú de cuenta (un botón que abre las acciones) ---- */
+.cuentaMenu {
+  position: relative;
+}
+.cuentaBoton {
   display: inline-flex;
   align-items: center;
+  gap: 7px;
   height: 44px;
-  padding: 0 12px;
-  color: var(--bnv-tinta);
-  font-size: 14px;
-  text-decoration: none;
-  white-space: nowrap;
+  padding: 0 14px;
+  background: none;
+  border: none;
   border-radius: var(--radio-pill);
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--bnv-tinta);
+  cursor: pointer;
+  white-space: nowrap;
   transition: color 0.18s ease;
 }
-.entrar:hover {
+.cuentaBoton:hover {
   color: var(--bnv-verde);
 }
 
-.crearCuenta {
-  display: inline-flex;
-  align-items: center;
-  height: 44px;
-  padding: 0 18px;
-  border: 1px solid var(--bnv-verde);
-  border-radius: var(--radio-pill);
-  color: var(--bnv-verde);
-  font-size: 14px;
-  font-weight: 500;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: background-color 0.18s ease, color 0.18s ease;
+.cuentaPanel {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 30;
+  width: 300px;
+  padding: 20px;
+  text-align: left;
+  background-color: #fff;
+  border: 1px solid var(--bnv-borde);
+  border-radius: var(--bnv-radio-card);
+  box-shadow: var(--bnv-sombra);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-6px);
+  visibility: hidden;
+  transition: opacity 0.16s ease, transform 0.2s ease, visibility 0s linear 0.2s;
 }
-.crearCuenta:hover {
-  background-color: var(--bnv-neblina);
+.cuentaPanelAbierto {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  visibility: visible;
+  transition-delay: 0s;
+}
+.cuentaTitulo {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--bnv-tinta);
+}
+.cuentaBeneficio {
+  margin-top: 4px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--bnv-texto-2);
+}
+.cuentaAccionPrimaria,
+.cuentaAccionSecundaria {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 48px;
+  border-radius: var(--radio-pill);
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+}
+.cuentaAccionPrimaria {
+  margin-top: 16px;
+  background-color: var(--bnv-verde);
+  border: 1px solid var(--bnv-verde);
+  color: #fff;
+  transition: background-color 0.18s ease;
+}
+.cuentaAccionPrimaria:hover {
+  background-color: #173d2c;
+}
+.cuentaAccionSecundaria {
+  margin-top: 10px;
+  background: none;
+  border: 1px solid var(--bnv-borde);
+  color: var(--bnv-tinta);
+  transition: border-color 0.18s ease;
+}
+.cuentaAccionSecundaria:hover {
+  border-color: var(--bnv-verde-claro);
+}
+.cuentaSeparador {
+  height: 1px;
+  margin: 16px 0 4px;
+  background-color: var(--bnv-borde);
+}
+.cuentaEnlace {
+  display: block;
+  width: 100%;
+  padding: 10px 0;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--bnv-texto-2);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.18s ease;
+}
+.cuentaEnlace:hover {
+  color: var(--bnv-verde);
 }
 
 .carrito {
@@ -237,8 +326,7 @@
   .capsula,
   .comuna,
   .sepAcciones,
-  .entrar,
-  .crearCuenta {
+  .cuentaMenu {
     display: none;
   }
   .hamburguesa {

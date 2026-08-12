@@ -104,6 +104,7 @@ function Header({
   onVerOfertas,
   onVerCatalogo,
   onAbrirCarrito,
+  onAbrirAcceso,
 }) {
   const { totalItems } = useCarritoContext();
   const { estaAutenticado, cliente, cerrarSesion } = useCuenta();
@@ -228,9 +229,17 @@ function Header({
       <p className={styles.cuentaBeneficio}>
         Guarda tus productos habituales y repite el pedido en un clic.
       </p>
-      <Link className={styles.cuentaAccionPrimaria} to="/login" role="menuitem" onClick={cerrarCuenta}>
+      <button
+        className={styles.cuentaAccionPrimaria}
+        type="button"
+        role="menuitem"
+        onClick={() => {
+          cerrarCuenta();
+          onAbrirAcceso?.();
+        }}
+      >
         Iniciar sesión
-      </Link>
+      </button>
       <Link className={styles.cuentaAccionSecundaria} to="/registro" role="menuitem" onClick={cerrarCuenta}>
         Crear cuenta
       </Link>

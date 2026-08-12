@@ -44,7 +44,7 @@ function Campo({ id, etiqueta, error, ...props }) {
   );
 }
 
-function Acceso({ modo }) {
+function Acceso({ modo, enModal = false, alCompletar }) {
   const esRegistro = modo === "registro";
   const navegar = useNavigate();
   const ubicacion = useLocation();
@@ -65,7 +65,7 @@ function Acceso({ modo }) {
 
   // No dejamos una pantalla de acceso abierta después de una sesión ya válida.
   if (estaAutenticado) {
-    return <Navigate to={destino} replace />;
+    return enModal ? null : <Navigate to={destino} replace />;
   }
 
   const cambiar = (campo) => (evento) => {
@@ -113,7 +113,8 @@ function Acceso({ modo }) {
           contrasena: datos.contrasena,
         });
       }
-      navegar(destino, { replace: true });
+      if (enModal) alCompletar?.();
+      else navegar(destino, { replace: true });
     } catch (errorRespuesta) {
       setError(mensajeDeError(errorRespuesta, esRegistro));
     } finally {
@@ -128,21 +129,15 @@ function Acceso({ modo }) {
     setError(null);
     try {
       await iniciarConGoogle(idToken);
-      navegar(destino, { replace: true });
+      if (enModal) alCompletar?.();
+      else navegar(destino, { replace: true });
     } catch (errorRespuesta) {
       setError(mensajeDeError(errorRespuesta, esRegistro));
     }
   }
 
-  return (
-    <section className={styles.pantalla} aria-labelledby="titulo-acceso">
-      <header className={styles.cabecera}>
-        <Link to="/" className={styles.logo}>
-          Sumarket<em>Express</em>
-        </Link>
-      </header>
-
-      <div className={styles.contenido}>
+  const contenido = (
+    <div className={styles.contenido}>
         <h1 id="titulo-acceso" className={styles.titulo}>
           {esRegistro ? "Crea tu cuenta" : "Entra a tu cuenta"}
         </h1>
@@ -303,7 +298,21 @@ function Acceso({ modo }) {
               : "Tu carrito se conservará y se asociará a tu cuenta al entrar."}
           </p>
         )}
-      </div>
+    </div>
+  );
+
+  // El modal reutiliza exactamente la lógica de sesión; solo aporta su propia
+  // capa, cabecera y cierre desde ModalAcceso.
+  if (enModal) return contenido;
+
+  return (
+    <section className={styles.pantalla} aria-labelledby="titulo-acceso">
+      <header className={styles.cabecera}>
+        <Link to="/" className={styles.logo}>
+          Sumarket<em>Express</em>
+        </Link>
+      </header>
+      {contenido}
     </section>
   );
 }
@@ -322,10 +331,10 @@ function textoFuerza(contrasena) {
   return "Mínimo 12 caracteres.";
 }
 
-export function Login() {
-  return <Acceso modo="login" />;
+export function Login(props) {
+  return <Acceso modo="login" {...props} />;
 }
 
-export function Registro() {
-  return <Acceso modo="registro" />;
+export function Registro(props) {
+  return <Acceso modo="registro" {...props} />;
 }

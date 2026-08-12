@@ -25,6 +25,7 @@ import Carrito from "./components/Carrito.jsx";
 import Toast from "./components/Toast.jsx";
 import styles from "./App.module.css";
 import Header from "./components/Header.jsx";
+import ModalAcceso from "./components/ModalAcceso.jsx";
 import Footer from "./components/Footer.jsx";
 import RutaProtegida from "./components/RutaProtegida.jsx";
 import { obtenerCatalogo, obtenerCategorias } from "./services/productosApi.js";
@@ -54,6 +55,7 @@ function App() {
   const [error, setError] = useState(null); // null = sin error, string = mensaje a mostrar
 
   const [carritoAbierto, setCarritoAbierto] = useState(false);
+  const [accesoAbierto, setAccesoAbierto] = useState(false);
 
   // La búsqueda espera un instante antes de consultar. Esto evita una petición
   // por cada tecla y mantiene la respuesta del servidor como fuente de verdad.
@@ -289,6 +291,7 @@ function App() {
           onVerOfertas={verOfertas}
           onVerCatalogo={verCatalogo}
           onAbrirCarrito={() => setCarritoAbierto(true)}
+          onAbrirAcceso={() => setAccesoAbierto(true)}
         />
       )}
 
@@ -383,6 +386,8 @@ function App() {
           onClick={() => setCarritoAbierto(false)}
         ></div>
       )}
+
+      {accesoAbierto && <ModalAcceso alCerrar={() => setAccesoAbierto(false)} />}
 
       {/* El Carrito SIEMPRE montado: se desliza dentro/fuera según "abierto" */}
       <Carrito

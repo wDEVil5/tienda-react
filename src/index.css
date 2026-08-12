@@ -58,6 +58,28 @@
   /* ---- Espaciado (escala de 4px) ---- */
   --e-xs: 4px; --e-sm: 8px; --e-md: 12px; --e-lg: 16px; --e-xl: 22px; --e-2xl: 40px;
 
+  /* ---- Bienvenida (header + hero + franja de confianza) ----
+     Paleta y tipografía ACOTADAS a la sección de bienvenida. No reemplazan los
+     tokens globales de arriba: conviven mientras el resto de la app conserva su
+     verde actual. Cuando la marca migre por completo, estos se promueven a
+     globales. */
+  --bnv-verde:        #1f4f3a;  /* verde de marca: CTA, carrito, acentos */
+  --bnv-verde-claro:  #3d7a5c;  /* verde de acento (palabra itálica, hovers) */
+  --bnv-tinta:        #15201a;  /* tinta: titulares */
+  --bnv-crema:        #fdfcf9;  /* crema base: fondo del header */
+  --bnv-neblina:      #eef2ee;  /* verde neblina: fondo del hero y cápsula nav */
+  --bnv-gris:         #f2f4f1;  /* gris cálido: campos, superficies suaves */
+  --bnv-texto-2:      #5a655e;  /* texto secundario (AA) */
+  --bnv-tenue:        #83867f;  /* texto tenue: rótulos, metadatos */
+  --bnv-borde:        #e4e8e3;  /* hairlines de la sección */
+
+  --bnv-serif: "Instrument Serif", Georgia, serif;
+  --bnv-sans:  "DM Sans", system-ui, sans-serif;
+  --bnv-mono:  "DM Mono", ui-monospace, monospace;
+
+  --bnv-radio-card: 16px;
+  --bnv-sombra: 0 8px 24px rgba(21, 32, 26, 0.08);
+
   /* Base tipográfica global */
   font-family: var(--font-ui);
   color: var(--color-texto);

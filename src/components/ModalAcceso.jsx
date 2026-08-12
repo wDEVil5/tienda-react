@@ -4,9 +4,9 @@ import styles from "./ModalAcceso.module.css";
 
 // Capa de acceso para visitantes: reutiliza el formulario y contrato de sesión
 // de /login, por lo que no crea un segundo flujo de autenticación que mantener.
-function ModalAcceso({ alCerrar }) {
+function ModalAcceso({ alCerrar, modoInicial = "login" }) {
   const dialogoRef = useRef(null);
-  const [modo, setModo] = useState("login");
+  const [modo, setModo] = useState(modoInicial);
 
   useEffect(() => {
     const overflowAnterior = document.body.style.overflow;

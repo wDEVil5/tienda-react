@@ -240,9 +240,17 @@ function Header({
       >
         Iniciar sesión
       </button>
-      <Link className={styles.cuentaAccionSecundaria} to="/registro" role="menuitem" onClick={cerrarCuenta}>
+      <button
+        className={styles.cuentaAccionSecundaria}
+        type="button"
+        role="menuitem"
+        onClick={() => {
+          cerrarCuenta();
+          onAbrirAcceso?.("registro");
+        }}
+      >
         Crear cuenta
-      </Link>
+      </button>
     </>
   );
 

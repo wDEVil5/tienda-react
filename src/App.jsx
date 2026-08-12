@@ -56,6 +56,7 @@ function App() {
 
   const [carritoAbierto, setCarritoAbierto] = useState(false);
   const [accesoAbierto, setAccesoAbierto] = useState(false);
+  const [modoAcceso, setModoAcceso] = useState("login");
 
   // La búsqueda espera un instante antes de consultar. Esto evita una petición
   // por cada tecla y mantiene la respuesta del servidor como fuente de verdad.
@@ -291,7 +292,10 @@ function App() {
           onVerOfertas={verOfertas}
           onVerCatalogo={verCatalogo}
           onAbrirCarrito={() => setCarritoAbierto(true)}
-          onAbrirAcceso={() => setAccesoAbierto(true)}
+          onAbrirAcceso={(modo = "login") => {
+            setModoAcceso(modo);
+            setAccesoAbierto(true);
+          }}
         />
       )}
 
@@ -387,7 +391,12 @@ function App() {
         ></div>
       )}
 
-      {accesoAbierto && <ModalAcceso alCerrar={() => setAccesoAbierto(false)} />}
+      {accesoAbierto && (
+        <ModalAcceso
+          modoInicial={modoAcceso}
+          alCerrar={() => setAccesoAbierto(false)}
+        />
+      )}
 
       {/* El Carrito SIEMPRE montado: se desliza dentro/fuera según "abierto" */}
       <Carrito

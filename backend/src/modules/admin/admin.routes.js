@@ -849,6 +849,11 @@ export function crearRouterAdmin({
 
         return response.json({ data: producto })
       } catch (error) {
+        if (error instanceof ErrorProductoAdmin) {
+          return response.status(422).json({
+            error: { code: error.code, message: error.message },
+          })
+        }
         return next(error)
       }
     },

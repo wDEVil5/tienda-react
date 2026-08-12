@@ -13,7 +13,7 @@ test('acepta hasta cinco imágenes únicas y con texto alternativo', () => {
   assert.equal(resultado.success, true)
 })
 
-test('rechaza galerías sin imagen principal o con URLs repetidas', () => {
+test('acepta una galería vacía para borradores y rechaza URLs repetidas', () => {
   const sinImagenes = validarImagenesProductoAdmin({ imagenes: [] })
   const repetidas = validarImagenesProductoAdmin({
     imagenes: [
@@ -22,6 +22,6 @@ test('rechaza galerías sin imagen principal o con URLs repetidas', () => {
     ],
   })
 
-  assert.equal(sinImagenes.success, false)
+  assert.equal(sinImagenes.success, true)
   assert.equal(repetidas.success, false)
 })

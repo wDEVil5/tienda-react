@@ -9,7 +9,7 @@ const esquemaImagen = z.object({
 // El orden se deriva de la posición del arreglo. Esto evita que el panel pueda
 // enviar dos imágenes con la misma posición y romper la restricción de la BD.
 const esquemaImagenesProductoAdmin = z.object({
-  imagenes: z.array(esquemaImagen).min(1).max(5).refine(
+  imagenes: z.array(esquemaImagen).max(5).refine(
     (imagenes) => new Set(imagenes.map((imagen) => imagen.url)).size === imagenes.length,
     'No se puede repetir la misma imagen.',
   ),

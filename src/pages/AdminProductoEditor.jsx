@@ -65,7 +65,7 @@ function Switch({ id, etiqueta, ayuda, checked, disabled = false, onChange }) {
 
 const MAXIMO_IMAGENES_PRODUCTO = 5;
 
-function GaleriaProducto({ imagenes, nombre, productoId, cargando, onSubir, onReordenar, error }) {
+function GaleriaProducto({ imagenes, nombre, productoId, cargando, onSubir, onReordenar, onEliminar, error }) {
   const inputRef = useRef(null);
   const [arrastrada, setArrastrada] = useState(null);
 
@@ -89,6 +89,19 @@ function GaleriaProducto({ imagenes, nombre, productoId, cargando, onSubir, onRe
             onDrop={() => soltar(indice)}
           >
             <img src={imagen.url} alt={imagen.textoAlternativo || `${nombre}, imagen ${indice + 1}`} />
+            <button
+              className={styles.eliminarImagen}
+              type="button"
+              disabled={cargando}
+              aria-label={`Eliminar imagen ${indice + 1} de ${nombre}`}
+              title="Eliminar imagen"
+              onClick={(evento) => {
+                evento.stopPropagation();
+                onEliminar(indice);
+              }}
+            >
+              ×
+            </button>
           </div>
         ))}
         {imagenes.length === 0 && <span className={styles.slotVacio} aria-hidden="true" />}
@@ -262,6 +275,20 @@ export default function AdminProductoEditor() {
     }
   }
 
+  async function eliminarImagen(indice) {
+    const siguiente = imagenes.filter((_, indiceActual) => indiceActual !== indice);
+    setCargandoImagen(true);
+    setErrorGaleria(null);
+    try {
+      const producto = await reemplazarImagenesProductoAdmin(id, siguiente);
+      setImagenes(producto?.imagenes ?? siguiente);
+    } catch (error) {
+      setErrorGaleria(error instanceof ErrorAdminApi ? error.message : "No pudimos eliminar la imagen.");
+    } finally {
+      setCargandoImagen(false);
+    }
+  }
+
   async function guardar(evento) {
     evento.preventDefault();
     const siguientesErrores = validarFormularioProducto(formulario, { esNuevo });
@@ -373,6 +400,7 @@ export default function AdminProductoEditor() {
               cargando={cargandoImagen}
               onSubir={subirImagen}
               onReordenar={reordenarImagenes}
+              onEliminar={eliminarImagen}
               error={errorGaleria}
             />
 

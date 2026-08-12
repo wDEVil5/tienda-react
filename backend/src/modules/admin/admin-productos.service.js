@@ -290,6 +290,15 @@ export function crearServicioProductosAdmin(
       const productoActual = await repositorio.obtenerPorId(id)
       if (!productoActual) return null
 
+      // Un borrador puede vaciar su galería, pero un producto público siempre
+      // necesita una imagen principal para no romper tarjetas ni detalle.
+      if (productoActual.estado === 'PUBLICADO' && imagenes.length === 0) {
+        throw new ErrorProductoAdmin(
+          'PRODUCT_IMAGE_REQUIRED',
+          'Un producto publicado debe conservar al menos una imagen.',
+        )
+      }
+
       const clavesNuevas = new Set(
         imagenes.map((imagen) => imagen.storageKey).filter(Boolean),
       )

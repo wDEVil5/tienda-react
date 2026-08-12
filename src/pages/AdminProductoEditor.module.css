@@ -224,6 +224,39 @@
   object-fit: cover;
 }
 
+/* En escritorio aparece al inspeccionar la imagen; en teclado y táctil sigue
+   visible/accesible para que eliminar nunca dependa solo del hover. */
+.eliminarImagen {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(28, 27, 24, .82);
+  color: #fff;
+  font: inherit;
+  font-size: 21px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(.9);
+  transition: opacity .16s ease, transform .16s ease, background-color .16s ease;
+}
+.slotConImagen:hover .eliminarImagen,
+.eliminarImagen:focus-visible { opacity: 1; transform: scale(1); }
+.eliminarImagen:hover { background: var(--color-oferta); }
+.eliminarImagen:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.eliminarImagen:disabled { cursor: wait; opacity: .55; }
+
+@media (hover: none) {
+  .eliminarImagen { opacity: 1; transform: scale(1); }
+}
+
 .subirImagen {
   display: flex;
   flex-direction: column;

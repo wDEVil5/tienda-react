@@ -151,6 +151,19 @@ test('reemplazarImagenesProducto delega una galería completa al repositorio', a
   assert.deepEqual(clavesEliminadas, ['sumarket/productos/aceite-anterior'])
 })
 
+test('reemplazarImagenesProducto no deja sin imágenes a un producto publicado', async () => {
+  const producto = {
+    id: 'producto-1', estado: 'PUBLICADO', imagenes: [{ storageKey: 'sumarket/productos/aceite' }],
+  }
+  const repositorio = { async obtenerPorId() { return producto } }
+  const servicio = crearServicioProductosAdmin(repositorio)
+
+  await assert.rejects(
+    () => servicio.reemplazarImagenesProducto('producto-1', []),
+    { code: 'PRODUCT_IMAGE_REQUIRED' },
+  )
+})
+
 test('crearProducto genera slug, búsqueda y lo deja sin publicar', async () => {
   let datosCreacion
   const productoCreado = {

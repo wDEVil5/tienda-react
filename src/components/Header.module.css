@@ -20,6 +20,73 @@
   padding: 12px 24px;
 }
 
+/* ---- Barra condensada (al bajar) ---- */
+/* En móvil no existe (el header ya es compacto); en escritorio se vuelve una
+   capa absoluta que se cruza con la fila completa (ver media query). */
+.barraCondensada {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  max-width: min(1152px, calc(100% - 48px));
+  margin: 0 auto;
+  /* Reserva el espacio para la única marca del header, que se escala desde la
+     fila completa. No duplicamos el logo ni lo reemplazamos al hacer scroll. */
+  padding: 0 12px 0 clamp(156px, 16vw, 208px);
+  background-color: #fff;
+  border-radius: var(--radio-pill);
+  box-shadow: var(--bnv-sombra);
+}
+.condBuscador {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 16px;
+  background-color: var(--bnv-gris);
+  border-radius: var(--radio-pill);
+}
+.condBuscador:focus-within {
+  outline: 2px solid var(--bnv-verde);
+  outline-offset: 1px;
+}
+.condLupa {
+  display: inline-flex;
+  color: var(--bnv-tenue);
+  flex-shrink: 0;
+}
+.condBuscador input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14.5px;
+  color: var(--bnv-tinta);
+}
+.condComuna {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 44px;
+  padding: 0 8px;
+  background: none;
+  border: none;
+  border-radius: var(--radio-pill);
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--bnv-texto-2);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: color 0.18s ease;
+}
+.condComuna:hover {
+  color: var(--bnv-tinta);
+}
+
 /* ---- Logo ---- */
 .logo {
   font-family: var(--bnv-serif);
@@ -130,10 +197,10 @@
 }
 
 .cuentaPanel {
-  position: absolute;
-  top: calc(100% + 12px);
-  right: 0;
-  z-index: 30;
+  /* Se porta a document.body: así la animación clip-path de .acciones no
+     recorta el desplegable. Header.jsx entrega top/left bajo el botón. */
+  position: fixed;
+  z-index: 130;
   width: 300px;
   padding: 20px;
   text-align: left;
@@ -145,6 +212,7 @@
   pointer-events: none;
   transform: translateY(-6px);
   visibility: hidden;
+  font-family: var(--bnv-sans);
   transition: opacity 0.16s ease, transform 0.2s ease, visibility 0s linear 0.2s;
 }
 .cuentaPanelAbierto {
@@ -320,6 +388,126 @@
   color: #fff;
 }
 
+/* ---- Intercambio condensado (solo escritorio) ---- */
+/* Al bajar, en escritorio: el header cambia la fila completa por la barra
+   condensada. En tablet/móvil el header ya es compacto, así que no condensa. */
+@media (min-width: 1024px) {
+  /* Altura de header fija: las dos barras son capas absolutas superpuestas, así
+     el cruce no produce ningún salto de layout. */
+  .header {
+    height: 68px;
+    overflow: visible;
+  }
+  .condensado {
+    border-bottom-color: transparent;
+  }
+
+  .barra,
+  .barraCondensada {
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin-inline: auto;
+  }
+  /* Fila completa: visible por defecto. */
+  .barra {
+    top: 0;
+    height: 68px;
+    padding-top: 0;
+    padding-bottom: 0;
+    z-index: 3;
+  }
+  /* Cada grupo de la fila completa se repliega por separado. Usamos recorte y
+     escala, no fundido: la navegación parece ceder físicamente su espacio al
+     buscador, en vez de alternar entre dos headers. */
+  .logo {
+    /* La escala se actualiza desde la posición de scroll, no desde el cambio
+       binario de estado sticky. Un intervalo muy breve evita vibración. */
+    transition: transform 70ms linear;
+  }
+  .capsula,
+  .acciones {
+    transition:
+      transform 520ms cubic-bezier(0.16, 1, 0.3, 1),
+      clip-path 420ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .logo {
+    transform: translateX(0) scale(var(--escala-logo-sticky, 1));
+    transform-origin: left center;
+  }
+  .capsula {
+    clip-path: inset(0 0 0 0 round var(--radio-pill));
+    transform: scale(1);
+    transform-origin: center;
+  }
+  .acciones {
+    clip-path: inset(0 0 0 0);
+    transform: translateX(0) scale(1);
+    transform-origin: right center;
+  }
+  .condensado .logo {
+    /* La marca nunca se oculta: se encoge sobre su mismo eje al condensar. */
+    transform: translateX(0) scale(var(--escala-logo-sticky, 0.78));
+  }
+  .condensado .capsula {
+    clip-path: inset(0 50% 0 50% round var(--radio-pill));
+    transform: scale(0.9);
+    transition-delay: 0ms;
+  }
+  .condensado .acciones {
+    clip-path: inset(0 100% 0 0);
+    transform: translateX(10px) scale(0.96);
+    transition-delay: 40ms;
+  }
+  /* La barra sticky nace compacta en el centro y se expande hasta ocupar la
+     misma franja. Es un cambio de composición, no una aparición lateral. */
+  .barraCondensada {
+    display: flex;
+    top: 8px;
+    height: 52px;
+    z-index: 2;
+    transform: scaleX(0.72) scaleY(0.9);
+    transform-origin: center;
+    clip-path: inset(0 50% 0 50% round var(--radio-pill));
+    pointer-events: none;
+    transition:
+      transform 620ms cubic-bezier(0.16, 1, 0.3, 1),
+      clip-path 620ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .condBuscador,
+  .condComuna,
+  .barraCondensada .carrito {
+    transform: scale(0.94);
+    transition:
+      transform 520ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .condBuscador { transform-origin: center; }
+  .condComuna,
+  .barraCondensada .carrito { transform-origin: right center; }
+
+  .condensado .barraCondensada {
+    transform: scaleX(1) scaleY(1);
+    clip-path: inset(0 0 0 0 round var(--radio-pill));
+    pointer-events: auto;
+  }
+  .condensado .condBuscador,
+  .condensado .condComuna,
+  .condensado .barraCondensada .carrito {
+    transform: scale(1);
+  }
+  .condensado .condBuscador { transition-delay: 80ms; }
+  .condensado .condComuna { transition-delay: 160ms; }
+  .condensado .barraCondensada .carrito { transition-delay: 190ms; }
+  .condensado .barra { pointer-events: none; }
+  .condensado .logo { pointer-events: auto; }
+
+  /* Al volver arriba, la barra sticky se repliega antes de que regresen las
+     acciones, evitando que ambos estados compitan visualmente. */
+  .header:not(.condensado) .barraCondensada { transition-delay: 100ms; }
+  .header:not(.condensado) .acciones { transition-delay: 190ms; }
+  .header:not(.condensado) .capsula { transition-delay: 150ms; }
+}
+
 /* ---- Responsive ---- */
 /* Tablet y móvil: la cápsula de nav y los enlaces de cuenta se van al menú. */
 @media (max-width: 1023px) {
@@ -352,7 +540,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .menuMovil {
+  .menuMovil,
+  .barra,
+  .barraCondensada {
     transition: none;
   }
 }

@@ -282,6 +282,10 @@ function App() {
     <div className={styles.app}>
       {!esCheckout && !esPantallaPrivada && (
         <Header
+          busqueda={busqueda}
+          onBuscar={setBusqueda}
+          onSeleccionarCategoria={setCategoria}
+          onCambiarSoloOfertas={setSoloOfertas}
           onVerOfertas={verOfertas}
           onVerCatalogo={verCatalogo}
           onAbrirCarrito={() => setCarritoAbierto(true)}

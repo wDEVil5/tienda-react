@@ -35,6 +35,10 @@ function Home({
     <>
       <Hero
         productos={productos}
+        busqueda={busqueda}
+        onBuscar={onBuscar}
+        onSeleccionarCategoria={onSeleccionarCategoria}
+        onCambiarSoloOfertas={onCambiarSoloOfertas}
         onVerOfertas={onVerOfertas}
         onVerCatalogo={onVerCatalogo}
       />

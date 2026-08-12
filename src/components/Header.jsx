@@ -1,246 +1,145 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import styles from "./Header.module.css";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 import { useCuenta } from "../context/CuentaContext.jsx";
-import { useReglas } from "../context/ReglasContext.jsx";
-import ImagenProducto from "./ImagenProducto.jsx";
 
-function Header({
-  busqueda,
-  onBuscar,
-  productos,
-  onSeleccionarCategoria,
-  onCambiarSoloOfertas,
-  onVerOfertas,
-  onVerCatalogo,
-  onAbrirCarrito,
-}) {
-  const { totalItems, carrito } = useCarritoContext();
-  const { estaAutenticado } = useCuenta();
-  const { corteRetiroHoy } = useReglas();
-  const [menuAbierto, setMenuAbierto] = useState(false); // menú hamburguesa (móvil)
-  const [sugerenciasAbiertas, setSugerenciasAbiertas] = useState(false);
-  const navegar = useNavigate();
-  const cerrarMenu = () => setMenuAbierto(false);
-  const termino = busqueda.trim();
-
-  // Las sugerencias usan el catálogo base en memoria para responder al instante.
-  // En paralelo, App consulta la API local con debounce para el catálogo completo.
-  const normalizar = (texto) => texto.toLocaleLowerCase("es-CL");
-  const coincideBusqueda = (producto) =>
-    normalizar(producto.nombre).includes(normalizar(termino));
-  const resultados = termino ? productos.filter(coincideBusqueda) : [];
-  const sugerenciasProductos = resultados.slice(0, 3);
-  const categoriasSugeridas = [
-    ...new Set(resultados.map((producto) => producto.categoria)),
-  ].slice(0, 3);
-
-  const verResultados = () => {
-    // La búsqueda se ejecuta en el catálogo completo, no dentro de una
-    // categoría que hubiese quedado seleccionada anteriormente.
-    onSeleccionarCategoria("todas");
-    onCambiarSoloOfertas(false);
-    setSugerenciasAbiertas(false);
-    navegar("/#catalogo");
-  };
-
-  const cambiarBusqueda = (valor) => {
-    // Al escribir una búsqueda nueva limpiamos la categoría para evitar un
-    // resultado vacío causado por dos filtros que el usuario no ve juntos.
-    onBuscar(valor);
-    onSeleccionarCategoria("todas");
-    onCambiarSoloOfertas(false);
-    setSugerenciasAbiertas(Boolean(valor.trim()));
-  };
-
-  const seleccionarCategoria = (categoria) => {
-    // Este botón sí filtra: limpia el término y actualiza el estado compartido
-    // que consume Catalogo.jsx antes de llevar al usuario a esa sección.
-    onBuscar("");
-    onSeleccionarCategoria(categoria);
-    onCambiarSoloOfertas(false);
-    setSugerenciasAbiertas(false);
-    navegar("/#catalogo");
-  };
-
-  // Monto total del carrito (estado derivado) para el chip del header.
-  const total = carrito.reduce(
-    (suma, item) => suma + item.precio * item.cantidad,
-    0
+// Íconos lineales (1.5px) recreados como SVG inline: sin dependencia de Font
+// Awesome y sin emoji, como pide la dirección visual. Heredan currentColor.
+function Svg({ children, size = 18 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {children}
+    </svg>
   );
+}
+const IconoPin = () => (
+  <Svg size={15}>
+    <path d="M20 10c0 4.4-8 12-8 12s-8-7.6-8-12a8 8 0 0 1 16 0Z" />
+    <circle cx="12" cy="10" r="2.6" />
+  </Svg>
+);
+const IconoChevron = () => (
+  <Svg size={13}>
+    <path d="m6 9 6 6 6-6" />
+  </Svg>
+);
+const IconoCarrito = () => (
+  <Svg size={17}>
+    <circle cx="9" cy="20" r="1.4" />
+    <circle cx="18" cy="20" r="1.4" />
+    <path d="M2.5 3h2l2.2 12.2a1.6 1.6 0 0 0 1.6 1.3h8.6a1.6 1.6 0 0 0 1.6-1.3L21 7H6" />
+  </Svg>
+);
+
+// Los ítems de navegación del home. "Catálogo" queda como activo por defecto:
+// es la vista de aterrizaje. Los hashes también funcionan desde una ficha.
+const NAV = [
+  { etiqueta: "Catálogo", hash: "/#catalogo", accion: "catalogo" },
+  { etiqueta: "Ofertas", hash: "/#catalogo", accion: "ofertas" },
+  { etiqueta: "Cómo comprar", hash: "/#como-comprar" },
+  { etiqueta: "Nuestra tienda", hash: "/#nuestra-tienda" },
+];
+
+function Header({ onVerOfertas, onVerCatalogo, onAbrirCarrito }) {
+  const { totalItems } = useCarritoContext();
+  const { estaAutenticado } = useCuenta();
+  const [menuAbierto, setMenuAbierto] = useState(false);
+  const [activo, setActivo] = useState("Catálogo");
+  const cerrarMenu = () => setMenuAbierto(false);
+
+  const alNavegar = (item) => {
+    setActivo(item.etiqueta);
+    if (item.accion === "catalogo") onVerCatalogo();
+    if (item.accion === "ofertas") onVerOfertas();
+    cerrarMenu();
+  };
 
   return (
     <header className={styles.header}>
-      {/* Franja utilitaria. "Entregar en Providencia" será dinámico cuando
-          exista el contexto de modo de entrega/comuna (lógica del sistema). */}
-      <div className={styles.franja}>
-        <div className={styles.contenedor}>
-          <button className={styles.franjaSelector} type="button">
-            Entregar en Providencia
-            <i className="fa-solid fa-chevron-down" aria-hidden="true"></i>
+      <div className={styles.barra}>
+        <Link to="/" className={styles.logo} onClick={() => setActivo("Catálogo")}>
+          Sumarket<em>Express</em>
+        </Link>
+
+        {/* Navegación centrada dentro de una cápsula; el activo es una píldora
+            blanca con sombra mínima. Oculta en móvil (va al menú). */}
+        <nav className={styles.capsula} aria-label="Navegación principal">
+          {NAV.map((item) => (
+            <Link
+              key={item.etiqueta}
+              to={item.hash}
+              className={`${styles.navLink} ${activo === item.etiqueta ? styles.navActivo : ""}`}
+              aria-current={activo === item.etiqueta ? "page" : undefined}
+              onClick={() => alNavegar(item)}
+            >
+              {item.etiqueta}
+            </Link>
+          ))}
+        </nav>
+
+        <div className={styles.acciones}>
+          {/* Selector de comuna (placeholder: el picker real llega con el
+              contexto de modo de entrega). */}
+          <button className={styles.comuna} type="button">
+            <IconoPin />
+            <span>Providencia</span>
+            <IconoChevron />
           </button>
-          <span className={styles.franjaSep} aria-hidden="true"></span>
-          <span>Retiro gratis en tienda</span>
-        </div>
-      </div>
 
-      <div className={styles.barraPrincipal}>
-        <div className={styles.contenedor}>
-          <Link to="/" className={styles.logo}>
-            Sumarket<em>Express</em>
-          </Link>
+          <span className={styles.sepAcciones} aria-hidden="true" />
 
-          {/* Hamburguesa: solo visible en móvil (CSS). Abre el menú de abajo. */}
+          {estaAutenticado ? (
+            <Link className={styles.entrar} to="/mi-cuenta">
+              Mi cuenta
+            </Link>
+          ) : (
+            <>
+              <Link className={styles.entrar} to="/login">
+                Entrar
+              </Link>
+              <Link className={styles.crearCuenta} to="/registro">
+                Crear cuenta
+              </Link>
+            </>
+          )}
+
+          <button className={styles.carrito} type="button" onClick={onAbrirCarrito}>
+            <IconoCarrito />
+            <span className={styles.carritoTexto}>Carrito</span>
+            <span className={styles.carritoContador} aria-label={`${totalItems} productos en el carrito`}>
+              · {totalItems}
+            </span>
+          </button>
+
+          {/* Hamburguesa: solo móvil (CSS). */}
           <button
             className={styles.hamburguesa}
             type="button"
             aria-expanded={menuAbierto}
             aria-controls="menu-movil"
-            aria-label="Abrir menú"
+            aria-label={menuAbierto ? "Cerrar menú" : "Abrir menú"}
             onClick={() => setMenuAbierto((abierto) => !abierto)}
           >
-            <i
-              className={`fa-solid ${menuAbierto ? "fa-xmark" : "fa-bars"}`}
-              aria-hidden="true"
-            ></i>
-          </button>
-
-          <form
-            className={styles.buscador}
-            role="search"
-            onSubmit={(e) => {
-              e.preventDefault();
-              verResultados();
-            }}
-          >
-            <i
-              className={`fa-solid fa-magnifying-glass ${styles.lupa}`}
-              aria-hidden="true"
-            ></i>
-            <input
-              type="text"
-              placeholder="Buscar producto..."
-              value={busqueda}
-              onChange={(e) => cambiarBusqueda(e.target.value)}
-              onFocus={() => setSugerenciasAbiertas(Boolean(termino))}
-              onBlur={() => setSugerenciasAbiertas(false)}
-              aria-label="Buscar producto"
-              aria-expanded={sugerenciasAbiertas}
-              aria-controls="sugerencias-busqueda"
-            />
-            {termino && (
-              <button
-                className={styles.limpiarBusqueda}
-                type="button"
-                onClick={() => cambiarBusqueda("")}
-                aria-label="Limpiar búsqueda"
-              >
-                <i className="fa-solid fa-xmark" aria-hidden="true"></i>
-              </button>
-            )}
-            {/* Se mantiene montado mientras haya término para animar su cierre.
-                `inert` evita que enlaces ocultos entren al orden de tabulación. */}
-            {termino && (
-              <div
-                id="sugerencias-busqueda"
-                className={`${styles.sugerencias} ${sugerenciasAbiertas ? styles.sugerenciasAbiertas : ""}`}
-                onMouseDown={(e) => e.preventDefault()}
-                aria-hidden={!sugerenciasAbiertas}
-                inert={!sugerenciasAbiertas}
-              >
-                {sugerenciasProductos.length > 0 ? (
-                  <>
-                    <p className={styles.sugerenciasTitulo}>Productos</p>
-                    <div className={styles.sugerenciasLista}>
-                      {sugerenciasProductos.map((producto) => (
-                        <Link
-                          key={producto.id}
-                          to={`/producto/${producto.slug ?? producto.id}`}
-                          className={styles.sugerenciaProducto}
-                          onClick={() => setSugerenciasAbiertas(false)}
-                        >
-                          <span className={styles.sugerenciaImagen}>
-                            <ImagenProducto
-                              src={producto.imagen}
-                              alt=""
-                              className={styles.sugerenciaImagenProducto}
-                            />
-                          </span>
-                          <span className={styles.sugerenciaInfo}>
-                            <span className={styles.sugerenciaNombre}>
-                              {producto.nombre}
-                            </span>
-                            <span className={styles.sugerenciaCategoria}>
-                              {producto.categoria}
-                            </span>
-                          </span>
-                          <span className={styles.sugerenciaPrecio}>
-                            ${producto.precio.toLocaleString("es-CL")}
-                          </span>
-                        </Link>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  <p className={styles.sinSugerencias}>
-                    No encontramos productos para “{termino}”.
-                  </p>
-                )}
-
-                {categoriasSugeridas.length > 0 && (
-                  <>
-                    <div className={styles.sugerenciasSeparador}></div>
-                    <p className={styles.sugerenciasTitulo}>Categorías</p>
-                    <div className={styles.sugerenciasCategorias}>
-                      {categoriasSugeridas.map((categoria) => (
-                        <button
-                          key={categoria}
-                          type="button"
-                          className={styles.sugerenciaCategoriaChip}
-                          onClick={() => seleccionarCategoria(categoria)}
-                        >
-                          {categoria}
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
-
-                {resultados.length > 0 && (
-                  <button
-                    type="button"
-                    className={styles.verResultados}
-                    onClick={verResultados}
-                  >
-                    Ver los {resultados.length} resultados de “{termino}”
-                  </button>
-                )}
-              </div>
-            )}
-          </form>
-
-          <Link className={styles.entrar} to={estaAutenticado ? "/mi-cuenta" : "/login"}>
-            {estaAutenticado ? "Mi cuenta" : "Entrar"}
-          </Link>
-
-          <button className={styles.carrito} onClick={onAbrirCarrito}>
-            <i className="fa-solid fa-cart-shopping" aria-hidden="true"></i>
-            <span className={styles.carritoTexto}>
-              <span className={styles.carritoLabel}>Mi carrito</span>
-              <span className={styles.carritoMonto}>
-                {"$\u202F"}{total.toLocaleString("es-CL")}
-              </span>
-            </span>
-            {totalItems > 0 && (
-              <span className={styles.contador}>{totalItems}</span>
-            )}
+            <Svg size={20}>
+              {menuAbierto ? <path d="M6 6l12 12M18 6 6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+            </Svg>
           </button>
         </div>
       </div>
 
-      {/* Permanece montado para animar apertura/cierre; `inert` lo excluye del
-          teclado y lector de pantalla cuando está plegado. */}
+      {/* Menú móvil: permanece montado para animar; `inert` lo saca del teclado
+          cuando está plegado. */}
       <nav
         id="menu-movil"
         className={`${styles.menuMovil} ${menuAbierto ? styles.menuAbierto : ""}`}
@@ -248,82 +147,33 @@ function Header({
         aria-hidden={!menuAbierto}
         inert={!menuAbierto}
       >
+        {NAV.map((item) => (
           <Link
-            to="/#catalogo"
-            onClick={() => {
-              onVerCatalogo();
-              cerrarMenu();
-            }}
+            key={item.etiqueta}
+            to={item.hash}
             className={styles.menuLink}
+            onClick={() => alNavegar(item)}
           >
-            Catálogo
+            {item.etiqueta}
           </Link>
-          <Link
-            to="/#catalogo"
-            onClick={() => {
-              onVerOfertas();
-              cerrarMenu();
-            }}
-            className={styles.menuLink}
-          >
-            Ofertas
-          </Link>
-          <Link to="/#como-comprar" onClick={cerrarMenu} className={styles.menuLink}>
-            Cómo comprar
-          </Link>
-          <Link to="/#nuestra-tienda" onClick={cerrarMenu} className={styles.menuLink}>
-            Nuestra tienda
-          </Link>
-          <Link
-            className={styles.menuEntrar}
-            to={estaAutenticado ? "/mi-cuenta" : "/login"}
-            onClick={cerrarMenu}
-          >
-            {estaAutenticado ? "Mi cuenta" : "Entrar"}
-          </Link>
-      </nav>
-
-      {/* Navegación por secciones del Home. Los hashes también funcionan si se
-          navega desde una ficha de producto (App se encarga del scroll). */}
-      <nav className={styles.navFila} aria-label="Navegación principal">
-        <div className={styles.contenedor}>
-          <Link to="/#catalogo" className={styles.navLink} onClick={onVerCatalogo}>
-            Catálogo
-          </Link>
-          <Link to="/#catalogo" className={styles.navLink} onClick={onVerOfertas}>
-            Ofertas
-          </Link>
-          <Link to="/#como-comprar" className={styles.navLink}>
-            Cómo comprar
-          </Link>
-          <Link to="/#nuestra-tienda" className={styles.navLink}>
-            Nuestra tienda
-          </Link>
+        ))}
+        <div className={styles.menuAcceso}>
+          {estaAutenticado ? (
+            <Link className={styles.menuEntrar} to="/mi-cuenta" onClick={cerrarMenu}>
+              Mi cuenta
+            </Link>
+          ) : (
+            <>
+              <Link className={styles.menuEntrar} to="/login" onClick={cerrarMenu}>
+                Entrar
+              </Link>
+              <Link className={styles.menuCrear} to="/registro" onClick={cerrarMenu}>
+                Crear cuenta
+              </Link>
+            </>
+          )}
         </div>
       </nav>
-
-      {/* Barra de estado. El corte de retiro sale de las reglas de la tienda
-          (editable en /admin/envios). "Tienda abierta" será dinámico cuando
-          exista la lógica de horario. */}
-      <div className={styles.estado}>
-        <div className={styles.contenedor}>
-          <span className={styles.estadoInfo}>
-            <span className={styles.punto} aria-hidden="true"></span>
-            <span>
-              <strong>Tienda abierta</strong>
-              <span className={styles.estadoLargo}>
-                {" "}· pedidos hasta las {corteRetiroHoy} se retiran hoy mismo
-              </span>
-              <span className={styles.estadoCorto}>
-                {" "}· retira hoy hasta las {corteRetiroHoy}
-              </span>
-            </span>
-          </span>
-          <button className={styles.verHorarios} type="button">
-            Ver horarios
-          </button>
-        </div>
-      </div>
     </header>
   );
 }

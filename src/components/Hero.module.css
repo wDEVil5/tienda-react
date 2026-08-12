@@ -1,5 +1,5 @@
-/* Banda full-bleed (mismo truco que el catálogo). El margin-top negativo cancela
-   el padding superior de .contenido para que el héroe pegue con el header. */
+/* Banda full-bleed sobre verde neblina (NO es un bloque oscuro). El margin-top
+   negativo cancela el padding superior de .contenido para pegar con el header. */
 .hero {
   position: relative;
   left: 50%;
@@ -8,183 +8,381 @@
   margin-left: -50vw;
   margin-right: -50vw;
   margin-top: calc(-1 * var(--e-lg));
-  overflow: hidden;
-  background-color: #1c1b18;
-  /* Placeholder de la foto: rayas diagonales muy sutiles sobre el oscuro. */
-  background-image: repeating-linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.025) 0 14px,
-    transparent 14px 28px
-  );
-  color: #fff;
+  background-color: var(--bnv-neblina);
+  font-family: var(--bnv-sans);
 }
 
 .inner {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  max-width: 1200px;
-  min-height: 340px;
+  align-items: center;
+  text-align: center;
+  max-width: 720px;
   margin: 0 auto;
-  padding: var(--e-2xl) var(--e-lg);
+  padding: 72px 24px 64px;
 }
 
 .eyebrow {
-  font-family: var(--font-mono);
-  font-size: 11px;
+  font-family: var(--bnv-mono);
+  font-size: 10.5px;
+  font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--color-acento-claro);
-  margin-bottom: var(--e-md);
+  color: var(--bnv-verde-claro);
+  margin-bottom: 20px;
 }
 
 .titulo {
-  font-family: var(--font-display);
+  font-family: var(--bnv-serif);
   font-weight: 400;
-  font-size: 36px;
-  line-height: 1.05;
-  color: #fff;
+  font-size: 56px;
+  line-height: 0.95;
+  letter-spacing: -0.025em;
+  color: var(--bnv-tinta);
+  text-wrap: balance;
 }
-
 .titulo em {
   font-style: italic;
-  color: var(--color-acento-claro);
+  color: var(--bnv-verde-claro);
 }
 
 .parrafo {
-  margin-top: var(--e-md);
-  max-width: 46ch;
-  font-size: 15px;
+  margin: 24px auto 0;
+  max-width: 440px;
+  font-size: 16px;
   line-height: 1.6;
-  color: var(--color-sobre-oscuro);
+  color: var(--bnv-texto-2);
 }
 
-.acciones {
+/* ---- Buscador cápsula ---- */
+.buscador {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(560px, 100%);
+  margin-top: 32px;
+  padding: 8px 8px 8px 20px;
+  background-color: #fff;
+  border-radius: var(--radio-pill);
+  box-shadow: var(--bnv-sombra);
+}
+.buscador:focus-within {
+  outline: 2px solid var(--bnv-verde);
+  outline-offset: 2px;
+}
+.lupa {
+  display: inline-flex;
+  color: var(--bnv-tenue);
+  flex-shrink: 0;
+}
+.buscador input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--bnv-tinta);
+}
+.enviar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: var(--radio-pill);
+  background-color: var(--bnv-verde);
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.18s ease;
+}
+.enviar:hover {
+  background-color: #173d2c;
+}
+
+/* ---- Autocompletado ---- */
+.sugerencias {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  right: 0;
+  z-index: 20;
   display: flex;
   flex-direction: column;
-  gap: var(--e-sm);
-  margin-top: var(--e-xl);
+  padding: 16px;
+  text-align: left;
+  background-color: #fff;
+  border: 1px solid var(--bnv-borde);
+  border-radius: var(--bnv-radio-card);
+  box-shadow: var(--bnv-sombra);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-6px);
+  visibility: hidden;
+  transition: opacity 0.16s ease, transform 0.2s ease, visibility 0s linear 0.2s;
+}
+.sugerenciasAbiertas {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  visibility: visible;
+  transition-delay: 0s;
+}
+.sugerenciasTitulo {
+  margin-bottom: 8px;
+  font-family: var(--bnv-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bnv-tenue);
+}
+.sugerenciasLista {
+  display: flex;
+  flex-direction: column;
+}
+.sugerenciaProducto {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 6px 0;
+  color: var(--bnv-tinta);
+  text-decoration: none;
+}
+.sugerenciaProducto:hover .sugerenciaNombre {
+  color: var(--bnv-verde);
+}
+.sugerenciaImagen {
+  display: flex;
+  flex: 0 0 40px;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
+  background-color: var(--bnv-gris);
+  border-radius: 8px;
+}
+.sugerenciaImagenProducto {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.sugerenciaInfo {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+}
+.sugerenciaNombre {
+  overflow: hidden;
+  font-size: 13.5px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sugerenciaCategoria {
+  font-size: 11.5px;
+  color: var(--bnv-tenue);
+  text-transform: capitalize;
+}
+.sugerenciaPrecio {
+  flex-shrink: 0;
+  font-family: var(--bnv-serif);
+  font-size: 18px;
+  color: var(--bnv-tinta);
+}
+.sugerenciasSeparador {
+  height: 1px;
+  margin: 12px 0;
+  background-color: var(--bnv-borde);
+}
+.sugerenciasCategorias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.sugerenciaCategoriaChip {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--bnv-borde);
+  border-radius: var(--radio-pill);
+  background-color: var(--bnv-gris);
+  color: var(--bnv-tinta);
+  font-family: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  text-transform: capitalize;
+}
+.verTodos {
+  margin-top: 12px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--bnv-verde);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+.sinSugerencias {
+  font-size: 12.5px;
+  color: var(--bnv-texto-2);
 }
 
+/* ---- Accesos por categoría ---- */
 .accesos {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--e-sm);
-  margin-top: var(--e-lg);
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
 }
-
 .acceso {
   display: inline-flex;
   align-items: center;
-  min-height: 32px;
-  padding: 0 var(--e-md);
-  border: 1px solid rgba(255, 255, 255, 0.32);
+  min-height: 36px;
+  padding: 0 16px;
+  border: 1px solid var(--bnv-borde);
   border-radius: var(--radio-pill);
-  color: var(--color-sobre-oscuro);
-  font-size: 13px;
-  text-decoration: none;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  background-color: #fff;
+  color: var(--bnv-texto-2);
+  font-family: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+  text-transform: capitalize;
+  transition: border-color 0.18s ease, color 0.18s ease;
 }
-
 .acceso:hover {
-  border-color: rgba(255, 255, 255, 0.64);
-  background-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--bnv-verde-claro);
+  color: var(--bnv-tinta);
 }
-
 .accesoOferta {
   border-color: transparent;
-  background-color: var(--color-acento);
+  background-color: var(--bnv-verde);
   color: #fff;
+  text-transform: none;
 }
-
 .accesoOferta:hover {
   border-color: transparent;
-  background-color: #285d40;
+  background-color: #173d2c;
+  color: #fff;
 }
 
-.btnPrimario,
-.btnSecundario {
+/* ---- CTAs ---- */
+.acciones {
   display: flex;
   align-items: center;
+  gap: 24px;
+  margin-top: 32px;
+}
+.btnPrimario {
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  height: 50px;
-  padding: 0 var(--e-2xl);
-  border-radius: var(--radio-control);
+  height: 52px;
+  padding: 0 32px;
+  border-radius: var(--radio-pill);
+  background-color: var(--bnv-verde);
+  color: #fff;
   font-family: inherit;
-  font-size: 14.5px;
+  font-size: 15px;
   font-weight: 500;
   text-decoration: none;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  transition: background-color 0.18s ease;
 }
-
-.btnPrimario {
-  background-color: var(--color-acento);
-  color: #fff;
-}
-
 .btnPrimario:hover {
-  background-color: #285d40;
+  background-color: #173d2c;
 }
-
 .btnSecundario {
-  background-color: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  color: #fff;
+  color: var(--bnv-tinta);
+  font-size: 15px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-color: var(--bnv-borde);
 }
-
 .btnSecundario:hover {
-  background-color: rgba(255, 255, 255, 0.08);
+  text-decoration-color: var(--bnv-verde-claro);
 }
 
-/* Escritorio: héroe más alto, título grande, botones en fila. */
-@media (min-width: 768px) {
-  .inner {
-    min-height: 520px;
-    padding: var(--e-2xl);
-  }
+/* ---- Línea de estado ---- */
+.estado {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 40px;
+  font-size: 13.5px;
+  color: var(--bnv-texto-2);
+}
+.estado strong {
+  color: var(--bnv-tinta);
+  font-weight: 500;
+}
+.punto {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radio-pill);
+  background-color: var(--bnv-verde-claro);
+  flex-shrink: 0;
+}
+.estadoSep {
+  color: var(--bnv-tenue);
+}
+.verHorarios {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--bnv-verde);
+  font-family: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 
+/* ---- Responsive ---- */
+@media (min-width: 1024px) {
   .titulo {
-    font-size: 62px;
-    line-height: 1.02;
+    font-size: 88px;
   }
-
-  .parrafo {
-    font-size: 16px;
-  }
-
-  .acciones {
-    flex-direction: row;
-  }
-
-  .btnPrimario,
-  .btnSecundario {
-    flex: 0 0 auto;
+  .inner {
+    padding: 96px 24px 80px;
   }
 }
 
-/* Tablet vertical: conserva la composición horizontal, pero con una escala
-   intermedia para no heredar las proporciones de escritorio grande. */
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (max-width: 767px) {
   .inner {
-    min-height: 440px;
-    padding: var(--e-xl) var(--e-2xl);
+    padding: 48px 20px 52px;
   }
-
   .titulo {
-    font-size: 48px;
+    font-size: 44px;
   }
-
   .parrafo {
     font-size: 15px;
   }
-
   .acciones {
-    margin-top: var(--e-lg);
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
   }
+  .btnPrimario {
+    width: 100%;
+  }
+  .estado {
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+  }
+}
 
-  .btnPrimario,
-  .btnSecundario {
-    height: 46px;
-    padding: 0 var(--e-xl);
+@media (prefers-reduced-motion: reduce) {
+  .sugerencias {
+    transition: none;
   }
 }

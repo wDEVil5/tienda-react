@@ -10,7 +10,7 @@ function TiraConfianza() {
   const despacho = `$\u202F${(tarifaBase ?? 0).toLocaleString("es-CL")}`;
 
   const items = [
-    { rotulo: "Retiro hoy", dato: "2 horas", detalle: "Listo para retirar en tienda" },
+    { rotulo: "Retiro hoy", dato: "2 horas", detalle: "Gratis en tienda" },
     { rotulo: "Despacho", dato: despacho, detalle: "Llega en 24–48 h a tu casa" },
     { rotulo: "Pago seguro", dato: "Mercado Pago", detalle: "Tarjeta, débito o transferencia" },
     { rotulo: "Stock real", dato: "Al día", detalle: "Directo desde la tienda" },

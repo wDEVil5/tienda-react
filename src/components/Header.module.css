@@ -1,691 +1,269 @@
+/* Header claro de una sola fila, fondo crema. Objetivos cliqueables de 44px. */
 .header {
-  background-color: var(--color-texto); /* #1c1b18, negro cálido */
+  background-color: var(--bnv-crema);
+  border-bottom: 1px solid var(--bnv-borde);
+  font-family: var(--bnv-sans);
 }
 
-/* Contenedor centrado que comparten las filas del header. Alinea con .contenido
-   del contenido principal para que los bordes izquierdo/derecho coincidan. */
-.contenedor {
+.barra {
+  display: flex;
+  align-items: center;
+  gap: 24px;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 var(--e-lg);
-}
-
-/* ---- Franja utilitaria (tira superior más oscura) ---- */
-.franja {
-  background-color: #14130f;
-  font-size: 12.5px;
-  color: #8f8c84;
-}
-
-.franja .contenedor {
-  display: flex;
-  align-items: center;
-  gap: var(--e-md);
-  height: 34px;
-}
-
-.franjaSelector {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: none;
-  border: none;
-  padding: 0;
-  font-family: inherit;
-  font-size: inherit;
-  color: inherit;
-  cursor: pointer;
-}
-
-.franjaSelector i {
-  font-size: 9px;
-}
-
-/* Separador vertical de 1×12px semitransparente. */
-.franjaSep {
-  width: 1px;
-  height: 12px;
-  background-color: rgba(255, 255, 255, 0.16);
-}
-
-.barraPrincipal .contenedor {
-  display: flex;
-  align-items: center;
-  gap: var(--e-lg);
-  padding-top: var(--e-md);
-  padding-bottom: var(--e-md);
-}
-
-/* ---- Botón Entrar (fantasma con borde) ---- */
-.entrar {
-  display: inline-flex;
-  align-items: center;
-  height: 46px;
-  padding: 0 var(--e-lg);
-  background: none;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: var(--radio-control);
-  color: #fff;
-  font-family: inherit;
-  font-size: 14px;
-  cursor: pointer;
-  text-decoration: none;
-  transition: background-color 0.2s ease;
-  white-space: nowrap;
-}
-
-.entrar:hover {
-  background-color: rgba(255, 255, 255, 0.08);
+  padding: 12px 24px;
 }
 
 /* ---- Logo ---- */
 .logo {
-  font-family: var(--font-display);
-  font-size: 27px;
+  font-family: var(--bnv-serif);
+  font-size: 26px;
   line-height: 1;
-  color: #fff;
+  letter-spacing: -0.01em;
+  color: var(--bnv-tinta);
   text-decoration: none;
   white-space: nowrap;
+  flex-shrink: 0;
 }
-
 .logo em {
   font-style: italic;
-  color: var(--color-acento-claro);
+  color: var(--bnv-verde-claro);
 }
 
-/* ---- Buscador ---- */
-.buscador {
-  position: relative;
-  flex: 1;
+/* ---- Cápsula de navegación centrada ---- */
+.capsula {
   display: flex;
   align-items: center;
-  gap: var(--e-sm);
-  height: 46px;
-  padding: 5px 5px 5px var(--e-md);
-  background-color: var(--color-superficie);
-  border-radius: var(--radio-control);
-  transition: box-shadow 0.2s ease;
+  gap: 2px;
+  margin: 0 auto;
+  padding: 4px;
+  background-color: var(--bnv-neblina);
+  border-radius: var(--radio-pill);
 }
-
-/* El foco vive en la píldora completa, no en el rectángulo del input. */
-.buscador:focus-within {
-  box-shadow: 0 0 0 3px rgba(143, 199, 168, 0.36);
-}
-
-.lupa {
-  color: var(--color-texto-tenue);
-  font-size: 14px;
-}
-
-.buscador input {
-  flex: 1;
-  min-width: 0; /* evita que el input desborde el contenedor flex */
-  border: none;
-  outline: none;
-  background: transparent;
-  font-family: inherit;
-  font-size: 14px;
-  color: var(--color-texto);
-}
-
-.buscador input:focus-visible {
-  outline: none;
-}
-
-.limpiarBusqueda {
+.navLink {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
-  border: none;
-  background: none;
-  color: var(--color-texto-tenue);
-  cursor: pointer;
-}
-
-.sugerencias {
-  /* Panel flotante anclado al buscador: queda sobre el header y no altera la
-     altura de su fila. En móvil/tablet se ajustará en su propio paso. */
-  position: absolute;
-  top: calc(100% + var(--e-sm));
-  left: 0;
-  z-index: 1100;
-  display: flex;
-  flex-direction: column;
-  width: min(400px, 100%);
-  padding: var(--e-md);
-  background-color: var(--color-superficie);
-  border: 1px solid var(--color-borde);
-  border-radius: var(--radio-tarjeta);
-  box-shadow: 0 16px 32px rgba(28, 27, 24, 0.16);
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-6px);
-  visibility: hidden;
-  will-change: opacity, transform;
-  transition: opacity 0.16s ease, transform 0.2s ease,
-    visibility 0s linear 0.2s;
-}
-
-.sugerenciasAbiertas {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0);
-  visibility: visible;
-  transition-delay: 0s;
-}
-
-.sugerenciasTitulo {
-  margin-bottom: var(--e-sm);
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--color-texto-suave);
-}
-
-.sugerenciasLista {
-  display: flex;
-  flex-direction: column;
-}
-
-.sugerenciaProducto {
-  display: flex;
-  align-items: center;
-  gap: var(--e-md);
-  min-width: 0;
-  padding: var(--e-xs) 0;
-  color: var(--color-texto);
-  text-decoration: none;
-}
-
-.sugerenciaProducto:hover .sugerenciaNombre {
-  color: var(--color-acento);
-}
-
-.sugerenciaImagen {
-  display: flex;
-  flex: 0 0 40px;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  overflow: hidden;
-  background-color: var(--color-crudo);
-  border-radius: var(--radio-badge);
-}
-
-.sugerenciaImagenProducto {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.sugerenciaInfo {
-  display: flex;
-  flex: 1;
-  min-width: 0;
-  flex-direction: column;
-}
-
-.sugerenciaNombre {
-  overflow: hidden;
-  font-size: 13px;
-  line-height: 1.35;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.sugerenciaCategoria {
-  font-size: 11.5px;
-  color: var(--color-texto-tenue);
-  text-transform: capitalize;
-}
-
-.sugerenciaPrecio {
-  flex-shrink: 0;
-  font-family: var(--font-display);
-  font-size: 17px;
-}
-
-.sugerenciasSeparador {
-  height: 1px;
-  margin: var(--e-md) 0;
-  background-color: var(--color-borde-2);
-}
-
-.sugerenciasCategorias {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--e-sm);
-}
-
-.sugerenciaCategoriaChip {
-  min-height: 32px;
-  padding: 0 var(--e-md);
-  border: 1px solid var(--color-borde);
+  height: 36px;
+  padding: 0 18px;
   border-radius: var(--radio-pill);
-  background-color: var(--color-crudo);
-  color: var(--color-texto);
-  font-family: inherit;
-  font-size: 12.5px;
-  cursor: pointer;
-  text-transform: capitalize;
-}
-
-.verResultados {
-  margin-top: var(--e-md);
-  padding: 0;
-  border: none;
-  background: none;
-  color: var(--color-acento);
-  font-family: inherit;
-  font-size: 12.5px;
-  font-weight: 500;
-  text-align: left;
-  cursor: pointer;
-}
-
-.sinSugerencias {
-  font-size: 12.5px;
-  color: var(--color-texto-suave);
-}
-
-/* ---- Carrito (chip claro sobre el header oscuro) ---- */
-.carrito {
-  display: flex;
-  align-items: center;
-  gap: var(--e-sm);
-  height: 46px;
-  padding: 6px 6px 6px var(--e-md);
-  background-color: var(--color-fondo);
-  border: none;
-  border-radius: var(--radio-control);
-  color: var(--color-texto);
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.carrito:hover {
-  background-color: #fff;
-}
-
-.carrito > i {
-  font-size: 15px;
-}
-
-.carritoTexto {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  line-height: 1.15;
-}
-
-.carritoLabel {
-  font-size: 10.5px;
-  color: var(--color-texto-suave);
-}
-
-.carritoMonto {
   font-size: 14px;
-  font-weight: 600;
-}
-
-/* En escritorio el total se consulta dentro del drawer: en el header basta
-   identificar el carrito y mostrar su contador, sin competir con el buscador. */
-@media (min-width: 1024px) {
-  .carritoMonto {
-    display: none;
-  }
-}
-
-.contador {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 30px;
-  background-color: var(--color-acento);
-  color: #fff;
-  border-radius: var(--radio-badge);
-  font-size: 13px;
-  font-weight: 600;
-}
-
-/* ---- Fila de navegación (mismo fondo oscuro) ---- */
-.navFila .contenedor {
-  display: flex;
-  align-items: center;
-  gap: var(--e-xl);
-  height: 44px;
-}
-
-.navLink {
-  background: none;
-  border: none;
-  padding: 0;
-  font-family: inherit;
-  font-size: 13.5px;
-  color: var(--color-sobre-oscuro);
-  cursor: pointer;
+  color: var(--bnv-texto-2);
   text-decoration: none;
-  /* Borde transparente para reservar el espacio del subrayado activo y
-     evitar saltos de layout al activarse. */
-  border-bottom: 1.5px solid transparent;
-  padding-bottom: 3px;
-  transition: color 0.2s ease;
+  white-space: nowrap;
+  transition: color 0.18s ease, background-color 0.18s ease;
 }
-
 .navLink:hover {
-  color: #fff;
+  color: var(--bnv-tinta);
 }
-
 .navActivo {
-  color: #fff;
-  border-bottom-color: var(--color-acento-claro);
+  background-color: var(--bnv-crema);
+  color: var(--bnv-tinta);
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(21, 32, 26, 0.08);
 }
 
-/* ---- Barra de estado (banda clara verde) ---- */
-.estado {
-  background-color: var(--color-acento-bg);
-  border-bottom: 1px solid #d5e2d9;
-  font-size: 13px;
-  color: var(--color-texto);
-}
-
-.estado .contenedor {
+/* ---- Acciones a la derecha ---- */
+.acciones {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--e-md);
-  min-height: 40px;
-  padding-top: var(--e-sm);
-  padding-bottom: var(--e-sm);
-}
-
-.estadoInfo {
-  display: flex;
-  align-items: center;
-  gap: var(--e-sm);
-  min-width: 0;
-  line-height: 1.4;
-}
-
-.estadoCorto {
-  display: none;
-}
-
-.punto {
-  width: 8px;
-  height: 8px;
-  border-radius: var(--radio-pill);
-  background-color: var(--color-acento);
+  gap: 8px;
   flex-shrink: 0;
 }
 
-.verHorarios {
+.comuna {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 44px;
+  padding: 0 8px;
   background: none;
   border: none;
-  padding: 0;
+  border-radius: var(--radio-pill);
   font-family: inherit;
-  font-size: 13px;
-  color: var(--color-acento);
+  font-size: 14px;
+  color: var(--bnv-texto-2);
   cursor: pointer;
   white-space: nowrap;
+  transition: color 0.18s ease;
+}
+.comuna:hover {
+  color: var(--bnv-tinta);
+}
+.comuna svg:first-child {
+  color: var(--bnv-verde-claro);
 }
 
-.verHorarios:hover {
-  text-decoration: underline;
+.sepAcciones {
+  width: 1px;
+  height: 20px;
+  background-color: var(--bnv-borde);
 }
 
-@media (max-width: 1023px) {
-  .estadoLargo {
-    display: none;
-  }
-
-  .estadoCorto {
-    display: inline;
-  }
+.entrar {
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 12px;
+  color: var(--bnv-tinta);
+  font-size: 14px;
+  text-decoration: none;
+  white-space: nowrap;
+  border-radius: var(--radio-pill);
+  transition: color 0.18s ease;
+}
+.entrar:hover {
+  color: var(--bnv-verde);
 }
 
-/* ---- Menú hamburguesa (móvil) ---- */
+.crearCuenta {
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--bnv-verde);
+  border-radius: var(--radio-pill);
+  color: var(--bnv-verde);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+.crearCuenta:hover {
+  background-color: var(--bnv-neblina);
+}
+
+.carrito {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 18px;
+  background-color: var(--bnv-verde);
+  border: none;
+  border-radius: var(--radio-pill);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.18s ease;
+}
+.carrito:hover {
+  background-color: #173d2c;
+}
+.carritoContador {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Hamburguesa (solo móvil) ---- */
 .hamburguesa {
-  display: none; /* oculto en escritorio; se activa por media query */
+  display: none;
   align-items: center;
   justify-content: center;
-  width: 46px;
-  height: 46px;
-  background-color: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: var(--radio-control);
-  color: #fff;
-  font-size: 16px;
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: 1px solid var(--bnv-borde);
+  border-radius: var(--radio-pill);
+  color: var(--bnv-tinta);
   cursor: pointer;
-  transition: background-color 0.2s ease;
 }
 
-.hamburguesa:hover {
-  background-color: rgba(255, 255, 255, 0.14);
-}
-
+/* ---- Menú móvil ---- */
 .menuMovil {
   display: flex;
   flex-direction: column;
   gap: 2px;
   max-height: 0;
   overflow: hidden;
-  padding: 0 var(--e-lg);
-  background-color: var(--color-texto);
-  border-top: 1px solid transparent;
+  padding: 0 24px;
   opacity: 0;
   pointer-events: none;
   transform: translateY(-8px);
   visibility: hidden;
-  will-change: max-height, opacity, transform;
-  transition: max-height 0.24s ease, padding 0.24s ease,
-    border-color 0.2s ease, opacity 0.16s ease, transform 0.24s ease,
-    visibility 0s linear 0.24s;
+  transition: max-height 0.24s ease, padding 0.24s ease, opacity 0.16s ease,
+    transform 0.24s ease, visibility 0s linear 0.24s;
 }
-
 .menuAbierto {
-  max-height: 340px;
-  padding: var(--e-sm) var(--e-lg) var(--e-lg);
-  border-top-color: rgba(255, 255, 255, 0.1);
+  max-height: 360px;
+  padding: 8px 24px 20px;
   opacity: 1;
   pointer-events: auto;
   transform: translateY(0);
   visibility: visible;
   transition-delay: 0s;
 }
-
 .menuLink {
-  text-align: left;
-  background: none;
-  border: none;
-  padding: var(--e-md) 0;
-  font-family: inherit;
+  padding: 12px 0;
   font-size: 15px;
-  color: var(--color-sobre-oscuro);
+  color: var(--bnv-texto-2);
   text-decoration: none;
-  cursor: pointer;
-  transition: color 0.2s ease;
+  border-bottom: 1px solid var(--bnv-borde);
 }
-
-.menuLink:hover,
-.menuLinkActivo {
-  color: #fff;
+.menuLink:hover {
+  color: var(--bnv-tinta);
 }
-
-.menuEntrar {
-  margin-top: var(--e-sm);
+.menuAcceso {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+.menuEntrar,
+.menuCrear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
   height: 46px;
-  background: none;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: var(--radio-control);
-  color: #fff;
-  font-family: inherit;
+  border-radius: var(--radio-pill);
   font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+  font-weight: 500;
+  text-decoration: none;
+}
+.menuEntrar {
+  border: 1px solid var(--bnv-borde);
+  color: var(--bnv-tinta);
+}
+.menuCrear {
+  background-color: var(--bnv-verde);
+  color: #fff;
 }
 
-.menuEntrar:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-}
-
-/* ---- Responsive del header (breakpoints del handoff) ---- */
-/* Tablet (768–1023): header sin la fila de navegación. */
+/* ---- Responsive ---- */
+/* Tablet y móvil: la cápsula de nav y los enlaces de cuenta se van al menú. */
 @media (max-width: 1023px) {
-  .navFila {
+  .capsula,
+  .comuna,
+  .sepAcciones,
+  .entrar,
+  .crearCuenta {
     display: none;
   }
-}
-
-/* Tablet: el header deja de intentar comprimir todos los controles de
-   escritorio. Mantiene búsqueda visible y traslada navegación/cuenta al menú. */
-@media (min-width: 768px) and (max-width: 1023px) {
-  .contenedor {
-    padding-right: var(--e-xl);
-    padding-left: var(--e-xl);
-  }
-
-  .barraPrincipal .contenedor {
-    gap: var(--e-md);
-  }
-
   .hamburguesa {
     display: inline-flex;
-    /* En tablet el menú comparte el extremo derecho con el carrito, en vez de
-       quedar separado por el buscador. */
-    order: 3;
   }
-
-  .entrar {
-    display: none;
-  }
-
-  .logo {
-    font-size: 24px;
-    order: 1;
-  }
-
-  .buscador {
-    order: 2;
-  }
-
   .carritoTexto {
     display: none;
   }
-
   .carrito {
-    position: relative;
-    order: 4;
-    width: 46px;
-    padding: 0;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .contador {
-    position: absolute;
-    top: -6px;
-    right: -6px;
-    width: auto;
-    min-width: 20px;
-    height: 20px;
-    padding: 0 5px;
-    border: 2px solid var(--color-texto);
-    font-size: 11px;
+    padding: 0 14px;
   }
 }
 
-/* Móvil (≤767): hamburguesa + logo + buscador (full width) + carrito. */
 @media (max-width: 767px) {
-  .hamburguesa {
-    display: inline-flex;
+  .barra {
+    padding: 12px 16px;
+    gap: 12px;
   }
-
-  .franja,
-  .entrar {
-    display: none;
-  }
-
-  .estado .contenedor {
-    min-height: 36px;
-    padding-top: var(--e-xs);
-    padding-bottom: var(--e-xs);
-  }
-
-  .estadoInfo {
-    font-size: 12px;
-  }
-
-  .verHorarios {
-    display: none;
-  }
-
-  .barraPrincipal .contenedor {
-    flex-wrap: wrap;
-  }
-
-  .buscador {
-    order: 3;
-    flex-basis: 100%;
-  }
-
-  /* Logo un paso más chico para que la fila superior no fuerce el salto. */
   .logo {
-    font-size: 22px;
-  }
-
-  /* Empuja la hamburguesa y el carrito al borde derecho (logo queda a la izq). */
-  .hamburguesa {
-    margin-left: auto;
-  }
-
-  /* El carrito se reduce a solo ícono + badge (sin "Mi carrito" ni monto). */
-  .carritoTexto {
-    display: none;
-  }
-
-  .carrito {
-    position: relative;
-    width: 46px;
-    padding: 0;
-    justify-content: center;
-    flex-shrink: 0; /* nunca se encoge ni salta de línea */
-  }
-
-  .carrito > i {
-    font-size: 16px;
-  }
-
-  /* El contador pasa a badge verde en la esquina superior derecha. */
-  .contador {
-    position: absolute;
-    top: -6px;
-    right: -6px;
-    width: auto;
-    min-width: 20px;
-    height: 20px;
-    padding: 0 5px;
-    border: 2px solid var(--color-texto); /* separa el badge del header oscuro */
-    font-size: 11px;
+    font-size: 23px;
+    margin-right: auto;
   }
 }
 
-/* Seguridad: si se agranda la ventana con el menú abierto, no lo mostramos. */
-@media (min-width: 1024px) {
-  .menuMovil {
-    display: none;
-  }
-}
-
-/* La interfaz sigue siendo usable sin movimiento para quien lo solicite. */
 @media (prefers-reduced-motion: reduce) {
-  .sugerencias,
   .menuMovil {
     transition: none;
   }

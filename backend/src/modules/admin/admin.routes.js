@@ -82,7 +82,13 @@ import {
   listarClientesAdmin,
   obtenerClienteAdmin,
 } from './admin-clientes.service.js'
-import { listarInventarioAdmin } from './admin-inventario.service.js'
+import {
+  ErrorInventario,
+  ajustarStockAdmin,
+  listarInventarioAdmin,
+  listarMovimientosAdmin,
+} from './admin-inventario.service.js'
+import { validarAjusteStock } from './admin-inventario.validacion.js'
 
 export function crearRouterAdmin({
   servicio = {
@@ -130,6 +136,8 @@ export function crearRouterAdmin({
     obtenerClienteAdmin,
     cambiarEstadoClienteAdmin,
     listarInventarioAdmin,
+    ajustarStockAdmin,
+    listarMovimientosAdmin,
   },
   middlewareSesion = requerirSesion,
 } = {}) {
@@ -1197,6 +1205,68 @@ export function crearRouterAdmin({
       try {
         return response.json(await servicio.listarInventarioAdmin({ page, limit, query, soloBajoStock }))
       } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  // Historial de movimientos de stock de un producto (auditoría).
+  adminRouter.get(
+    '/inventario/:id/movimientos',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      try {
+        const movimientos = await servicio.listarMovimientosAdmin(request.params.id)
+        if (movimientos === null) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_PRODUCT_NOT_FOUND', message: 'No encontramos el producto solicitado.' },
+          })
+        }
+        return response.json({ data: movimientos })
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  // Ajuste manual de stock: crea un movimiento y actualiza el stock en una
+  // transacción. El usuarioId sale de la sesión, nunca del cuerpo.
+  adminRouter.post(
+    '/inventario/:id/movimientos',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      const validacion = validarAjusteStock(request.body)
+      if (!validacion.success) {
+        return response.status(422).json({
+          error: {
+            code: 'INVALID_STOCK_ADJUSTMENT',
+            message: 'Revisa los datos del ajuste de stock.',
+            fields: validacion.error.issues.map((issue) => issue.path.join('.')),
+          },
+        })
+      }
+
+      try {
+        const resultado = await servicio.ajustarStockAdmin({
+          productoId: request.params.id,
+          delta: validacion.data.delta,
+          motivo: validacion.data.motivo,
+          nota: validacion.data.nota,
+          usuarioId: request.usuario.id,
+        })
+        if (!resultado) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_PRODUCT_NOT_FOUND', message: 'No encontramos el producto solicitado.' },
+          })
+        }
+        return response.status(201).json({ data: resultado })
+      } catch (error) {
+        // Reglas de negocio (signo del motivo, stock negativo) → 409 conflicto.
+        if (error instanceof ErrorInventario) {
+          return response.status(409).json({ error: { code: error.code, message: error.message } })
+        }
         return next(error)
       }
     },

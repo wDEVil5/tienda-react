@@ -1,6 +1,9 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { crearServicioInventarioAdmin } from '../src/modules/admin/admin-inventario.service.js'
+import {
+  ErrorInventario,
+  crearServicioInventarioAdmin,
+} from '../src/modules/admin/admin-inventario.service.js'
 
 // Cuatro productos que cubren los tres estados de stock (con umbral por defecto 3):
 // - Arroz: disponible 20 → DISPONIBLE
@@ -74,4 +77,79 @@ test('listarInventario pagina sobre las filas ya filtradas', async () => {
   const ids1 = pagina1.data.map((f) => f.id)
   const ids2 = pagina2.data.map((f) => f.id)
   assert.equal(ids1.some((id) => ids2.includes(id)), false)
+})
+
+// --- Ajuste de stock ---
+
+function crearRepoAjuste(producto = { id: 'p1', nombre: 'Arroz', sku: 'ARR', estado: 'PUBLICADO', stock: 10, stockReservado: 2, alertaStockBajo: null }) {
+  const capturado = { aplicado: null }
+  const repositorio = {
+    async obtenerParaAjuste(id) {
+      return id === producto.id ? { ...producto } : null
+    },
+    async aplicarAjuste(args) {
+      capturado.aplicado = args
+      return {
+        producto: { ...producto, stock: args.nuevoStock },
+        movimiento: { id: 'm1', delta: args.delta, motivo: args.motivo, stockResultante: args.nuevoStock, nota: args.nota ?? null, createdAt: new Date(), usuario: { id: args.usuarioId, nombre: 'Staff' } },
+      }
+    },
+  }
+  return { repositorio, capturado }
+}
+
+test('ajustarStock aplica una entrada y devuelve la fila derivada + el movimiento', async () => {
+  const { repositorio, capturado } = crearRepoAjuste()
+  const servicio = crearServicioInventarioAdmin(repositorio)
+
+  const resultado = await servicio.ajustarStock({
+    productoId: 'p1', delta: 5, motivo: 'ENTRADA', nota: 'Recepción', usuarioId: 'u1',
+  })
+
+  assert.equal(capturado.aplicado.nuevoStock, 15)
+  assert.equal(capturado.aplicado.usuarioId, 'u1') // viene de la sesión
+  assert.equal(resultado.fila.stock, 15)
+  assert.equal(resultado.fila.disponible, 13) // 15 - 2 reservado
+  assert.equal(resultado.movimiento.motivo, 'ENTRADA')
+})
+
+test('ajustarStock devuelve null si el producto no existe', async () => {
+  const { repositorio } = crearRepoAjuste()
+  const servicio = crearServicioInventarioAdmin(repositorio)
+  assert.equal(
+    await servicio.ajustarStock({ productoId: 'nope', delta: 1, motivo: 'ENTRADA', usuarioId: 'u1' }),
+    null,
+  )
+})
+
+test('ajustarStock exige signo coherente con el motivo', async () => {
+  const { repositorio } = crearRepoAjuste()
+  const servicio = crearServicioInventarioAdmin(repositorio)
+
+  await assert.rejects(
+    () => servicio.ajustarStock({ productoId: 'p1', delta: -3, motivo: 'ENTRADA', usuarioId: 'u1' }),
+    (error) => error instanceof ErrorInventario && error.code === 'MOTIVO_SIGNO',
+  )
+  await assert.rejects(
+    () => servicio.ajustarStock({ productoId: 'p1', delta: 3, motivo: 'MERMA', usuarioId: 'u1' }),
+    (error) => error instanceof ErrorInventario && error.code === 'MOTIVO_SIGNO',
+  )
+})
+
+test('ajustarStock rechaza dejar el stock negativo', async () => {
+  const { repositorio, capturado } = crearRepoAjuste()
+  const servicio = crearServicioInventarioAdmin(repositorio)
+
+  await assert.rejects(
+    () => servicio.ajustarStock({ productoId: 'p1', delta: -15, motivo: 'MERMA', usuarioId: 'u1' }),
+    (error) => error instanceof ErrorInventario && error.code === 'STOCK_NEGATIVO',
+  )
+  assert.equal(capturado.aplicado, null) // nunca llegó a aplicar
+})
+
+test('listarMovimientos devuelve null si el producto no existe', async () => {
+  const servicio = crearServicioInventarioAdmin({
+    async obtenerParaAjuste() { return null },
+  })
+  assert.equal(await servicio.listarMovimientos('nope'), null)
 })

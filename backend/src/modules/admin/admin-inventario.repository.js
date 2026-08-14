@@ -38,6 +38,83 @@ export function crearRepositorioInventarioAdmin(cliente = prisma) {
         },
       })
     },
+
+    // Lee el producto (campos de stock) para validar existencia y calcular el
+    // nuevo stock antes de ajustar. null si no existe.
+    obtenerParaAjuste(id) {
+      return cliente.producto.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          nombre: true,
+          sku: true,
+          estado: true,
+          stock: true,
+          stockReservado: true,
+          alertaStockBajo: true,
+        },
+      })
+    },
+
+    // Aplica el ajuste en UNA transacción: actualiza Producto.stock e inserta el
+    // MovimientoStock con el delta y el stock resultante (foto para auditar sin
+    // recalcular). Devuelve { producto, movimiento }. El stock nuevo lo calcula el
+    // servicio (que ya validó que no sea negativo).
+    aplicarAjuste({ productoId, nuevoStock, delta, motivo, nota, usuarioId }) {
+      return cliente.$transaction(async (transaccion) => {
+        const producto = await transaccion.producto.update({
+          where: { id: productoId },
+          data: { stock: nuevoStock },
+          select: {
+            id: true,
+            nombre: true,
+            sku: true,
+            estado: true,
+            stock: true,
+            stockReservado: true,
+            alertaStockBajo: true,
+          },
+        })
+        const movimiento = await transaccion.movimientoStock.create({
+          data: {
+            productoId,
+            usuarioId: usuarioId ?? null,
+            delta,
+            motivo,
+            stockResultante: nuevoStock,
+            nota: nota ?? null,
+          },
+          select: {
+            id: true,
+            delta: true,
+            motivo: true,
+            stockResultante: true,
+            nota: true,
+            createdAt: true,
+            usuario: { select: { id: true, nombre: true } },
+          },
+        })
+        return { producto, movimiento }
+      })
+    },
+
+    // Historial de movimientos de un producto (más recientes primero).
+    listarMovimientos(productoId, limite = 30) {
+      return cliente.movimientoStock.findMany({
+        where: { productoId },
+        orderBy: { createdAt: 'desc' },
+        take: limite,
+        select: {
+          id: true,
+          delta: true,
+          motivo: true,
+          stockResultante: true,
+          nota: true,
+          createdAt: true,
+          usuario: { select: { id: true, nombre: true } },
+        },
+      })
+    },
   }
 }
 

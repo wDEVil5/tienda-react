@@ -340,6 +340,20 @@ export function listarInventarioAdmin({ page = 1, limit = 20, q, bajoStock, ...o
   return solicitarAdmin(`/admin/inventario?${parametros}`, { ...opciones, incluirMeta: true });
 }
 
+export function listarMovimientosStockAdmin(id, opciones = {}) {
+  return solicitarAdmin(`/admin/inventario/${encodeURIComponent(id)}/movimientos`, opciones);
+}
+
+// Ajuste de stock: crea un movimiento. Devuelve { fila, movimiento } (el usuario
+// que lo hizo lo pone el backend desde la sesión, nunca se manda desde aquí).
+export function ajustarStockAdmin(id, { delta, motivo, nota }, opciones = {}) {
+  return solicitarAdmin(`/admin/inventario/${encodeURIComponent(id)}/movimientos`, {
+    ...opciones,
+    method: "POST",
+    cuerpo: nota ? { delta, motivo, nota } : { delta, motivo },
+  });
+}
+
 export function activarClienteAdmin(id, opciones = {}) {
   return solicitarAdmin(`/admin/clientes/${encodeURIComponent(id)}/activar`, {
     ...opciones,

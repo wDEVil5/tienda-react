@@ -1,14 +1,237 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Navigate } from "react-router-dom";
 import AdminShell from "../components/admin/AdminShell.jsx";
 import {
+  ajustarStockAdmin,
   ErrorAdminApi,
   listarInventarioAdmin,
+  listarMovimientosStockAdmin,
   obtenerSesionAdmin,
 } from "../services/adminApi.js";
 import styles from "./AdminInventario.module.css";
 
 const LIMITE = 20;
+
+// Motivos de ajuste. CONTEO trabaja con un total absoluto (conteo físico); los
+// otros dos con una cantidad que suma o resta.
+const MOTIVOS = [
+  { valor: "ENTRADA", etiqueta: "Entrada", ayuda: "Recepción de mercadería (suma)" },
+  { valor: "MERMA", etiqueta: "Merma", ayuda: "Pérdida, daño o vencimiento (resta)" },
+  { valor: "CONTEO", etiqueta: "Conteo", ayuda: "Corrige contra un conteo físico" },
+];
+
+const ETIQUETA_MOTIVO = {
+  ENTRADA: "Entrada",
+  MERMA: "Merma",
+  CONTEO: "Conteo",
+};
+
+const FECHA_MOV = new Intl.DateTimeFormat("es-CL", {
+  day: "2-digit",
+  month: "short",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+// Calcula el delta a enviar según el motivo y lo escrito. En CONTEO el campo es
+// el nuevo total → delta = total − stock actual; en el resto, cantidad con signo.
+function calcularDelta(motivo, valor, stockActual) {
+  const n = Number.parseInt(valor, 10);
+  if (!Number.isInteger(n) || n < 0) return null;
+  if (motivo === "CONTEO") return n - stockActual;
+  if (n < 1) return null;
+  return motivo === "MERMA" ? -n : n;
+}
+
+function ModalAjuste({ producto, onCerrar, onAjustado }) {
+  const [stockActual, setStockActual] = useState(producto.stock);
+  const [motivo, setMotivo] = useState("ENTRADA");
+  const [cantidad, setCantidad] = useState("");
+  const [nota, setNota] = useState("");
+  const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState(null);
+  const [historial, setHistorial] = useState(null);
+  const [errorHistorial, setErrorHistorial] = useState(null);
+
+  // Cierre con Escape.
+  useEffect(() => {
+    const alPulsar = (evento) => {
+      if (evento.key === "Escape") onCerrar();
+    };
+    window.addEventListener("keydown", alPulsar);
+    return () => window.removeEventListener("keydown", alPulsar);
+  }, [onCerrar]);
+
+  // Historial al abrir.
+  useEffect(() => {
+    let vigente = true;
+    listarMovimientosStockAdmin(producto.id)
+      .then((data) => {
+        if (vigente) setHistorial(Array.isArray(data) ? data : []);
+      })
+      .catch((errorRespuesta) => {
+        if (vigente) setErrorHistorial(errorRespuesta.message);
+      });
+    return () => {
+      vigente = false;
+    };
+  }, [producto.id]);
+
+  const delta = calcularDelta(motivo, cantidad, stockActual);
+  const stockResultante = delta !== null ? stockActual + delta : null;
+  const invalido = delta === null || delta === 0 || stockResultante < 0;
+
+  const etiquetaCampo = motivo === "CONTEO" ? "Nuevo total (conteo físico)" : "Cantidad";
+
+  async function enviar(evento) {
+    evento.preventDefault();
+    if (invalido || enviando) return;
+    setEnviando(true);
+    setError(null);
+    try {
+      const { fila, movimiento } = await ajustarStockAdmin(producto.id, {
+        delta,
+        motivo,
+        nota: nota.trim() || undefined,
+      });
+      setStockActual(fila.stock);
+      setHistorial((actual) => [movimiento, ...(actual ?? [])]);
+      setCantidad("");
+      setNota("");
+      onAjustado(fila);
+    } catch (errorRespuesta) {
+      setError(
+        errorRespuesta instanceof ErrorAdminApi
+          ? errorRespuesta.message
+          : "No pudimos aplicar el ajuste.",
+      );
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  return createPortal(
+    <div className={styles.overlay} role="dialog" aria-modal="true" aria-label={`Ajustar stock de ${producto.nombre}`}>
+      <button className={styles.overlayFondo} type="button" aria-label="Cerrar" onClick={onCerrar} />
+      <div className={styles.modal}>
+        <header className={styles.modalCabecera}>
+          <div>
+            <h2 className={styles.modalTitulo}>{producto.nombre}</h2>
+            <span className={styles.modalSku}>{producto.sku}</span>
+          </div>
+          <button className={styles.cerrar} type="button" onClick={onCerrar} aria-label="Cerrar">
+            ✕
+          </button>
+        </header>
+
+        <div className={styles.modalStock}>
+          <span className={styles.modalStockValor}>{stockActual}</span>
+          <span className={styles.modalStockLabel}>en stock ahora</span>
+        </div>
+
+        <form className={styles.form} onSubmit={enviar}>
+          <div className={styles.motivos}>
+            {MOTIVOS.map((opcion) => (
+              <button
+                key={opcion.valor}
+                type="button"
+                className={motivo === opcion.valor ? styles.motivoActivo : styles.motivo}
+                aria-pressed={motivo === opcion.valor}
+                onClick={() => setMotivo(opcion.valor)}
+              >
+                {opcion.etiqueta}
+              </button>
+            ))}
+          </div>
+          <p className={styles.motivoAyuda}>
+            {MOTIVOS.find((m) => m.valor === motivo)?.ayuda}
+          </p>
+
+          <label className={styles.campo}>
+            <span>{etiquetaCampo}</span>
+            <input
+              type="number"
+              min="0"
+              inputMode="numeric"
+              value={cantidad}
+              onChange={(e) => setCantidad(e.target.value)}
+              placeholder={motivo === "CONTEO" ? String(stockActual) : "0"}
+              autoFocus
+            />
+          </label>
+
+          <label className={styles.campo}>
+            <span>Nota (opcional)</span>
+            <input
+              type="text"
+              maxLength={300}
+              value={nota}
+              onChange={(e) => setNota(e.target.value)}
+              placeholder="Ej: llegó pedido del proveedor"
+            />
+          </label>
+
+          {stockResultante !== null && delta !== 0 && (
+            <p className={`${styles.preview} ${stockResultante < 0 ? styles.previewMal : ""}`}>
+              Stock resultante: <strong>{stockResultante}</strong>
+              <span className={styles.previewDelta}>
+                ({delta > 0 ? "+" : ""}
+                {delta})
+              </span>
+            </p>
+          )}
+
+          {error && <p className={styles.errorForm} role="alert">{error}</p>}
+
+          <div className={styles.formAcciones}>
+            <button type="button" className={styles.botonSecundario} onClick={onCerrar}>
+              Cerrar
+            </button>
+            <button type="submit" className={styles.botonPrimario} disabled={invalido || enviando}>
+              {enviando ? "Aplicando…" : "Aplicar ajuste"}
+            </button>
+          </div>
+        </form>
+
+        <section className={styles.historial}>
+          <h3 className={styles.historialTitulo}>Movimientos recientes</h3>
+          {errorHistorial ? (
+            <p className={styles.historialVacio} role="alert">{errorHistorial}</p>
+          ) : historial === null ? (
+            <p className={styles.historialVacio} role="status">Cargando…</p>
+          ) : historial.length === 0 ? (
+            <p className={styles.historialVacio}>Sin movimientos manuales todavía.</p>
+          ) : (
+            <ul className={styles.movimientos}>
+              {historial.map((mov) => (
+                <li key={mov.id} className={styles.movimiento}>
+                  <span
+                    className={`${styles.movDelta} ${mov.delta > 0 ? styles.movMas : styles.movMenos}`}
+                  >
+                    {mov.delta > 0 ? "+" : ""}
+                    {mov.delta}
+                  </span>
+                  <span className={styles.movInfo}>
+                    <span className={styles.movMotivo}>
+                      {ETIQUETA_MOTIVO[mov.motivo] ?? mov.motivo}
+                      {mov.nota && <span className={styles.movNota}> · {mov.nota}</span>}
+                    </span>
+                    <span className={styles.movMeta}>
+                      {FECHA_MOV.format(new Date(mov.createdAt))}
+                      {mov.usuario?.nombre && ` · ${mov.usuario.nombre}`} · quedó en {mov.stockResultante}
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
+    </div>,
+    document.body,
+  );
+}
 
 const ETIQUETA_STOCK = {
   DISPONIBLE: "Disponible",
@@ -42,6 +265,8 @@ export default function AdminInventario() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
   const [intento, setIntento] = useState(0);
+  const [ajustando, setAjustando] = useState(null);
+  const [huboCambios, setHuboCambios] = useState(false);
 
   useEffect(() => {
     let vigente = true;
@@ -145,6 +370,21 @@ export default function AdminInventario() {
 
   const totalPaginas = meta?.totalPages ?? 1;
 
+  // Actualiza la fila en sitio para feedback inmediato y marca que hubo cambios
+  // (al cerrar el modal se recarga la lista para refrescar el resumen/orden).
+  function alAjustar(fila) {
+    setFilas((actuales) => actuales.map((f) => (f.id === fila.id ? fila : f)));
+    setHuboCambios(true);
+  }
+
+  function cerrarModal() {
+    setAjustando(null);
+    if (huboCambios) {
+      setHuboCambios(false);
+      setIntento((valor) => valor + 1); // recarga lista + resumen
+    }
+  }
+
   return (
     <main className={styles.fondo}>
       <AdminShell usuario={usuario} seccion="Inventario">
@@ -244,6 +484,7 @@ export default function AdminInventario() {
                     <th className={styles.colNum}>Reservado</th>
                     <th className={styles.colNum}>Disponible</th>
                     <th>Estado</th>
+                    <th className={styles.colAccion}><span className={styles.srOnly}>Acciones</span></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -269,6 +510,15 @@ export default function AdminInventario() {
                         <span className={`${styles.badge} ${CLASE_STOCK[fila.estadoStock] ?? ""}`}>
                           {ETIQUETA_STOCK[fila.estadoStock] ?? fila.estadoStock}
                         </span>
+                      </td>
+                      <td className={styles.colAccion}>
+                        <button
+                          type="button"
+                          className={styles.ajustar}
+                          onClick={() => setAjustando(fila)}
+                        >
+                          Ajustar
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -307,6 +557,10 @@ export default function AdminInventario() {
             </footer>
           )}
         </div>
+
+        {ajustando && (
+          <ModalAjuste producto={ajustando} onCerrar={cerrarModal} onAjustado={alAjustar} />
+        )}
       </AdminShell>
     </main>
   );

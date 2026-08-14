@@ -7,7 +7,7 @@ test('listarMarcas incluye logo y productos asignados', async () => {
     async listar() {
       return [{
         id: 'marca-1', nombre: 'Café', slug: 'cafe', logoUrl: 'https://cdn.test/logo.webp',
-        logoStorageKey: 'sumarket/marcas/cafe', _count: { productos: 2 },
+        logoStorageKey: 'sumarket/marcas/cafe', brandfetchDomain: 'cafe.test', _count: { productos: 2 },
       }]
     },
   })
@@ -15,19 +15,20 @@ test('listarMarcas incluye logo y productos asignados', async () => {
   const resultado = await servicio.listarMarcas()
 
   assert.deepEqual(resultado.data, [{
-    id: 'marca-1', nombre: 'Café', slug: 'cafe', logoUrl: 'https://cdn.test/logo.webp', productosAsignados: 2,
+    id: 'marca-1', nombre: 'Café', slug: 'cafe', logoUrl: 'https://cdn.test/logo.webp', brandfetchDomain: 'cafe.test', productosAsignados: 2,
   }])
 })
 
-test('crearMarca genera slug y no asigna un logo manualmente', async () => {
+test('crearMarca genera slug, normaliza el dominio Brandfetch y no asigna un logo manualmente', async () => {
   let datosCreacion
   const servicio = crearServicioMarcasAdmin({
     async crear(datos) { datosCreacion = datos; return { id: 'marca-1', ...datos, logoUrl: null } },
   })
 
-  const marca = await servicio.crearMarca({ nombre: 'Café Central' })
+  const marca = await servicio.crearMarca({ nombre: 'Café Central', brandfetchDomain: 'CAFECLUB.CL' })
 
   assert.equal(datosCreacion.slug, 'cafe-central')
+  assert.equal(datosCreacion.brandfetchDomain, 'cafeclub.cl')
   assert.equal(marca.logoUrl, null)
 })
 

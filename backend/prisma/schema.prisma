@@ -112,6 +112,7 @@ model Marca {
   slug           String     @unique @db.VarChar(140)
   logoUrl        String?    @map("logo_url") @db.VarChar(500)
   logoStorageKey String?    @map("logo_storage_key") @db.VarChar(300)
+  brandfetchDomain String?  @map("brandfetch_domain") @db.VarChar(253)
   createdAt      DateTime   @default(now()) @map("created_at")
   updatedAt      DateTime   @updatedAt @map("updated_at")
   productos      Producto[]

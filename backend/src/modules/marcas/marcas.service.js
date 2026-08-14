@@ -6,10 +6,11 @@ export function crearServicioMarcas(repositorio = repositorioMarcas) {
       const marcas = await repositorio.listarConProductosPublicados()
 
       return marcas
-        .map(({ id, nombre, logoUrl, _count }) => ({
+        .map(({ id, nombre, logoUrl, brandfetchDomain, _count }) => ({
           id,
           nombre,
           logoUrl,
+          brandfetchDomain,
           productCount: _count.productos,
         }))
         .sort((marcaA, marcaB) => marcaA.nombre.localeCompare(marcaB.nombre, 'es'))

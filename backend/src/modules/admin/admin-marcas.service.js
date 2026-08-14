@@ -36,6 +36,7 @@ export function crearServicioMarcasAdmin(
           nombre: marca.nombre,
           slug: marca.slug,
           logoUrl: marca.logoUrl,
+          brandfetchDomain: marca.brandfetchDomain,
           productosAsignados: marca._count.productos,
         })),
       }
@@ -63,6 +64,7 @@ export function crearServicioMarcasAdmin(
     async crearMarca(datos) {
       return repositorio.crear({
         ...datos,
+        brandfetchDomain: datos.brandfetchDomain?.toLowerCase() ?? null,
         slug: datos.slug ?? crearSlug(datos.nombre),
       })
     },

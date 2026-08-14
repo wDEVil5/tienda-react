@@ -10,6 +10,7 @@ export function crearRepositorioMarcasAdmin(cliente = prisma) {
           slug: true,
           logoUrl: true,
           logoStorageKey: true,
+          brandfetchDomain: true,
           _count: { select: { productos: true } },
         },
         orderBy: { nombre: 'asc' },
@@ -19,14 +20,14 @@ export function crearRepositorioMarcasAdmin(cliente = prisma) {
     crear(datos) {
       return cliente.marca.create({
         data: datos,
-        select: { id: true, nombre: true, slug: true, logoUrl: true, logoStorageKey: true },
+        select: { id: true, nombre: true, slug: true, logoUrl: true, logoStorageKey: true, brandfetchDomain: true },
       })
     },
 
     obtenerPorId(id) {
       return cliente.marca.findUnique({
         where: { id },
-        select: { id: true, nombre: true, slug: true, logoUrl: true, logoStorageKey: true },
+        select: { id: true, nombre: true, slug: true, logoUrl: true, logoStorageKey: true, brandfetchDomain: true },
       })
     },
 
@@ -34,7 +35,7 @@ export function crearRepositorioMarcasAdmin(cliente = prisma) {
       return cliente.marca.update({
         where: { id },
         data: { logoUrl: logo.url, logoStorageKey: logo.storageKey },
-        select: { id: true, nombre: true, slug: true, logoUrl: true, logoStorageKey: true },
+        select: { id: true, nombre: true, slug: true, logoUrl: true, logoStorageKey: true, brandfetchDomain: true },
       })
     },
   }

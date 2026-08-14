@@ -11,6 +11,7 @@ export function crearRepositorioMarcas(cliente = prisma) {
           id: true,
           nombre: true,
           logoUrl: true,
+          brandfetchDomain: true,
           _count: {
             select: {
               productos: { where: { estado: 'PUBLICADO' } },

@@ -15,6 +15,48 @@ import styles from "./AdminIdentidad.module.css";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Días de la semana (índice 0 = lunes), igual que el backend.
+const DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+
+// Opciones de hora cada 30 min (00:00–23:30) para los selectores: nada de texto
+// libre, así el dueño no puede escribir un formato inválido.
+const HORAS = Array.from({ length: 48 }, (_, i) => {
+  const hh = String(Math.floor(i / 2)).padStart(2, "0");
+  const mm = i % 2 === 0 ? "00" : "30";
+  return `${hh}:${mm}`;
+});
+
+// Normaliza el horario que llega de la API a 7 días con valores completos.
+function normalizarHorario(horario) {
+  return Array.from({ length: 7 }, (_, i) => {
+    const dia = Array.isArray(horario) ? horario[i] : null;
+    return {
+      abierto: Boolean(dia?.abierto),
+      apertura: dia?.apertura ?? "09:00",
+      cierre: dia?.cierre ?? "21:00",
+    };
+  });
+}
+
+// Espejo de derivarHorarioTexto del backend, solo para la vista previa en vivo.
+function derivarTextoHorario(horario) {
+  const abrev = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+  const clave = (d) => (d.abierto ? `${d.apertura}-${d.cierre}` : "cerrado");
+  const grupos = [];
+  horario.forEach((dia, i) => {
+    const ultimo = grupos[grupos.length - 1];
+    if (ultimo && clave(ultimo.dia) === clave(dia)) ultimo.fin = i;
+    else grupos.push({ inicio: i, fin: i, dia });
+  });
+  return grupos
+    .map((g) => {
+      const etiqueta = g.inicio === g.fin ? abrev[g.inicio] : `${abrev[g.inicio]} a ${abrev[g.fin]}`;
+      const valor = g.dia.abierto ? `${g.dia.apertura}–${g.dia.cierre}` : "cerrado";
+      return `${etiqueta} ${valor}`;
+    })
+    .join(" · ");
+}
+
 // El formulario trabaja con strings (los opcionales vacíos = ""). Se validan
 // espejando el contrato Zod del backend y se manda tal cual (el backend
 // normaliza "" → null en los opcionales).
@@ -24,7 +66,7 @@ function identidadAFormulario(identidad) {
     email: identidad.email ?? "",
     telefono: identidad.telefono ?? "",
     direccion: identidad.direccion ?? "",
-    horarioAtencion: identidad.horarioAtencion ?? "",
+    horario: normalizarHorario(identidad.horario),
     whatsapp: identidad.whatsapp ?? "",
     instagram: identidad.instagram ?? "",
     facebook: identidad.facebook ?? "",
@@ -47,8 +89,17 @@ function construirPayload(form) {
   const direccion = form.direccion.trim();
   if (direccion.length < 3 || direccion.length > 200) return { error: "La dirección debe tener entre 3 y 200 caracteres." };
 
-  const horarioAtencion = form.horarioAtencion.trim();
-  if (horarioAtencion.length < 2 || horarioAtencion.length > 120) return { error: "El horario de atención debe tener entre 2 y 120 caracteres." };
+  if (!Array.isArray(form.horario) || form.horario.length !== 7) return { error: "El horario debe cubrir los 7 días." };
+  const horario = form.horario.map((dia) => ({
+    abierto: Boolean(dia.abierto),
+    apertura: dia.apertura,
+    cierre: dia.cierre,
+  }));
+  for (const [i, dia] of horario.entries()) {
+    if (dia.abierto && dia.apertura >= dia.cierre) {
+      return { error: `En ${DIAS[i]} la apertura debe ser antes del cierre.` };
+    }
+  }
 
   const opcional = (valor, max, etiqueta) => {
     const texto = valor.trim();
@@ -71,7 +122,7 @@ function construirPayload(form) {
       email,
       telefono,
       direccion,
-      horarioAtencion,
+      horario,
       whatsapp: wa.valor,
       instagram: ig.valor,
       facebook: fb.valor,
@@ -179,6 +230,14 @@ export default function AdminIdentidad() {
   function editar(campo, valor) {
     setMensaje(null);
     setForm((previo) => ({ ...previo, [campo]: valor }));
+  }
+
+  function editarDia(indice, campo, valor) {
+    setMensaje(null);
+    setForm((previo) => ({
+      ...previo,
+      horario: previo.horario.map((dia, i) => (i === indice ? { ...dia, [campo]: valor } : dia)),
+    }));
   }
 
   async function guardar(evento) {
@@ -298,29 +357,74 @@ export default function AdminIdentidad() {
                 </section>
 
                 <section className={styles.tarjeta}>
-                  <h2 className={styles.tarjetaTitulo}>Ubicación y horario</h2>
-                  <div className={styles.grid2}>
-                    <label className={styles.campo}>
-                      <span>Dirección</span>
-                      <input
-                        type="text"
-                        maxLength={200}
-                        value={form.direccion}
-                        onChange={(e) => editar("direccion", e.target.value)}
-                        placeholder="Av. Matta 980, Santiago"
-                      />
-                    </label>
-                    <label className={styles.campo}>
-                      <span>Horario de atención</span>
-                      <input
-                        type="text"
-                        maxLength={120}
-                        value={form.horarioAtencion}
-                        onChange={(e) => editar("horarioAtencion", e.target.value)}
-                        placeholder="Lun a sáb 09-21h · Dom 10-15h"
-                      />
-                    </label>
+                  <h2 className={styles.tarjetaTitulo}>Ubicación</h2>
+                  <label className={styles.campo}>
+                    <span>Dirección</span>
+                    <input
+                      type="text"
+                      maxLength={200}
+                      value={form.direccion}
+                      onChange={(e) => editar("direccion", e.target.value)}
+                      placeholder="Av. Matta 980, Santiago"
+                    />
+                  </label>
+                </section>
+
+                <section className={styles.tarjeta}>
+                  <h2 className={styles.tarjetaTitulo}>Horario de atención</h2>
+                  <p className={styles.notaRedes}>
+                    Marca cada día como abierto o cerrado y elige las horas. El texto se
+                    arma solo.
+                  </p>
+                  <div className={styles.horario}>
+                    {form.horario.map((dia, i) => (
+                      <div
+                        key={i}
+                        className={`${styles.diaFila} ${dia.abierto ? "" : styles.diaCerrado}`}
+                      >
+                        <span className={styles.diaNombre}>{DIAS[i]}</span>
+                        <label className={styles.diaToggle}>
+                          <input
+                            type="checkbox"
+                            checked={dia.abierto}
+                            onChange={(e) => editarDia(i, "abierto", e.target.checked)}
+                          />
+                          {dia.abierto ? "Abierto" : "Cerrado"}
+                        </label>
+                        {dia.abierto ? (
+                          <div className={styles.diaHoras}>
+                            <select
+                              className={styles.selectHora}
+                              value={dia.apertura}
+                              onChange={(e) => editarDia(i, "apertura", e.target.value)}
+                              aria-label={`Apertura ${DIAS[i]}`}
+                            >
+                              {HORAS.map((h) => (
+                                <option key={h} value={h}>{h}</option>
+                              ))}
+                            </select>
+                            <span className={styles.diaGuion}>a</span>
+                            <select
+                              className={styles.selectHora}
+                              value={dia.cierre}
+                              onChange={(e) => editarDia(i, "cierre", e.target.value)}
+                              aria-label={`Cierre ${DIAS[i]}`}
+                            >
+                              {HORAS.map((h) => (
+                                <option key={h} value={h}>{h}</option>
+                              ))}
+                            </select>
+                          </div>
+                        ) : (
+                          <span className={styles.diaHoras}>—</span>
+                        )}
+                      </div>
+                    ))}
                   </div>
+                  <p className={styles.horarioPreview}>
+                    <span className={styles.horarioPreviewLabel}>Se mostrará:</span>{" "}
+                    {derivarTextoHorario(form.horario)}
+                  </p>
                 </section>
 
                 <section className={styles.tarjeta}>

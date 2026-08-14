@@ -304,7 +304,7 @@ export function guardarIdentidadAdmin(identidad, opciones = {}) {
     email: identidad.email,
     telefono: identidad.telefono,
     direccion: identidad.direccion,
-    horarioAtencion: identidad.horarioAtencion,
+    horario: identidad.horario,
     whatsapp: identidad.whatsapp ?? "",
     instagram: identidad.instagram ?? "",
     facebook: identidad.facebook ?? "",

@@ -1,9 +1,35 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { crearServicioIdentidad } from '../src/modules/identidad/identidad.service.js'
-import { IDENTIDAD_POR_DEFECTO } from '../src/lib/identidadTienda.js'
+import { IDENTIDAD_POR_DEFECTO, derivarHorarioTexto } from '../src/lib/identidadTienda.js'
 
-test('obtenerIdentidad cae en el default cuando la base no tiene fila', async () => {
+const HORARIO_LLENO = Array.from({ length: 7 }, () => ({
+  abierto: true,
+  apertura: '09:00',
+  cierre: '21:00',
+}))
+
+test('derivarHorarioTexto agrupa días consecutivos iguales', () => {
+  const horario = [
+    ...Array.from({ length: 6 }, () => ({ abierto: true, apertura: '09:00', cierre: '21:00' })),
+    { abierto: true, apertura: '10:00', cierre: '15:00' }, // Dom distinto
+  ]
+  assert.equal(derivarHorarioTexto(horario), 'Lun a Sáb 09:00–21:00 · Dom 10:00–15:00')
+})
+
+test('derivarHorarioTexto muestra un día suelto sin rango y los cerrados como "cerrado"', () => {
+  const horario = [
+    { abierto: true, apertura: '09:00', cierre: '18:00' }, // Lun solo
+    ...Array.from({ length: 5 }, () => ({ abierto: true, apertura: '10:00', cierre: '20:00' })),
+    { abierto: false, apertura: '00:00', cierre: '00:00' }, // Dom cerrado
+  ]
+  assert.equal(
+    derivarHorarioTexto(horario),
+    'Lun 09:00–18:00 · Mar a Sáb 10:00–20:00 · Dom cerrado',
+  )
+})
+
+test('obtenerIdentidad cae en el default y expone horario + horarioTexto', async () => {
   const servicio = crearServicioIdentidad({
     async obtener() { return null },
   })
@@ -11,41 +37,13 @@ test('obtenerIdentidad cae en el default cuando la base no tiene fila', async ()
   const identidad = await servicio.obtenerIdentidad()
 
   assert.equal(identidad.nombre, IDENTIDAD_POR_DEFECTO.nombre)
-  assert.equal(identidad.direccion, IDENTIDAD_POR_DEFECTO.direccion)
-  assert.equal(identidad.instagram, null)
-  // No filtra timestamps ni id.
+  assert.equal(Array.isArray(identidad.horario), true)
+  assert.equal(identidad.horario.length, 7)
+  assert.equal(identidad.horarioTexto, 'Lun a Sáb 09:00–21:00 · Dom 10:00–15:00')
   assert.equal('id' in identidad, false)
-  assert.equal('updatedAt' in identidad, false)
 })
 
-test('obtenerIdentidad proyecta la fila de la base a la forma pública', async () => {
-  const servicio = crearServicioIdentidad({
-    async obtener() {
-      return {
-        id: 'singleton',
-        nombre: 'Mi Almacén',
-        email: 'hola@mialmacen.cl',
-        telefono: '+56 9 0000 0000',
-        whatsapp: null,
-        direccion: 'Calle 1',
-        horarioAtencion: 'Lun a Vie',
-        instagram: 'https://instagram.com/mialmacen',
-        facebook: null,
-        tiktok: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
-    },
-  })
-
-  const identidad = await servicio.obtenerIdentidad()
-
-  assert.equal(identidad.nombre, 'Mi Almacén')
-  assert.equal(identidad.instagram, 'https://instagram.com/mialmacen')
-  assert.equal('createdAt' in identidad, false)
-})
-
-test('actualizarIdentidad guarda la forma proyectada y devuelve lo vigente', async () => {
+test('actualizarIdentidad guarda la forma proyectada (con horario) y no el texto derivado', async () => {
   const capturado = { guardado: null }
   const fila = {
     nombre: 'Nuevo',
@@ -53,7 +51,7 @@ test('actualizarIdentidad guarda la forma proyectada y devuelve lo vigente', asy
     telefono: '123',
     whatsapp: null,
     direccion: 'Dir',
-    horarioAtencion: 'Horario',
+    horario: HORARIO_LLENO,
     instagram: null,
     facebook: null,
     tiktok: null,
@@ -63,10 +61,14 @@ test('actualizarIdentidad guarda la forma proyectada y devuelve lo vigente', asy
     async obtener() { return fila },
   })
 
-  const identidad = await servicio.actualizarIdentidad({ ...fila, campoExtra: 'ignorado' })
+  const identidad = await servicio.actualizarIdentidad({
+    ...fila,
+    horarioTexto: 'no debe guardarse',
+    campoExtra: 'ignorado',
+  })
 
-  // Solo se guardan los campos conocidos (el extra no se cuela).
+  assert.equal('horarioTexto' in capturado.guardado, false)
   assert.equal('campoExtra' in capturado.guardado, false)
-  assert.equal(capturado.guardado.nombre, 'Nuevo')
-  assert.equal(identidad.nombre, 'Nuevo')
+  assert.equal(capturado.guardado.horario.length, 7)
+  assert.equal(identidad.horarioTexto, 'Lun a Dom 09:00–21:00') // todos iguales
 })

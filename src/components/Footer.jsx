@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { suscribirNewsletter, ErrorNewsletterApi } from "../services/newsletterApi.js";
+import { useIdentidad } from "../context/IdentidadContext.jsx";
 import styles from "./Footer.module.css";
 
 const LIMITE_CATEGORIAS_FOOTER = 4;
@@ -50,6 +51,17 @@ function Footer({
     onSeleccionarCategoria(categoria);
     onCambiarSoloOfertas(false);
   };
+
+  // Datos de marca desde la identidad de la tienda (editable en /admin/identidad).
+  const identidad = useIdentidad();
+
+  // Redes DE LA TIENDA: solo las que el dueño cargó en la identidad. Los links
+  // personales del desarrollador van aparte, en la atribución del copyright.
+  const redesTienda = [
+    identidad.instagram && { url: identidad.instagram, icono: "fa-instagram", nombre: "Instagram" },
+    identidad.facebook && { url: identidad.facebook, icono: "fa-facebook", nombre: "Facebook" },
+    identidad.tiktok && { url: identidad.tiktok, icono: "fa-tiktok", nombre: "TikTok" },
+  ].filter(Boolean);
 
   const [emailNL, setEmailNL] = useState("");
   const [cargandoNL, setCargandoNL] = useState(false);
@@ -139,10 +151,18 @@ function Footer({
             <p className={styles.marca}>
               Sumarket<em>Express</em>
             </p>
-            <p className={styles.dato}>Av. Matta 980, Santiago</p>
-            <p className={styles.dato}>Lun a sáb 09-21h · Dom 10-15h</p>
-            <p className={styles.dato}>+56 9 1234 5678</p>
-            <p className={styles.dato}>hola@sumarketexpress.cl</p>
+            <p className={styles.dato}>{identidad.direccion}</p>
+            <p className={styles.dato}>{identidad.horarioTexto}</p>
+            <p className={styles.dato}>
+              <a className={styles.datoEnlace} href={`tel:${identidad.telefono.replace(/\s+/g, "")}`}>
+                {identidad.telefono}
+              </a>
+            </p>
+            <p className={styles.dato}>
+              <a className={styles.datoEnlace} href={`mailto:${identidad.email}`}>
+                {identidad.email}
+              </a>
+            </p>
             <p className={styles.abierto}>
               <span className={styles.punto} aria-hidden="true"></span>
               Abierto ahora
@@ -231,53 +251,23 @@ function Footer({
           </div>
 
           <div className={styles.derecha}>
-            <div className={styles.redes}>
-              <a
-                href="https://www.facebook.com/"
-                target="_blank"
-                rel="noreferrer"
-                aria-label="Facebook"
-                title="Facebook"
-              >
-                <i className="fa-brands fa-facebook" aria-hidden="true"></i>
-              </a>
-              <a
-                href="https://www.youtube.com/"
-                target="_blank"
-                rel="noreferrer"
-                aria-label="YouTube"
-                title="YouTube"
-              >
-                <i className="fa-brands fa-youtube" aria-hidden="true"></i>
-              </a>
-              <a
-                href="https://x.com/"
-                target="_blank"
-                rel="noreferrer"
-                aria-label="X"
-                title="X"
-              >
-                <i className="fa-brands fa-x-twitter" aria-hidden="true"></i>
-              </a>
-              <a
-                href="https://www.linkedin.com/in/wilnes-devil-5ab6b81a6/?locale=es"
-                target="_blank"
-                rel="noreferrer"
-                aria-label="LinkedIn"
-                title="LinkedIn"
-              >
-                <i className="fa-brands fa-linkedin" aria-hidden="true"></i>
-              </a>
-              <a
-                href="https://github.com/wDEVil5"
-                target="_blank"
-                rel="noreferrer"
-                aria-label="Visitar GitHub de wil"
-                title="GitHub"
-              >
-                <i className="fa-brands fa-github" aria-hidden="true"></i>
-              </a>
-            </div>
+            {/* Redes de la tienda: solo las cargadas en la identidad. */}
+            {redesTienda.length > 0 && (
+              <div className={styles.redes}>
+                {redesTienda.map((red) => (
+                  <a
+                    key={red.icono}
+                    href={red.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={red.nombre}
+                    title={red.nombre}
+                  >
+                    <i className={`fa-brands ${red.icono}`} aria-hidden="true"></i>
+                  </a>
+                ))}
+              </div>
+            )}
 
             {/* Placeholder: cambio de moneda/idioma en un paso futuro. */}
             <button className={styles.selector} type="button">
@@ -290,7 +280,27 @@ function Footer({
         {/* Banda 4: legal. */}
         <div className={styles.legal}>
           <p className={styles.copyright}>
-            © {new Date().getFullYear()} SumarketExpress · Desarrollado por Wilnes
+            © {new Date().getFullYear()} {identidad.nombre} · Desarrollado por Wilnes
+            <span className={styles.dev}>
+              <a
+                href="https://github.com/wDEVil5"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="GitHub del desarrollador"
+                title="GitHub"
+              >
+                <i className="fa-brands fa-github" aria-hidden="true"></i>
+              </a>
+              <a
+                href="https://www.linkedin.com/in/wilnes-devil-5ab6b81a6/?locale=es"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="LinkedIn del desarrollador"
+                title="LinkedIn"
+              >
+                <i className="fa-brands fa-linkedin" aria-hidden="true"></i>
+              </a>
+            </span>
           </p>
           <nav className={styles.legalLinks} aria-label="Legal">
             <button className={styles.enlace} type="button">

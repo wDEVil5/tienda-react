@@ -1,15 +1,16 @@
-import { IDENTIDAD_POR_DEFECTO } from '../../lib/identidadTienda.js'
+import { IDENTIDAD_POR_DEFECTO, derivarHorarioTexto } from '../../lib/identidadTienda.js'
 import { repositorioIdentidad } from './identidad.repository.js'
 
-// Campos que expone la identidad, en orden. Se usa para proyectar tanto la fila
-// de la base como el default a la MISMA forma (sin timestamps ni id).
+// Campos ALMACENADOS de la identidad, en orden. Se usa para proyectar tanto la
+// fila de la base como el default a la MISMA forma (sin timestamps ni id). El
+// texto del horario NO se guarda: se deriva al leer.
 const CAMPOS = [
   'nombre',
   'email',
   'telefono',
   'whatsapp',
   'direccion',
-  'horarioAtencion',
+  'horario',
   'instagram',
   'facebook',
   'tiktok',
@@ -21,17 +22,19 @@ function proyectar(fuente) {
 
 // Ensambla la identidad vigente desde la base y la guarda. Si la base aún no
 // tiene fila (recién creada, sin seed), cae en IDENTIDAD_POR_DEFECTO: la tienda
-// nunca queda sin identidad. La forma devuelta es la que consume el frontend.
+// nunca queda sin identidad. Añade `horarioTexto` derivado del horario para que
+// el front lo muestre sin recalcular.
 export function crearServicioIdentidad(repositorio = repositorioIdentidad) {
   async function obtenerIdentidad() {
     const fila = await repositorio.obtener()
-    return proyectar(fila ?? IDENTIDAD_POR_DEFECTO)
+    const base = proyectar(fila ?? IDENTIDAD_POR_DEFECTO)
+    return { ...base, horarioTexto: derivarHorarioTexto(base.horario) }
   }
 
   async function actualizarIdentidad(datos) {
-    // Normaliza opcionales vacíos a null (el editor manda "" al borrar un campo).
-    const limpio = proyectar(datos)
-    await repositorio.guardar(limpio)
+    // Solo se persisten los campos conocidos; el horarioTexto (derivado) nunca
+    // llega aquí porque no está en CAMPOS.
+    await repositorio.guardar(proyectar(datos))
     return obtenerIdentidad()
   }
 

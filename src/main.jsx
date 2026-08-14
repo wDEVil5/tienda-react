@@ -6,6 +6,7 @@ import App from './App.jsx'
 import { CarritoProvider } from './context/CarritoContext.jsx'
 import { CuentaProvider } from './context/CuentaContext.jsx'
 import { ReglasProvider } from './context/ReglasContext.jsx'
+import { IdentidadProvider } from './context/IdentidadContext.jsx'
 import { aplicarRetornoPago } from './lib/retornoPago.js'
 
 // Debe ocurrir antes de montar BrowserRouter: Pages entrega la raíz estática y
@@ -16,11 +17,13 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter basename={import.meta.env.BASE_URL}>
       <ReglasProvider>
-        <CuentaProvider>
-          <CarritoProvider>
-            <App />
-          </CarritoProvider>
-        </CuentaProvider>
+        <IdentidadProvider>
+          <CuentaProvider>
+            <CarritoProvider>
+              <App />
+            </CarritoProvider>
+          </CuentaProvider>
+        </IdentidadProvider>
       </ReglasProvider>
     </BrowserRouter>
   </StrictMode>,

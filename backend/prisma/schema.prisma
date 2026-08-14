@@ -407,7 +407,10 @@ model IdentidadTienda {
   telefono        String   @db.VarChar(40)
   whatsapp        String?  @db.VarChar(40)
   direccion       String   @db.VarChar(200)
-  horarioAtencion String   @map("horario_atencion") @db.VarChar(120)
+  // Horario de atención ESTRUCTURADO: array de 7 días (índice 0 = lunes), cada
+  // uno { abierto, apertura "HH:MM", cierre "HH:MM" }. El editor lo selecciona
+  // (nada de texto libre) y el servicio deriva el texto de display al vuelo.
+  horario         Json     @map("horario")
   instagram       String?  @db.VarChar(255)
   facebook        String?  @db.VarChar(255)
   tiktok          String?  @db.VarChar(255)

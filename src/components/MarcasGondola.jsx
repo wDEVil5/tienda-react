@@ -65,8 +65,14 @@ function MarcasGondola() {
   // reales, esta franja editorial no aporta información al visitante.
   if (!marcas?.length) return null;
 
-  const filaArriba = marcas.slice(0, Math.ceil(marcas.length / 2));
-  const filaAbajo = marcas.slice(filaArriba.length);
+  // Solo partimos en dos filas si hay suficientes marcas para que AMBAS tengan
+  // variedad. Con menos de 4, una segunda fila quedaría con una sola marca (que
+  // el carrusel repite hasta llenarse → "un solo logo"); en ese caso, una fila.
+  const usarDosFilas = marcas.length >= 4;
+  const filaArriba = usarDosFilas
+    ? marcas.slice(0, Math.ceil(marcas.length / 2))
+    : marcas;
+  const filaAbajo = usarDosFilas ? marcas.slice(filaArriba.length) : [];
 
   return (
     <section id="nuestra-tienda" className={styles.marcas}>

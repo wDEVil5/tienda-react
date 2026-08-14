@@ -318,3 +318,15 @@ export function obtenerMasVendidosAdmin({ periodo, ...opciones } = {}) {
     opciones,
   );
 }
+
+// Clientes (ADMIN + OPERADOR). La lista llega paginada como { data, meta }; el
+// detalle como { data } → solicitarAdmin lo desenvuelve al objeto.
+export function listarClientesAdmin({ page = 1, limit = 20, q, ...opciones } = {}) {
+  const parametros = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (q) parametros.set("q", q);
+  return solicitarAdmin(`/admin/clientes?${parametros}`, { ...opciones, incluirMeta: true });
+}
+
+export function obtenerClienteAdmin(id, opciones = {}) {
+  return solicitarAdmin(`/admin/clientes/${encodeURIComponent(id)}`, opciones);
+}

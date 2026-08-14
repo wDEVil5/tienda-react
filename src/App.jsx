@@ -14,6 +14,7 @@ import AdminAcceso from "./pages/AdminAcceso.jsx";
 import { AdminRecuperarContrasena, AdminRestablecerContrasena } from "./pages/AdminRecuperar.jsx";
 import AdminEquipo from "./pages/AdminEquipo.jsx";
 import AdminEnvios from "./pages/AdminEnvios.jsx";
+import AdminClientes from "./pages/AdminClientes.jsx";
 import { Login, Registro } from "./pages/Acceso.jsx";
 import { RecuperarContrasena, RestablecerContrasena } from "./pages/RecuperarCuenta.jsx";
 import NewsletterBaja from "./pages/NewsletterBaja.jsx";
@@ -251,6 +252,7 @@ function App() {
         <Route path="/admin/cuenta" element={<AdminCuenta />} />
         <Route path="/admin/equipo" element={<AdminEquipo />} />
         <Route path="/admin/envios" element={<AdminEnvios />} />
+        <Route path="/admin/clientes" element={<AdminClientes />} />
         <Route path="/admin/*" element={<Navigate to="/admin/resumen" replace />} />
       </Routes>
     );

@@ -77,6 +77,7 @@ import {
 } from './admin-resumen.service.js'
 import { actualizarReglas, obtenerReglas } from '../reglas/reglas.service.js'
 import { validarReglas } from '../reglas/reglas.validacion.js'
+import { listarClientesAdmin, obtenerClienteAdmin } from './admin-clientes.service.js'
 
 export function crearRouterAdmin({
   servicio = {
@@ -120,6 +121,8 @@ export function crearRouterAdmin({
     obtenerMasVendidos,
     obtenerReglas,
     actualizarReglas,
+    listarClientesAdmin,
+    obtenerClienteAdmin,
   },
   middlewareSesion = requerirSesion,
 } = {}) {
@@ -1071,6 +1074,54 @@ export function crearRouterAdmin({
       try {
         const reglas = await servicio.actualizarReglas(validacion.data)
         return response.json({ data: reglas })
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  // Clientes: directorio de la tienda (lista con búsqueda + ficha). Solo lectura;
+  // la gestión (activar/desactivar) se agregará en una entrega posterior. Lo ve el
+  // equipo, no solo ADMIN: atender a un cliente es una tarea operativa.
+  adminRouter.get(
+    '/clientes',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      const page = leerEnteroPositivo(request.query.page, 1)
+      const limit = leerEnteroPositivo(request.query.limit, 20, 100)
+      const query = typeof request.query.q === 'string' ? request.query.q : ''
+
+      if (page === null || limit === null) {
+        return response.status(400).json({
+          error: {
+            code: 'INVALID_QUERY_PARAM',
+            message: 'page debe ser positivo y limit debe estar entre 1 y 100.',
+          },
+        })
+      }
+
+      try {
+        return response.json(await servicio.listarClientesAdmin({ page, limit, query }))
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.get(
+    '/clientes/:id',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      try {
+        const cliente = await servicio.obtenerClienteAdmin(request.params.id)
+        if (!cliente) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_CUSTOMER_NOT_FOUND', message: 'No encontramos el cliente solicitado.' },
+          })
+        }
+        return response.json({ data: cliente })
       } catch (error) {
         return next(error)
       }

@@ -1,0 +1,574 @@
+/* Envoltorio: el AdminShell ya ocupa 100vh; este contenedor no suma alto. */
+.fondo {
+  min-width: 320px;
+}
+
+/* Estados de acceso (sin sesión / error de red). El login vive en Productos. */
+.acceso {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: clamp(24px, 4vw, 52px);
+  background: var(--color-crudo);
+  color: var(--color-texto-suave);
+  text-align: center;
+}
+
+.accesoCaja {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+
+.accesoCaja h1 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 400;
+}
+
+.accesoCaja button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--color-acento);
+  border-radius: var(--radio-control);
+  background: var(--color-acento);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Encabezado. */
+.cabecera {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 76px;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.cabecera h1 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 400;
+}
+
+.subtitulo {
+  margin-top: 2px;
+  color: var(--color-texto-suave);
+  font-size: 12.5px;
+}
+
+.buscar input {
+  width: 260px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-control);
+  background: var(--color-superficie);
+  color: var(--color-texto);
+  font: inherit;
+  font-size: 13px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+/* Cuerpo: dos columnas (lista + ficha). */
+.cuerpo {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  background: var(--color-fondo);
+}
+
+.columnaLista {
+  width: 420px;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-right: 1px solid var(--color-borde);
+}
+
+/* Lista de clientes (scroll interno). */
+.lista {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fila {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-borde-2);
+  border-radius: var(--radio-tarjeta);
+  background: var(--color-superficie);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+}
+
+.fila:hover {
+  border-color: var(--color-texto-tenue);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.04);
+}
+
+.filaActiva {
+  border-color: var(--color-acento);
+  box-shadow: 0 0 0 1px var(--color-acento);
+}
+
+.filaAvatar {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--color-acento-bg);
+  color: var(--color-acento);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.filaPrincipal {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.filaNombre {
+  overflow: hidden;
+  color: var(--color-texto);
+  font-size: 13.5px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.filaEmail {
+  overflow: hidden;
+  color: var(--color-texto-suave);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.filaCompras {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.filaGasto {
+  font-family: var(--font-display);
+  font-size: 14px;
+  color: var(--color-texto);
+}
+
+.filaPedidos {
+  color: var(--color-texto-tenue);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.estadoLista {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 34px 22px;
+  color: var(--color-texto-suave);
+  font-size: 13px;
+}
+
+.estadoLista strong {
+  color: var(--color-texto-2);
+  font-weight: 500;
+}
+
+.estadoLista button {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--color-borde-3);
+  border-radius: var(--radio-control);
+  background: var(--color-superficie);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.pie {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 18px;
+  border-top: 1px solid var(--color-borde-2);
+  color: var(--color-texto-tenue);
+  font-size: 12px;
+}
+
+.paginacion {
+  display: flex;
+  gap: 8px;
+}
+
+.paginacion button {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--color-borde-3);
+  border-radius: var(--radio-control);
+  background: var(--color-superficie);
+  color: var(--color-texto-2);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.paginacion button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+/* ===================== Ficha del cliente ===================== */
+.ficha {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  background: var(--color-fondo);
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.02);
+}
+
+.fichaVacio,
+.fichaEstado {
+  padding: 34px 32px;
+  color: var(--color-texto-tenue);
+  font-size: 14px;
+}
+
+.fichaEstado {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.fichaEstado strong {
+  color: var(--color-texto-2);
+  font-weight: 500;
+}
+
+.fichaEstado button {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--color-borde-3);
+  border-radius: var(--radio-control);
+  background: var(--color-superficie);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.fichaContenido {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 28px 32px 44px;
+}
+
+.fichaCabecera {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.fichaAvatar {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--color-acento-bg);
+  color: var(--color-acento);
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.fichaIdentidad {
+  min-width: 0;
+}
+
+.fichaNombreFila {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fichaNombre {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--color-texto);
+}
+
+.badgeFrecuente {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: var(--radio-badge);
+  background: #f6ecd2;
+  color: #8a6d1f;
+  font-size: 11px;
+}
+
+.badgeInactivo {
+  padding: 3px 9px;
+  border-radius: var(--radio-badge);
+  background: var(--color-oferta-bg);
+  color: var(--color-oferta);
+  font-size: 11px;
+}
+
+.fichaAlta {
+  margin-top: 4px;
+  color: var(--color-texto-suave);
+  font-size: 12.5px;
+}
+
+.contacto {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+}
+
+.contactoLinea {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-texto-2);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.contactoLinea:hover {
+  color: var(--color-acento);
+}
+
+.metricas {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.metrica {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border: 1px solid var(--color-borde-2);
+  border-radius: var(--radio-tarjeta);
+  background: var(--color-superficie);
+}
+
+.metricaIcono {
+  color: var(--color-acento);
+}
+
+.metricaValor {
+  font-family: var(--font-display);
+  font-size: 19px;
+  color: var(--color-texto);
+}
+
+.metricaLabel {
+  color: var(--color-texto-suave);
+  font-size: 11.5px;
+}
+
+.bloque {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  border: 1px solid var(--color-borde-2);
+  border-radius: var(--radio-tarjeta);
+  background: var(--color-superficie);
+}
+
+.bloqueTitulo {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--color-texto);
+}
+
+.vacioBloque {
+  color: var(--color-texto-tenue);
+  font-size: 12.5px;
+}
+
+.direcciones,
+.pedidos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+}
+
+.direccion {
+  display: flex;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-borde-2);
+  border-radius: var(--radio-control);
+  background: var(--color-fondo);
+}
+
+.direccionIcono {
+  color: var(--color-texto-tenue);
+  padding-top: 2px;
+}
+
+.direccionTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.direccionLinea {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.direccionEtiqueta {
+  color: var(--color-texto);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.chipDefecto {
+  padding: 2px 8px;
+  border-radius: var(--radio-badge);
+  background: var(--color-acento-bg);
+  color: var(--color-acento);
+  font-size: 10.5px;
+}
+
+.direccionDetalle {
+  color: var(--color-texto-2);
+  font-size: 12.5px;
+}
+
+.direccionNota {
+  color: var(--color-texto-tenue);
+  font-size: 12px;
+  font-style: italic;
+}
+
+.pedido {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-borde-2);
+  border-radius: var(--radio-control);
+  background: var(--color-fondo);
+}
+
+.pedidoNumero {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--color-texto);
+}
+
+.pedidoMeta {
+  overflow: hidden;
+  color: var(--color-texto-suave);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pedidoTotal {
+  font-family: var(--font-display);
+  font-size: 14px;
+  color: var(--color-texto);
+}
+
+/* Badges de estado (mismos colores que la lista de Pedidos). */
+.badge {
+  padding: 3px 10px;
+  border-radius: var(--radio-badge);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.estadoPendiente {
+  background: #f6ecd2;
+  color: #8a6d1f;
+}
+
+.estadoPreparando {
+  background: var(--color-acento-bg);
+  color: var(--color-acento);
+}
+
+.estadoEnviado {
+  background: #e0e7f2;
+  color: #3a5a86;
+}
+
+.estadoEntregado {
+  background: var(--color-crudo);
+  color: var(--color-texto-2);
+}
+
+.estadoCancelado {
+  background: var(--color-oferta-bg);
+  color: var(--color-oferta);
+}
+
+/* Responsive: bajo 900px, columnas apiladas (lista arriba, ficha abajo). */
+@media (max-width: 900px) {
+  .cuerpo {
+    flex-direction: column;
+  }
+
+  .columnaLista {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--color-borde);
+  }
+
+  .metricas {
+    grid-template-columns: 1fr;
+  }
+}

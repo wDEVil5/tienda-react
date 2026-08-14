@@ -432,6 +432,10 @@ function App() {
           onCambiarSoloOfertas={setSoloOfertas}
           onVerOfertas={verOfertas}
           onVerCatalogo={verCatalogo}
+          onAbrirAcceso={(modo = "login") => {
+            setModoAcceso(modo);
+            setAccesoAbierto(true);
+          }}
         />
       )}
     </div>

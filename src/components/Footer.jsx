@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { suscribirNewsletter, ErrorNewsletterApi } from "../services/newsletterApi.js";
 import { useIdentidad } from "../context/IdentidadContext.jsx";
+import { useCuenta } from "../context/CuentaContext.jsx";
 import styles from "./Footer.module.css";
 
 const LIMITE_CATEGORIAS_FOOTER = 4;
@@ -38,6 +39,7 @@ function Footer({
   onCambiarSoloOfertas,
   onVerOfertas,
   onVerCatalogo,
+  onAbrirAcceso,
 }) {
   // La lista se deriva del catálogo disponible. Cuando la API propia entregue
   // categorías, el footer las reflejará sin mantener una segunda lista manual.
@@ -54,6 +56,7 @@ function Footer({
 
   // Datos de marca desde la identidad de la tienda (editable en /admin/identidad).
   const identidad = useIdentidad();
+  const { estaAutenticado, cargandoSesion } = useCuenta();
 
   // Redes DE LA TIENDA: solo las que el dueño cargó en la identidad. Los links
   // personales del desarrollador van aparte, en la atribución del copyright.
@@ -190,21 +193,33 @@ function Footer({
           </AcordeonCol>
 
           <AcordeonCol titulo="Tu cuenta">
-            <button className={styles.enlace} type="button">
-              Entrar
-            </button>
-            <button className={styles.enlace} type="button">
-              Crear cuenta
-            </button>
-            <button className={styles.enlace} type="button">
-              Mis pedidos
-            </button>
-            <button className={styles.enlace} type="button">
-              Mi perfil
-            </button>
-            <button className={styles.enlace} type="button">
+            {estaAutenticado ? (
+              <Link to="/mi-cuenta" className={styles.enlace}>Mi cuenta</Link>
+            ) : (
+              <>
+                <button
+                  className={styles.enlace}
+                  type="button"
+                  disabled={cargandoSesion}
+                  onClick={() => onAbrirAcceso?.("login")}
+                >
+                  {cargandoSesion ? "Comprobando cuenta…" : "Entrar"}
+                </button>
+                <button
+                  className={styles.enlace}
+                  type="button"
+                  disabled={cargandoSesion}
+                  onClick={() => onAbrirAcceso?.("registro")}
+                >
+                  Crear cuenta
+                </button>
+              </>
+            )}
+            <Link to="/mi-cuenta/pedidos" className={styles.enlace}>Mis pedidos</Link>
+            <Link to="/mi-cuenta/datos" className={styles.enlace}>Mi perfil</Link>
+            <Link to="/#catalogo" className={styles.enlace} onClick={onVerCatalogo}>
               Volver a comprar
-            </button>
+            </Link>
           </AcordeonCol>
 
           <AcordeonCol titulo="Ayuda">

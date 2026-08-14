@@ -8,6 +8,7 @@ import pagosRouter from './modules/pagos/pagos.routes.js'
 import avisosRouter from './modules/avisos/avisos.routes.js'
 import newsletterRouter from './modules/newsletter/newsletter.routes.js'
 import reglasRouter from './modules/reglas/reglas.routes.js'
+import identidadRouter from './modules/identidad/identidad.routes.js'
 import authRouter from './modules/auth/auth.routes.js'
 import cuentaRouter from './modules/cuenta/cuenta.routes.js'
 import direccionesRouter from './modules/cuenta/cuenta.direcciones.routes.js'
@@ -56,6 +57,7 @@ app.use('/api/pagos', pagosRouter)
 app.use('/api/avisos', avisosRouter)
 app.use('/api/newsletter', newsletterRouter)
 app.use('/api/reglas', reglasRouter)
+app.use('/api/identidad', identidadRouter)
 app.use('/api/auth', authRouter)
 app.use('/api/auth/contrasena', crearRouterRecuperacion({ servicio: servicioRecuperacionStaff }))
 app.use('/api/cuenta', cuentaRouter)

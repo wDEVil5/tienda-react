@@ -43,6 +43,7 @@ const RUTAS = {
   Productos: "/admin/productos",
   Inventario: "/admin/inventario",
   Clientes: "/admin/clientes",
+  Identidad: "/admin/identidad",
   Envíos: "/admin/envios",
   Equipo: "/admin/equipo",
 };

@@ -292,6 +292,27 @@ export function guardarReglasAdmin(reglas, opciones = {}) {
   return solicitarAdmin("/admin/reglas", { ...opciones, method: "PUT", cuerpo });
 }
 
+// Identidad de la tienda (solo ADMIN). GET trae la forma completa; PUT la guarda
+// entera. Los campos opcionales vacíos ("") el backend los normaliza a null.
+export function obtenerIdentidadAdmin(opciones = {}) {
+  return solicitarAdmin("/admin/identidad", opciones);
+}
+
+export function guardarIdentidadAdmin(identidad, opciones = {}) {
+  const cuerpo = {
+    nombre: identidad.nombre,
+    email: identidad.email,
+    telefono: identidad.telefono,
+    direccion: identidad.direccion,
+    horarioAtencion: identidad.horarioAtencion,
+    whatsapp: identidad.whatsapp ?? "",
+    instagram: identidad.instagram ?? "",
+    facebook: identidad.facebook ?? "",
+    tiktok: identidad.tiktok ?? "",
+  };
+  return solicitarAdmin("/admin/identidad", { ...opciones, method: "PUT", cuerpo });
+}
+
 export function obtenerResumenAdmin({ periodo, ...opciones } = {}) {
   const parametros = new URLSearchParams();
   if (periodo) parametros.set("periodo", periodo);

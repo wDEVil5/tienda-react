@@ -395,6 +395,28 @@ model ConfiguracionTienda {
   @@map("configuracion_tienda")
 }
 
+// Identidad de la tienda: fila única (singleton, como ConfiguracionTienda) con
+// los datos de marca que hoy están hardcodeados en el front (nombre, contacto,
+// dirección, horario de atención, redes). GET público la expone; el dueño la
+// edita desde el panel. Campos opcionales van nullable; si no hay fila, el
+// servicio cae en IDENTIDAD_POR_DEFECTO (la tienda nunca queda sin identidad).
+model IdentidadTienda {
+  id              String   @id @default("singleton") @db.VarChar(20)
+  nombre          String   @db.VarChar(120)
+  email           String   @db.VarChar(255)
+  telefono        String   @db.VarChar(40)
+  whatsapp        String?  @db.VarChar(40)
+  direccion       String   @db.VarChar(200)
+  horarioAtencion String   @map("horario_atencion") @db.VarChar(120)
+  instagram       String?  @db.VarChar(255)
+  facebook        String?  @db.VarChar(255)
+  tiktok          String?  @db.VarChar(255)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("identidad_tienda")
+}
+
 // Tarifa de despacho por comuna. `comuna` es la clave normalizada (sin tildes,
 // minúsculas) para buscarla desde el texto que escribe el comprador; `nombre`
 // es el rótulo visible. `plazoHoras` opcional: si es null, se confirma al

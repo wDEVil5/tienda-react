@@ -89,6 +89,8 @@ import {
   listarMovimientosAdmin,
 } from './admin-inventario.service.js'
 import { validarAjusteStock } from './admin-inventario.validacion.js'
+import { actualizarIdentidad, obtenerIdentidad } from '../identidad/identidad.service.js'
+import { validarIdentidad } from '../identidad/identidad.validacion.js'
 
 export function crearRouterAdmin({
   servicio = {
@@ -138,6 +140,8 @@ export function crearRouterAdmin({
     listarInventarioAdmin,
     ajustarStockAdmin,
     listarMovimientosAdmin,
+    obtenerIdentidad,
+    actualizarIdentidad,
   },
   middlewareSesion = requerirSesion,
 } = {}) {
@@ -1267,6 +1271,46 @@ export function crearRouterAdmin({
         if (error instanceof ErrorInventario) {
           return response.status(409).json({ error: { code: error.code, message: error.message } })
         }
+        return next(error)
+      }
+    },
+  )
+
+  // Identidad de la tienda (nombre, contacto, redes). Solo ADMIN: es configuración
+  // de marca, no una tarea operativa. Mismo patrón que reglas.
+  adminRouter.get(
+    '/identidad',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (_request, response, next) => {
+      try {
+        return response.json({ data: await servicio.obtenerIdentidad() })
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.put(
+    '/identidad',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      const validacion = validarIdentidad(request.body)
+      if (!validacion.success) {
+        return response.status(422).json({
+          error: {
+            code: 'INVALID_STORE_IDENTITY',
+            message: 'Revisa los datos de la tienda.',
+            fields: validacion.error.issues.map((issue) => issue.path.join('.')),
+          },
+        })
+      }
+
+      try {
+        const identidad = await servicio.actualizarIdentidad(validacion.data)
+        return response.json({ data: identidad })
+      } catch (error) {
         return next(error)
       }
     },

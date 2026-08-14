@@ -1,0 +1,338 @@
+.fondo {
+  min-width: 320px;
+}
+
+/* Estados de acceso (sin sesión / error de red). */
+.acceso {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: clamp(24px, 4vw, 52px);
+  background: var(--color-crudo);
+  color: var(--color-texto-suave);
+  text-align: center;
+}
+
+.accesoCaja {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+
+.accesoCaja h1 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 400;
+}
+
+.accesoCaja button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--color-acento);
+  border-radius: var(--radio-control);
+  background: var(--color-acento);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Encabezado. */
+.cabecera {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 76px;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.cabecera h1 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 400;
+}
+
+.subtitulo {
+  margin-top: 2px;
+  color: var(--color-texto-suave);
+  font-size: 12.5px;
+}
+
+.buscar input {
+  width: 260px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-control);
+  background: var(--color-superficie);
+  color: var(--color-texto);
+  font: inherit;
+  font-size: 13px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+/* Cuerpo con scroll interno propio. */
+.cuerpo {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 22px;
+  background: var(--color-fondo);
+}
+
+/* Tarjetas resumen. */
+.tarjetas {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  border: 1px solid var(--color-borde-2);
+  border-radius: var(--radio-tarjeta);
+  background: var(--color-superficie);
+}
+
+.tarjetaValor {
+  font-family: var(--font-display);
+  font-size: 26px;
+  color: var(--color-texto);
+  font-variant-numeric: tabular-nums;
+}
+
+.valorOk {
+  color: var(--color-acento);
+}
+
+.valorBajo {
+  color: #8a6d1f;
+}
+
+.valorAgotado {
+  color: var(--color-oferta);
+}
+
+.tarjetaLabel {
+  color: var(--color-texto-suave);
+  font-size: 12px;
+}
+
+/* Barra de filtros. */
+.barraFiltros {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-texto-2);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.toggle input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-acento);
+  cursor: pointer;
+}
+
+.conteo {
+  color: var(--color-texto-tenue);
+  font-size: 12px;
+}
+
+/* Tabla. */
+.tablaEnvoltorio {
+  border: 1px solid var(--color-borde-2);
+  border-radius: var(--radio-tarjeta);
+  background: var(--color-superficie);
+  overflow-x: auto;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.tabla thead th {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-borde-2);
+  color: var(--color-texto-suave);
+  font-size: 11.5px;
+  font-weight: 500;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.tabla tbody td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-borde-2);
+  color: var(--color-texto);
+  vertical-align: middle;
+}
+
+.tabla tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tabla tbody tr:hover {
+  background: var(--color-fondo);
+}
+
+.colNum {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.celdaProducto {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 180px;
+}
+
+.nombre {
+  color: var(--color-texto);
+  font-weight: 500;
+}
+
+.metaProducto {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sku {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--color-texto-tenue);
+}
+
+.chipBorrador {
+  padding: 1px 7px;
+  border-radius: var(--radio-badge);
+  background: var(--color-crudo);
+  color: var(--color-texto-2);
+  font-size: 10.5px;
+}
+
+.reservado {
+  color: var(--color-texto-tenue);
+}
+
+.disponible {
+  font-weight: 600;
+}
+
+/* Badges de estado de stock. */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: var(--radio-badge);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.stockDisponible {
+  background: var(--color-acento-bg);
+  color: var(--color-acento);
+}
+
+.stockBajo {
+  background: #f6ecd2;
+  color: #8a6d1f;
+}
+
+.stockAgotado {
+  background: var(--color-oferta-bg);
+  color: var(--color-oferta);
+}
+
+.estado {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 40px 22px;
+  color: var(--color-texto-suave);
+  font-size: 13px;
+}
+
+.estado strong {
+  color: var(--color-texto-2);
+  font-weight: 500;
+}
+
+.estado button {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--color-borde-3);
+  border-radius: var(--radio-control);
+  background: var(--color-superficie);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--color-texto-tenue);
+  font-size: 12px;
+}
+
+.paginacion {
+  display: flex;
+  gap: 8px;
+}
+
+.paginacion button {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--color-borde-3);
+  border-radius: var(--radio-control);
+  background: var(--color-superficie);
+  color: var(--color-texto-2);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.paginacion button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+@media (max-width: 760px) {
+  .tarjetas {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

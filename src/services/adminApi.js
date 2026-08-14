@@ -331,6 +331,15 @@ export function obtenerClienteAdmin(id, opciones = {}) {
   return solicitarAdmin(`/admin/clientes/${encodeURIComponent(id)}`, opciones);
 }
 
+// Inventario (ADMIN + OPERADOR). Devuelve { data, meta, resumen } → se pide con
+// incluirMeta para conservar meta y resumen (solicitarAdmin no recorta extras).
+export function listarInventarioAdmin({ page = 1, limit = 20, q, bajoStock, ...opciones } = {}) {
+  const parametros = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (q) parametros.set("q", q);
+  if (bajoStock) parametros.set("bajoStock", "1");
+  return solicitarAdmin(`/admin/inventario?${parametros}`, { ...opciones, incluirMeta: true });
+}
+
 export function activarClienteAdmin(id, opciones = {}) {
   return solicitarAdmin(`/admin/clientes/${encodeURIComponent(id)}/activar`, {
     ...opciones,

@@ -51,6 +51,15 @@ enum EstadoPago {
   RECHAZADO
 }
 
+// Por qué cambió el stock a mano (los movimientos automáticos de venta/reserva
+// no pasan por aquí). ENTRADA suma (recepción de mercadería), MERMA resta
+// (pérdida/daño/vencimiento) y CONTEO corrige contra un conteo físico (± ).
+enum MotivoMovimientoStock {
+  ENTRADA
+  MERMA
+  CONTEO
+}
+
 model Usuario {
   id           String     @id @default(uuid()) @db.Uuid
   nombre       String     @db.VarChar(120)
@@ -62,6 +71,7 @@ model Usuario {
   updatedAt    DateTime   @updatedAt @map("updated_at")
   sesiones     Sesion[]
   tokensRecuperacion TokenRecuperacion[]
+  movimientosStock   MovimientoStock[]
 
   @@index([activo])
   @@map("usuarios")
@@ -151,12 +161,36 @@ model Producto {
   etiquetas   ProductoEtiqueta[]
   itemsPedido ItemPedido[]
   avisosStock AvisoStock[]
+  movimientosStock MovimientoStock[]
 
   @@index([categoriaId])
   @@index([marcaId])
   @@index([estado])
   @@index([destacado])
   @@map("productos")
+}
+
+// Bitácora append-only de ajustes MANUALES de stock (recepción, merma, conteo).
+// No es la fuente de verdad del stock —lo sigue siendo Producto.stock— sino su
+// auditoría: cada fila se inserta en la misma transacción que actualiza el stock,
+// guardando el delta aplicado y el stock resultante (foto para no recalcular).
+// El usuario que lo hizo queda referenciado; si se borra, el movimiento sobrevive
+// sin autor (SetNull) para no perder la trazabilidad.
+model MovimientoStock {
+  id         String                @id @default(uuid()) @db.Uuid
+  productoId String                @map("producto_id") @db.Uuid
+  usuarioId  String?               @map("usuario_id") @db.Uuid
+  delta      Int
+  motivo     MotivoMovimientoStock
+  stockResultante Int              @map("stock_resultante")
+  nota       String?               @db.VarChar(300)
+  createdAt  DateTime              @default(now()) @map("created_at")
+
+  producto Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  usuario  Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  @@index([productoId, createdAt])
+  @@map("movimientos_stock")
 }
 
 // Una promoción describe una campaña reutilizable. La relación intermedia evita

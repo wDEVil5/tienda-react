@@ -41,6 +41,7 @@ const RUTAS = {
   Resumen: "/admin/resumen",
   Pedidos: "/admin/pedidos",
   Productos: "/admin/productos",
+  Inventario: "/admin/inventario",
   Clientes: "/admin/clientes",
   Envíos: "/admin/envios",
   Equipo: "/admin/equipo",

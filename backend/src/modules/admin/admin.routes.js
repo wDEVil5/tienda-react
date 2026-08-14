@@ -82,6 +82,7 @@ import {
   listarClientesAdmin,
   obtenerClienteAdmin,
 } from './admin-clientes.service.js'
+import { listarInventarioAdmin } from './admin-inventario.service.js'
 
 export function crearRouterAdmin({
   servicio = {
@@ -128,6 +129,7 @@ export function crearRouterAdmin({
     listarClientesAdmin,
     obtenerClienteAdmin,
     cambiarEstadoClienteAdmin,
+    listarInventarioAdmin,
   },
   middlewareSesion = requerirSesion,
 } = {}) {
@@ -1165,6 +1167,35 @@ export function crearRouterAdmin({
           })
         }
         return response.json({ data: cliente })
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  // Inventario: vista de stock por producto con filtro "bajo stock". Solo lectura
+  // en esta entrega (el ajuste con motivo llega en el checkout B). Lo ve el equipo.
+  adminRouter.get(
+    '/inventario',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      const page = leerEnteroPositivo(request.query.page, 1)
+      const limit = leerEnteroPositivo(request.query.limit, 20, 100)
+      const query = typeof request.query.q === 'string' ? request.query.q : ''
+      const soloBajoStock = request.query.bajoStock === '1' || request.query.bajoStock === 'true'
+
+      if (page === null || limit === null) {
+        return response.status(400).json({
+          error: {
+            code: 'INVALID_QUERY_PARAM',
+            message: 'page debe ser positivo y limit debe estar entre 1 y 100.',
+          },
+        })
+      }
+
+      try {
+        return response.json(await servicio.listarInventarioAdmin({ page, limit, query, soloBajoStock }))
       } catch (error) {
         return next(error)
       }

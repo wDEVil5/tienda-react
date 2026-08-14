@@ -104,6 +104,35 @@ export function crearRepositorioClientesAdmin(cliente = prisma) {
       }
     },
 
+    // Existencia + estado actual de un cliente (select mínimo). Lo usa el servicio
+    // antes de activar/desactivar para devolver 404 limpio si no existe.
+    obtenerEstado(id) {
+      return cliente.cliente.findUnique({
+        where: { id },
+        select: { id: true, activo: true },
+      })
+    },
+
+    // Cambia el flag `activo`. Al DESACTIVAR, revoca en la misma transacción las
+    // sesiones vivas del cliente: si lo bloqueamos, no debe seguir navegando con
+    // una sesión ya abierta. Al reactivar no se toca ninguna sesión (ya no hay).
+    cambiarActivo(id, activo, ahora) {
+      return cliente.$transaction(async (transaccion) => {
+        const actualizado = await transaccion.cliente.update({
+          where: { id },
+          data: { activo },
+          select: { id: true, nombre: true, email: true, activo: true },
+        })
+        if (!activo) {
+          await transaccion.sesionCliente.updateMany({
+            where: { clienteId: id, revocadaEn: null },
+            data: { revocadaEn: ahora },
+          })
+        }
+        return actualizado
+      })
+    },
+
     // Últimos pedidos del cliente para el historial de la ficha (todos, no solo
     // los pagados: aquí sí interesa ver un pedido pendiente o cancelado). `pagos`
     // se acota a uno aprobado solo para marcar el chip "Pagado".

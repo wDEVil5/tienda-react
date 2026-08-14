@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import AdminShell from "../components/admin/AdminShell.jsx";
 import {
+  activarClienteAdmin,
+  desactivarClienteAdmin,
   ErrorAdminApi,
   listarClientesAdmin,
   obtenerClienteAdmin,
@@ -119,10 +121,22 @@ const ICO_PIN = (
 const ICO_ESTRELLA = (
   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
 );
+const ICO_BLOQUEAR = (
+  <>
+    <circle cx="12" cy="12" r="10" />
+    <path d="m4.9 4.9 14.2 14.2" />
+  </>
+);
+const ICO_CHECK_CIRC = (
+  <>
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+    <path d="m22 4-10 10.01-3-3" />
+  </>
+);
 
 // Ficha del cliente (columna derecha). Datos de contacto, métricas de compra,
 // direcciones guardadas e historial de pedidos recientes.
-function FichaCliente({ ficha }) {
+function FichaCliente({ ficha, onCambiarEstado, cambiando, errorEstado }) {
   const { metricas } = ficha;
   const frecuente = metricas.pedidos >= 3;
 
@@ -147,7 +161,26 @@ function FichaCliente({ ficha }) {
             {ficha.conGoogle && " · cuenta con Google"}
           </p>
         </div>
+        <button
+          type="button"
+          className={ficha.activo ? styles.accionDesactivar : styles.accionActivar}
+          disabled={cambiando}
+          onClick={() => onCambiarEstado(!ficha.activo)}
+        >
+          <Ico d={ficha.activo ? ICO_BLOQUEAR : ICO_CHECK_CIRC} size={15} />
+          {cambiando
+            ? "Guardando…"
+            : ficha.activo
+              ? "Desactivar cuenta"
+              : "Reactivar cuenta"}
+        </button>
       </header>
+
+      {errorEstado && (
+        <p className={styles.errorEstado} role="alert">
+          {errorEstado}
+        </p>
+      )}
 
       <div className={styles.contacto}>
         <a className={styles.contactoLinea} href={`mailto:${ficha.email}`}>
@@ -255,6 +288,8 @@ export default function AdminClientes() {
   const [ficha, setFicha] = useState(null);
   const [errorFicha, setErrorFicha] = useState(null);
   const [intentoFicha, setIntentoFicha] = useState(0);
+  const [cambiandoEstado, setCambiandoEstado] = useState(false);
+  const [errorEstado, setErrorEstado] = useState(null);
 
   useEffect(() => {
     let vigente = true;
@@ -386,7 +421,48 @@ export default function AdminClientes() {
   const fichaLista = ficha && ficha.id === seleccionado;
   const errorFichaActual =
     errorFicha && errorFicha.id === seleccionado ? errorFicha.mensaje : null;
+  const errorEstadoActual =
+    errorEstado && errorEstado.id === seleccionado ? errorEstado.mensaje : null;
   const totalPaginas = meta?.totalPages ?? 1;
+
+  async function cambiarEstadoCliente(activar) {
+    if (!ficha) return;
+    if (
+      !activar &&
+      !window.confirm(
+        `¿Desactivar la cuenta de ${ficha.nombre}? No podrá iniciar sesión y se cerrarán sus sesiones activas. Sus pedidos se conservan.`,
+      )
+    ) {
+      return;
+    }
+
+    setCambiandoEstado(true);
+    setErrorEstado(null);
+    try {
+      const actualizado = activar
+        ? await activarClienteAdmin(ficha.id)
+        : await desactivarClienteAdmin(ficha.id);
+      // Merge en sitio: el endpoint devuelve el cliente básico; solo cambia `activo`.
+      setFicha((actual) =>
+        actual && actual.id === actualizado.id ? { ...actual, activo: actualizado.activo } : actual,
+      );
+      setIntento((valor) => valor + 1); // reconcilia la lista (badge Inactivo)
+    } catch (errorRespuesta) {
+      if (errorRespuesta instanceof ErrorAdminApi && errorRespuesta.status === 401) {
+        setUsuario(null);
+        return;
+      }
+      setErrorEstado({
+        id: ficha.id,
+        mensaje:
+          errorRespuesta instanceof ErrorAdminApi
+            ? errorRespuesta.message
+            : "No pudimos cambiar el estado del cliente.",
+      });
+    } finally {
+      setCambiandoEstado(false);
+    }
+  }
 
   return (
     <main className={styles.fondo}>
@@ -514,7 +590,12 @@ export default function AdminClientes() {
                 </button>
               </div>
             ) : fichaLista ? (
-              <FichaCliente ficha={ficha} />
+              <FichaCliente
+                ficha={ficha}
+                onCambiarEstado={cambiarEstadoCliente}
+                cambiando={cambiandoEstado}
+                errorEstado={errorEstadoActual}
+              />
             ) : (
               <p className={styles.fichaEstado} role="status">
                 Cargando ficha…

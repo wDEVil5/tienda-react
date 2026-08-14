@@ -64,6 +64,14 @@ export function crearServicioClientesAdmin(repositorio = repositorioClientesAdmi
         })),
       }
     },
+
+    // Activa o desactiva la cuenta de un cliente. Devuelve el cliente actualizado
+    // (id, nombre, email, activo) o null si no existe (→ 404 en la ruta).
+    async cambiarEstadoCliente(id, activo) {
+      const existe = await repositorio.obtenerEstado(id)
+      if (!existe) return null
+      return repositorio.cambiarActivo(id, activo, new Date())
+    },
   }
 }
 
@@ -71,3 +79,4 @@ const servicioClientesAdmin = crearServicioClientesAdmin()
 
 export const listarClientesAdmin = servicioClientesAdmin.listarClientes
 export const obtenerClienteAdmin = servicioClientesAdmin.obtenerCliente
+export const cambiarEstadoClienteAdmin = servicioClientesAdmin.cambiarEstadoCliente

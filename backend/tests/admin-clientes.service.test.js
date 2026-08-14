@@ -103,3 +103,30 @@ test('obtenerCliente arma la ficha: oculta googleId, expone conGoogle y marca pa
   assert.equal(ficha.pedidos[0].items, 2)
   assert.equal(ficha.pedidos[1].pagado, false)
 })
+
+test('cambiarEstadoCliente devuelve null cuando el cliente no existe', async () => {
+  const capturado = { cambiar: null }
+  const servicio = crearServicioClientesAdmin({
+    async obtenerEstado() { return null },
+    async cambiarActivo(...args) { capturado.cambiar = args },
+  })
+
+  assert.equal(await servicio.cambiarEstadoCliente('nope', false), null)
+  assert.equal(capturado.cambiar, null) // no intenta actualizar si no existe
+})
+
+test('cambiarEstadoCliente delega en el repositorio con el nuevo estado', async () => {
+  const capturado = { cambiar: null }
+  const servicio = crearServicioClientesAdmin({
+    async obtenerEstado(id) { return { id, activo: true } },
+    async cambiarActivo(id, activo) {
+      capturado.cambiar = { id, activo }
+      return { id, nombre: 'Ana', email: 'ana@mail.cl', activo }
+    },
+  })
+
+  const resultado = await servicio.cambiarEstadoCliente('c1', false)
+
+  assert.deepEqual(capturado.cambiar, { id: 'c1', activo: false })
+  assert.equal(resultado.activo, false)
+})

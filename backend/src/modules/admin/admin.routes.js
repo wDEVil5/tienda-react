@@ -77,7 +77,11 @@ import {
 } from './admin-resumen.service.js'
 import { actualizarReglas, obtenerReglas } from '../reglas/reglas.service.js'
 import { validarReglas } from '../reglas/reglas.validacion.js'
-import { listarClientesAdmin, obtenerClienteAdmin } from './admin-clientes.service.js'
+import {
+  cambiarEstadoClienteAdmin,
+  listarClientesAdmin,
+  obtenerClienteAdmin,
+} from './admin-clientes.service.js'
 
 export function crearRouterAdmin({
   servicio = {
@@ -123,6 +127,7 @@ export function crearRouterAdmin({
     actualizarReglas,
     listarClientesAdmin,
     obtenerClienteAdmin,
+    cambiarEstadoClienteAdmin,
   },
   middlewareSesion = requerirSesion,
 } = {}) {
@@ -1116,6 +1121,44 @@ export function crearRouterAdmin({
     async (request, response, next) => {
       try {
         const cliente = await servicio.obtenerClienteAdmin(request.params.id)
+        if (!cliente) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_CUSTOMER_NOT_FOUND', message: 'No encontramos el cliente solicitado.' },
+          })
+        }
+        return response.json({ data: cliente })
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.patch(
+    '/clientes/:id/activar',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      try {
+        const cliente = await servicio.cambiarEstadoClienteAdmin(request.params.id, true)
+        if (!cliente) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_CUSTOMER_NOT_FOUND', message: 'No encontramos el cliente solicitado.' },
+          })
+        }
+        return response.json({ data: cliente })
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.patch(
+    '/clientes/:id/desactivar',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      try {
+        const cliente = await servicio.cambiarEstadoClienteAdmin(request.params.id, false)
         if (!cliente) {
           return response.status(404).json({
             error: { code: 'ADMIN_CUSTOMER_NOT_FOUND', message: 'No encontramos el cliente solicitado.' },

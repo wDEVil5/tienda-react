@@ -301,7 +301,51 @@
 .fichaCabecera {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 16px;
+}
+
+/* El botón de acción se separa a la derecha; en móvil baja de línea. */
+.accionDesactivar,
+.accionActivar {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: var(--radio-control);
+  border: 1px solid transparent;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.accionDesactivar {
+  border-color: var(--color-oferta);
+  background: var(--color-oferta-bg);
+  color: var(--color-oferta);
+}
+
+.accionActivar {
+  border-color: var(--color-acento);
+  background: var(--color-acento);
+  color: #fff;
+}
+
+.accionDesactivar:disabled,
+.accionActivar:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.errorEstado {
+  padding: 10px 14px;
+  border-radius: var(--radio-control);
+  background: var(--color-oferta-bg);
+  color: var(--color-oferta);
+  font-size: 12.5px;
 }
 
 .fichaAvatar {

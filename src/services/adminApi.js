@@ -330,3 +330,17 @@ export function listarClientesAdmin({ page = 1, limit = 20, q, ...opciones } = {
 export function obtenerClienteAdmin(id, opciones = {}) {
   return solicitarAdmin(`/admin/clientes/${encodeURIComponent(id)}`, opciones);
 }
+
+export function activarClienteAdmin(id, opciones = {}) {
+  return solicitarAdmin(`/admin/clientes/${encodeURIComponent(id)}/activar`, {
+    ...opciones,
+    method: "PATCH",
+  });
+}
+
+export function desactivarClienteAdmin(id, opciones = {}) {
+  return solicitarAdmin(`/admin/clientes/${encodeURIComponent(id)}/desactivar`, {
+    ...opciones,
+    method: "PATCH",
+  });
+}

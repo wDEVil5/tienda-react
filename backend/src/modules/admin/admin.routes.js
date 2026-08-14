@@ -40,8 +40,13 @@ import {
   listarCategoriasAdmin,
 } from './admin-categorias.service.js'
 import { validarCategoriaNuevaAdmin } from './admin-categorias.validacion.js'
-import { ErrorMarcaAdmin, crearMarcaAdmin, listarMarcasAdmin } from './admin-marcas.service.js'
-import { validarMarcaNuevaAdmin } from './admin-marcas.validacion.js'
+import {
+  ErrorMarcaAdmin,
+  actualizarDominioBrandfetchAdmin,
+  crearMarcaAdmin,
+  listarMarcasAdmin,
+} from './admin-marcas.service.js'
+import { validarDominioBrandfetchAdmin, validarMarcaNuevaAdmin } from './admin-marcas.validacion.js'
 import { asignarLogoMarcaAdmin } from './admin-marcas.service.js'
 import { recibirLogoMarca } from '../imagenes/imagenes.middleware.js'
 import { subirLogoMarca } from '../imagenes/imagenes.service.js'
@@ -120,6 +125,7 @@ export function crearRouterAdmin({
     activarCategoriaAdmin,
     crearMarcaAdmin,
     listarMarcasAdmin,
+    actualizarDominioBrandfetchAdmin,
     asignarLogoMarcaAdmin,
     subirLogoMarca,
     crearEtiquetaAdmin,
@@ -301,6 +307,35 @@ export function crearRouterAdmin({
     async (_request, response, next) => {
       try {
         return response.json(await servicio.listarCategoriasAdmin())
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.patch(
+    '/marcas/:id/brandfetch',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      const validacion = validarDominioBrandfetchAdmin(request.body)
+      if (!validacion.success) {
+        return response.status(422).json({
+          error: { code: 'INVALID_BRAND_DOMAIN', message: 'Ingresa un dominio válido, por ejemplo marca.cl.' },
+        })
+      }
+
+      try {
+        const marca = await servicio.actualizarDominioBrandfetchAdmin(
+          request.params.id,
+          validacion.data.brandfetchDomain,
+        )
+        if (!marca) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_BRAND_NOT_FOUND', message: 'No encontramos la marca solicitada.' },
+          })
+        }
+        return response.json({ data: marca })
       } catch (error) {
         return next(error)
       }

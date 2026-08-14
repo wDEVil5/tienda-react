@@ -163,6 +163,24 @@ export function restablecerContrasenaConTokenAdmin(token, contrasenaNueva, opcio
   });
 }
 
+// Marcas: el dominio es el identificador de Brandfetch. El logo se resuelve
+// directo desde su CDN en la tienda, por eso no enviamos ninguna API key.
+export function listarMarcasAdmin(opciones = {}) {
+  return solicitarAdmin("/admin/marcas", opciones);
+}
+
+export function crearMarcaAdmin(datos, opciones = {}) {
+  return solicitarAdmin("/admin/marcas", { ...opciones, method: "POST", cuerpo: datos });
+}
+
+export function actualizarDominioBrandfetchAdmin(id, brandfetchDomain, opciones = {}) {
+  return solicitarAdmin(`/admin/marcas/${encodeURIComponent(id)}/brandfetch`, {
+    ...opciones,
+    method: "PATCH",
+    cuerpo: { brandfetchDomain: brandfetchDomain || null },
+  });
+}
+
 export function listarProductosAdmin(
   { page = 1, limit = 20, busqueda = "", estado, ...opciones } = {},
 ) {

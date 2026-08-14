@@ -295,6 +295,32 @@ test('GET /api/admin/marcas incluye marcas aunque no tengan productos públicos'
   assert.equal(response.body.data[0].productosAsignados, 0)
 })
 
+test('PATCH /api/admin/marcas/:id/brandfetch actualiza o limpia el dominio público', async () => {
+  let dominioRecibido
+  const app = express()
+  app.use(express.json())
+  app.use('/api/admin', crearRouterAdmin({
+    middlewareSesion: (request, _response, next) => {
+      request.usuario = { id: 'usuario-1', rol: 'ADMIN' }
+      next()
+    },
+    servicio: {
+      async actualizarDominioBrandfetchAdmin(id, dominio) {
+        dominioRecibido = dominio
+        return { id, brandfetchDomain: dominio }
+      },
+    },
+  }))
+
+  const response = await request(app)
+    .patch('/api/admin/marcas/marca-1/brandfetch')
+    .send({ brandfetchDomain: 'NESTLE.COM' })
+
+  assert.equal(response.status, 200)
+  assert.equal(dominioRecibido, 'nestle.com')
+  assert.equal(response.body.data.brandfetchDomain, 'nestle.com')
+})
+
 test('POST /api/admin/marcas/:id/logo sube y asigna un logo a la marca', async () => {
   const app = express()
   app.use('/api/admin', crearRouterAdmin({

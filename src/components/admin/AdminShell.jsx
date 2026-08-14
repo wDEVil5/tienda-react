@@ -6,6 +6,7 @@ import {
   IconoEquipo,
   IconoIdentidad,
   IconoInventario,
+  IconoMarcas,
   IconoPedidos,
   IconoProductos,
   IconoResumen,
@@ -21,6 +22,7 @@ const ICONOS_SECCION = {
   Identidad: IconoIdentidad,
   Envíos: IconoEnvios,
   Contenido: IconoContenido,
+  Marcas: IconoMarcas,
   Equipo: IconoEquipo,
 };
 
@@ -33,6 +35,7 @@ const SECCIONES = [
   "Identidad",
   "Envíos",
   "Contenido",
+  "Marcas",
 ];
 
 // Secciones ya implementadas: su ítem del menú navega. El resto queda deshabilitado
@@ -46,6 +49,7 @@ const RUTAS = {
   Identidad: "/admin/identidad",
   Envíos: "/admin/envios",
   Contenido: "/admin/contenido",
+  Marcas: "/admin/marcas",
   Equipo: "/admin/equipo",
 };
 

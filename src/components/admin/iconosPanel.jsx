@@ -112,6 +112,15 @@ export function IconoContenido(props) {
   );
 }
 
+export function IconoMarcas(props) {
+  return (
+    <Svg {...props}>
+      <path d="M20.59 13.41 11 23l-8.59-8.59A2 2 0 0 1 2 13V4a2 2 0 0 1 2-2h9a2 2 0 0 1 1.41.59L23 11a2 2 0 0 1 0 2.82Z" />
+      <circle cx="7.5" cy="7.5" r="1.5" />
+    </Svg>
+  );
+}
+
 export function IconoEquipo(props) {
   return (
     <Svg {...props}>
@@ -121,4 +130,3 @@ export function IconoEquipo(props) {
     </Svg>
   );
 }
-

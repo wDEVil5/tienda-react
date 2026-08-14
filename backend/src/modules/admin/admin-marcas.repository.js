@@ -38,6 +38,14 @@ export function crearRepositorioMarcasAdmin(cliente = prisma) {
         select: { id: true, nombre: true, slug: true, logoUrl: true, logoStorageKey: true, brandfetchDomain: true },
       })
     },
+
+    actualizarDominioBrandfetch(id, brandfetchDomain) {
+      return cliente.marca.update({
+        where: { id },
+        data: { brandfetchDomain },
+        select: { id: true, nombre: true, slug: true, logoUrl: true, logoStorageKey: true, brandfetchDomain: true },
+      })
+    },
   }
 }
 

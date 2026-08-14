@@ -1,0 +1,40 @@
+.fondo { min-width: 320px; }
+.acceso { min-height: 100vh; display: grid; place-items: center; padding: 24px; background: var(--color-crudo); color: var(--color-texto-suave); text-align: center; }
+.accesoCaja { display: grid; gap: 10px; justify-items: center; }
+.accesoCaja h1, .cabecera h1, h2 { font-family: var(--font-display); font-weight: 400; }
+.accesoCaja h1 { font-size: 24px; }
+.accesoCaja button, .estado button { min-height: 38px; padding: 0 14px; border: 1px solid var(--color-acento); border-radius: var(--radio-control); background: var(--color-acento); color: #fff; font: inherit; cursor: pointer; }
+.cabecera { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 76px; padding: 18px 28px; border-bottom: 1px solid var(--color-borde); }
+.cabecera h1 { font-size: 25px; }
+.cabecera p { margin-top: 3px; color: var(--color-texto-suave); font-size: 13px; }
+.contador { padding: 5px 10px; border-radius: var(--radio-badge); background: var(--color-crudo); color: var(--color-texto-suave); font-family: var(--font-mono); font-size: 11px; }
+.soloAdmin { padding: 34px 28px; color: var(--color-texto-suave); font-size: 14px; }
+.contenido { width: min(100%, 1100px); margin: 0 auto; padding: 26px 28px 48px; }
+.introduccion { padding: 16px 18px; border: 1px solid var(--color-borde-2); border-radius: var(--radio-tarjeta); background: var(--color-acento-bg); }
+.introduccion h2, .formulario h2, .listaTitulo h2 { font-size: 19px; }
+.introduccion p { max-width: 70ch; margin-top: 5px; color: var(--color-texto-2); font-size: 13px; line-height: 1.55; }
+.formulario { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(220px, 1fr) auto; align-items: end; gap: 14px; margin-top: 18px; padding: 18px; border: 1px solid var(--color-borde); border-radius: var(--radio-tarjeta); background: var(--color-superficie); }
+.formularioTitulo { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.formularioTitulo span, .listaTitulo p { color: var(--color-texto-tenue); font-size: 12px; }
+.formulario label, .campoDominio { display: grid; gap: 5px; }
+.formulario label > span, .campoDominio > span { color: var(--color-texto-2); font-size: 12px; }
+.formulario input, .campoDominio input { min-width: 0; min-height: 40px; padding: 0 12px; border: 1px solid var(--color-borde); border-radius: var(--radio-control); background: var(--color-superficie); color: var(--color-texto); font: inherit; font-size: 13px; }
+.formulario input:focus-visible, .campoDominio input:focus-visible { outline: 2px solid var(--color-acento); outline-offset: 1px; }
+.formularioAcciones, .accionesMarca { display: grid; gap: 5px; align-items: center; }
+.botonCrear, .botonGuardar { min-height: 40px; padding: 0 15px; border: 1px solid var(--color-acento); border-radius: var(--radio-control); background: var(--color-acento); color: #fff; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.botonCrear:disabled, .botonGuardar:disabled { cursor: wait; opacity: .7; }
+.mensaje, .mensajeError { min-height: 15px; color: var(--color-acento); font-size: 11px; }
+.mensajeError { color: #b43b25; }
+.lista { margin-top: 30px; }
+.listaTitulo { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin: 0 0 10px; }
+.marca { display: grid; grid-template-columns: 58px minmax(160px, .9fr) minmax(210px, 1.2fr) auto; align-items: center; gap: 14px; padding: 13px 14px; border-top: 1px solid var(--color-borde-2); }
+.marca:last-child { border-bottom: 1px solid var(--color-borde-2); }
+.logoCaja { width: 58px; height: 44px; display: grid; place-items: center; border-radius: 8px; background: var(--color-crudo); overflow: hidden; }
+.logo { max-width: 45px; max-height: 30px; object-fit: contain; }
+.logoTexto { max-width: 48px; overflow: hidden; color: var(--color-texto-tenue); font-family: var(--font-mono); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.infoMarca { min-width: 0; }
+.infoMarca h2 { overflow: hidden; font-family: inherit; font-size: 14px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.infoMarca p { margin-top: 3px; color: var(--color-texto-tenue); font-family: var(--font-mono); font-size: 10.5px; }
+.accionesMarca { justify-items: start; min-width: 92px; }
+.estado { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; padding: 22px 0; color: var(--color-texto-suave); font-size: 13px; }
+@media (max-width: 980px) { .formulario { grid-template-columns: 1fr 1fr; } .formularioAcciones { grid-column: 1 / -1; grid-template-columns: auto 1fr; } .marca { grid-template-columns: 58px minmax(150px, 1fr) minmax(190px, 1.2fr); } .accionesMarca { grid-column: 2 / -1; grid-template-columns: auto 1fr; } }

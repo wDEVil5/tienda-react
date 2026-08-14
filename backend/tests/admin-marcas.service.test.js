@@ -50,3 +50,19 @@ test('asignarLogoMarca reemplaza el recurso anterior después de actualizar la m
   assert.equal(marca.logoStorageKey, 'sumarket/marcas/nuevo')
   assert.deepEqual(clavesEliminadas, ['sumarket/marcas/anterior'])
 })
+
+test('actualizarDominioBrandfetch permite limpiar o cambiar el dominio de una marca existente', async () => {
+  let dominioRecibido
+  const servicio = crearServicioMarcasAdmin({
+    async obtenerPorId() { return { id: 'marca-1' } },
+    async actualizarDominioBrandfetch(_id, dominio) {
+      dominioRecibido = dominio
+      return { id: 'marca-1', brandfetchDomain: dominio }
+    },
+  })
+
+  await servicio.actualizarDominioBrandfetch('marca-1', 'NESTLE.COM')
+  assert.equal(dominioRecibido, 'nestle.com')
+  await servicio.actualizarDominioBrandfetch('marca-1', null)
+  assert.equal(dominioRecibido, null)
+})

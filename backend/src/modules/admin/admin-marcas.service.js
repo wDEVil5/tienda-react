@@ -61,6 +61,14 @@ export function crearServicioMarcasAdmin(
       return marcaActualizada
     },
 
+    // El dominio se guarda separado del logo propio. Así una marca puede
+    // volver a Brandfetch o usar Cloudinary sin perder la configuración.
+    async actualizarDominioBrandfetch(id, brandfetchDomain) {
+      const marca = await repositorio.obtenerPorId(id)
+      if (!marca) return null
+      return repositorio.actualizarDominioBrandfetch(id, brandfetchDomain?.toLowerCase() ?? null)
+    },
+
     async crearMarca(datos) {
       return repositorio.crear({
         ...datos,
@@ -76,3 +84,4 @@ const servicioMarcasAdmin = crearServicioMarcasAdmin()
 export const crearMarcaAdmin = servicioMarcasAdmin.crearMarca
 export const asignarLogoMarcaAdmin = servicioMarcasAdmin.asignarLogoMarca
 export const listarMarcasAdmin = servicioMarcasAdmin.listarMarcas
+export const actualizarDominioBrandfetchAdmin = servicioMarcasAdmin.actualizarDominioBrandfetch

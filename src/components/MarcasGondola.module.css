@@ -134,19 +134,12 @@
   flex-shrink: 0;
   width: 184px;
   height: 92px;
-  background-color: var(--color-superficie);
-  border: 1px solid var(--color-borde);
+  background-color: transparent;
+  border: 1px solid transparent;
   border-radius: var(--radio-caja);
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--color-texto-tenue);
-}
-
-/* Una marca real conserva el mismo espacio del carrusel, pero no recibe la
-   caja del placeholder: el logo transparente queda libre sobre el fondo. */
-.tileConLogo {
-  background-color: transparent;
-  border-color: transparent;
 }
 
 .logo {
@@ -154,6 +147,18 @@
   max-width: 154px;
   max-height: 60px;
   object-fit: contain;
+}
+
+/* Fallback accesible para una marca aún sin dominio o si el CDN no responde.
+   Es un wordmark simple: nunca volvemos a las cajas con "[ logo 01 ]". */
+.nombreFallback {
+  max-width: 154px;
+  color: var(--color-texto-suave);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.15;
+  text-align: center;
 }
 
 @media (max-width: 1023px) {

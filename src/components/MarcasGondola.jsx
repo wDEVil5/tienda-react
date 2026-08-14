@@ -1,5 +1,6 @@
+import { useEffect, useState } from "react";
 import styles from "./MarcasGondola.module.css";
-import { marcasActivas } from "../data/marcas.js";
+import { crearUrlLogoBrandfetch, obtenerMarcas } from "../services/marcasApi.js";
 
 function Pista({ marcas, direccion }) {
   const claseFila = direccion === "izquierda" ? styles.filaIzq : styles.filaDer;
@@ -11,12 +12,12 @@ function Pista({ marcas, direccion }) {
         {[...marcas, ...marcas].map((marca, i) => (
           <div
             key={`${marca.id}-${i}`}
-            className={`${styles.tile} ${marca.logoUrl ? styles.tileConLogo : ""}`}
+            className={styles.tile}
           >
-            {marca.logoUrl ? (
-              <img className={styles.logo} src={marca.logoUrl} alt="" />
+            {marca.logoUrl || marca.brandfetchDomain ? (
+              <LogoMarca marca={marca} />
             ) : (
-              <span>[ logo {String(marca.id).padStart(2, "0")} ]</span>
+              <span className={styles.nombreFallback}>{marca.nombre}</span>
             )}
           </div>
         ))}
@@ -25,9 +26,43 @@ function Pista({ marcas, direccion }) {
   );
 }
 
-function MarcasGondola({ marcas = marcasActivas }) {
-  const filaArriba = marcas.slice(0, 7);
-  const filaAbajo = marcas.slice(7);
+function LogoMarca({ marca }) {
+  const [fallo, setFallo] = useState(false);
+  const origen = marca.logoUrl ?? crearUrlLogoBrandfetch(marca.brandfetchDomain);
+
+  if (!origen || fallo) {
+    return <span className={styles.nombreFallback}>{marca.nombre}</span>;
+  }
+
+  return (
+    <img
+      className={styles.logo}
+      src={origen}
+      alt=""
+      onError={() => setFallo(true)}
+    />
+  );
+}
+
+function MarcasGondola() {
+  const [marcas, setMarcas] = useState(null);
+
+  useEffect(() => {
+    let vigente = true;
+    obtenerMarcas().then((respuesta) => {
+      if (vigente) setMarcas(respuesta);
+    });
+    return () => {
+      vigente = false;
+    };
+  }, []);
+
+  // No mostramos los placeholders antiguos: hasta que existan marcas públicas
+  // reales, esta franja editorial no aporta información al visitante.
+  if (!marcas?.length) return null;
+
+  const filaArriba = marcas.slice(0, Math.ceil(marcas.length / 2));
+  const filaAbajo = marcas.slice(filaArriba.length);
 
   return (
     <section id="nuestra-tienda" className={styles.marcas}>
@@ -46,7 +81,7 @@ function MarcasGondola({ marcas = marcasActivas }) {
       {/* Decorativo: el lector de pantalla no necesita leer los logos repetidos. */}
       <div className={styles.pistas} aria-hidden="true">
         <Pista marcas={filaArriba} direccion="izquierda" />
-        <Pista marcas={filaAbajo} direccion="derecha" />
+        {filaAbajo.length > 0 && <Pista marcas={filaAbajo} direccion="derecha" />}
       </div>
     </section>
   );

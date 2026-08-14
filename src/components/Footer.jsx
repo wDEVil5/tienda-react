@@ -220,15 +220,15 @@ function Footer({
             <button className={styles.enlace} type="button">
               Cambios y devoluciones
             </button>
-            <button className={styles.enlace} type="button">
+            <Link to="/faq" className={styles.enlace}>
               Preguntas frecuentes
-            </button>
+            </Link>
           </AcordeonCol>
 
           <AcordeonCol titulo="La tienda">
-            <button className={styles.enlace} type="button">
+            <Link to="/nosotros" className={styles.enlace}>
               Sobre nosotros
-            </button>
+            </Link>
             <button className={styles.enlace} type="button">
               Dónde estamos
             </button>
@@ -303,12 +303,12 @@ function Footer({
             </span>
           </p>
           <nav className={styles.legalLinks} aria-label="Legal">
-            <button className={styles.enlace} type="button">
+            <Link to="/terminos" className={styles.enlace}>
               Términos de servicio
-            </button>
-            <button className={styles.enlace} type="button">
+            </Link>
+            <Link to="/privacidad" className={styles.enlace}>
               Política de privacidad
-            </button>
+            </Link>
             <button className={styles.enlace} type="button">
               Accesibilidad
             </button>

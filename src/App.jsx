@@ -21,6 +21,7 @@ import AdminContenido from "./pages/AdminContenido.jsx";
 import { Login, Registro } from "./pages/Acceso.jsx";
 import { RecuperarContrasena, RestablecerContrasena } from "./pages/RecuperarCuenta.jsx";
 import NewsletterBaja from "./pages/NewsletterBaja.jsx";
+import PaginaContenido from "./pages/PaginaContenido.jsx";
 import MiCuenta from "./pages/MiCuenta.jsx";
 import MisPedidos from "./pages/MisPedidos.jsx";
 import DetallePedido from "./pages/DetallePedido.jsx";
@@ -356,6 +357,10 @@ function App() {
           <Route path="/recuperar-contrasena" element={<RecuperarContrasena />} />
           <Route path="/recuperar" element={<RestablecerContrasena />} />
           <Route path="/newsletter/baja" element={<NewsletterBaja />} />
+          <Route path="/nosotros" element={<PaginaContenido slug="nosotros" />} />
+          <Route path="/terminos" element={<PaginaContenido slug="terminos" />} />
+          <Route path="/privacidad" element={<PaginaContenido slug="privacidad" />} />
+          <Route path="/faq" element={<PaginaContenido slug="faq" />} />
           <Route
             path="/mi-cuenta"
             element={

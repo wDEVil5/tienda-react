@@ -420,6 +420,23 @@ model IdentidadTienda {
   @@map("identidad_tienda")
 }
 
+// Páginas de contenido estáticas (nosotros, términos, privacidad, faq). El slug
+// es la llave pública; el cuerpo es Markdown (se renderiza saneado en el front).
+// `publicada` controla si la página se expone al público: GET público la oculta
+// si es false. El conjunto de slugs válidos vive en lib/paginasContenido.js.
+model PaginaContenido {
+  id        String   @id @default(uuid()) @db.Uuid
+  slug      String   @unique @db.VarChar(60)
+  titulo    String   @db.VarChar(160)
+  // Markdown; sin límite de VarChar → columna text (páginas largas).
+  cuerpo    String
+  publicada Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("paginas_contenido")
+}
+
 // Tarifa de despacho por comuna. `comuna` es la clave normalizada (sin tildes,
 // minúsculas) para buscarla desde el texto que escribe el comprador; `nombre`
 // es el rótulo visible. `plazoHoras` opcional: si es null, se confirma al

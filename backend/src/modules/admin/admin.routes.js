@@ -91,6 +91,12 @@ import {
 import { validarAjusteStock } from './admin-inventario.validacion.js'
 import { actualizarIdentidad, obtenerIdentidad } from '../identidad/identidad.service.js'
 import { validarIdentidad } from '../identidad/identidad.validacion.js'
+import {
+  guardarPaginaAdmin,
+  listarPaginasAdmin,
+  obtenerPaginaAdmin,
+} from '../paginas/paginas.service.js'
+import { validarPagina } from '../paginas/paginas.validacion.js'
 
 export function crearRouterAdmin({
   servicio = {
@@ -142,6 +148,9 @@ export function crearRouterAdmin({
     listarMovimientosAdmin,
     obtenerIdentidad,
     actualizarIdentidad,
+    listarPaginasAdmin,
+    obtenerPaginaAdmin,
+    guardarPaginaAdmin,
   },
   middlewareSesion = requerirSesion,
 } = {}) {
@@ -1310,6 +1319,70 @@ export function crearRouterAdmin({
       try {
         const identidad = await servicio.actualizarIdentidad(validacion.data)
         return response.json({ data: identidad })
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  // Páginas de contenido (nosotros, términos, privacidad, faq). Solo ADMIN: es
+  // contenido editorial del sitio, no una tarea operativa.
+  adminRouter.get(
+    '/paginas',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (_request, response, next) => {
+      try {
+        return response.json({ data: await servicio.listarPaginasAdmin() })
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.get(
+    '/paginas/:slug',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      try {
+        const pagina = await servicio.obtenerPaginaAdmin(request.params.slug)
+        if (!pagina) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_PAGE_NOT_FOUND', message: 'Esa página no existe.' },
+          })
+        }
+        return response.json({ data: pagina })
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.put(
+    '/paginas/:slug',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      const validacion = validarPagina(request.body)
+      if (!validacion.success) {
+        return response.status(422).json({
+          error: {
+            code: 'INVALID_PAGE_DATA',
+            message: 'Revisa los datos de la página.',
+            fields: validacion.error.issues.map((issue) => issue.path.join('.')),
+          },
+        })
+      }
+
+      try {
+        const pagina = await servicio.guardarPaginaAdmin(request.params.slug, validacion.data)
+        if (!pagina) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_PAGE_NOT_FOUND', message: 'Esa página no existe.' },
+          })
+        }
+        return response.json({ data: pagina })
       } catch (error) {
         return next(error)
       }

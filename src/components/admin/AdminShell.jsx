@@ -45,6 +45,7 @@ const RUTAS = {
   Clientes: "/admin/clientes",
   Identidad: "/admin/identidad",
   Envíos: "/admin/envios",
+  Contenido: "/admin/contenido",
   Equipo: "/admin/equipo",
 };
 

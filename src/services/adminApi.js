@@ -313,6 +313,23 @@ export function guardarIdentidadAdmin(identidad, opciones = {}) {
   return solicitarAdmin("/admin/identidad", { ...opciones, method: "PUT", cuerpo });
 }
 
+// Páginas de contenido (solo ADMIN). La lista y la página llegan como { data }.
+export function listarPaginasAdmin(opciones = {}) {
+  return solicitarAdmin("/admin/paginas", opciones);
+}
+
+export function obtenerPaginaAdmin(slug, opciones = {}) {
+  return solicitarAdmin(`/admin/paginas/${encodeURIComponent(slug)}`, opciones);
+}
+
+export function guardarPaginaAdmin(slug, { titulo, cuerpo, publicada }, opciones = {}) {
+  return solicitarAdmin(`/admin/paginas/${encodeURIComponent(slug)}`, {
+    ...opciones,
+    method: "PUT",
+    cuerpo: { titulo, cuerpo, publicada },
+  });
+}
+
 export function obtenerResumenAdmin({ periodo, ...opciones } = {}) {
   const parametros = new URLSearchParams();
   if (periodo) parametros.set("periodo", periodo);

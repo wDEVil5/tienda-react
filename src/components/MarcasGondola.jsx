@@ -4,12 +4,16 @@ import { crearUrlLogoBrandfetch, obtenerMarcas } from "../services/marcasApi.js"
 
 function Pista({ marcas, direccion }) {
   const claseFila = direccion === "izquierda" ? styles.filaIzq : styles.filaDer;
+  // Una vuelta debe ser más ancha que la pista visible. Con dos marcas no
+  // alcanza: repetimos el grupo dentro de la vuelta antes de duplicarla para
+  // el loop, evitando espacios vacíos mientras el carrusel se mueve.
+  const repeticionesPorVuelta = Math.max(1, Math.ceil(8 / marcas.length));
+  const vuelta = Array.from({ length: repeticionesPorVuelta }, () => marcas).flat();
   return (
     <div className={`${styles.fila} ${claseFila}`}>
-      {/* Set duplicado: [...marcas, ...marcas]. Las keys llevan un sufijo para
-          distinguir el original de la copia. */}
+      {/* Dos vueltas idénticas hacen posible volver al inicio sin un salto. */}
       <div className={styles.track}>
-        {[...marcas, ...marcas].map((marca, i) => (
+        {[...vuelta, ...vuelta].map((marca, i) => (
           <div
             key={`${marca.id}-${i}`}
             className={styles.tile}

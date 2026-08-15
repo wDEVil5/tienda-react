@@ -12,7 +12,7 @@
 
 .titulo {
   font-family: var(--font-display);
-  font-size: 32px;
+  font-size: clamp(25px, 2vw, 28px);
   font-weight: 400;
   color: var(--color-texto);
 }

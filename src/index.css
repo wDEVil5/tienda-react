@@ -28,7 +28,7 @@
   --color-tenue-oscuro: #9a978f;  /* texto legal sobre #1c1b18 (AA) */
 
   /* ---- Tipografía ---- */
-  --font-display: "Instrument Serif", Georgia, serif;        /* titulares y precios */
+  --font-display: var(--font-ui); /* titulares: sans neutra, propia de e-commerce */
   --font-ui:      "Instrument Sans", system-ui, sans-serif;
   --font-mono:    "IBM Plex Mono", ui-monospace, monospace;  /* eyebrows, SKU, IDs */
 

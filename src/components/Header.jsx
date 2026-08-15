@@ -588,11 +588,16 @@ function Header({
                           </button>
                           {(sub.subcategoriasHijas ?? []).length > 0 ? (
                             <div className={styles.megaHijas}>
-                              {sub.subcategoriasHijas.map((hija) => (
+                              {sub.subcategoriasHijas.slice(0, 5).map((hija) => (
                                 <button key={hija.slug ?? hija.id} className={styles.megaSub} type="button" onClick={() => irASubcategoriaHija(categoriaActivaObj, sub, hija)}>
                                   {hija.nombre}
                                 </button>
                               ))}
+                              {sub.subcategoriasHijas.length > 5 && (
+                                <button className={styles.megaSubVerTodo} type="button" onClick={() => irASubcategoria(categoriaActivaObj, sub)}>
+                                  Ver todo →
+                                </button>
+                              )}
                             </div>
                           ) : <span className={styles.megaSinHijas}>Ver productos</span>}
                         </section>

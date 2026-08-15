@@ -549,6 +549,19 @@
   background-color: var(--bnv-neblina);
   color: var(--bnv-verde);
 }
+.megaSubVerTodo {
+  justify-self: start;
+  margin-top: 5px;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: var(--bnv-verde);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.megaSubVerTodo:hover { text-decoration: underline; }
 .megaVacio {
   color: var(--bnv-tenue);
   font-size: 13.5px;

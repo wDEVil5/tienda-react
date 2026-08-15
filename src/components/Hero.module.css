@@ -33,9 +33,9 @@
 }
 
 .titulo {
-  font-family: var(--bnv-serif);
-  font-weight: 400;
-  font-size: 56px;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(38px, 4vw, 48px);
   line-height: 0.95;
   letter-spacing: -0.025em;
   color: var(--bnv-tinta);

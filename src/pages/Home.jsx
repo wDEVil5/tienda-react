@@ -3,7 +3,6 @@ import Hero from "../components/Hero.jsx";
 import TiraConfianza from "../components/TiraConfianza.jsx";
 import CarruselProductos from "../components/CarruselProductos.jsx";
 import Categorias from "../components/Categorias.jsx";
-import BandaOfertas from "../components/BandaOfertas.jsx";
 import ComoComprar from "../components/ComoComprar.jsx";
 import Catalogo from "../components/Catalogo.jsx";
 import MarcasGondola from "../components/MarcasGondola.jsx";
@@ -39,6 +38,19 @@ function Home({
   const destacados = productos.filter((producto) => producto.destacado);
   const filaDestacados = (destacados.length ? destacados : productos).slice(0, 12);
 
+  // Fila "Ofertas de la semana": productos con precio anterior. El "Hasta X%" sale
+  // del resumen global de la API (todas las ofertas, no solo las cargadas); si no,
+  // se deriva de las ofertas visibles.
+  const ofertas = productos.filter((producto) => producto.precioAnterior !== null);
+  const filaOfertas = ofertas.slice(0, 12);
+  const maxDescuento =
+    ofertasDestacadas?.meta?.maxDescuento ??
+    (ofertas.length
+      ? Math.max(
+          ...ofertas.map((p) => Math.round((1 - p.precio / p.precioAnterior) * 100)),
+        )
+      : 0);
+
   return (
     <>
       <Hero
@@ -68,10 +80,15 @@ function Home({
         onSeleccionarCategoria={onSeleccionarCategoria}
         onCambiarSoloOfertas={onCambiarSoloOfertas}
       />
-      <BandaOfertas
-        productos={productos}
-        ofertasDestacadas={ofertasDestacadas}
-        onVerOfertas={onVerOfertas}
+      <CarruselProductos
+        eyebrow={maxDescuento ? `Hasta ${maxDescuento}% menos` : "Precios rebajados"}
+        titulo="Ofertas de la semana"
+        productos={filaOfertas}
+        accion={
+          <Link to="/#catalogo" onClick={onVerOfertas}>
+            Ver ofertas →
+          </Link>
+        }
       />
       <Catalogo
         productos={productosCatalogo}

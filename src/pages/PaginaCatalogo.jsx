@@ -45,6 +45,7 @@ export default function PaginaCatalogo({ categorias = [] }) {
   const [marcaBusqueda, setMarcaBusqueda] = useState("");
   const [seccionesAbiertas, setSeccionesAbiertas] = useState({ marcas: true, precio: true });
   const [soloOfertasSeleccionado, setSoloOfertasSeleccionado] = useState(false);
+  const [soloDisponiblesSeleccionado, setSoloDisponiblesSeleccionado] = useState(false);
 
   const categoriaActual = categorias.find((c) => c.slug === slug) ?? null;
   const subcategorias = categoriaActual?.subcategorias ?? [];
@@ -63,13 +64,14 @@ export default function PaginaCatalogo({ categorias = [] }) {
   // Contexto que se manda a la API según el modo (estable dentro del montaje).
   const filtros = useMemo(() => {
     const conOfertas = modo === "ofertas" || soloOfertasSeleccionado ? { soloOfertas: true } : {};
-    if (modo === "ofertas") return conOfertas;
-    if (modo === "todos") return conOfertas;
-    if (modo === "buscar") return { busqueda: consulta, ...conOfertas };
-    if (nivel3) return { subcategoria: sub, subcategoriaHija: nivel3, ...conOfertas };
-    if (sub) return { subcategoria: sub, ...conOfertas };
-    return { categoria: slug, ...conOfertas };
-  }, [modo, slug, sub, nivel3, consulta, soloOfertasSeleccionado]);
+    const conDisponibles = soloDisponiblesSeleccionado ? { soloDisponibles: true } : {};
+    if (modo === "ofertas") return { ...conOfertas, ...conDisponibles };
+    if (modo === "todos") return { ...conOfertas, ...conDisponibles };
+    if (modo === "buscar") return { busqueda: consulta, ...conOfertas, ...conDisponibles };
+    if (nivel3) return { subcategoria: sub, subcategoriaHija: nivel3, ...conOfertas, ...conDisponibles };
+    if (sub) return { subcategoria: sub, ...conOfertas, ...conDisponibles };
+    return { categoria: slug, ...conOfertas, ...conDisponibles };
+  }, [modo, slug, sub, nivel3, consulta, soloOfertasSeleccionado, soloDisponiblesSeleccionado]);
 
   // Facetas (marcas + rango de precio) del contexto. Solo una vez por montaje.
   useEffect(() => {
@@ -157,10 +159,11 @@ export default function PaginaCatalogo({ categorias = [] }) {
     setPrecioMinTexto("");
     setPrecioMaxTexto("");
     setSoloOfertasSeleccionado(false);
+    setSoloDisponiblesSeleccionado(false);
   }
 
-  const hayFiltros = marcasSel.length > 0 || precioMin !== undefined || precioMax !== undefined || soloOfertasSeleccionado;
-  const cantidadFiltros = marcasSel.length + (precioMin !== undefined || precioMax !== undefined ? 1 : 0) + (soloOfertasSeleccionado ? 1 : 0);
+  const hayFiltros = marcasSel.length > 0 || precioMin !== undefined || precioMax !== undefined || soloOfertasSeleccionado || soloDisponiblesSeleccionado;
+  const cantidadFiltros = marcasSel.length + (precioMin !== undefined || precioMax !== undefined ? 1 : 0) + (soloOfertasSeleccionado ? 1 : 0) + (soloDisponiblesSeleccionado ? 1 : 0);
   const total = meta?.total ?? productos.length;
   const marcasFaceta = facetas?.marcas ?? [];
   const marcasVisibles = marcasFaceta.filter((marca) =>
@@ -282,6 +285,10 @@ export default function PaginaCatalogo({ categorias = [] }) {
                   <input type="checkbox" checked={soloOfertasSeleccionado} onChange={(e) => { setCargando(true); setSoloOfertasSeleccionado(e.target.checked); }} />
                 </label>
               )}
+              <label className={styles.ofertasFiltro}>
+                <span>Disponible hoy</span>
+                <input type="checkbox" checked={soloDisponiblesSeleccionado} onChange={(e) => { setCargando(true); setSoloDisponiblesSeleccionado(e.target.checked); }} />
+              </label>
 
               {marcasFaceta.length > 0 && (
                 <section className={styles.grupo}>

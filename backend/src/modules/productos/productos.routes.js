@@ -46,6 +46,7 @@ productosRouter.get('/', async (request, response, next) => {
       ? request.query.marca.split(',').map((valor) => valor.trim()).filter(Boolean)
       : []
   const soloOfertas = request.query.ofertas === 'true'
+  const soloDisponibles = request.query.disponibles === 'true'
   const precioMin = leerNumeroNoNegativo(request.query.precioMin)
   const precioMax = leerNumeroNoNegativo(request.query.precioMax)
   const orden =
@@ -92,6 +93,7 @@ productosRouter.get('/', async (request, response, next) => {
       subcategoriaHija,
       marca,
       soloOfertas,
+      soloDisponibles,
       precioMin,
       precioMax,
       page,
@@ -115,9 +117,10 @@ productosRouter.get('/facetas', async (request, response, next) => {
   const subcategoriaHija =
     typeof request.query.subcategoriaHija === 'string' ? request.query.subcategoriaHija : ''
   const soloOfertas = request.query.ofertas === 'true'
+  const soloDisponibles = request.query.disponibles === 'true'
 
   try {
-    const facetas = await obtenerFacetas({ query, categoria, subcategoria, subcategoriaHija, soloOfertas })
+    const facetas = await obtenerFacetas({ query, categoria, subcategoria, subcategoriaHija, soloOfertas, soloDisponibles })
     return response.json({ data: facetas })
   } catch (error) {
     return next(error)

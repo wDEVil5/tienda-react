@@ -24,6 +24,7 @@ export async function obtenerCatalogo({
   subcategoriaHija,
   marca = [],
   soloOfertas = false,
+  soloDisponibles = false,
   precioMin,
   precioMax,
   page = 1,
@@ -60,6 +61,10 @@ export async function obtenerCatalogo({
 
       if (soloOfertas) {
         parametros.set("ofertas", "true");
+      }
+
+      if (soloDisponibles) {
+        parametros.set("disponibles", "true");
       }
 
       if (Number.isFinite(precioMin) && precioMin >= 0) {
@@ -184,6 +189,7 @@ export async function obtenerFacetas({
   subcategoriaHija,
   busqueda = "",
   soloOfertas = false,
+  soloDisponibles = false,
   fetchImpl = fetch,
   apiUrl = import.meta.env.VITE_API_URL,
 } = {}) {
@@ -195,6 +201,7 @@ export async function obtenerFacetas({
   if (subcategoriaHija) parametros.set("subcategoriaHija", subcategoriaHija);
   if (busqueda.trim()) parametros.set("q", busqueda.trim());
   if (soloOfertas) parametros.set("ofertas", "true");
+  if (soloDisponibles) parametros.set("disponibles", "true");
 
   try {
     const respuesta = await fetchImpl(

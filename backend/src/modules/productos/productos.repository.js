@@ -125,7 +125,7 @@ function crearProductoPublico(producto) {
   }
 }
 
-function crearFiltrosPublicados({ query, categoria, subcategoria, subcategoriaHija, marca, soloOfertas, precioMin, precioMax, ahora } = {}) {
+function crearFiltrosPublicados({ query, categoria, subcategoria, subcategoriaHija, marca, soloOfertas, soloDisponibles, precioMin, precioMax, ahora } = {}, camposProducto) {
   const where = { estado: 'PUBLICADO' }
 
   // Solo añadimos condiciones que llegaron desde la capa HTTP. Así Prisma
@@ -140,6 +140,12 @@ function crearFiltrosPublicados({ query, categoria, subcategoria, subcategoriaHi
 
   if (subcategoriaHija) {
     where.subcategoriaHija = { slug: subcategoriaHija }
+  }
+
+  // Prisma traduce esta comparación de columnas a SQL: stock > stock_reservado.
+  // Es la misma regla que calcularDisponible, pero filtrada en la base de datos.
+  if (soloDisponibles && camposProducto) {
+    where.stock = { gt: camposProducto.stockReservado }
   }
 
   // Filtro por marca(s): una o varias, por slug (checkboxes del sidebar).
@@ -191,7 +197,7 @@ export function crearRepositorioProductos(cliente = prisma) {
   return {
     async listarPublicados({ page = 1, limit = 12, orden = 'relevancia', ...filtros } = {}) {
       const ahora = filtros.ahora ?? new Date()
-      const where = crearFiltrosPublicados(filtros)
+      const where = crearFiltrosPublicados(filtros, cliente.producto.fields)
       const productos = await cliente.producto.findMany({
         where,
         include: crearInclusionProductoPublico(ahora),
@@ -204,14 +210,14 @@ export function crearRepositorioProductos(cliente = prisma) {
     },
 
     async contarPublicados(filtros = {}) {
-      return cliente.producto.count({ where: crearFiltrosPublicados(filtros) })
+      return cliente.producto.count({ where: crearFiltrosPublicados(filtros, cliente.producto.fields) })
     },
 
     // Facetas del sidebar: marcas presentes en el contexto (categoría/sub/búsqueda/
     // ofertas) con su conteo, y el rango de precio. El contexto NO incluye marca ni
     // precio: así la lista de marcas y el rango no cambian al ir seleccionando.
     async facetasPublicadas(filtros = {}) {
-      const where = crearFiltrosPublicados(filtros)
+      const where = crearFiltrosPublicados(filtros, cliente.producto.fields)
       const [marcas, precio] = await Promise.all([
         cliente.marca.findMany({
           where: { productos: { some: where } },

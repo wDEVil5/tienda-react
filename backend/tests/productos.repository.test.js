@@ -154,6 +154,29 @@ test('el filtro del tercer nivel acota la consulta por la hija exacta', async ()
   })
 })
 
+test('el filtro disponible compara stock con unidades reservadas en la base', async () => {
+  let consulta
+  const campos = { stockReservado: { _ref: 'stockReservado' } }
+  const cliente = {
+    producto: {
+      fields: campos,
+      async findMany(argumentos) { consulta = argumentos; return [] },
+      async count() { return 0 },
+    },
+  }
+
+  const repositorio = crearRepositorioProductos(cliente)
+  await repositorio.listarPublicados({
+    ahora: new Date('2026-08-01T12:00:00.000Z'),
+    soloDisponibles: true,
+    page: 1,
+    limit: 20,
+    orden: 'relevancia',
+  })
+
+  assert.deepEqual(consulta.where.stock, { gt: campos.stockReservado })
+})
+
 test('el filtro por marca(s) acota por slug con IN', async () => {
   let consulta
   const cliente = {

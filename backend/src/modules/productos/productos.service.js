@@ -41,6 +41,7 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
       subcategoriaHija = '',
       marca = [],
       soloOfertas = false,
+      soloDisponibles = false,
       precioMin = 0,
       precioMax = Infinity,
       page = PAGINACION_PREDETERMINADA.page,
@@ -62,6 +63,7 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
         ...(subcategoriaHijaFiltrada ? { subcategoriaHija: subcategoriaHijaFiltrada } : {}),
         ...(marca.length ? { marca } : {}),
         ...(soloOfertas ? { soloOfertas: true } : {}),
+        ...(soloDisponibles ? { soloDisponibles: true } : {}),
         ...(precioMin !== 0 ? { precioMin } : {}),
         ...(Number.isFinite(precioMax) ? { precioMax } : {}),
       }
@@ -96,7 +98,7 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
 
     // Facetas del sidebar (marcas + rango de precio) para el mismo contexto de la
     // lista, sin considerar marca/precio (para que no se auto-recorten).
-    async obtenerFacetas({ query = '', categoria = '', subcategoria = '', subcategoriaHija = '', soloOfertas = false } = {}) {
+    async obtenerFacetas({ query = '', categoria = '', subcategoria = '', subcategoriaHija = '', soloOfertas = false, soloDisponibles = false } = {}) {
       const textoBusqueda = normalizarTextoBusqueda(query)
       const categoriaFiltrada = normalizarTextoBusqueda(categoria)
       const subcategoriaFiltrada = normalizarTextoBusqueda(subcategoria)
@@ -108,6 +110,7 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
         ...(subcategoriaFiltrada ? { subcategoria: subcategoriaFiltrada } : {}),
         ...(subcategoriaHijaFiltrada ? { subcategoriaHija: subcategoriaHijaFiltrada } : {}),
         ...(soloOfertas ? { soloOfertas: true } : {}),
+        ...(soloDisponibles ? { soloDisponibles: true } : {}),
       })
     },
   }

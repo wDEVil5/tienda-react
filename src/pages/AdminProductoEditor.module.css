@@ -321,6 +321,8 @@
 .superficieEditor>.grupo,
 .superficieEditor>.filaDos,
 .superficieEditor>.filaTres,
+.superficieEditor>.atributosProducto,
+.superficieEditor>.atributosEstado,
 .superficieEditor>.detallesCaja,
 .superficieEditor>.preferencias,
 .superficieEditor>.divisor {
@@ -426,6 +428,60 @@
 .filaDos .grupo,
 .filaTres .grupo {
   min-width: 0;
+}
+
+/* Facetas definidas por categoría: el editor no conoce nombres como
+   “Intensidad”; recibe su definición desde administración. */
+.atributosProducto {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 15px;
+  border: 1px solid var(--color-borde-2);
+  border-radius: var(--radio-caja);
+  background: var(--color-fondo);
+}
+.atributosProducto h2 {
+  color: var(--color-texto);
+  font-size: 14px;
+  font-weight: 600;
+}
+.atributosProducto p,
+.atributosEstado {
+  margin-top: 3px;
+  color: var(--color-texto-tenue);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+.atributosEstado { margin-top: 14px; }
+.atributosCampos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+}
+.atributoCampo {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  color: var(--color-texto-2);
+  font-size: 12px;
+  font-weight: 500;
+}
+.atributoCampo select {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-campo);
+  background: var(--color-superficie);
+  color: var(--color-texto);
+  font: inherit;
+  font-size: 13px;
+}
+.atributoCampo select:focus {
+  outline: 0;
+  border-color: var(--color-texto);
+  box-shadow: 0 0 0 3px rgba(28, 27, 24, 0.1);
 }
 
 .divisor {
@@ -706,7 +762,8 @@
   }
 
   .filaDos,
-  .filaTres {
+  .filaTres,
+  .atributosCampos {
     grid-template-columns: 1fr;
   }
 
@@ -714,6 +771,8 @@
   .superficieEditor>.grupo,
   .superficieEditor>.filaDos,
   .superficieEditor>.filaTres,
+  .superficieEditor>.atributosProducto,
+  .superficieEditor>.atributosEstado,
   .superficieEditor>.detallesCaja,
   .superficieEditor>.preferencias,
   .superficieEditor>.divisor {

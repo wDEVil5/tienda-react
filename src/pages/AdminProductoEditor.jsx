@@ -5,6 +5,7 @@ import {
   actualizarProductoAdmin,
   crearProductoAdmin,
   ErrorAdminApi,
+  listarAtributosCategoriaAdmin,
   obtenerOpcionesProductoAdmin,
   obtenerProductoAdmin,
   obtenerSesionAdmin,
@@ -147,6 +148,36 @@ function EstadoEditor({ usuario, children }) {
   );
 }
 
+function AtributosProducto({ atributos, valores, cargando, onCambiar }) {
+  if (cargando) return <p className={styles.atributosEstado}>Cargando filtros de la categoría…</p>;
+  if (atributos.length === 0) return null;
+
+  return (
+    <section className={styles.atributosProducto} aria-labelledby="atributos-producto-titulo">
+      <div>
+        <h2 id="atributos-producto-titulo">Características para filtrar</h2>
+        <p>Estas opciones aparecerán como filtros cuando existan productos publicados con ellas.</p>
+      </div>
+      <div className={styles.atributosCampos}>
+        {atributos.map((atributo) => {
+          const opcionElegida = valores.find((valor) => valor.atributoId === atributo.id)?.opcionId ?? "";
+          return (
+            <label key={atributo.id} className={styles.atributoCampo}>
+              <span>{atributo.nombre}</span>
+              <select value={opcionElegida} onChange={(evento) => onCambiar(atributo.id, evento.target.value)}>
+                <option value="">Sin especificar</option>
+                {atributo.opciones.filter((opcion) => opcion.activa).map((opcion) => (
+                  <option key={opcion.id} value={opcion.id}>{opcion.nombre}</option>
+                ))}
+              </select>
+            </label>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 export default function AdminProductoEditor() {
   const { id } = useParams();
   const navegar = useNavigate();
@@ -154,6 +185,9 @@ export default function AdminProductoEditor() {
   const [usuario, setUsuario] = useState(undefined);
   const [formulario, setFormulario] = useState(PRODUCTO_FORMULARIO_INICIAL);
   const [referencias, setReferencias] = useState({ categorias: [], subcategorias: [], marcas: [], etiquetas: [] });
+  const [atributosCategoria, setAtributosCategoria] = useState([]);
+  const [cargandoAtributos, setCargandoAtributos] = useState(false);
+  const [errorAtributos, setErrorAtributos] = useState(null);
   const [imagenes, setImagenes] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
@@ -220,6 +254,27 @@ export default function AdminProductoEditor() {
     return () => { vigente = false; };
   }, [esNuevo, id, usuario, intentoCarga]);
 
+  useEffect(() => {
+    if (!usuario || !formulario.categoriaId) {
+      return undefined;
+    }
+    let vigente = true;
+    listarAtributosCategoriaAdmin(formulario.categoriaId)
+      .then((lista) => {
+        if (vigente) {
+          setAtributosCategoria((Array.isArray(lista) ? lista : []).filter((atributo) => atributo.activo));
+          setCargandoAtributos(false);
+        }
+      })
+      .catch((error) => {
+        if (vigente) {
+          setErrorAtributos(error instanceof ErrorAdminApi ? error.message : "No pudimos cargar los filtros de esta categoría.");
+          setCargandoAtributos(false);
+        }
+      })
+    return () => { vigente = false; };
+  }, [formulario.categoriaId, usuario]);
+
   const cambiar = (campo) => (evento) => {
     const valor = evento.target.type === "checkbox" ? evento.target.checked : evento.target.value;
     setFormulario((actual) => ({ ...actual, [campo]: valor }));
@@ -238,9 +293,22 @@ export default function AdminProductoEditor() {
   // a la anterior): la limpiamos para no enviar una combinación inconsistente.
   const cambiarCategoria = (evento) => {
     const valor = evento.target.value;
-    setFormulario((actual) => ({ ...actual, categoriaId: valor, subcategoriaId: "" }));
+    setFormulario((actual) => ({ ...actual, categoriaId: valor, subcategoriaId: "", atributos: [] }));
+    setAtributosCategoria([]);
+    setCargandoAtributos(Boolean(valor));
+    setErrorAtributos(null);
     setTocados((actual) => ({ ...actual, categoriaId: true }));
     setErrores((actual) => ({ ...actual, categoriaId: undefined }));
+    setErrorGeneral(null);
+  };
+
+  const cambiarAtributo = (atributoId, opcionId) => {
+    setFormulario((actual) => ({
+      ...actual,
+      atributos: opcionId
+        ? [...actual.atributos.filter((valor) => valor.atributoId !== atributoId), { atributoId, opcionId }]
+        : actual.atributos.filter((valor) => valor.atributoId !== atributoId),
+    }));
     setErrorGeneral(null);
   };
 
@@ -456,6 +524,14 @@ export default function AdminProductoEditor() {
                 );
               }}
             </Campo>
+
+            <AtributosProducto
+              atributos={formulario.categoriaId ? atributosCategoria : []}
+              valores={formulario.atributos}
+              cargando={cargandoAtributos}
+              onCambiar={cambiarAtributo}
+            />
+            {errorAtributos && <p className={styles.errorCampo} role="alert">{errorAtributos}</p>}
 
             <div className={styles.filaTres}>
               <Campo id="precio" etiqueta="Precio" error={tocados.precio && errores.precio} requerido>

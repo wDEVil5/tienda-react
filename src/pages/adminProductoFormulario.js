@@ -25,6 +25,7 @@ export const PRODUCTO_FORMULARIO_INICIAL = {
   subcategoriaId: "",
   marcaId: "",
   etiquetaIds: [],
+  atributos: [],
 };
 
 // Convierte tanto un producto nuevo como el detalle completo de edición a la
@@ -44,6 +45,7 @@ export function crearFormularioProducto(producto = {}) {
     subcategoriaId: producto.subcategoriaId ?? producto.subcategoria?.id ?? "",
     marcaId: producto.marcaId ?? producto.marca?.id ?? "",
     etiquetaIds: producto.etiquetaIds ?? producto.etiquetas?.map(({ id }) => id) ?? [],
+    atributos: producto.atributos?.map(({ atributoId, opcionId }) => ({ atributoId, opcionId })) ?? [],
   };
 }
 
@@ -146,6 +148,11 @@ export function normalizarPayloadProductoAdmin(valores, { esNuevo = false } = {}
     etiquetaIds: Array.isArray(valores.etiquetaIds) ? valores.etiquetaIds : [],
     destacado: Boolean(valores.destacado),
   };
+
+  const atributos = Array.isArray(valores.atributos) ? valores.atributos : [];
+  // En creación se omite una lista vacía; al editar sí se envía para permitir
+  // limpiar valores que ya estaban guardados en el producto.
+  if (!esNuevo || atributos.length > 0) payload.atributos = atributos;
 
   const slug = String(valores.slug ?? "").trim();
   if (slug) payload.slug = slug;

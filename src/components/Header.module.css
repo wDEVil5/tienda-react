@@ -376,8 +376,7 @@
 .megaCategoria {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
   padding: 10px 12px;
   border: none;
@@ -388,14 +387,31 @@
   color: var(--bnv-texto-2);
   text-align: left;
   cursor: pointer;
-  transition: background-color 0.14s ease, color 0.14s ease;
+  transition: background-color 0.14s ease, color 0.14s ease, box-shadow 0.14s ease;
 }
 .megaCategoria:hover,
 .megaCategoriaActiva {
   background-color: var(--bnv-neblina);
   color: var(--bnv-tinta);
 }
-.megaCategoria svg {
+/* Resaltado de la categoría activa: acento verde a la izquierda (como Jumbo). */
+.megaCategoriaActiva {
+  box-shadow: inset 3px 0 0 var(--bnv-verde);
+}
+.megaCategoriaIcono {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--bnv-verde-claro);
+}
+.megaCategoriaNombre {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Solo el chevron (hijo directo) va tenue; el ícono de categoría va en verde. */
+.megaCategoria > svg {
   color: var(--bnv-tenue);
   flex-shrink: 0;
 }
@@ -435,12 +451,12 @@
 .megaVerTodo:hover {
   text-decoration: underline;
 }
-.megaMarcas {
+.megaSubs {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 2px 16px;
 }
-.megaMarca {
+.megaSub {
   padding: 8px 6px;
   border: none;
   border-radius: 8px;
@@ -455,7 +471,7 @@
   white-space: nowrap;
   transition: background-color 0.14s ease, color 0.14s ease;
 }
-.megaMarca:hover {
+.megaSub:hover {
   background-color: var(--bnv-neblina);
   color: var(--bnv-verde);
 }

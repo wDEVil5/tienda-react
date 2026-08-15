@@ -48,6 +48,9 @@ function App() {
   // Header y catálogo comparten estos filtros: una sugerencia puede cambiar la
   // categoría y el catálogo la refleja sin depender de un backend todavía.
   const [categoria, setCategoria] = useState("todas");
+  // Drill-down del mega-menú: slug de subcategoría ("" = ninguna). Es un filtro
+  // aparte de la categoría; cualquier otra navegación lo limpia.
+  const [subcategoria, setSubcategoria] = useState("");
   const [soloOfertas, setSoloOfertas] = useState(false);
   const [orden, setOrden] = useState("relevancia");
   const [precioMin, setPrecioMin] = useState(null);
@@ -123,6 +126,7 @@ function App() {
       orden,
       busqueda: busquedaParaApi,
       categoria: categoriaParaApi,
+      subcategoria: subcategoria || undefined,
       soloOfertas,
       precioMin,
       precioMax,
@@ -170,6 +174,7 @@ function App() {
   }, [
     busquedaParaApi,
     categoriaParaApi,
+    subcategoria,
     orden,
     soloOfertas,
     precioMin,
@@ -220,15 +225,38 @@ function App() {
   // Accesos globales: todos los CTA que hablan de ofertas aplican el mismo
   // filtro real. Así no depende de qué sección originó la navegación.
   const verOfertas = () => {
+    setSubcategoria("");
     setBusqueda("");
     setCategoria("todas");
     setSoloOfertas(true);
   };
 
   const verCatalogo = () => {
+    setSubcategoria("");
     setBusqueda("");
     setCategoria("todas");
     setSoloOfertas(false);
+  };
+
+  // El drill-down por subcategoría se descarta al hacer cualquier otra navegación
+  // (buscar o elegir categoría), para no combinar filtros que confundirían el
+  // resultado. Estos wrappers reemplazan a los setters crudos que van a los hijos.
+  const buscar = (texto) => {
+    setSubcategoria("");
+    setBusqueda(texto);
+  };
+
+  const seleccionarCategoria = (nombre) => {
+    setSubcategoria("");
+    setCategoria(nombre);
+  };
+
+  // Click en una subcategoría del mega-menú: activa ese filtro y resetea el resto.
+  const elegirSubcategoria = (slug) => {
+    setSubcategoria(slug);
+    setCategoria("todas");
+    setSoloOfertas(false);
+    setBusqueda("");
   };
 
   // Las destacadas solo valen con API propia. Derivarlas aquí (en vez de
@@ -301,10 +329,10 @@ function App() {
       {!esCheckout && !esPantallaPrivada && (
         <Header
           categorias={categoriasDisponibles}
-          productos={productos}
           busqueda={busqueda}
-          onBuscar={setBusqueda}
-          onSeleccionarCategoria={setCategoria}
+          onBuscar={buscar}
+          onSeleccionarCategoria={seleccionarCategoria}
+          onSeleccionarSubcategoria={elegirSubcategoria}
           onCambiarSoloOfertas={setSoloOfertas}
           onVerOfertas={verOfertas}
           onVerCatalogo={verCatalogo}
@@ -328,9 +356,9 @@ function App() {
               <Home
                 productos={productos}
                 busqueda={busqueda}
-                onBuscar={setBusqueda}
+                onBuscar={buscar}
                 categoria={categoria}
-                onSeleccionarCategoria={setCategoria}
+                onSeleccionarCategoria={seleccionarCategoria}
                 soloOfertas={soloOfertas}
                 onCambiarSoloOfertas={setSoloOfertas}
                 precioMin={precioMin}
@@ -435,8 +463,8 @@ function App() {
       {!esCheckout && !esPantallaPrivada && (
         <Footer
           productos={productos}
-          onBuscar={setBusqueda}
-          onSeleccionarCategoria={setCategoria}
+          onBuscar={buscar}
+          onSeleccionarCategoria={seleccionarCategoria}
           onCambiarSoloOfertas={setSoloOfertas}
           onVerOfertas={verOfertas}
           onVerCatalogo={verCatalogo}

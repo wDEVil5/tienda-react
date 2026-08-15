@@ -20,6 +20,7 @@ export async function obtenerCatalogo({
   orden = "relevancia",
   busqueda = "",
   categoria,
+  subcategoria,
   soloOfertas = false,
   precioMin,
   precioMax,
@@ -41,6 +42,10 @@ export async function obtenerCatalogo({
 
       if (categoria) {
         parametros.set("categoria", categoria);
+      }
+
+      if (subcategoria) {
+        parametros.set("subcategoria", subcategoria);
       }
 
       if (soloOfertas) {

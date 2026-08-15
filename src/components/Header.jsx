@@ -68,6 +68,36 @@ const IconoGrilla = () => (
   </Svg>
 );
 
+// Íconos por categoría del mega-menú. Se eligen por palabra clave del nombre;
+// cualquier categoría que el dueño cree a futuro cae en el genérico (etiqueta).
+const IconoFrutas = () => (<Svg size={17}><path d="M12 8c0-2 1.6-4 4-4 0 2-1.6 4-4 4Z" /><path d="M12 8c-2.4 0-6 1.5-6 6a5 5 0 0 0 5 5c.6 0 1.1-.2 1-.9.2.7.8.9 1.4.9a4.6 4.6 0 0 0 4.6-5c0-4.5-3.6-6-6-6Z" /></Svg>);
+const IconoLacteos = () => (<Svg size={17}><path d="M8 3h8l-1 3.5V19a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2V6.5L8 3Z" /><path d="M8.5 8.5h7" /></Svg>);
+const IconoLimpieza = () => (<Svg size={17}><path d="M10 3h3v4h-3z" /><path d="M13 5h3l2 4.5V19a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2v-7.5L11 9h2" /></Svg>);
+const IconoCarnes = () => (<Svg size={17}><path d="M13 3a7 7 0 0 1 6 6.5c0 2-1.2 3.2-2.8 3.7C15 14 14 15.5 14 17.5a3.5 3.5 0 1 1-6-2.4" /><circle cx="7" cy="17" r="3" /></Svg>);
+const IconoPanaderia = () => (<Svg size={17}><path d="M4 12a4 4 0 0 1 4-4h8a4 4 0 0 1 0 8H8a4 4 0 0 1-4-4Z" /><path d="M9.5 9l-1 6M13 9l-1 6" /></Svg>);
+const IconoBebidas = () => (<Svg size={17}><path d="M9.5 3h5v3l-1 2.5V19a2 2 0 0 1-2 2 2 2 0 0 1-2-2V8.5l-1-2.5z" /></Svg>);
+const IconoDespensa = () => (<Svg size={17}><rect x="6" y="3.5" width="12" height="17" rx="2" /><path d="M6 8.5h12" /><path d="M10 3.5v5" /></Svg>);
+const IconoMascotas = () => (<Svg size={17}><circle cx="6.5" cy="10" r="1.6" /><circle cx="10" cy="7" r="1.6" /><circle cx="14" cy="7" r="1.6" /><circle cx="17.5" cy="10" r="1.6" /><path d="M12 12c-2.4 0-4 2-4 3.6C8 17 9.4 18 12 18s4-1 4-2.4C16 14 14.4 12 12 12Z" /></Svg>);
+const IconoCategoriaGenerico = () => (<Svg size={17}><path d="M20.6 13.4 11 23l-8.6-8.6A2 2 0 0 1 2 13V4a2 2 0 0 1 2-2h9a2 2 0 0 1 1.4.6L23 11a2 2 0 0 1 0 2.8Z" /><circle cx="7.5" cy="7.5" r="1.4" /></Svg>);
+
+const CLAVES_ICONO_CATEGORIA = [
+  { claves: ["fruta", "verdura"], Icono: IconoFrutas },
+  { claves: ["lácteo", "lacteo", "leche", "huevo", "queso", "fiambre"], Icono: IconoLacteos },
+  { claves: ["limpieza", "aseo", "hogar"], Icono: IconoLimpieza },
+  { claves: ["carne", "pescado", "pollo"], Icono: IconoCarnes },
+  { claves: ["pan", "pastel", "reposter"], Icono: IconoPanaderia },
+  { claves: ["bebida", "licor", "agua", "vino", "cerveza"], Icono: IconoBebidas },
+  { claves: ["despensa", "abarrote"], Icono: IconoDespensa },
+  { claves: ["mascota"], Icono: IconoMascotas },
+];
+
+function iconoCategoria(nombre) {
+  const texto = nombre.toLowerCase();
+  const entrada = CLAVES_ICONO_CATEGORIA.find(({ claves }) => claves.some((clave) => texto.includes(clave)));
+  const Icono = entrada?.Icono ?? IconoCategoriaGenerico;
+  return <Icono />;
+}
+
 // Enlaces del segundo piso (además del desplegable de Categorías). Los hashes
 // también funcionan desde una ficha de producto.
 const NAV = [
@@ -107,10 +137,10 @@ function guardarRecientes(lista) {
 
 function Header({
   categorias = [],
-  productos = [],
   busqueda = "",
   onBuscar,
   onSeleccionarCategoria,
+  onSeleccionarSubcategoria,
   onCambiarSoloOfertas,
   onVerOfertas,
   onVerCatalogo,
@@ -227,23 +257,10 @@ function Header({
     navegar("/#catalogo");
   };
 
-  // Marcas presentes en una categoría, derivadas de los productos ya cargados
-  // (sin llamada extra). Únicas por nombre y ordenadas alfabéticamente.
-  const marcasDeCategoria = (nombre) => {
-    const vistas = new Map();
-    for (const producto of productos) {
-      if (producto.categoria !== nombre || !producto.marca?.nombre) continue;
-      if (!vistas.has(producto.marca.nombre)) vistas.set(producto.marca.nombre, producto.marca);
-    }
-    return [...vistas.values()].sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
-  };
-
-  // Click en una marca del mega-menú: busca esa marca en el catálogo. Reusa el
-  // buscador (los nombres de producto suelen incluir la marca) → sin filtro nuevo.
-  const buscarMarca = (nombreMarca) => {
-    onBuscar?.(nombreMarca);
-    onSeleccionarCategoria?.("todas");
-    onCambiarSoloOfertas?.(false);
+  // Click en una subcategoría del mega-menú: activa el filtro real del catálogo
+  // por su slug (?subcategoria=) y lleva al catálogo.
+  const elegirSubcategoria = (slug) => {
+    onSeleccionarSubcategoria?.(slug);
     setCategoriasAbierto(false);
     navegar("/#catalogo");
   };
@@ -371,7 +388,10 @@ function Header({
     cerrarMenu();
   };
 
-  const marcasActivas = categoriaActiva ? marcasDeCategoria(categoriaActiva) : [];
+  // Categoría activa y sus subcategorías (vienen en el objeto de categoría desde
+  // GET /api/categorias). El panel derecho las agrupa como Jumbo.
+  const categoriaActivaObj = categorias.find((c) => c.nombre === categoriaActiva) ?? null;
+  const subcategoriasActivas = categoriaActivaObj?.subcategorias ?? [];
 
   return (
     <header className={`${styles.header} ${condensado ? styles.condensado : ""}`}>
@@ -531,7 +551,8 @@ function Header({
                         onFocus={() => setCategoriaActiva(categoria.nombre)}
                         onClick={() => seleccionarCategoria(categoria.nombre)}
                       >
-                        <span>{categoria.nombre}</span>
+                        <span className={styles.megaCategoriaIcono}>{iconoCategoria(categoria.nombre)}</span>
+                        <span className={styles.megaCategoriaNombre}>{categoria.nombre}</span>
                         <IconoChevronDer />
                       </button>
                     </li>
@@ -548,22 +569,22 @@ function Header({
                       Ver todo →
                     </button>
                   </div>
-                  {marcasActivas.length > 0 ? (
-                    <div className={styles.megaMarcas}>
-                      {marcasActivas.map((marca) => (
+                  {subcategoriasActivas.length > 0 ? (
+                    <div className={styles.megaSubs}>
+                      {subcategoriasActivas.map((sub) => (
                         <button
-                          key={marca.slug ?? marca.nombre}
-                          className={styles.megaMarca}
+                          key={sub.slug ?? sub.id}
+                          className={styles.megaSub}
                           type="button"
-                          onClick={() => buscarMarca(marca.nombre)}
+                          onClick={() => elegirSubcategoria(sub.slug)}
                         >
-                          {marca.nombre}
+                          {sub.nombre}
                         </button>
                       ))}
                     </div>
                   ) : (
                     <p className={styles.megaVacio}>
-                      Explora todos los productos de {categoriaActiva}.
+                      Esta categoría aún no tiene subcategorías. Usa “Ver todo”.
                     </p>
                   )}
                 </div>

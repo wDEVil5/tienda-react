@@ -6,15 +6,23 @@ import styles from "./PaginaCatalogo.module.css";
 
 const POR_PAGINA = 24;
 
+function leerAtributosUrl(valor) {
+  if (!valor) return [];
+  return valor.split(",").flatMap((item) => {
+    const [atributo, opcion] = item.split(":");
+    return atributo && opcion ? [{ atributo, opcion }] : [];
+  });
+}
+
 // Página de listado reutilizable: sirve a categoría (/categoria/:slug), a una
 // subcategoría (?sub=), a la búsqueda (/buscar?q=), a ofertas (/ofertas) y a
 // todo el catálogo (/catalogo). Se remonta por ruta (key en App), así cada
-// navegación arranca con estado limpio. Los filtros (marca/precio) viven en
-// estado local: refiltran sin cambiar la URL ni remontar.
+// navegación arranca con estado limpio. Los atributos se reflejan en URL para
+// compartir el resultado; marca y precio siguen siendo filtros locales.
 export default function PaginaCatalogo({ categorias = [] }) {
   const location = useLocation();
   const { slug = "" } = useParams();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const sub = searchParams.get("sub") ?? "";
   const nivel3 = searchParams.get("nivel3") ?? "";
   const consulta = searchParams.get("q") ?? "";
@@ -37,13 +45,14 @@ export default function PaginaCatalogo({ categorias = [] }) {
   // Filtros del sidebar.
   const [facetas, setFacetas] = useState(null);
   const [marcasSel, setMarcasSel] = useState([]);
+  const [atributosSel, setAtributosSel] = useState(() => leerAtributosUrl(searchParams.get("atributos")));
   const [precioMin, setPrecioMin] = useState(undefined);
   const [precioMax, setPrecioMax] = useState(undefined);
   const [precioMinTexto, setPrecioMinTexto] = useState("");
   const [precioMaxTexto, setPrecioMaxTexto] = useState("");
   const [filtrosAbiertos, setFiltrosAbiertos] = useState(false);
   const [marcaBusqueda, setMarcaBusqueda] = useState("");
-  const [seccionesAbiertas, setSeccionesAbiertas] = useState({ marcas: true, precio: true });
+  const [seccionesAbiertas, setSeccionesAbiertas] = useState({ marcas: true, precio: true, atributos: true });
   const [soloOfertasSeleccionado, setSoloOfertasSeleccionado] = useState(false);
   const [soloDisponiblesSeleccionado, setSoloDisponiblesSeleccionado] = useState(false);
 
@@ -88,7 +97,7 @@ export default function PaginaCatalogo({ categorias = [] }) {
   // activa en los eventos (no en el efecto) para no caer en set-state-in-effect.
   useEffect(() => {
     let vigente = true;
-    obtenerCatalogo({ ...filtros, orden, marca: marcasSel, precioMin, precioMax, page: 1, limit: POR_PAGINA })
+    obtenerCatalogo({ ...filtros, orden, marca: marcasSel, atributos: atributosSel, precioMin, precioMax, page: 1, limit: POR_PAGINA })
       .then((resultado) => {
         if (!vigente) return;
         setProductos(resultado.productos);
@@ -104,7 +113,7 @@ export default function PaginaCatalogo({ categorias = [] }) {
     return () => {
       vigente = false;
     };
-  }, [filtros, orden, marcasSel, precioMin, precioMax]);
+  }, [filtros, orden, marcasSel, atributosSel, precioMin, precioMax]);
 
   const hayMas = meta ? (meta.page ?? 1) < (meta.totalPages ?? 1) : false;
 
@@ -115,6 +124,7 @@ export default function PaginaCatalogo({ categorias = [] }) {
       ...filtros,
       orden,
       marca: marcasSel,
+      atributos: atributosSel,
       precioMin,
       precioMax,
       page: (meta.page ?? 1) + 1,
@@ -142,6 +152,22 @@ export default function PaginaCatalogo({ categorias = [] }) {
     );
   }
 
+  function alternarAtributo(atributo, opcion) {
+    const yaSeleccionado = atributosSel.some((item) => item.atributo === atributo && item.opcion === opcion);
+    const siguientes = yaSeleccionado
+      ? atributosSel.filter((item) => item.atributo !== atributo)
+      : [...atributosSel.filter((item) => item.atributo !== atributo), { atributo, opcion }];
+    const parametros = new URLSearchParams(searchParams);
+    if (siguientes.length) {
+      parametros.set("atributos", siguientes.map((item) => `${item.atributo}:${item.opcion}`).join(","));
+    } else {
+      parametros.delete("atributos");
+    }
+    setCargando(true);
+    setAtributosSel(siguientes);
+    setSearchParams(parametros, { replace: true });
+  }
+
   function aplicarPrecio(evento) {
     evento.preventDefault();
     const min = precioMinTexto.trim() === "" ? undefined : Math.max(0, Number(precioMinTexto));
@@ -154,22 +180,27 @@ export default function PaginaCatalogo({ categorias = [] }) {
   function limpiarFiltros() {
     setCargando(true);
     setMarcasSel([]);
+    setAtributosSel([]);
     setPrecioMin(undefined);
     setPrecioMax(undefined);
     setPrecioMinTexto("");
     setPrecioMaxTexto("");
     setSoloOfertasSeleccionado(false);
     setSoloDisponiblesSeleccionado(false);
+    const parametros = new URLSearchParams(searchParams);
+    parametros.delete("atributos");
+    setSearchParams(parametros, { replace: true });
   }
 
-  const hayFiltros = marcasSel.length > 0 || precioMin !== undefined || precioMax !== undefined || soloOfertasSeleccionado || soloDisponiblesSeleccionado;
-  const cantidadFiltros = marcasSel.length + (precioMin !== undefined || precioMax !== undefined ? 1 : 0) + (soloOfertasSeleccionado ? 1 : 0) + (soloDisponiblesSeleccionado ? 1 : 0);
+  const hayFiltros = marcasSel.length > 0 || atributosSel.length > 0 || precioMin !== undefined || precioMax !== undefined || soloOfertasSeleccionado || soloDisponiblesSeleccionado;
+  const cantidadFiltros = marcasSel.length + atributosSel.length + (precioMin !== undefined || precioMax !== undefined ? 1 : 0) + (soloOfertasSeleccionado ? 1 : 0) + (soloDisponiblesSeleccionado ? 1 : 0);
   const total = meta?.total ?? productos.length;
   const marcasFaceta = facetas?.marcas ?? [];
+  const atributosFaceta = facetas?.atributos ?? [];
   const marcasVisibles = marcasFaceta.filter((marca) =>
     marca.nombre.toLocaleLowerCase("es").includes(marcaBusqueda.trim().toLocaleLowerCase("es")),
   );
-  const mostrarSidebar = marcasFaceta.length > 0 || (facetas?.precio?.max ?? 0) > 0;
+  const mostrarSidebar = marcasFaceta.length > 0 || atributosFaceta.length > 0 || (facetas?.precio?.max ?? 0) > 0;
   const enlaceVolver = nivel3
     ? `/categoria/${slug}?sub=${encodeURIComponent(sub)}`
     : sub
@@ -315,6 +346,35 @@ export default function PaginaCatalogo({ categorias = [] }) {
                     ))}
                     </ul>
                   </>}
+                </section>
+              )}
+
+              {atributosFaceta.length > 0 && (
+                <section className={styles.grupo}>
+                  <button type="button" className={styles.grupoTitulo} onClick={() => alternarSeccion("atributos")} aria-expanded={seccionesAbiertas.atributos}>
+                    <span>Características</span><span aria-hidden="true">{seccionesAbiertas.atributos ? "−" : "+"}</span>
+                  </button>
+                  {seccionesAbiertas.atributos && atributosFaceta.map((atributo) => (
+                    <div className={styles.atributoFaceta} key={atributo.slug}>
+                      <p>{atributo.nombre}</p>
+                      <ul className={styles.opciones}>
+                        {atributo.opciones.map((opcion) => (
+                          <li key={opcion.slug}>
+                            <label className={styles.opcion}>
+                              <input
+                                type="checkbox"
+                                name={`atributo-${atributo.slug}`}
+                                checked={atributosSel.some((item) => item.atributo === atributo.slug && item.opcion === opcion.slug)}
+                                onChange={() => alternarAtributo(atributo.slug, opcion.slug)}
+                              />
+                              <span className={styles.opcionNombre}>{opcion.nombre}</span>
+                              <span className={styles.opcionConteo}>({opcion.total})</span>
+                            </label>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
                 </section>
               )}
 

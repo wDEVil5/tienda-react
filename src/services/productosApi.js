@@ -23,6 +23,7 @@ export async function obtenerCatalogo({
   subcategoria,
   subcategoriaHija,
   marca = [],
+  atributos = [],
   soloOfertas = false,
   soloDisponibles = false,
   precioMin,
@@ -57,6 +58,10 @@ export async function obtenerCatalogo({
 
       if (Array.isArray(marca) && marca.length > 0) {
         parametros.set("marca", marca.join(","));
+      }
+
+      if (Array.isArray(atributos) && atributos.length > 0) {
+        parametros.set("atributos", atributos.map(({ atributo, opcion }) => `${atributo}:${opcion}`).join(","));
       }
 
       if (soloOfertas) {

@@ -62,6 +62,22 @@ import {
   validarSubcategoriaHijaNueva,
 } from './admin-subcategorias-hijas.validacion.js'
 import {
+  ErrorAtributoAdmin,
+  actualizarAtributoAdmin,
+  actualizarOpcionAtributoAdmin,
+  crearAtributoAdmin,
+  crearOpcionAtributoAdmin,
+  eliminarAtributoAdmin,
+  eliminarOpcionAtributoAdmin,
+  listarAtributosAdmin,
+} from './admin-atributos.service.js'
+import {
+  validarAtributoCambios,
+  validarAtributoNuevo,
+  validarOpcionAtributoCambios,
+  validarOpcionAtributoNueva,
+} from './admin-atributos.validacion.js'
+import {
   ErrorMarcaAdmin,
   actualizarDominioBrandfetchAdmin,
   crearMarcaAdmin,
@@ -158,6 +174,13 @@ export function crearRouterAdmin({
     crearSubcategoriaAdmin,
     actualizarSubcategoriaAdmin,
     eliminarSubcategoriaAdmin,
+    listarAtributosAdmin,
+    crearAtributoAdmin,
+    actualizarAtributoAdmin,
+    eliminarAtributoAdmin,
+    crearOpcionAtributoAdmin,
+    actualizarOpcionAtributoAdmin,
+    eliminarOpcionAtributoAdmin,
     crearMarcaAdmin,
     listarMarcasAdmin,
     actualizarDominioBrandfetchAdmin,
@@ -638,6 +661,203 @@ export function crearRouterAdmin({
         return response.status(204).end()
       } catch (error) {
         if (error instanceof ErrorSubcategoriaHijaAdmin) {
+          return response.status(422).json({ error: { code: error.code, message: error.message } })
+        }
+        return next(error)
+      }
+    },
+  )
+
+  // Facetas configurables por categoría. La tienda las consumirá luego para
+  // construir filtros reales, sin depender de nombres fijos en el frontend.
+  adminRouter.get(
+    '/categorias/:categoriaId/atributos',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      try {
+        const resultado = await servicio.listarAtributosAdmin(request.params.categoriaId)
+        if (!resultado) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_CATEGORY_NOT_FOUND', message: 'No encontramos la categoría solicitada.' },
+          })
+        }
+        return response.json(resultado)
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.post(
+    '/categorias/:categoriaId/atributos',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      const validacion = validarAtributoNuevo(request.body)
+      if (!validacion.success) {
+        return response.status(422).json({
+          error: { code: 'INVALID_ATTRIBUTE_DATA', message: 'Revisa los datos del atributo.' },
+        })
+      }
+      try {
+        const atributo = await servicio.crearAtributoAdmin(request.params.categoriaId, validacion.data)
+        if (!atributo) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_CATEGORY_NOT_FOUND', message: 'No encontramos la categoría solicitada.' },
+          })
+        }
+        return response.status(201).json({ data: atributo })
+      } catch (error) {
+        if (error instanceof ErrorAtributoAdmin) {
+          return response.status(422).json({ error: { code: error.code, message: error.message } })
+        }
+        if (error.code === 'P2002') {
+          return response.status(409).json({
+            error: { code: 'ATTRIBUTE_ALREADY_EXISTS', message: 'Ya existe este atributo en la categoría.' },
+          })
+        }
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.patch(
+    '/atributos/:id',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      const validacion = validarAtributoCambios(request.body)
+      if (!validacion.success) {
+        return response.status(422).json({
+          error: { code: 'INVALID_ATTRIBUTE_DATA', message: 'Revisa los datos del atributo.' },
+        })
+      }
+      try {
+        const atributo = await servicio.actualizarAtributoAdmin(request.params.id, validacion.data)
+        if (!atributo) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_ATTRIBUTE_NOT_FOUND', message: 'No encontramos el atributo solicitado.' },
+          })
+        }
+        return response.json({ data: atributo })
+      } catch (error) {
+        if (error instanceof ErrorAtributoAdmin) {
+          return response.status(422).json({ error: { code: error.code, message: error.message } })
+        }
+        if (error.code === 'P2002') {
+          return response.status(409).json({
+            error: { code: 'ATTRIBUTE_ALREADY_EXISTS', message: 'Ya existe este atributo en la categoría.' },
+          })
+        }
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.delete(
+    '/atributos/:id',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      try {
+        const eliminado = await servicio.eliminarAtributoAdmin(request.params.id)
+        if (!eliminado) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_ATTRIBUTE_NOT_FOUND', message: 'No encontramos el atributo solicitado.' },
+          })
+        }
+        return response.status(204).end()
+      } catch (error) {
+        if (error instanceof ErrorAtributoAdmin) {
+          return response.status(422).json({ error: { code: error.code, message: error.message } })
+        }
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.post(
+    '/atributos/:atributoId/opciones',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      const validacion = validarOpcionAtributoNueva(request.body)
+      if (!validacion.success) {
+        return response.status(422).json({
+          error: { code: 'INVALID_ATTRIBUTE_OPTION_DATA', message: 'Revisa los datos de la opción.' },
+        })
+      }
+      try {
+        const opcion = await servicio.crearOpcionAtributoAdmin(request.params.atributoId, validacion.data)
+        if (!opcion) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_ATTRIBUTE_NOT_FOUND', message: 'No encontramos el atributo solicitado.' },
+          })
+        }
+        return response.status(201).json({ data: opcion })
+      } catch (error) {
+        if (error instanceof ErrorAtributoAdmin) {
+          return response.status(422).json({ error: { code: error.code, message: error.message } })
+        }
+        if (error.code === 'P2002') {
+          return response.status(409).json({
+            error: { code: 'ATTRIBUTE_OPTION_ALREADY_EXISTS', message: 'Ya existe esta opción en el atributo.' },
+          })
+        }
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.patch(
+    '/atributos-opciones/:id',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      const validacion = validarOpcionAtributoCambios(request.body)
+      if (!validacion.success) {
+        return response.status(422).json({
+          error: { code: 'INVALID_ATTRIBUTE_OPTION_DATA', message: 'Revisa los datos de la opción.' },
+        })
+      }
+      try {
+        const opcion = await servicio.actualizarOpcionAtributoAdmin(request.params.id, validacion.data)
+        if (!opcion) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_ATTRIBUTE_OPTION_NOT_FOUND', message: 'No encontramos la opción solicitada.' },
+          })
+        }
+        return response.json({ data: opcion })
+      } catch (error) {
+        if (error instanceof ErrorAtributoAdmin) {
+          return response.status(422).json({ error: { code: error.code, message: error.message } })
+        }
+        if (error.code === 'P2002') {
+          return response.status(409).json({
+            error: { code: 'ATTRIBUTE_OPTION_ALREADY_EXISTS', message: 'Ya existe esta opción en el atributo.' },
+          })
+        }
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.delete(
+    '/atributos-opciones/:id',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      try {
+        const eliminado = await servicio.eliminarOpcionAtributoAdmin(request.params.id)
+        if (!eliminado) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_ATTRIBUTE_OPTION_NOT_FOUND', message: 'No encontramos la opción solicitada.' },
+          })
+        }
+        return response.status(204).end()
+      } catch (error) {
+        if (error instanceof ErrorAtributoAdmin) {
           return response.status(422).json({ error: { code: error.code, message: error.message } })
         }
         return next(error)

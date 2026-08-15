@@ -296,6 +296,7 @@ function App() {
     <div className={styles.app}>
       {!esCheckout && !esPantallaPrivada && (
         <Header
+          categorias={categoriasDisponibles}
           busqueda={busqueda}
           onBuscar={setBusqueda}
           onSeleccionarCategoria={setCategoria}

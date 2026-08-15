@@ -54,49 +54,29 @@ const IconoCarrito = () => (
     <path d="M2.5 3h2l2.2 12.2a1.6 1.6 0 0 0 1.6 1.3h8.6a1.6 1.6 0 0 0 1.6-1.3L21 7H6" />
   </Svg>
 );
+const IconoGrilla = () => (
+  <Svg size={16}>
+    <rect x="3.5" y="3.5" width="7" height="7" rx="1.5" />
+    <rect x="13.5" y="3.5" width="7" height="7" rx="1.5" />
+    <rect x="3.5" y="13.5" width="7" height="7" rx="1.5" />
+    <rect x="13.5" y="13.5" width="7" height="7" rx="1.5" />
+  </Svg>
+);
 
-// Los ítems de navegación del home. "Catálogo" queda como activo por defecto:
-// es la vista de aterrizaje. Los hashes también funcionan desde una ficha.
+// Enlaces del segundo piso (además del desplegable de Categorías). Los hashes
+// también funcionan desde una ficha de producto.
 const NAV = [
-  { etiqueta: "Catálogo", hash: "/#catalogo", accion: "catalogo" },
   { etiqueta: "Ofertas", hash: "/#catalogo", accion: "ofertas" },
   { etiqueta: "Cómo comprar", hash: "/#como-comprar" },
   { etiqueta: "Nuestra tienda", hash: "/#nuestra-tienda" },
 ];
 
-const INICIO_REDUCCION_LOGO = 40;
-const FIN_REDUCCION_LOGO = 180;
-const ALTURA_HEADER_ESCRITORIO = 68;
-
-function obtenerProgresoLogo(scrollY = 0) {
-  return Math.min(
-    1,
-    Math.max(0, (scrollY - INICIO_REDUCCION_LOGO) / (FIN_REDUCCION_LOGO - INICIO_REDUCCION_LOGO)),
-  );
-}
-
-function obtenerEstadoCondensado(scrollY = 0) {
-  const buscadorHero = document.getElementById("buscador-hero");
-
-  // En las páginas sin Hero se conserva el umbral general. En el inicio, la
-  // transición comienza solo cuando el buscador destacado ya pasó bajo header.
-  if (!buscadorHero) {
-    return {
-      condensado: scrollY > 140,
-      progresoLogo: obtenerProgresoLogo(scrollY),
-    };
-  }
-
-  const distanciaTrasBuscador = ALTURA_HEADER_ESCRITORIO - buscadorHero.getBoundingClientRect().bottom;
-  return {
-    condensado: distanciaTrasBuscador > 0,
-    // Tras pasar el buscador, la marca termina de escalar durante 140px para
-    // que el cambio mantenga la progresión ligada al scroll.
-    progresoLogo: Math.min(1, Math.max(0, distanciaTrasBuscador / (FIN_REDUCCION_LOGO - INICIO_REDUCCION_LOGO))),
-  };
-}
+// A partir de este scroll el segundo piso (navegación) se colapsa; el primero
+// (logo + buscador + carrito) queda pegado arriba.
+const UMBRAL_CONDENSADO = 80;
 
 function Header({
+  categorias = [],
   busqueda = "",
   onBuscar,
   onSeleccionarCategoria,
@@ -111,18 +91,16 @@ function Header({
   const navegar = useNavigate();
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [cuentaAbierta, setCuentaAbierta] = useState(false);
-  const [activo, setActivo] = useState("Catálogo");
+  const [categoriasAbierto, setCategoriasAbierto] = useState(false);
   // Estado condensado: el valor inicial se calcula del scroll actual para no
   // hacer un setState sincrónico dentro del efecto (solo suscribimos el listener).
   const [condensado, setCondensado] = useState(
-    () => typeof window !== "undefined" && obtenerEstadoCondensado(window.scrollY).condensado,
-  );
-  const [progresoLogo, setProgresoLogo] = useState(
-    () => typeof window !== "undefined" ? obtenerEstadoCondensado(window.scrollY).progresoLogo : 0,
+    () => typeof window !== "undefined" && window.scrollY > UMBRAL_CONDENSADO,
   );
   const cuentaRef = useRef(null);
   const botonCuentaRef = useRef(null);
   const panelCuentaRef = useRef(null);
+  const categoriasRef = useRef(null);
   const [posicionCuenta, setPosicionCuenta] = useState({ top: 0, left: 0 });
   const cerrarMenu = () => setMenuAbierto(false);
   const cerrarCuenta = () => setCuentaAbierta(false);
@@ -132,8 +110,8 @@ function Header({
     ? cliente.nombre.trim().split(/\s+/)[0]
     : "Mi cuenta";
 
-  // El panel se monta en document.body para que el clip-path de .acciones no
-  // recorte sus opciones. Estas coordenadas lo conservan anclado al botón.
+  // El panel se monta en document.body para que ningún recorte de sus ancestros
+  // corte sus opciones. Estas coordenadas lo conservan anclado al botón.
   const actualizarPosicionCuenta = useCallback(() => {
     const boton = botonCuentaRef.current;
     if (!boton) return;
@@ -150,20 +128,12 @@ function Header({
     });
   }, []);
 
-  // Al bajar más de 140px el header se condensa (buscador + carrito siempre
-  // visibles). Listener pasivo; se limpia al desmontar.
+  // Al bajar más del umbral el segundo piso se colapsa. Listener pasivo; el
+  // updater funcional evita renders cuando el estado no cambia.
   useEffect(() => {
     const alScroll = () => {
-      const scrollY = window.scrollY;
-      const siguienteEstado = obtenerEstadoCondensado(scrollY);
-
-      setCondensado((actual) => {
-        const siguiente = siguienteEstado.condensado;
-        return actual === siguiente ? actual : siguiente;
-      });
-      setProgresoLogo((actual) => (
-        Math.abs(actual - siguienteEstado.progresoLogo) < 0.01 ? actual : siguienteEstado.progresoLogo
-      ));
+      const siguiente = window.scrollY > UMBRAL_CONDENSADO;
+      setCondensado((actual) => (actual === siguiente ? actual : siguiente));
     };
     alScroll();
     window.addEventListener("scroll", alScroll, { passive: true });
@@ -174,6 +144,15 @@ function Header({
     evento.preventDefault();
     onSeleccionarCategoria?.("todas");
     onCambiarSoloOfertas?.(false);
+    navegar("/#catalogo");
+  };
+
+  const seleccionarCategoria = (nombre) => {
+    onBuscar?.("");
+    onSeleccionarCategoria?.(nombre);
+    onCambiarSoloOfertas?.(false);
+    setCategoriasAbierto(false);
+    cerrarMenu();
     navegar("/#catalogo");
   };
 
@@ -203,6 +182,23 @@ function Header({
       window.removeEventListener("scroll", actualizarPosicionCuenta);
     };
   }, [actualizarPosicionCuenta, cuentaAbierta]);
+
+  // Cierre del desplegable de categorías (clic fuera / Escape).
+  useEffect(() => {
+    if (!categoriasAbierto) return undefined;
+    const alClicFuera = (evento) => {
+      if (!categoriasRef.current?.contains(evento.target)) setCategoriasAbierto(false);
+    };
+    const alEscape = (evento) => {
+      if (evento.key === "Escape") setCategoriasAbierto(false);
+    };
+    document.addEventListener("mousedown", alClicFuera);
+    document.addEventListener("keydown", alEscape);
+    return () => {
+      document.removeEventListener("mousedown", alClicFuera);
+      document.removeEventListener("keydown", alEscape);
+    };
+  }, [categoriasAbierto]);
 
   const contenidoCuenta = estaAutenticado ? (
     <>
@@ -255,102 +251,59 @@ function Header({
   );
 
   const alNavegar = (item) => {
-    setActivo(item.etiqueta);
-    if (item.accion === "catalogo") onVerCatalogo();
-    if (item.accion === "ofertas") onVerOfertas();
+    if (item.accion === "catalogo") onVerCatalogo?.();
+    if (item.accion === "ofertas") onVerOfertas?.();
     cerrarMenu();
   };
 
   return (
-    <header
-      className={`${styles.header} ${condensado ? styles.condensado : ""}`}
-      style={{
-        "--escala-logo-sticky": 1 - progresoLogo * 0.22,
-      }}
-    >
-      {/* Barra condensada (al bajar): logo compacto + buscador + comuna +
-          mini-carrito. Solo se muestra en escritorio cuando hay scroll (CSS). */}
-      <div className={styles.barraCondensada}>
-        <form className={styles.condBuscador} role="search" onSubmit={buscarEnCatalogo}>
-          <span className={styles.condLupa}>
+    <header className={`${styles.header} ${condensado ? styles.condensado : ""}`}>
+      {/* ---- Piso 1: identidad, buscador y acciones ---- */}
+      <div className={styles.barra}>
+        <Link to="/" className={styles.logo}>
+          Sumarket<em>Express</em>
+        </Link>
+
+        <button className={styles.comuna} type="button">
+          <IconoPin />
+          <span className={styles.comunaTexto}>Providencia</span>
+          <IconoChevron />
+        </button>
+
+        <form className={styles.buscador} role="search" onSubmit={buscarEnCatalogo}>
+          <span className={styles.buscadorLupa}>
             <IconoLupa />
           </span>
           <input
             type="text"
-            placeholder="Buscar producto…"
+            placeholder="Busca productos, marcas o categorías"
             value={busqueda}
             onChange={(e) => onBuscar?.(e.target.value)}
-            aria-label="Buscar producto"
+            aria-label="Buscar productos"
           />
+          <button className={styles.buscadorEnviar} type="submit" aria-label="Buscar">
+            <IconoLupa />
+          </button>
         </form>
-        <button className={styles.condComuna} type="button">
-          <span>Providencia</span>
-          <IconoChevron />
-        </button>
-        {/* Mismo botón de carrito que el header completo: no cambia. */}
-        <button className={styles.carrito} type="button" onClick={onAbrirCarrito}>
-          <IconoCarrito />
-          <span className={styles.carritoTexto}>Carrito</span>
-          <span className={styles.carritoContador} aria-label={`${totalItems} productos en el carrito`}>
-            · {totalItems}
-          </span>
-        </button>
-      </div>
-
-      <div className={styles.barra}>
-        <Link to="/" className={styles.logo} onClick={() => setActivo("Catálogo")}>
-          Sumarket<em>Express</em>
-        </Link>
-
-        {/* Navegación centrada dentro de una cápsula; el activo es una píldora
-            blanca con sombra mínima. Oculta en móvil (va al menú). */}
-        <nav className={styles.capsula} aria-label="Navegación principal">
-          {NAV.map((item) => (
-            <Link
-              key={item.etiqueta}
-              to={item.hash}
-              className={`${styles.navLink} ${activo === item.etiqueta ? styles.navActivo : ""}`}
-              aria-current={activo === item.etiqueta ? "page" : undefined}
-              onClick={() => alNavegar(item)}
-            >
-              {item.etiqueta}
-            </Link>
-          ))}
-        </nav>
 
         <div className={styles.acciones}>
-          {/* Este grupo se repliega al condensar. El carrito queda fuera para
-              conservar el mismo botón durante toda la transición sticky. */}
-          <div className={styles.accionesPlegables}>
-            {/* Selector de comuna (placeholder: el picker real llega con el
-                contexto de modo de entrega). */}
-            <button className={styles.comuna} type="button">
-              <IconoPin />
-              <span>Providencia</span>
+          <div className={styles.cuentaMenu} ref={cuentaRef}>
+            <button
+              ref={botonCuentaRef}
+              className={styles.cuentaBoton}
+              type="button"
+              aria-haspopup="menu"
+              aria-expanded={cuentaAbierta}
+              aria-controls="menu-cuenta"
+              onClick={() => {
+                if (!cuentaAbierta) actualizarPosicionCuenta();
+                setCuentaAbierta((abierta) => !abierta);
+              }}
+            >
+              <IconoUsuario />
+              <span className={styles.cuentaEtiqueta}>{etiquetaCuenta}</span>
               <IconoChevron />
             </button>
-
-            <span className={styles.sepAcciones} aria-hidden="true" />
-
-            {/* Menú de cuenta: un solo botón que abre las acciones con su beneficio. */}
-            <div className={styles.cuentaMenu} ref={cuentaRef}>
-              <button
-                ref={botonCuentaRef}
-                className={styles.cuentaBoton}
-                type="button"
-                aria-haspopup="menu"
-                aria-expanded={cuentaAbierta}
-                aria-controls="menu-cuenta"
-                onClick={() => {
-                  if (!cuentaAbierta) actualizarPosicionCuenta();
-                  setCuentaAbierta((abierta) => !abierta);
-                }}
-              >
-                <IconoUsuario />
-                <span>{etiquetaCuenta}</span>
-                <IconoChevron />
-              </button>
-            </div>
           </div>
 
           <button className={styles.carrito} type="button" onClick={onAbrirCarrito}>
@@ -377,8 +330,54 @@ function Header({
         </div>
       </div>
 
-      {/* Menú móvil: permanece montado para animar; `inert` lo saca del teclado
-          cuando está plegado. */}
+      {/* ---- Piso 2: navegación (se colapsa al bajar) ---- */}
+      <div className={styles.barraNav}>
+        <div className={styles.barraNavInner}>
+          <div className={styles.categorias} ref={categoriasRef}>
+            <button
+              className={`${styles.categoriasBoton} ${categoriasAbierto ? styles.categoriasBotonActivo : ""}`}
+              type="button"
+              aria-haspopup="menu"
+              aria-expanded={categoriasAbierto}
+              onClick={() => setCategoriasAbierto((abierto) => !abierto)}
+            >
+              <IconoGrilla />
+              <span>Categorías</span>
+              <IconoChevron />
+            </button>
+            {categoriasAbierto && categorias.length > 0 && (
+              <div className={styles.categoriasPanel} role="menu">
+                {categorias.map((categoria) => (
+                  <button
+                    key={categoria.slug ?? categoria.nombre}
+                    className={styles.categoriaItem}
+                    type="button"
+                    role="menuitem"
+                    onClick={() => seleccionarCategoria(categoria.nombre)}
+                  >
+                    {categoria.nombre}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <nav className={styles.navLinks} aria-label="Navegación principal">
+            {NAV.map((item) => (
+              <Link
+                key={item.etiqueta}
+                to={item.hash}
+                className={styles.navLink}
+                onClick={() => alNavegar(item)}
+              >
+                {item.etiqueta}
+              </Link>
+            ))}
+          </nav>
+        </div>
+      </div>
+
+      {/* Menú móvil: categorías + enlaces + acceso. Permanece montado para animar. */}
       <nav
         id="menu-movil"
         className={`${styles.menuMovil} ${menuAbierto ? styles.menuAbierto : ""}`}
@@ -386,6 +385,21 @@ function Header({
         aria-hidden={!menuAbierto}
         inert={menuAbierto ? undefined : ""}
       >
+        {categorias.length > 0 && (
+          <div className={styles.menuCategorias}>
+            <p className={styles.menuTitulo}>Categorías</p>
+            {categorias.map((categoria) => (
+              <button
+                key={categoria.slug ?? categoria.nombre}
+                className={styles.menuLink}
+                type="button"
+                onClick={() => seleccionarCategoria(categoria.nombre)}
+              >
+                {categoria.nombre}
+              </button>
+            ))}
+          </div>
+        )}
         {NAV.map((item) => (
           <Link
             key={item.etiqueta}
@@ -403,12 +417,26 @@ function Header({
             </Link>
           ) : (
             <>
-              <Link className={styles.menuEntrar} to="/login" onClick={cerrarMenu}>
+              <button
+                className={styles.menuEntrar}
+                type="button"
+                onClick={() => {
+                  cerrarMenu();
+                  onAbrirAcceso?.();
+                }}
+              >
                 Entrar
-              </Link>
-              <Link className={styles.menuCrear} to="/registro" onClick={cerrarMenu}>
+              </button>
+              <button
+                className={styles.menuCrear}
+                type="button"
+                onClick={() => {
+                  cerrarMenu();
+                  onAbrirAcceso?.("registro");
+                }}
+              >
                 Crear cuenta
-              </Link>
+              </button>
             </>
           )}
         </div>

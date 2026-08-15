@@ -1,7 +1,6 @@
-/* Header claro de una sola fila, fondo crema. Objetivos cliqueables de 44px.
-   Fijo: acompaña el scroll pegado al borde superior. z-index alto para quedar
-   sobre el hero y el catálogo; los drawers/modales van por encima con su propio
-   z-index. El fondo es opaco para que el contenido no se transparente detrás. */
+/* Header claro de DOS pisos, fondo crema. Piso 1: logo + comuna + buscador +
+   cuenta + carrito. Piso 2: Categorías (desplegable) + enlaces. Fijo al scroll;
+   al bajar, el piso 2 se colapsa y el piso 1 queda pegado arriba. */
 .header {
   position: sticky;
   top: 0;
@@ -11,83 +10,16 @@
   font-family: var(--bnv-sans);
 }
 
+/* ---- Piso 1 ---- */
 .barra {
   display: flex;
   align-items: center;
-  gap: 24px;
-  max-width: 1200px;
+  gap: 18px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 12px 24px;
 }
 
-/* ---- Barra condensada (al bajar) ---- */
-/* En móvil no existe (el header ya es compacto); en escritorio se vuelve una
-   capa absoluta que se cruza con la fila completa (ver media query). */
-.barraCondensada {
-  display: none;
-  align-items: center;
-  gap: 12px;
-  max-width: min(1152px, calc(100% - 48px));
-  margin: 0 auto;
-  /* Reserva el espacio para la única marca del header, que se escala desde la
-     fila completa. No duplicamos el logo ni lo reemplazamos al hacer scroll. */
-  padding: 0 12px 0 clamp(156px, 16vw, 208px);
-  background-color: #fff;
-  border-radius: var(--radio-pill);
-  box-shadow: var(--bnv-sombra);
-}
-.condBuscador {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-  min-width: 0;
-  height: 44px;
-  padding: 0 16px;
-  background-color: var(--bnv-gris);
-  border-radius: var(--radio-pill);
-}
-.condBuscador:focus-within {
-  outline: 2px solid var(--bnv-verde);
-  outline-offset: 1px;
-}
-.condLupa {
-  display: inline-flex;
-  color: var(--bnv-tenue);
-  flex-shrink: 0;
-}
-.condBuscador input {
-  flex: 1;
-  min-width: 0;
-  border: none;
-  outline: none;
-  background: transparent;
-  font-family: inherit;
-  font-size: 14.5px;
-  color: var(--bnv-tinta);
-}
-.condComuna {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 44px;
-  padding: 0 8px;
-  background: none;
-  border: none;
-  border-radius: var(--radio-pill);
-  font-family: inherit;
-  font-size: 14px;
-  color: var(--bnv-texto-2);
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: color 0.18s ease;
-}
-.condComuna:hover {
-  color: var(--bnv-tinta);
-}
-
-/* ---- Logo ---- */
 .logo {
   font-family: var(--bnv-serif);
   font-size: 26px;
@@ -103,57 +35,12 @@
   color: var(--bnv-verde-claro);
 }
 
-/* ---- Cápsula de navegación centrada ---- */
-.capsula {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  margin: 0 auto;
-  padding: 4px;
-  background-color: var(--bnv-neblina);
-  border-radius: var(--radio-pill);
-}
-.navLink {
-  display: inline-flex;
-  align-items: center;
-  height: 36px;
-  padding: 0 18px;
-  border-radius: var(--radio-pill);
-  font-size: 14px;
-  color: var(--bnv-texto-2);
-  text-decoration: none;
-  white-space: nowrap;
-  transition: color 0.18s ease, background-color 0.18s ease;
-}
-.navLink:hover {
-  color: var(--bnv-tinta);
-}
-.navActivo {
-  background-color: var(--bnv-crema);
-  color: var(--bnv-tinta);
-  font-weight: 500;
-  box-shadow: 0 1px 3px rgba(21, 32, 26, 0.08);
-}
-
-/* ---- Acciones a la derecha ---- */
-.acciones {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-.accionesPlegables {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .comuna {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   height: 44px;
-  padding: 0 8px;
+  padding: 0 10px;
   background: none;
   border: none;
   border-radius: var(--radio-pill);
@@ -162,6 +49,7 @@
   color: var(--bnv-texto-2);
   cursor: pointer;
   white-space: nowrap;
+  flex-shrink: 0;
   transition: color 0.18s ease;
 }
 .comuna:hover {
@@ -171,10 +59,62 @@
   color: var(--bnv-verde-claro);
 }
 
-.sepAcciones {
-  width: 1px;
-  height: 20px;
-  background-color: var(--bnv-borde);
+/* Buscador permanente: ocupa el espacio central. */
+.buscador {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  height: 46px;
+  padding: 0 6px 0 16px;
+  background-color: #fff;
+  border: 1px solid var(--bnv-borde);
+  border-radius: var(--radio-pill);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.buscador:focus-within {
+  border-color: var(--bnv-verde);
+  box-shadow: 0 0 0 3px rgba(31, 79, 58, 0.1);
+}
+.buscadorLupa {
+  display: inline-flex;
+  color: var(--bnv-tenue);
+  flex-shrink: 0;
+}
+.buscador input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14.5px;
+  color: var(--bnv-tinta);
+}
+.buscadorEnviar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  background-color: var(--bnv-verde);
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.18s ease;
+}
+.buscadorEnviar:hover {
+  background-color: #173d2c;
+}
+
+.acciones {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 /* ---- Menú de cuenta (un botón que abre las acciones) ---- */
@@ -186,7 +126,7 @@
   align-items: center;
   gap: 7px;
   height: 44px;
-  padding: 0 14px;
+  padding: 0 12px;
   background: none;
   border: none;
   border-radius: var(--radio-pill);
@@ -201,9 +141,154 @@
   color: var(--bnv-verde);
 }
 
+.carrito {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 18px;
+  background-color: var(--bnv-verde);
+  border: none;
+  border-radius: var(--radio-pill);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.18s ease;
+}
+.carrito:hover {
+  background-color: #173d2c;
+}
+.carritoContador {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Hamburguesa (solo móvil) ---- */
+.hamburguesa {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: 1px solid var(--bnv-borde);
+  border-radius: var(--radio-pill);
+  color: var(--bnv-tinta);
+  cursor: pointer;
+}
+
+/* ---- Piso 2: navegación ---- */
+.barraNav {
+  height: 47px;
+  overflow: visible;
+  background-color: var(--bnv-neblina);
+  border-top: 1px solid var(--bnv-borde);
+  transition: height 0.24s ease, opacity 0.2s ease;
+}
+.barraNavInner {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 46px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Botón "Categorías": píldora verde destacada (como el súper). */
+.categorias {
+  position: relative;
+  flex-shrink: 0;
+}
+.categoriasBoton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 16px;
+  border: none;
+  border-radius: var(--radio-pill);
+  background-color: var(--bnv-verde);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.18s ease;
+}
+.categoriasBoton:hover,
+.categoriasBotonActivo {
+  background-color: #173d2c;
+}
+
+.categoriasPanel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 120;
+  width: 260px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 8px;
+  background-color: #fff;
+  border: 1px solid var(--bnv-borde);
+  border-radius: var(--bnv-radio-card);
+  box-shadow: var(--bnv-sombra);
+}
+.categoriaItem {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--bnv-texto-2);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.14s ease, color 0.14s ease;
+}
+.categoriaItem:hover {
+  background-color: var(--bnv-neblina);
+  color: var(--bnv-tinta);
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.navLink {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--radio-pill);
+  font-size: 14px;
+  color: var(--bnv-texto-2);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.18s ease, background-color 0.18s ease;
+}
+.navLink:hover {
+  color: var(--bnv-tinta);
+  background-color: var(--bnv-crema);
+}
+
+/* Colapso del piso 2 al bajar. */
+.condensado .barraNav {
+  height: 0;
+  overflow: hidden;
+  border-top-color: transparent;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---- Panel de cuenta (portaleado a document.body) ---- */
 .cuentaPanel {
-  /* Se porta a document.body: así la animación clip-path de .acciones no
-     recorta el desplegable. Header.jsx entrega top/left bajo el botón. */
   position: fixed;
   z-index: 130;
   width: 300px;
@@ -295,44 +380,6 @@
   color: var(--bnv-verde);
 }
 
-.carrito {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 44px;
-  padding: 0 18px;
-  background-color: var(--bnv-verde);
-  border: none;
-  border-radius: var(--radio-pill);
-  color: #fff;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background-color 0.18s ease;
-}
-.carrito:hover {
-  background-color: #173d2c;
-}
-.carritoContador {
-  font-variant-numeric: tabular-nums;
-}
-
-/* ---- Hamburguesa (solo móvil) ---- */
-.hamburguesa {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  background: none;
-  border: 1px solid var(--bnv-borde);
-  border-radius: var(--radio-pill);
-  color: var(--bnv-tinta);
-  cursor: pointer;
-}
-
 /* ---- Menú móvil ---- */
 .menuMovil {
   display: flex;
@@ -349,7 +396,8 @@
     transform 0.24s ease, visibility 0s linear 0.24s;
 }
 .menuAbierto {
-  max-height: 360px;
+  max-height: 80vh;
+  overflow-y: auto;
   padding: 8px 24px 20px;
   opacity: 1;
   pointer-events: auto;
@@ -357,12 +405,29 @@
   visibility: visible;
   transition-delay: 0s;
 }
+.menuTitulo {
+  margin-top: 8px;
+  font-family: var(--bnv-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--bnv-tenue);
+}
+.menuCategorias {
+  display: flex;
+  flex-direction: column;
+}
 .menuLink {
   padding: 12px 0;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--bnv-borde);
+  font-family: inherit;
   font-size: 15px;
   color: var(--bnv-texto-2);
+  text-align: left;
   text-decoration: none;
-  border-bottom: 1px solid var(--bnv-borde);
+  cursor: pointer;
 }
 .menuLink:hover {
   color: var(--bnv-tinta);
@@ -380,144 +445,31 @@
   flex: 1;
   height: 46px;
   border-radius: var(--radio-pill);
+  font-family: inherit;
   font-size: 14px;
   font-weight: 500;
   text-decoration: none;
+  cursor: pointer;
 }
 .menuEntrar {
   border: 1px solid var(--bnv-borde);
+  background: none;
   color: var(--bnv-tinta);
 }
 .menuCrear {
+  border: none;
   background-color: var(--bnv-verde);
   color: #fff;
 }
 
-/* ---- Intercambio condensado (solo escritorio) ---- */
-/* Al bajar, en escritorio: el header cambia la fila completa por la barra
-   condensada. En tablet/móvil el header ya es compacto, así que no condensa. */
-@media (min-width: 1024px) {
-  /* Altura de header fija: las dos barras son capas absolutas superpuestas, así
-     el cruce no produce ningún salto de layout. */
-  .header {
-    height: 68px;
-    overflow: visible;
-  }
-  .condensado {
-    border-bottom-color: transparent;
-  }
-
-  .barra,
-  .barraCondensada {
-    position: absolute;
-    left: 0;
-    right: 0;
-    margin-inline: auto;
-  }
-  /* Fila completa: visible por defecto. */
-  .barra {
-    top: 0;
-    height: 68px;
-    padding-top: 0;
-    padding-bottom: 0;
-    z-index: 3;
-  }
-  /* Cada grupo de la fila completa se repliega por separado. Usamos recorte y
-     escala, no fundido: la navegación parece ceder físicamente su espacio al
-     buscador, en vez de alternar entre dos headers. */
-  .logo {
-    /* La escala se actualiza desde la posición de scroll, no desde el cambio
-       binario de estado sticky. Un intervalo muy breve evita vibración. */
-    transition: transform 70ms linear;
-  }
-  .capsula,
-  .accionesPlegables {
-    transition:
-      transform 520ms cubic-bezier(0.16, 1, 0.3, 1),
-      clip-path 420ms cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .logo {
-    transform: translateX(0) scale(var(--escala-logo-sticky, 1));
-    transform-origin: left center;
-  }
-  .capsula {
-    clip-path: inset(0 0 0 0 round var(--radio-pill));
-    transform: scale(1);
-    transform-origin: center;
-  }
-  .accionesPlegables {
-    clip-path: inset(0 0 0 0);
-    transform: translateX(0) scale(1);
-    transform-origin: right center;
-  }
-  .condensado .logo {
-    /* La marca nunca se oculta: se encoge sobre su mismo eje al condensar. */
-    transform: translateX(0) scale(var(--escala-logo-sticky, 0.78));
-  }
-  .condensado .capsula {
-    clip-path: inset(0 50% 0 50% round var(--radio-pill));
-    transform: scale(0.9);
-    transition-delay: 0ms;
-  }
-  .condensado .accionesPlegables {
-    clip-path: inset(0 100% 0 0);
-    transform: translateX(10px) scale(0.96);
-    transition-delay: 40ms;
-  }
-  /* La barra sticky nace compacta en el centro y se expande hasta ocupar la
-     misma franja. Es un cambio de composición, no una aparición lateral. */
-  .barraCondensada {
-    display: flex;
-    top: 8px;
-    height: 52px;
-    z-index: 2;
-    transform: scaleX(0.72) scaleY(0.9);
-    transform-origin: center;
-    clip-path: inset(0 50% 0 50% round var(--radio-pill));
-    pointer-events: none;
-    transition:
-      transform 620ms cubic-bezier(0.16, 1, 0.3, 1),
-      clip-path 620ms cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .condBuscador,
-  .condComuna {
-    transform: scale(0.94);
-    transition:
-      transform 520ms cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .condBuscador { transform-origin: center; }
-  .condComuna { transform-origin: right center; }
-
-  .condensado .barraCondensada {
-    transform: scaleX(1) scaleY(1);
-    clip-path: inset(0 0 0 0 round var(--radio-pill));
-    pointer-events: auto;
-  }
-  .condensado .condBuscador,
-  .condensado .condComuna {
-    transform: scale(1);
-  }
-  .condensado .condBuscador { transition-delay: 80ms; }
-  .condensado .condComuna { transition-delay: 160ms; }
-  .condensado .barra { pointer-events: none; }
-  .condensado .logo { pointer-events: auto; }
-  /* El mismo carrito de la barra completa se mantiene sobre la composición
-     sticky: no se recorta ni se sustituye por una copia que parezca fundirse. */
-  .condensado .barra .carrito { pointer-events: auto; }
-  .barraCondensada .carrito { visibility: hidden; }
-
-  /* Al volver arriba, la barra sticky se repliega antes de que regresen las
-     acciones, evitando que ambos estados compitan visualmente. */
-  .header:not(.condensado) .barraCondensada { transition-delay: 100ms; }
-  .header:not(.condensado) .accionesPlegables { transition-delay: 190ms; }
-  .header:not(.condensado) .capsula { transition-delay: 150ms; }
-}
-
 /* ---- Responsive ---- */
-/* Tablet y móvil: la cápsula de nav y los enlaces de cuenta se van al menú. */
 @media (max-width: 1023px) {
-  .capsula,
-  .accionesPlegables {
+  /* La navegación (piso 2), la comuna y el nombre de cuenta se van al menú. */
+  .barraNav {
+    display: none;
+  }
+  .comuna,
+  .cuentaMenu {
     display: none;
   }
   .hamburguesa {
@@ -533,19 +485,20 @@
 
 @media (max-width: 767px) {
   .barra {
-    padding: 12px 16px;
+    padding: 10px 16px;
     gap: 12px;
   }
   .logo {
-    font-size: 23px;
-    margin-right: auto;
+    font-size: 22px;
+  }
+  .buscador {
+    height: 44px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .menuMovil,
-  .barra,
-  .barraCondensada {
+  .barraNav {
     transition: none;
   }
 }

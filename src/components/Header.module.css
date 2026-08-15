@@ -361,7 +361,10 @@
    tercer nivel: cada enlace viene de Categoria → Subcategoria en la API. */
 .megaPanel {
   position: absolute;
-  top: 100%;
+  /* El botón termina unos píxeles antes del borde del segundo piso. Subimos
+     el área real del panel y dejamos este borde transparente como puente de
+     hover: visualmente no cambia, pero el puntero nunca cae en un vacío. */
+  top: calc(100% - 6px);
   left: max(24px, calc((100vw - 1280px) / 2 + 24px));
   z-index: 120;
   display: flex;
@@ -372,6 +375,8 @@
   max-height: min(520px, calc(100vh - 132px));
   background-color: #fff;
   border: 1px solid var(--bnv-borde);
+  border-top: 6px solid transparent;
+  background-clip: padding-box;
   border-radius: var(--bnv-radio-card);
   box-shadow: var(--bnv-sombra);
   overflow: hidden;

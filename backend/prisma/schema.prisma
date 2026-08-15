@@ -61,15 +61,15 @@ enum MotivoMovimientoStock {
 }
 
 model Usuario {
-  id           String     @id @default(uuid()) @db.Uuid
-  nombre       String     @db.VarChar(120)
-  email        String     @unique @db.VarChar(255)
-  passwordHash String     @map("password_hash") @db.VarChar(255)
-  rol          RolUsuario @default(OPERADOR)
-  activo       Boolean    @default(true)
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime   @updatedAt @map("updated_at")
-  sesiones     Sesion[]
+  id                 String              @id @default(uuid()) @db.Uuid
+  nombre             String              @db.VarChar(120)
+  email              String              @unique @db.VarChar(255)
+  passwordHash       String              @map("password_hash") @db.VarChar(255)
+  rol                RolUsuario          @default(OPERADOR)
+  activo             Boolean             @default(true)
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+  sesiones           Sesion[]
   tokensRecuperacion TokenRecuperacion[]
   movimientosStock   MovimientoStock[]
 
@@ -110,32 +110,53 @@ model Categoria {
 // Segundo nivel de la taxonomía (Despensa → Café y Cafeteras). El slug es único
 // global (URL estable); el nombre es único dentro de su categoría.
 model Subcategoria {
-  id          String    @id @default(uuid()) @db.Uuid
-  nombre      String    @db.VarChar(100)
-  slug        String    @unique @db.VarChar(120)
-  categoriaId String    @map("categoria_id") @db.Uuid
-  categoria   Categoria @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
-  orden       Int       @default(0)
-  activa      Boolean   @default(true)
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  productos   Producto[]
+  id                 String             @id @default(uuid()) @db.Uuid
+  nombre             String             @db.VarChar(100)
+  slug               String             @unique @db.VarChar(120)
+  categoriaId        String             @map("categoria_id") @db.Uuid
+  categoria          Categoria          @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
+  orden              Int                @default(0)
+  activa             Boolean            @default(true)
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+  productos          Producto[]
+  subcategoriasHijas SubcategoriaHija[]
 
   @@unique([categoriaId, nombre])
   @@index([categoriaId, orden])
   @@map("subcategorias")
 }
 
-model Marca {
-  id             String     @id @default(uuid()) @db.Uuid
-  nombre         String     @unique @db.VarChar(120)
-  slug           String     @unique @db.VarChar(140)
-  logoUrl        String?    @map("logo_url") @db.VarChar(500)
-  logoStorageKey String?    @map("logo_storage_key") @db.VarChar(300)
-  brandfetchDomain String?  @map("brandfetch_domain") @db.VarChar(253)
-  createdAt      DateTime   @default(now()) @map("created_at")
-  updatedAt      DateTime   @updatedAt @map("updated_at")
+// Tercer nivel de la taxonomía (Despensa → Café y Cafeteras → Café en grano).
+// Es una entidad separada para que la tienda tenga exactamente tres niveles,
+// cada uno ordenable y administrable sin textos fijos en el frontend.
+model SubcategoriaHija {
+  id             String       @id @default(uuid()) @db.Uuid
+  nombre         String       @db.VarChar(100)
+  slug           String       @unique @db.VarChar(160)
+  subcategoriaId String       @map("subcategoria_id") @db.Uuid
+  subcategoria   Subcategoria @relation(fields: [subcategoriaId], references: [id], onDelete: Cascade)
+  orden          Int          @default(0)
+  activa         Boolean      @default(true)
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
   productos      Producto[]
+
+  @@unique([subcategoriaId, nombre])
+  @@index([subcategoriaId, orden])
+  @@map("subcategorias_hijas")
+}
+
+model Marca {
+  id               String     @id @default(uuid()) @db.Uuid
+  nombre           String     @unique @db.VarChar(120)
+  slug             String     @unique @db.VarChar(140)
+  logoUrl          String?    @map("logo_url") @db.VarChar(500)
+  logoStorageKey   String?    @map("logo_storage_key") @db.VarChar(300)
+  brandfetchDomain String?    @map("brandfetch_domain") @db.VarChar(253)
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime   @updatedAt @map("updated_at")
+  productos        Producto[]
 
   @@map("marcas")
 }
@@ -170,25 +191,30 @@ model Producto {
   pesoDespachoGramos Int?      @map("peso_despacho_gramos")
   fechaVencimiento   DateTime? @map("fecha_vencimiento") @db.Date
 
-  categoriaId    String   @map("categoria_id") @db.Uuid
+  categoriaId        String   @map("categoria_id") @db.Uuid
   // Subcategoría opcional: no todos los productos están clasificados a ese nivel.
   // Si se borra la subcategoría, el producto queda sin ella (SetNull), no se borra.
-  subcategoriaId String?  @map("subcategoria_id") @db.Uuid
-  marcaId        String   @map("marca_id") @db.Uuid
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  subcategoriaId     String?  @map("subcategoria_id") @db.Uuid
+  // El tercer nivel es opcional durante la migración: los productos ya
+  // clasificados en nivel dos siguen siendo válidos hasta que se completen.
+  subcategoriaHijaId String?  @map("subcategoria_hija_id") @db.Uuid
+  marcaId            String   @map("marca_id") @db.Uuid
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
 
-  categoria    Categoria           @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
-  subcategoria Subcategoria?       @relation(fields: [subcategoriaId], references: [id], onDelete: SetNull)
-  marca        Marca               @relation(fields: [marcaId], references: [id], onDelete: Restrict)
-  imagenes    ProductoImagen[]
-  promociones PromocionProducto[]
-  etiquetas   ProductoEtiqueta[]
-  itemsPedido ItemPedido[]
-  avisosStock AvisoStock[]
+  categoria        Categoria           @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
+  subcategoria     Subcategoria?       @relation(fields: [subcategoriaId], references: [id], onDelete: SetNull)
+  subcategoriaHija SubcategoriaHija?   @relation(fields: [subcategoriaHijaId], references: [id], onDelete: SetNull)
+  marca            Marca               @relation(fields: [marcaId], references: [id], onDelete: Restrict)
+  imagenes         ProductoImagen[]
+  promociones      PromocionProducto[]
+  etiquetas        ProductoEtiqueta[]
+  itemsPedido      ItemPedido[]
+  avisosStock      AvisoStock[]
   movimientosStock MovimientoStock[]
 
   @@index([categoriaId])
+  @@index([subcategoriaHijaId])
   @@index([marcaId])
   @@index([estado])
   @@index([destacado])
@@ -202,14 +228,14 @@ model Producto {
 // El usuario que lo hizo queda referenciado; si se borra, el movimiento sobrevive
 // sin autor (SetNull) para no perder la trazabilidad.
 model MovimientoStock {
-  id         String                @id @default(uuid()) @db.Uuid
-  productoId String                @map("producto_id") @db.Uuid
-  usuarioId  String?               @map("usuario_id") @db.Uuid
-  delta      Int
-  motivo     MotivoMovimientoStock
-  stockResultante Int              @map("stock_resultante")
-  nota       String?               @db.VarChar(300)
-  createdAt  DateTime              @default(now()) @map("created_at")
+  id              String                @id @default(uuid()) @db.Uuid
+  productoId      String                @map("producto_id") @db.Uuid
+  usuarioId       String?               @map("usuario_id") @db.Uuid
+  delta           Int
+  motivo          MotivoMovimientoStock
+  stockResultante Int                   @map("stock_resultante")
+  nota            String?               @db.VarChar(300)
+  createdAt       DateTime              @default(now()) @map("created_at")
 
   producto Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
   usuario  Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
@@ -426,21 +452,21 @@ model ConfiguracionTienda {
 // edita desde el panel. Campos opcionales van nullable; si no hay fila, el
 // servicio cae en IDENTIDAD_POR_DEFECTO (la tienda nunca queda sin identidad).
 model IdentidadTienda {
-  id              String   @id @default("singleton") @db.VarChar(20)
-  nombre          String   @db.VarChar(120)
-  email           String   @db.VarChar(255)
-  telefono        String   @db.VarChar(40)
-  whatsapp        String?  @db.VarChar(40)
-  direccion       String   @db.VarChar(200)
+  id        String   @id @default("singleton") @db.VarChar(20)
+  nombre    String   @db.VarChar(120)
+  email     String   @db.VarChar(255)
+  telefono  String   @db.VarChar(40)
+  whatsapp  String?  @db.VarChar(40)
+  direccion String   @db.VarChar(200)
   // Horario de atención ESTRUCTURADO: array de 7 días (índice 0 = lunes), cada
   // uno { abierto, apertura "HH:MM", cierre "HH:MM" }. El editor lo selecciona
   // (nada de texto libre) y el servicio deriva el texto de display al vuelo.
-  horario         Json     @map("horario")
-  instagram       String?  @db.VarChar(255)
-  facebook        String?  @db.VarChar(255)
-  tiktok          String?  @db.VarChar(255)
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  horario   Json     @map("horario")
+  instagram String?  @db.VarChar(255)
+  facebook  String?  @db.VarChar(255)
+  tiktok    String?  @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("identidad_tienda")
 }
@@ -519,11 +545,11 @@ model Cliente {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  sesiones    SesionCliente[]
-  direcciones Direccion[]
-  pedidos     Pedido[]
-  avisosStock   AvisoStock[]
-  suscripciones Suscriptor[]
+  sesiones           SesionCliente[]
+  direcciones        Direccion[]
+  pedidos            Pedido[]
+  avisosStock        AvisoStock[]
+  suscripciones      Suscriptor[]
   tokensRecuperacion TokenRecuperacion[]
 
   @@index([activo])

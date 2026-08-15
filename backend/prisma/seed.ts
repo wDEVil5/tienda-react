@@ -516,6 +516,17 @@ const subcategoriasIniciales = [
   },
 ];
 
+// Tercer nivel inicial. El administrador podrá ampliar esta taxonomía; este
+// seed solo entrega una estructura real para navegar y probar el mega-menú.
+const subcategoriasHijasIniciales: Record<string, string[]> = {
+  "despensa-cafe-y-cafeteras": ["Café en Grano", "Café Liofilizado", "Café Instantáneo", "Cápsulas de Café"],
+  "despensa-aceites-sal-y-condimentos": ["Aceite", "Aceite de Oliva", "Sal", "Condimentos", "Vinagres"],
+  "despensa-fideos-pastas-y-salsas": ["Pastas y Fideos", "Salsas para Pastas", "Fideos Integrales"],
+  "lacteos-leches": ["Leche Entera", "Leche Descremada", "Leche Sin Lactosa"],
+  "lacteos-quesos": ["Queso Mantecoso", "Queso Laminado", "Queso Rallado"],
+  "limpieza-lavado-de-ropa": ["Detergente Líquido", "Detergente en Polvo", "Suavizante"],
+};
+
 async function sembrarSubcategorias() {
   for (const grupo of subcategoriasIniciales) {
     for (const [indice, nombre] of grupo.items.entries()) {
@@ -534,6 +545,24 @@ async function sembrarSubcategorias() {
   }
 }
 
+async function sembrarSubcategoriasHijas() {
+  for (const [subcategoriaSlug, items] of Object.entries(subcategoriasHijasIniciales)) {
+    for (const [indice, nombre] of items.entries()) {
+      const slug = `${subcategoriaSlug}-${crearSlugEtiqueta(nombre)}`;
+      await prisma.subcategoriaHija.upsert({
+        where: { slug },
+        create: {
+          nombre,
+          slug,
+          orden: indice,
+          subcategoria: { connect: { slug: subcategoriaSlug } },
+        },
+        update: { nombre, orden: indice, activa: true },
+      });
+    }
+  }
+}
+
 // Clasifica algunos productos del seed en su subcategoría (segundo nivel) para
 // que el mega-menú muestre resultados reales al filtrar. Requiere productos y
 // subcategorías ya sembrados.
@@ -545,6 +574,14 @@ const productosPorSubcategoria: Record<string, string> = {
   "detergente-liquido-concentrado-3-l": "limpieza-lavado-de-ropa",
 };
 
+const productosPorSubcategoriaHija: Record<string, string> = {
+  "aceite-oliva-extra-virgen-500-ml": "despensa-aceites-sal-y-condimentos-aceite-de-oliva",
+  "cafe-de-grano-tostado-250-g": "despensa-cafe-y-cafeteras-cafe-en-grano",
+  "leche-entera-1-l": "lacteos-leches-leche-entera",
+  "queso-mantecoso-laminado-250-g": "lacteos-quesos-queso-mantecoso",
+  "detergente-liquido-concentrado-3-l": "limpieza-lavado-de-ropa-detergente-liquido",
+};
+
 async function clasificarProductos() {
   for (const [productoSlug, subcategoriaSlug] of Object.entries(productosPorSubcategoria)) {
     await prisma.producto.update({
@@ -552,11 +589,19 @@ async function clasificarProductos() {
       data: { subcategoria: { connect: { slug: subcategoriaSlug } } },
     });
   }
+
+  for (const [productoSlug, subcategoriaHijaSlug] of Object.entries(productosPorSubcategoriaHija)) {
+    await prisma.producto.update({
+      where: { slug: productoSlug },
+      data: { subcategoriaHija: { connect: { slug: subcategoriaHijaSlug } } },
+    });
+  }
 }
 
 try {
   await sembrarCatalogo();
   await sembrarSubcategorias(); // requiere las categorías ya sembradas
+  await sembrarSubcategoriasHijas(); // requiere las subcategorías de nivel dos
   await clasificarProductos(); // requiere productos y subcategorías ya sembrados
   await sembrarOfertaSemanal();
   await sembrarCliente(); // antes de los pedidos: estos se enlazan a su cuenta

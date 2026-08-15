@@ -5,6 +5,7 @@ const FORMATOS_PERMITIDOS = new Set(['jpeg', 'png', 'webp'])
 const LADO_MINIMO = 800
 const ANCHO_MINIMO_LOGO = 200
 const ALTO_MINIMO_LOGO = 100
+const ANCHO_MINIMO_BANNER = 1000
 
 export class ErrorImagen extends Error {
   constructor(code, message) {
@@ -41,6 +42,19 @@ export function crearServicioImagenes(
 
       return almacenamiento.subirImagenProducto(archivo.buffer)
     },
+
+    async subirImagenBanner(archivo) {
+      const metadata = await leerMetadataImagen(archivo, procesadorImagen)
+      // Los banners son anchos (hero): exigimos un ancho mínimo para que no se
+      // vean pixelados a todo el ancho de la pantalla.
+      if (metadata.width < ANCHO_MINIMO_BANNER) {
+        throw new ErrorImagen(
+          'BANNER_DIMENSIONS_TOO_SMALL',
+          'El banner debe medir al menos 1000 px de ancho.',
+        )
+      }
+      return almacenamiento.subirImagenBanner(archivo.buffer)
+    },
   }
 }
 
@@ -66,3 +80,4 @@ const servicioImagenes = crearServicioImagenes()
 
 export const subirImagenProducto = servicioImagenes.subirImagenProducto
 export const subirLogoMarca = servicioImagenes.subirLogoMarca
+export const subirImagenBanner = servicioImagenes.subirImagenBanner

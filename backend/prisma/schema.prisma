@@ -438,6 +438,27 @@ model PaginaContenido {
   @@map("paginas_contenido")
 }
 
+// Banners promocionales del carrusel del home. La imagen vive en Cloudinary
+// (imagenUrl + storageKey para poder borrarla). `enlace` es opcional (URL externa
+// o ruta interna como "/#catalogo"). `orden` decide la secuencia; `activo` y la
+// vigencia (empiezaEn/terminaEn, ambas opcionales) controlan si se muestra.
+model Banner {
+  id         String    @id @default(uuid()) @db.Uuid
+  titulo     String    @db.VarChar(160)
+  imagenUrl  String    @map("imagen_url")
+  storageKey String?   @map("storage_key") @db.VarChar(255)
+  enlace     String?   @db.VarChar(500)
+  orden      Int       @default(0)
+  activo     Boolean   @default(true)
+  empiezaEn  DateTime? @map("empieza_en")
+  terminaEn  DateTime? @map("termina_en")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  @@index([activo, orden])
+  @@map("banners")
+}
+
 // Tarifa de despacho por comuna. `comuna` es la clave normalizada (sin tildes,
 // minúsculas) para buscarla desde el texto que escribe el comprador; `nombre`
 // es el rótulo visible. `plazoHoras` opcional: si es null, se confirma al

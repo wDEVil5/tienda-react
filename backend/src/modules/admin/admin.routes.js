@@ -102,6 +102,16 @@ import {
   obtenerPaginaAdmin,
 } from '../paginas/paginas.service.js'
 import { validarPagina } from '../paginas/paginas.validacion.js'
+import {
+  actualizarBanner,
+  crearBanner,
+  eliminarBanner,
+  listarBannersAdmin,
+  obtenerBannerAdmin,
+} from '../banners/banners.service.js'
+import { validarBannerCambios, validarBannerNuevo } from '../banners/banners.validacion.js'
+import { recibirImagenBanner } from '../imagenes/imagenes.middleware.js'
+import { subirImagenBanner } from '../imagenes/imagenes.service.js'
 
 export function crearRouterAdmin({
   servicio = {
@@ -157,6 +167,12 @@ export function crearRouterAdmin({
     listarPaginasAdmin,
     obtenerPaginaAdmin,
     guardarPaginaAdmin,
+    listarBannersAdmin,
+    obtenerBannerAdmin,
+    crearBanner,
+    actualizarBanner,
+    eliminarBanner,
+    subirImagenBanner,
   },
   middlewareSesion = requerirSesion,
 } = {}) {
@@ -1418,6 +1434,132 @@ export function crearRouterAdmin({
           })
         }
         return response.json({ data: pagina })
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  // Banners del carrusel del home (solo ADMIN). Sube la imagen aparte y luego crea
+  // el banner con su url + storageKey (mismo flujo que las imágenes de producto).
+  adminRouter.get(
+    '/banners',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (_request, response, next) => {
+      try {
+        return response.json({ data: await servicio.listarBannersAdmin() })
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.post(
+    '/banners/imagen',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    recibirImagenBanner,
+    async (request, response, next) => {
+      try {
+        const imagen = await servicio.subirImagenBanner(request.file)
+        return response.status(201).json({ data: imagen })
+      } catch (error) {
+        if (error instanceof ErrorImagen) {
+          return response.status(422).json({ error: { code: error.code, message: error.message } })
+        }
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.get(
+    '/banners/:id',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      try {
+        const banner = await servicio.obtenerBannerAdmin(request.params.id)
+        if (!banner) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_BANNER_NOT_FOUND', message: 'No encontramos el banner solicitado.' },
+          })
+        }
+        return response.json({ data: banner })
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.post(
+    '/banners',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      const validacion = validarBannerNuevo(request.body)
+      if (!validacion.success) {
+        return response.status(422).json({
+          error: {
+            code: 'INVALID_BANNER_DATA',
+            message: 'Revisa los datos del banner.',
+            fields: validacion.error.issues.map((issue) => issue.path.join('.')),
+          },
+        })
+      }
+
+      try {
+        const banner = await servicio.crearBanner(validacion.data)
+        return response.status(201).json({ data: banner })
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.patch(
+    '/banners/:id',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      const validacion = validarBannerCambios(request.body)
+      if (!validacion.success) {
+        return response.status(422).json({
+          error: {
+            code: 'INVALID_BANNER_DATA',
+            message: 'Revisa los datos del banner.',
+            fields: validacion.error.issues.map((issue) => issue.path.join('.')),
+          },
+        })
+      }
+
+      try {
+        const banner = await servicio.actualizarBanner(request.params.id, validacion.data)
+        if (!banner) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_BANNER_NOT_FOUND', message: 'No encontramos el banner solicitado.' },
+          })
+        }
+        return response.json({ data: banner })
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.delete(
+    '/banners/:id',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      try {
+        const eliminado = await servicio.eliminarBanner(request.params.id)
+        if (!eliminado) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_BANNER_NOT_FOUND', message: 'No encontramos el banner solicitado.' },
+          })
+        }
+        return response.status(204).end()
       } catch (error) {
         return next(error)
       }

@@ -19,6 +19,7 @@ function crearReceptorImagen(tamanoMaximoBytes) {
 
 const receptorImagenProducto = crearReceptorImagen(5 * 1024 * 1024)
 const receptorLogoMarca = crearReceptorImagen(2 * 1024 * 1024)
+const receptorImagenBanner = crearReceptorImagen(5 * 1024 * 1024)
 
 // Multer procesa multipart antes del controlador. Convertimos sus errores en
 // una respuesta de dominio para no exponer detalles de la biblioteca.
@@ -44,4 +45,8 @@ export function recibirImagenProducto(request, response, next) {
 
 export function recibirLogoMarca(request, response, next) {
   return recibirArchivo(receptorLogoMarca, request, response, next, 2)
+}
+
+export function recibirImagenBanner(request, response, next) {
+  return recibirArchivo(receptorImagenBanner, request, response, next, 5)
 }

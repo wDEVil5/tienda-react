@@ -46,6 +46,10 @@ export function crearServicioSubcategoriasAdmin(repositorio = repositorioSubcate
         data: subcategorias.map((sub) => ({
           ...proyectar(sub),
           productosAsignados: sub._count.productos,
+          hijas: (sub.subcategoriasHijas ?? []).map((hija) => ({
+            ...proyectar(hija),
+            productosAsignados: hija._count.productos,
+          })),
         })),
       }
     },
@@ -84,10 +88,10 @@ export function crearServicioSubcategoriasAdmin(repositorio = repositorioSubcate
 
       // No borrar si tiene productos: primero hay que reasignarlos (evita dejar
       // productos apuntando a la nada aunque el FK sea SetNull).
-      if (existente._count.productos > 0) {
+      if (existente._count.productos > 0 || (existente._count.subcategoriasHijas ?? 0) > 0) {
         throw new ErrorSubcategoriaAdmin(
           'SUBCATEGORY_HAS_PRODUCTS',
-          'Reasigna los productos de esta subcategoría antes de eliminarla.',
+          'Elimina o reasigna primero los productos y niveles hijos de esta subcategoría.',
         )
       }
 

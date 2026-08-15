@@ -262,6 +262,63 @@
   align-items: center;
   gap: 8px;
 }
+.subBloque {
+  padding: 8px;
+  border: 1px solid var(--color-borde-2);
+  border-radius: var(--radio-tarjeta);
+  background: var(--color-superficie);
+}
+.subBloque .subFila {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-borde-2);
+}
+.hijas {
+  display: grid;
+  gap: 6px;
+  padding: 10px 4px 2px 76px;
+}
+.hijasTitulo {
+  color: var(--color-texto-tenue);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+.hijaFila,
+.nuevaHija {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto auto;
+  gap: 6px;
+}
+.hijaFila input,
+.nuevaHija input {
+  min-width: 0;
+  min-height: 32px;
+  padding: 0 9px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-campo);
+  background: var(--color-fondo);
+  color: var(--color-texto);
+  font: inherit;
+  font-size: 12.5px;
+}
+.hijaFila input:first-child { text-align: center; }
+.hijaActiva,
+.hijaOculta,
+.hijaEliminar,
+.nuevaHija button {
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: var(--radio-control);
+  font: inherit;
+  font-size: 11.5px;
+  cursor: pointer;
+}
+.hijaActiva { border: 1px solid transparent; background: var(--color-acento-bg); color: var(--color-acento); }
+.hijaOculta { border: 1px solid transparent; background: var(--color-crudo); color: var(--color-texto-tenue); }
+.hijaEliminar { width: 32px; padding: 0; border: 1px solid var(--color-borde-3); background: var(--color-superficie); color: var(--color-oferta); }
+.nuevaHija { grid-template-columns: minmax(0, 1fr) auto; }
+.nuevaHija button { border: 1px solid var(--color-borde-3); background: var(--color-superficie); color: var(--color-texto-2); }
 .subOrden,
 .subNombre {
   min-height: 38px;
@@ -352,6 +409,8 @@
   .subEncabezado {
     grid-template-columns: 56px 1fr auto;
   }
+  .hijas { padding-left: 0; }
+  .hijaFila { grid-template-columns: 46px minmax(0, 1fr) auto auto; }
   .subGuardar,
   .subEliminar {
     grid-column: span 1;

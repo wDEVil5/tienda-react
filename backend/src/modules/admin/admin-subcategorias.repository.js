@@ -12,7 +12,14 @@ export function crearRepositorioSubcategoriasAdmin(cliente = prisma) {
           slug: true,
           orden: true,
           activa: true,
-          _count: { select: { productos: true } },
+          _count: { select: { productos: true, subcategoriasHijas: true } },
+          subcategoriasHijas: {
+            select: {
+              id: true, nombre: true, slug: true, orden: true, activa: true,
+              _count: { select: { productos: true } },
+            },
+            orderBy: [{ orden: 'asc' }, { nombre: 'asc' }],
+          },
         },
         orderBy: [{ orden: 'asc' }, { nombre: 'asc' }],
       })
@@ -28,7 +35,7 @@ export function crearRepositorioSubcategoriasAdmin(cliente = prisma) {
           slug: true,
           orden: true,
           activa: true,
-          _count: { select: { productos: true } },
+          _count: { select: { productos: true, subcategoriasHijas: true } },
         },
       })
     },

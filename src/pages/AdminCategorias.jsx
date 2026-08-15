@@ -7,16 +7,107 @@ import {
   activarCategoriaAdmin,
   crearCategoriaAdmin,
   crearSubcategoriaAdmin,
+  crearSubcategoriaHijaAdmin,
   desactivarCategoriaAdmin,
   eliminarSubcategoriaAdmin,
+  eliminarSubcategoriaHijaAdmin,
   listarCategoriasAdmin,
   listarSubcategoriasAdmin,
   obtenerSesionAdmin,
+  actualizarSubcategoriaHijaAdmin,
 } from "../services/adminApi.js";
 import styles from "./AdminCategorias.module.css";
 
 function mensajeError(error, respaldo) {
   return error instanceof ErrorAdminApi ? error.message : respaldo;
+}
+
+function ordenarPorOrden(lista) {
+  return [...lista].sort((a, b) => a.orden - b.orden || a.nombre.localeCompare(b.nombre, "es"));
+}
+
+// Tercer nivel administrable dentro de su subcategoría. Mantenerlo aquí deja
+// visible la relación padre → hija y evita una pantalla separada para la taxonomía.
+function GestionHijas({ subcategoria, onCambio }) {
+  const [hijas, setHijas] = useState(() => subcategoria.hijas ?? []);
+  const [nombre, setNombre] = useState("");
+  const [error, setError] = useState(null);
+  const [creando, setCreando] = useState(false);
+
+  async function crear(evento) {
+    evento.preventDefault();
+    if (nombre.trim().length < 2) return setError("El nombre necesita al menos 2 caracteres.");
+    setCreando(true);
+    setError(null);
+    try {
+      const nueva = await crearSubcategoriaHijaAdmin(subcategoria.id, { nombre: nombre.trim(), orden: hijas.length });
+      const siguiente = ordenarPorOrden([...hijas, { ...nueva, productosAsignados: 0 }]);
+      setHijas(siguiente);
+      onCambio(siguiente);
+      setNombre("");
+    } catch (errorRespuesta) {
+      setError(mensajeError(errorRespuesta, "No pudimos crear el tercer nivel."));
+    } finally {
+      setCreando(false);
+    }
+  }
+
+  async function actualizar(hija, cambios) {
+    setError(null);
+    try {
+      const actualizada = await actualizarSubcategoriaHijaAdmin(hija.id, cambios);
+      const siguiente = ordenarPorOrden(hijas.map((item) => item.id === hija.id ? { ...item, ...actualizada } : item));
+      setHijas(siguiente);
+      onCambio(siguiente);
+    } catch (errorRespuesta) {
+      setError(mensajeError(errorRespuesta, "No pudimos guardar el tercer nivel."));
+    }
+  }
+
+  async function eliminar(hija) {
+    if (!window.confirm(`¿Eliminar “${hija.nombre}”?`)) return;
+    setError(null);
+    try {
+      await eliminarSubcategoriaHijaAdmin(hija.id);
+      const siguiente = hijas.filter((item) => item.id !== hija.id);
+      setHijas(siguiente);
+      onCambio(siguiente);
+    } catch (errorRespuesta) {
+      setError(mensajeError(errorRespuesta, "No pudimos eliminar el tercer nivel."));
+    }
+  }
+
+  return (
+    <div className={styles.hijas}>
+      <p className={styles.hijasTitulo}>Tercer nivel</p>
+      {hijas.map((hija) => (
+        <div className={styles.hijaFila} key={hija.id}>
+          <input
+            type="number"
+            min={0}
+            aria-label={`Orden de ${hija.nombre}`}
+            defaultValue={hija.orden}
+            onBlur={(e) => Number(e.target.value) !== hija.orden && actualizar(hija, { orden: Number(e.target.value) || 0 })}
+          />
+          <input
+            maxLength={100}
+            aria-label={`Nombre de ${hija.nombre}`}
+            defaultValue={hija.nombre}
+            onBlur={(e) => e.target.value.trim() && e.target.value.trim() !== hija.nombre && actualizar(hija, { nombre: e.target.value.trim() })}
+          />
+          <button type="button" className={hija.activa ? styles.hijaActiva : styles.hijaOculta} onClick={() => actualizar(hija, { activa: !hija.activa })}>
+            {hija.activa ? "Activa" : "Oculta"}
+          </button>
+          <button type="button" className={styles.hijaEliminar} onClick={() => eliminar(hija)} aria-label={`Eliminar ${hija.nombre}`}>✕</button>
+        </div>
+      ))}
+      <form className={styles.nuevaHija} onSubmit={crear}>
+        <input value={nombre} onChange={(e) => setNombre(e.target.value)} maxLength={100} placeholder="Nuevo tercer nivel" aria-label="Nuevo tercer nivel" />
+        <button type="submit" disabled={creando}>{creando ? "…" : "Agregar"}</button>
+      </form>
+      {error && <p className={styles.subError} role="alert">{error}</p>}
+    </div>
+  );
 }
 
 // Fila editable de una subcategoría: nombre, orden, activa; guardar / eliminar.
@@ -75,7 +166,12 @@ function FilaSubcategoria({ subcategoria, onActualizada, onEliminada }) {
     }
   }
 
+  function actualizarHijas(hijas) {
+    onActualizada({ ...subcategoria, hijas });
+  }
+
   return (
+    <div className={styles.subBloque}>
     <div className={styles.subFila}>
       <input
         className={styles.subOrden}
@@ -108,6 +204,8 @@ function FilaSubcategoria({ subcategoria, onActualizada, onEliminada }) {
       </button>
       {error && <span className={styles.subError} role="alert">{error}</span>}
     </div>
+    <GestionHijas subcategoria={subcategoria} onCambio={actualizarHijas} />
+    </div>
   );
 }
 
@@ -134,10 +232,6 @@ function PanelSubcategorias({ categoria, onCambioConteo }) {
     };
   }, [categoria.id]);
 
-  function ordenar(lista) {
-    return [...lista].sort((a, b) => a.orden - b.orden || a.nombre.localeCompare(b.nombre, "es"));
-  }
-
   async function crear(evento) {
     evento.preventDefault();
     if (nombreNueva.trim().length < 2) {
@@ -149,7 +243,7 @@ function PanelSubcategorias({ categoria, onCambioConteo }) {
     try {
       const orden = subcategorias?.length ?? 0;
       const nueva = await crearSubcategoriaAdmin(categoria.id, { nombre: nombreNueva.trim(), orden });
-      setSubcategorias((actuales) => ordenar([...(actuales ?? []), { ...nueva, productosAsignados: 0 }]));
+      setSubcategorias((actuales) => ordenarPorOrden([...(actuales ?? []), { ...nueva, productosAsignados: 0, hijas: [] }]));
       onCambioConteo?.(1);
       setNombreNueva("");
     } catch (errorRespuesta) {
@@ -161,7 +255,7 @@ function PanelSubcategorias({ categoria, onCambioConteo }) {
 
   function actualizar(actualizada) {
     setSubcategorias((actuales) =>
-      ordenar((actuales ?? []).map((s) => (s.id === actualizada.id ? { ...s, ...actualizada } : s))),
+      ordenarPorOrden((actuales ?? []).map((s) => (s.id === actualizada.id ? { ...s, ...actualizada } : s))),
     );
   }
 

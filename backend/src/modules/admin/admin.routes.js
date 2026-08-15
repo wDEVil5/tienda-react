@@ -52,6 +52,16 @@ import {
   validarSubcategoriaNueva,
 } from './admin-subcategorias.validacion.js'
 import {
+  ErrorSubcategoriaHijaAdmin,
+  actualizarSubcategoriaHijaAdmin,
+  crearSubcategoriaHijaAdmin,
+  eliminarSubcategoriaHijaAdmin,
+} from './admin-subcategorias-hijas.service.js'
+import {
+  validarSubcategoriaHijaCambios,
+  validarSubcategoriaHijaNueva,
+} from './admin-subcategorias-hijas.validacion.js'
+import {
   ErrorMarcaAdmin,
   actualizarDominioBrandfetchAdmin,
   crearMarcaAdmin,
@@ -552,6 +562,82 @@ export function crearRouterAdmin({
         return response.status(204).end()
       } catch (error) {
         if (error instanceof ErrorSubcategoriaAdmin) {
+          return response.status(422).json({ error: { code: error.code, message: error.message } })
+        }
+        return next(error)
+      }
+    },
+  )
+
+  // Tercer nivel: sus rutas parten desde la subcategoría para que no pueda
+  // crearse una hija huérfana. Solo ADMIN puede modificar la taxonomía.
+  adminRouter.post(
+    '/subcategorias/:subcategoriaId/hijas',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      const validacion = validarSubcategoriaHijaNueva(request.body)
+      if (!validacion.success) {
+        return response.status(422).json({ error: { code: 'INVALID_CHILD_CATEGORY_DATA', message: 'Revisa los datos del tercer nivel.' } })
+      }
+      try {
+        const hija = await crearSubcategoriaHijaAdmin(request.params.subcategoriaId, validacion.data)
+        if (!hija) {
+          return response.status(404).json({ error: { code: 'ADMIN_SUBCATEGORY_NOT_FOUND', message: 'No encontramos la subcategoría solicitada.' } })
+        }
+        return response.status(201).json({ data: hija })
+      } catch (error) {
+        if (error instanceof ErrorSubcategoriaHijaAdmin) {
+          return response.status(422).json({ error: { code: error.code, message: error.message } })
+        }
+        if (error.code === 'P2002') {
+          return response.status(409).json({ error: { code: 'CHILD_CATEGORY_ALREADY_EXISTS', message: 'Ya existe este nombre en la subcategoría.' } })
+        }
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.patch(
+    '/subcategorias-hijas/:id',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      const validacion = validarSubcategoriaHijaCambios(request.body)
+      if (!validacion.success) {
+        return response.status(422).json({ error: { code: 'INVALID_CHILD_CATEGORY_DATA', message: 'Revisa los datos del tercer nivel.' } })
+      }
+      try {
+        const hija = await actualizarSubcategoriaHijaAdmin(request.params.id, validacion.data)
+        if (!hija) {
+          return response.status(404).json({ error: { code: 'ADMIN_CHILD_CATEGORY_NOT_FOUND', message: 'No encontramos el nivel solicitado.' } })
+        }
+        return response.json({ data: hija })
+      } catch (error) {
+        if (error instanceof ErrorSubcategoriaHijaAdmin) {
+          return response.status(422).json({ error: { code: error.code, message: error.message } })
+        }
+        if (error.code === 'P2002') {
+          return response.status(409).json({ error: { code: 'CHILD_CATEGORY_ALREADY_EXISTS', message: 'Ya existe este nombre en la subcategoría.' } })
+        }
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.delete(
+    '/subcategorias-hijas/:id',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      try {
+        const eliminada = await eliminarSubcategoriaHijaAdmin(request.params.id)
+        if (!eliminada) {
+          return response.status(404).json({ error: { code: 'ADMIN_CHILD_CATEGORY_NOT_FOUND', message: 'No encontramos el nivel solicitado.' } })
+        }
+        return response.status(204).end()
+      } catch (error) {
+        if (error instanceof ErrorSubcategoriaHijaAdmin) {
           return response.status(422).json({ error: { code: error.code, message: error.message } })
         }
         return next(error)

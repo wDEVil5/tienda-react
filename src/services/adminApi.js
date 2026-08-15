@@ -233,6 +233,31 @@ export function eliminarSubcategoriaAdmin(id, opciones = {}) {
   });
 }
 
+// Tercer nivel de la taxonomía. Se administra bajo una subcategoría concreta;
+// el listado llega incluido en listarSubcategoriasAdmin para evitar otra carga.
+export function crearSubcategoriaHijaAdmin(subcategoriaId, datos, opciones = {}) {
+  return solicitarAdmin(`/admin/subcategorias/${encodeURIComponent(subcategoriaId)}/hijas`, {
+    ...opciones,
+    method: "POST",
+    cuerpo: datos,
+  });
+}
+
+export function actualizarSubcategoriaHijaAdmin(id, cambios, opciones = {}) {
+  return solicitarAdmin(`/admin/subcategorias-hijas/${encodeURIComponent(id)}`, {
+    ...opciones,
+    method: "PATCH",
+    cuerpo: cambios,
+  });
+}
+
+export function eliminarSubcategoriaHijaAdmin(id, opciones = {}) {
+  return solicitarAdmin(`/admin/subcategorias-hijas/${encodeURIComponent(id)}`, {
+    ...opciones,
+    method: "DELETE",
+  });
+}
+
 export function listarProductosAdmin(
   { page = 1, limit = 20, busqueda = "", estado, ...opciones } = {},
 ) {

@@ -558,7 +558,12 @@ function Header({
                 </ul>
                 <div className={styles.megaContenido}>
                   <div className={styles.megaCabecera}>
-                    <h3>{categoriaActiva}</h3>
+                    <h3>
+                      <span className={styles.megaTituloIcono} aria-hidden="true">
+                        {iconoCategoria(categoriaActiva)}
+                      </span>
+                      {categoriaActiva}
+                    </h3>
                     <button
                       className={styles.megaVerTodo}
                       type="button"

@@ -312,9 +312,11 @@
   padding: 0 24px;
 }
 
-/* Botón "Categorías": píldora verde destacada (como el súper). */
+/* Botón "Categorías": abre una navegación amplia tipo supermercado. */
 .categorias {
-  position: relative;
+  /* El panel se posiciona contra el header sticky para que conserve el mismo
+     ancho y alineación del contenido, no el ancho pequeño de este botón. */
+  position: static;
   flex-shrink: 0;
 }
 .categoriasBoton {
@@ -355,33 +357,36 @@
   to { opacity: 1; }
 }
 
-/* Mega-menú de categorías: columna de categorías (izq) + panel de marcas (der).
-   Se despliega al pasar el mouse (ver Header.jsx). */
+/* Mega-menú: navegación lateral + grilla de subcategorías. No inventa un
+   tercer nivel: cada enlace viene de Categoria → Subcategoria en la API. */
 .megaPanel {
   position: absolute;
-  /* Pegado al botón (sin hueco) para que no exista una zona muerta entre ambos
-     que dispare el cierre al pasar el mouse. La separación visual la da la sombra.
-     El margen superior transparente se hace con un borde, que sí queda dentro del
-     área hovereable del panel. */
   top: 100%;
-  left: 0;
+  left: max(24px, calc((100vw - 1280px) / 2 + 24px));
   z-index: 120;
   display: flex;
-  width: min(880px, 92vw);
-  max-height: 72vh;
+  /* Menú contenido, no una banda completa: deja visible el storefront a los
+     lados y se percibe como un desplegable anclado al botón. */
+  width: min(1040px, calc(100vw - 48px));
+  min-height: 360px;
+  max-height: min(520px, calc(100vh - 132px));
   background-color: #fff;
   border: 1px solid var(--bnv-borde);
-  border-top: 8px solid transparent;
-  background-clip: padding-box;
   border-radius: var(--bnv-radio-card);
   box-shadow: var(--bnv-sombra);
   overflow: hidden;
+  animation: desplegarMega 0.2s ease both;
+}
+
+@keyframes desplegarMega {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 .megaCategorias {
   list-style: none;
   margin: 0;
-  padding: 8px;
-  width: 264px;
+  padding: 12px;
+  width: 280px;
   flex-shrink: 0;
   overflow-y: auto;
   border-right: 1px solid var(--bnv-borde);
@@ -391,7 +396,8 @@
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 10px 12px;
+  min-height: 52px;
+  padding: 12px 14px;
   border: none;
   border-radius: 10px;
   background: none;
@@ -432,7 +438,7 @@
 .megaContenido {
   flex: 1;
   min-width: 0;
-  padding: 20px 24px;
+  padding: 28px 32px 32px;
   overflow-y: auto;
 }
 .megaCabecera {
@@ -440,15 +446,26 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 16px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid var(--bnv-verde);
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--bnv-borde);
 }
 .megaCabecera h3 {
   margin: 0;
-  font-size: 17px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 24px;
   font-weight: 600;
   color: var(--bnv-tinta);
+}
+.megaTituloIcono {
+  display: inline-flex;
+  color: var(--bnv-verde);
+}
+.megaTituloIcono svg {
+  width: 23px;
+  height: 23px;
 }
 .megaVerTodo {
   flex-shrink: 0;
@@ -456,7 +473,7 @@
   border: none;
   background: none;
   font-family: inherit;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--bnv-verde);
   cursor: pointer;
@@ -467,15 +484,16 @@
 .megaSubs {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 2px 16px;
+  gap: 8px 24px;
 }
 .megaSub {
-  padding: 8px 6px;
+  min-height: 40px;
+  padding: 10px 8px;
   border: none;
   border-radius: 8px;
   background: none;
   font-family: inherit;
-  font-size: 13.5px;
+  font-size: 14px;
   color: var(--bnv-texto-2);
   text-align: left;
   cursor: pointer;

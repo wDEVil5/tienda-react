@@ -261,8 +261,9 @@ function GestionHijas({ subcategoria, onCambio }) {
   );
 }
 
-// Fila editable de una subcategoría: nombre, orden, activa; guardar / eliminar.
-function FilaSubcategoria({ subcategoria, onActualizada, onEliminada }) {
+// Cada subcategoría conserva sus acciones dentro de un acordeón para no repetir
+// formularios extensos. El panel padre decide cuál queda abierto.
+function FilaSubcategoria({ subcategoria, abierta, onAlternar, onActualizada, onEliminada }) {
   const [nombre, setNombre] = useState(subcategoria.nombre);
   const [orden, setOrden] = useState(String(subcategoria.orden));
   const [guardando, setGuardando] = useState(false);
@@ -323,39 +324,66 @@ function FilaSubcategoria({ subcategoria, onActualizada, onEliminada }) {
 
   return (
     <div className={styles.subBloque}>
-    <div className={styles.subFila}>
-      <input
-        className={styles.subOrden}
-        type="number"
-        min={0}
-        value={orden}
-        onChange={(e) => setOrden(e.target.value)}
-        aria-label={`Orden de ${subcategoria.nombre}`}
-      />
-      <input
-        className={styles.subNombre}
-        value={nombre}
-        onChange={(e) => setNombre(e.target.value)}
-        maxLength={100}
-        aria-label="Nombre de la subcategoría"
-      />
       <button
         type="button"
-        className={`${styles.subEstado} ${subcategoria.activa ? styles.subActiva : styles.subInactiva}`}
-        onClick={alternarActiva}
-        title={subcategoria.activa ? "Activa (clic para ocultar)" : "Oculta (clic para mostrar)"}
+        className={styles.subResumen}
+        onClick={onAlternar}
+        aria-expanded={abierta}
       >
-        {subcategoria.activa ? "Activa" : "Oculta"}
+        <span className={styles.subResumenNombre}>{subcategoria.nombre}</span>
+        <span className={styles.subResumenMeta}>
+          {subcategoria.hijas?.length ?? 0} {(subcategoria.hijas?.length ?? 0) === 1 ? "nivel hijo" : "niveles hijos"}
+        </span>
+        <span className={`${styles.subResumenEstado} ${subcategoria.activa ? styles.subResumenActiva : ""}`}>
+          <span aria-hidden="true" />
+          {subcategoria.activa ? "Activa" : "Oculta"}
+        </span>
+        <span className={styles.subChevron} aria-hidden="true">⌄</span>
       </button>
-      <button type="button" className={styles.subGuardar} onClick={guardar} disabled={guardando || sinCambios}>
-        {guardando ? "…" : "Guardar"}
-      </button>
-      <button type="button" className={styles.subEliminar} onClick={eliminar} disabled={eliminando} aria-label="Eliminar">
-        ✕
-      </button>
-      {error && <span className={styles.subError} role="alert">{error}</span>}
-    </div>
-    <GestionHijas subcategoria={subcategoria} onCambio={actualizarHijas} />
+      {abierta && (
+        <div className={styles.subContenido}>
+          <div className={styles.subCamposEncabezado} aria-hidden="true">
+            <span>Orden</span>
+            <span>Nombre</span>
+            <span>Estado</span>
+            <span />
+            <span />
+          </div>
+          <div className={styles.subFila}>
+            <input
+              className={styles.subOrden}
+              type="number"
+              min={0}
+              value={orden}
+              onChange={(e) => setOrden(e.target.value)}
+              aria-label={`Orden de ${subcategoria.nombre}`}
+            />
+            <input
+              className={styles.subNombre}
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              maxLength={100}
+              aria-label="Nombre de la subcategoría"
+            />
+            <button
+              type="button"
+              className={`${styles.subEstado} ${subcategoria.activa ? styles.subActiva : styles.subInactiva}`}
+              onClick={alternarActiva}
+              title={subcategoria.activa ? "Activa (clic para ocultar)" : "Oculta (clic para mostrar)"}
+            >
+              {subcategoria.activa ? "Activa" : "Oculta"}
+            </button>
+            <button type="button" className={styles.subGuardar} onClick={guardar} disabled={guardando || sinCambios}>
+              {guardando ? "…" : "Guardar"}
+            </button>
+            <button type="button" className={styles.subEliminar} onClick={eliminar} disabled={eliminando} aria-label="Eliminar">
+              ✕
+            </button>
+            {error && <span className={styles.subError} role="alert">{error}</span>}
+          </div>
+          <GestionHijas subcategoria={subcategoria} onCambio={actualizarHijas} />
+        </div>
+      )}
     </div>
   );
 }
@@ -366,6 +394,7 @@ function PanelSubcategorias({ categoria, onCambioConteo }) {
   const [nombreNueva, setNombreNueva] = useState("");
   const [creando, setCreando] = useState(false);
   const [errorCrear, setErrorCrear] = useState(null);
+  const [subcategoriaAbierta, setSubcategoriaAbierta] = useState(null);
 
   // El componente se remonta con key={categoria.id} al cambiar de categoría, así
   // que el estado ya arranca limpio: el efecto solo necesita cargar los datos.
@@ -395,6 +424,7 @@ function PanelSubcategorias({ categoria, onCambioConteo }) {
       const orden = subcategorias?.length ?? 0;
       const nueva = await crearSubcategoriaAdmin(categoria.id, { nombre: nombreNueva.trim(), orden });
       setSubcategorias((actuales) => ordenarPorOrden([...(actuales ?? []), { ...nueva, productosAsignados: 0, hijas: [] }]));
+      setSubcategoriaAbierta(nueva.id);
       onCambioConteo?.(1);
       setNombreNueva("");
     } catch (errorRespuesta) {
@@ -412,6 +442,7 @@ function PanelSubcategorias({ categoria, onCambioConteo }) {
 
   function eliminar(id) {
     setSubcategorias((actuales) => (actuales ?? []).filter((s) => s.id !== id));
+    setSubcategoriaAbierta((actual) => actual === id ? null : actual);
     onCambioConteo?.(-1);
   }
 
@@ -447,15 +478,12 @@ function PanelSubcategorias({ categoria, onCambioConteo }) {
         <p className={styles.estado}>Aún no hay subcategorías. Crea la primera arriba.</p>
       ) : (
         <div className={styles.subLista}>
-          <div className={styles.subEncabezado}>
-            <span>Orden</span>
-            <span>Nombre</span>
-            <span />
-          </div>
           {subcategorias.map((sub) => (
             <FilaSubcategoria
               key={sub.id}
               subcategoria={sub}
+              abierta={subcategoriaAbierta === sub.id}
+              onAlternar={() => setSubcategoriaAbierta((actual) => actual === sub.id ? null : sub.id)}
               onActualizada={actualizar}
               onEliminada={eliminar}
             />

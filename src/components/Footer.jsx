@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { suscribirNewsletter, ErrorNewsletterApi } from "../services/newsletterApi.js";
 import { useIdentidad } from "../context/IdentidadContext.jsx";
+import { calcularEstadoApertura } from "../services/identidadApi.js";
 import { useCuenta } from "../context/CuentaContext.jsx";
 import styles from "./Footer.module.css";
 
@@ -45,6 +46,9 @@ function Footer({ productos, onAbrirAcceso }) {
   // Datos de marca desde la identidad de la tienda (editable en /admin/identidad).
   const identidad = useIdentidad();
   const { estaAutenticado, cargandoSesion } = useCuenta();
+
+  // "Abierto/Cerrado ahora" real, calculado del horario estructurado.
+  const estadoApertura = calcularEstadoApertura(identidad.horario);
 
   // Redes DE LA TIENDA: solo las que el dueño cargó en la identidad. Los links
   // personales del desarrollador van aparte, en la atribución del copyright.
@@ -154,10 +158,15 @@ function Footer({ productos, onAbrirAcceso }) {
                 {identidad.email}
               </a>
             </p>
-            <p className={styles.abierto}>
-              <span className={styles.punto} aria-hidden="true"></span>
-              Abierto ahora
-            </p>
+            {estadoApertura && (
+              <p
+                className={`${styles.abierto} ${estadoApertura.abierta ? "" : styles.cerrado}`}
+                title={identidad.horarioTexto}
+              >
+                <span className={styles.punto} aria-hidden="true"></span>
+                {estadoApertura.abierta ? "Abierto ahora" : "Cerrado ahora"}
+              </p>
+            )}
           </div>
 
           {/* En escritorio se ven como columnas; en móvil son acordeones. */}

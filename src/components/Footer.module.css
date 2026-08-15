@@ -158,6 +158,10 @@
   background-color: var(--color-acento-claro);
   flex-shrink: 0;
 }
+/* Cerrado: el punto pierde el verde y queda apagado. */
+.cerrado .punto {
+  background-color: var(--color-texto-tenue);
+}
 
 /* Título de columna (botón). Eyebrow mono en escritorio, no interactivo. */
 .colTitulo {

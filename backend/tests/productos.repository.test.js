@@ -65,7 +65,13 @@ test('el repositorio consulta solo productos publicados y adapta sus imágenes',
 
   assert.deepEqual(consulta.where, {
     estado: 'PUBLICADO',
-    nombreBusqueda: { contains: 'cafe', mode: 'insensitive' },
+    OR: [
+      { nombreBusqueda: { contains: 'cafe', mode: 'insensitive' } },
+      { categoria: { slug: { contains: 'cafe' } } },
+      { subcategoria: { slug: { contains: 'cafe' } } },
+      { subcategoriaHija: { slug: { contains: 'cafe' } } },
+      { marca: { slug: { contains: 'cafe' } } },
+    ],
     categoria: { slug: 'despensa' },
     promociones: {
       some: {

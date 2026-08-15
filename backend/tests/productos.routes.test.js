@@ -28,6 +28,15 @@ test('GET /api/productos filtra por búsqueda', async () => {
   assert.equal(response.body.data[0].slug, 'detergente-liquido-concentrado-3-l')
 })
 
+test('GET /api/productos busca por categoría, no solo por nombre', async () => {
+  // "lacteos" no aparece en ningún nombre de producto: antes devolvía 0.
+  const response = await request(app).get('/api/productos?q=lacteos')
+
+  assert.equal(response.status, 200)
+  assert.equal(response.body.data.length, 2)
+  assert.equal(response.body.data.every((producto) => producto.categoria.slug === 'lacteos'), true)
+})
+
 test('GET /api/productos filtra por categoría', async () => {
   const response = await request(app).get('/api/productos?categoria=lacteos')
 

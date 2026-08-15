@@ -177,9 +177,19 @@ function crearFiltrosPublicados({ query, categoria, subcategoria, subcategoriaHi
   }
 
   if (query) {
-    // nombreBusqueda ya llega normalizado desde el servicio. El modo
-    // insensitive protege los datos antiguos mientras termina la transición.
-    where.nombreBusqueda = { contains: query, mode: 'insensitive' }
+    // No basta con el nombre del producto: quien escribe "despensa" o "coca
+    // cola" busca una categoría o una marca, no un producto que se llame así.
+    // Ampliamos a la taxonomía y la marca por slug (sin tildes, como el término
+    // ya normalizado; los espacios se vuelven guiones para calzar el slug).
+    // nombreBusqueda ya llega normalizado; el modo insensitive protege datos viejos.
+    const querySlug = query.replace(/\s+/g, '-')
+    where.OR = [
+      { nombreBusqueda: { contains: query, mode: 'insensitive' } },
+      { categoria: { slug: { contains: querySlug } } },
+      { subcategoria: { slug: { contains: querySlug } } },
+      { subcategoriaHija: { slug: { contains: querySlug } } },
+      { marca: { slug: { contains: querySlug } } },
+    ]
   }
 
   if (soloOfertas) {

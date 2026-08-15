@@ -16,6 +16,7 @@ export default function PaginaCatalogo({ categorias = [] }) {
   const { slug = "" } = useParams();
   const [searchParams] = useSearchParams();
   const sub = searchParams.get("sub") ?? "";
+  const nivel3 = searchParams.get("nivel3") ?? "";
   const consulta = searchParams.get("q") ?? "";
 
   const modo = location.pathname.startsWith("/ofertas")
@@ -45,6 +46,7 @@ export default function PaginaCatalogo({ categorias = [] }) {
   const categoriaActual = categorias.find((c) => c.slug === slug) ?? null;
   const subcategorias = categoriaActual?.subcategorias ?? [];
   const subActual = subcategorias.find((s) => s.slug === sub) ?? null;
+  const nivel3Actual = subActual?.subcategoriasHijas?.find((item) => item.slug === nivel3) ?? null;
 
   const titulo =
     modo === "ofertas"
@@ -53,16 +55,17 @@ export default function PaginaCatalogo({ categorias = [] }) {
         ? "Todo el catálogo"
         : modo === "buscar"
           ? `Resultados para “${consulta}”`
-          : subActual?.nombre ?? categoriaActual?.nombre ?? "Categoría";
+          : nivel3Actual?.nombre ?? subActual?.nombre ?? categoriaActual?.nombre ?? "Categoría";
 
   // Contexto que se manda a la API según el modo (estable dentro del montaje).
   const filtros = useMemo(() => {
     if (modo === "ofertas") return { soloOfertas: true };
     if (modo === "todos") return {};
     if (modo === "buscar") return { busqueda: consulta };
+    if (nivel3) return { subcategoria: sub, subcategoriaHija: nivel3 };
     if (sub) return { subcategoria: sub };
     return { categoria: slug };
-  }, [modo, slug, sub, consulta]);
+  }, [modo, slug, sub, nivel3, consulta]);
 
   // Facetas (marcas + rango de precio) del contexto. Solo una vez por montaje.
   useEffect(() => {

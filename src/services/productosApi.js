@@ -21,6 +21,7 @@ export async function obtenerCatalogo({
   busqueda = "",
   categoria,
   subcategoria,
+  subcategoriaHija,
   marca = [],
   soloOfertas = false,
   precioMin,
@@ -47,6 +48,10 @@ export async function obtenerCatalogo({
 
       if (subcategoria) {
         parametros.set("subcategoria", subcategoria);
+      }
+
+      if (subcategoriaHija) {
+        parametros.set("subcategoriaHija", subcategoriaHija);
       }
 
       if (Array.isArray(marca) && marca.length > 0) {
@@ -176,6 +181,7 @@ export async function obtenerProductoDetalle({
 export async function obtenerFacetas({
   categoria,
   subcategoria,
+  subcategoriaHija,
   busqueda = "",
   soloOfertas = false,
   fetchImpl = fetch,
@@ -186,6 +192,7 @@ export async function obtenerFacetas({
   const parametros = new URLSearchParams();
   if (categoria) parametros.set("categoria", categoria);
   if (subcategoria) parametros.set("subcategoria", subcategoria);
+  if (subcategoriaHija) parametros.set("subcategoriaHija", subcategoriaHija);
   if (busqueda.trim()) parametros.set("q", busqueda.trim());
   if (soloOfertas) parametros.set("ofertas", "true");
 

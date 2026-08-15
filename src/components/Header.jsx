@@ -251,6 +251,13 @@ function Header({
     navegar(`/categoria/${cat.slug}?sub=${encodeURIComponent(sub.slug)}`);
   };
 
+  const irASubcategoriaHija = (cat, sub, hija) => {
+    if (!cat || !sub || !hija) return;
+    setCategoriasAbierto(false);
+    cerrarMenu();
+    navegar(`/categoria/${cat.slug}?sub=${encodeURIComponent(sub.slug)}&nivel3=${encodeURIComponent(hija.slug)}`);
+  };
+
   // Abre el mega-menú y asegura una categoría activa (la primera por defecto).
   const abrirCategorias = () => {
     setCategoriasAbierto(true);
@@ -575,14 +582,20 @@ function Header({
                   {subcategoriasActivas.length > 0 ? (
                     <div className={styles.megaSubs}>
                       {subcategoriasActivas.map((sub) => (
-                        <button
-                          key={sub.slug ?? sub.id}
-                          className={styles.megaSub}
-                          type="button"
-                          onClick={() => irASubcategoria(categoriaActivaObj, sub)}
-                        >
-                          {sub.nombre}
-                        </button>
+                        <section className={styles.megaGrupo} key={sub.slug ?? sub.id}>
+                          <button className={styles.megaSubTitulo} type="button" onClick={() => irASubcategoria(categoriaActivaObj, sub)}>
+                            {sub.nombre}
+                          </button>
+                          {(sub.subcategoriasHijas ?? []).length > 0 ? (
+                            <div className={styles.megaHijas}>
+                              {sub.subcategoriasHijas.map((hija) => (
+                                <button key={hija.slug ?? hija.id} className={styles.megaSub} type="button" onClick={() => irASubcategoriaHija(categoriaActivaObj, sub, hija)}>
+                                  {hija.nombre}
+                                </button>
+                              ))}
+                            </div>
+                          ) : <span className={styles.megaSinHijas}>Ver productos</span>}
+                        </section>
                       ))}
                     </div>
                   ) : (

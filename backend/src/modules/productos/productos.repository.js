@@ -19,6 +19,9 @@ function crearInclusionProductoPublico(ahora) {
     subcategoria: {
       select: { id: true, nombre: true, slug: true },
     },
+    subcategoriaHija: {
+      select: { id: true, nombre: true, slug: true },
+    },
     marca: {
       select: { id: true, nombre: true, slug: true, logoUrl: true },
     },
@@ -110,6 +113,8 @@ function crearProductoPublico(producto) {
     precioPorUnidad: crearPrecioPorUnidad(producto),
     fechaVencimiento: producto.fechaVencimiento,
     categoria: producto.categoria,
+    subcategoria: producto.subcategoria,
+    subcategoriaHija: producto.subcategoriaHija,
     marca: producto.marca,
     etiquetas: producto.etiquetas.map((enlace) => enlace.etiqueta),
     imagenes: producto.imagenes.map((imagen) => ({
@@ -120,7 +125,7 @@ function crearProductoPublico(producto) {
   }
 }
 
-function crearFiltrosPublicados({ query, categoria, subcategoria, marca, soloOfertas, precioMin, precioMax, ahora } = {}) {
+function crearFiltrosPublicados({ query, categoria, subcategoria, subcategoriaHija, marca, soloOfertas, precioMin, precioMax, ahora } = {}) {
   const where = { estado: 'PUBLICADO' }
 
   // Solo añadimos condiciones que llegaron desde la capa HTTP. Así Prisma
@@ -131,6 +136,10 @@ function crearFiltrosPublicados({ query, categoria, subcategoria, marca, soloOfe
 
   if (subcategoria) {
     where.subcategoria = { slug: subcategoria }
+  }
+
+  if (subcategoriaHija) {
+    where.subcategoriaHija = { slug: subcategoriaHija }
   }
 
   // Filtro por marca(s): una o varias, por slug (checkboxes del sidebar).

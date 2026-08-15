@@ -38,6 +38,7 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
       query = '',
       categoria = '',
       subcategoria = '',
+      subcategoriaHija = '',
       marca = [],
       soloOfertas = false,
       precioMin = 0,
@@ -49,6 +50,7 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
       const textoBusqueda = normalizarTextoBusqueda(query)
       const categoriaFiltrada = normalizarTextoBusqueda(categoria)
       const subcategoriaFiltrada = normalizarTextoBusqueda(subcategoria)
+      const subcategoriaHijaFiltrada = normalizarTextoBusqueda(subcategoriaHija)
       // Una sola hora por petición evita que la lista y el total discrepen al
       // cruzar el límite temporal de una promoción.
       const ahora = new Date()
@@ -57,6 +59,7 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
         ...(textoBusqueda ? { query: textoBusqueda } : {}),
         ...(categoriaFiltrada ? { categoria: categoriaFiltrada } : {}),
         ...(subcategoriaFiltrada ? { subcategoria: subcategoriaFiltrada } : {}),
+        ...(subcategoriaHijaFiltrada ? { subcategoriaHija: subcategoriaHijaFiltrada } : {}),
         ...(marca.length ? { marca } : {}),
         ...(soloOfertas ? { soloOfertas: true } : {}),
         ...(precioMin !== 0 ? { precioMin } : {}),
@@ -93,15 +96,17 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
 
     // Facetas del sidebar (marcas + rango de precio) para el mismo contexto de la
     // lista, sin considerar marca/precio (para que no se auto-recorten).
-    async obtenerFacetas({ query = '', categoria = '', subcategoria = '', soloOfertas = false } = {}) {
+    async obtenerFacetas({ query = '', categoria = '', subcategoria = '', subcategoriaHija = '', soloOfertas = false } = {}) {
       const textoBusqueda = normalizarTextoBusqueda(query)
       const categoriaFiltrada = normalizarTextoBusqueda(categoria)
       const subcategoriaFiltrada = normalizarTextoBusqueda(subcategoria)
+      const subcategoriaHijaFiltrada = normalizarTextoBusqueda(subcategoriaHija)
       return repositorio.facetasPublicadas({
         ahora: new Date(),
         ...(textoBusqueda ? { query: textoBusqueda } : {}),
         ...(categoriaFiltrada ? { categoria: categoriaFiltrada } : {}),
         ...(subcategoriaFiltrada ? { subcategoria: subcategoriaFiltrada } : {}),
+        ...(subcategoriaHijaFiltrada ? { subcategoriaHija: subcategoriaHijaFiltrada } : {}),
         ...(soloOfertas ? { soloOfertas: true } : {}),
       })
     },

@@ -38,6 +38,8 @@ productosRouter.get('/', async (request, response, next) => {
     typeof request.query.categoria === 'string' ? request.query.categoria : ''
   const subcategoria =
     typeof request.query.subcategoria === 'string' ? request.query.subcategoria : ''
+  const subcategoriaHija =
+    typeof request.query.subcategoriaHija === 'string' ? request.query.subcategoriaHija : ''
   // marca acepta varias separadas por coma: ?marca=kraft,nestle
   const marca =
     typeof request.query.marca === 'string' && request.query.marca.trim()
@@ -87,6 +89,7 @@ productosRouter.get('/', async (request, response, next) => {
       query,
       categoria,
       subcategoria,
+      subcategoriaHija,
       marca,
       soloOfertas,
       precioMin,
@@ -109,10 +112,12 @@ productosRouter.get('/facetas', async (request, response, next) => {
   const categoria = typeof request.query.categoria === 'string' ? request.query.categoria : ''
   const subcategoria =
     typeof request.query.subcategoria === 'string' ? request.query.subcategoria : ''
+  const subcategoriaHija =
+    typeof request.query.subcategoriaHija === 'string' ? request.query.subcategoriaHija : ''
   const soloOfertas = request.query.ofertas === 'true'
 
   try {
-    const facetas = await obtenerFacetas({ query, categoria, subcategoria, soloOfertas })
+    const facetas = await obtenerFacetas({ query, categoria, subcategoria, subcategoriaHija, soloOfertas })
     return response.json({ data: facetas })
   } catch (error) {
     return next(error)

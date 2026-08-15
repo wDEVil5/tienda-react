@@ -6,8 +6,12 @@ import {
   PAGINACION_PREDETERMINADA,
   listarProductos,
   obtenerFacetas,
+  obtenerMasVendidos,
   obtenerProductoPorSlug,
 } from './productos.service.js'
+
+// La vitrina del Home pide pocos productos; acotamos el tope como en el catálogo.
+const LIMITE_MAS_VENDIDOS = 12
 
 const productosRouter = Router()
 
@@ -145,6 +149,28 @@ productosRouter.get('/facetas', async (request, response, next) => {
   try {
     const facetas = await obtenerFacetas({ query, categoria, subcategoria, subcategoriaHija, soloOfertas, soloDisponibles })
     return response.json({ data: facetas })
+  } catch (error) {
+    return next(error)
+  }
+})
+
+// Ranking público de más vendidos para la vitrina del Home. Debe ir ANTES de
+// '/:slug' para no ser capturada como un slug de producto.
+productosRouter.get('/mas-vendidos', async (request, response, next) => {
+  const limit = leerEnteroPositivo(request.query.limit, LIMITE_MAS_VENDIDOS, LIMITE_MAS_VENDIDOS)
+
+  if (limit === null) {
+    return response.status(400).json({
+      error: {
+        code: 'INVALID_QUERY_PARAM',
+        message: `limit debe ser un entero entre 1 y ${LIMITE_MAS_VENDIDOS}.`,
+      },
+    })
+  }
+
+  try {
+    const productos = await obtenerMasVendidos({ limit })
+    return response.json({ data: productos })
   } catch (error) {
     return next(error)
   }

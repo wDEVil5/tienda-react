@@ -307,6 +307,42 @@ export function crearRepositorioProductos(cliente = prisma) {
       return resumen._max.porcentajeDescuento
     },
 
+    // Ranking público de más vendidos de todo el tiempo: agrupa las líneas de
+    // pedido por producto y suma unidades, contando solo ítems de pedidos con un
+    // pago APROBADO (la misma definición de "venta" del tablero). Hidrata solo
+    // los productos que siguen PUBLICADOS y conserva el orden del ranking.
+    async masVendidosPublicados({ limit = 12 } = {}) {
+      const ahora = new Date()
+      // Sobre-pedimos: algún superventas podría estar archivado y se descarta al
+      // hidratar. El índice por producto_id mantiene el groupBy barato.
+      const grupos = await cliente.itemPedido.groupBy({
+        by: ['productoId'],
+        where: {
+          productoId: { not: null },
+          pedido: { pagos: { some: { estado: 'APROBADO' } } },
+        },
+        _sum: { cantidad: true },
+        orderBy: { _sum: { cantidad: 'desc' } },
+        take: limit * 3,
+      })
+
+      const ids = grupos.map((grupo) => grupo.productoId)
+      if (ids.length === 0) return []
+
+      const productos = await cliente.producto.findMany({
+        where: { estado: 'PUBLICADO', id: { in: ids } },
+        include: crearInclusionProductoPublico(ahora),
+      })
+
+      // findMany no respeta el orden de `in`: reordenamos según el ranking.
+      const porId = new Map(productos.map((producto) => [producto.id, producto]))
+      return ids
+        .map((id) => porId.get(id))
+        .filter(Boolean)
+        .slice(0, limit)
+        .map(crearProductoPublico)
+    },
+
     async obtenerPublicadoPorSlug(slug) {
       const ahora = new Date()
       const producto = await cliente.producto.findFirst({

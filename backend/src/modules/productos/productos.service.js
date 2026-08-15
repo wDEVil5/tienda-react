@@ -113,6 +113,13 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
       return producto ? crearProductoPublico(producto) : null
     },
 
+    // Vitrina "Lo más vendido" del Home: ranking real por unidades vendidas.
+    async obtenerMasVendidos({ limit = 12 } = {}) {
+      const productos = await repositorio.masVendidosPublicados({ limit })
+
+      return productos.map(crearProductoPublico)
+    },
+
     // Facetas del sidebar (marcas + rango de precio) para el mismo contexto de la
     // lista, sin considerar marca/precio (para que no se auto-recorten).
     async obtenerFacetas({ query = '', categoria = '', subcategoria = '', subcategoriaHija = '', soloOfertas = false, soloDisponibles = false } = {}) {
@@ -138,3 +145,4 @@ const servicioProductos = crearServicioProductos()
 export const listarProductos = servicioProductos.listarProductos
 export const obtenerProductoPorSlug = servicioProductos.obtenerProductoPorSlug
 export const obtenerFacetas = servicioProductos.obtenerFacetas
+export const obtenerMasVendidos = servicioProductos.obtenerMasVendidos

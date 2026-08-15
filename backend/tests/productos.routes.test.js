@@ -94,6 +94,21 @@ test('GET /api/productos rechaza criterios de orden desconocidos', async () => {
   assert.equal(response.body.error.code, 'INVALID_QUERY_PARAM')
 })
 
+test('GET /api/productos/mas-vendidos devuelve una lista de publicados', async () => {
+  const response = await request(app).get('/api/productos/mas-vendidos')
+
+  assert.equal(response.status, 200)
+  assert.equal(Array.isArray(response.body.data), true)
+  assert.equal(response.body.data.every((producto) => !('estado' in producto)), true)
+})
+
+test('GET /api/productos/mas-vendidos rechaza un límite inválido', async () => {
+  const response = await request(app).get('/api/productos/mas-vendidos?limit=99')
+
+  assert.equal(response.status, 400)
+  assert.equal(response.body.error.code, 'INVALID_QUERY_PARAM')
+})
+
 test('GET /api/productos/:slug devuelve el detalle publicado', async () => {
   const response = await request(app).get('/api/productos/aceite-oliva-extra-virgen-500-ml')
 

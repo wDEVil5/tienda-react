@@ -27,6 +27,11 @@ function crearRepositorioEnMemoria() {
         (producto) => producto.estado === 'PUBLICADO' && producto.slug === slug,
       ) ?? null
     },
+    async masVendidosPublicados({ limit = 12 } = {}) {
+      // Simula un ranking ya resuelto por la base: publicados en orden fijo,
+      // recortado al límite. La lógica real (groupBy) vive en el repositorio.
+      return productos.filter((producto) => producto.estado === 'PUBLICADO').slice(0, limit)
+    },
   }
 }
 
@@ -124,6 +129,22 @@ test('listarProductos ordena antes de paginar', async () => {
     resultado.data.map((producto) => producto.slug),
     ['detergente-liquido-concentrado-3-l', 'aceite-oliva-extra-virgen-500-ml'],
   )
+})
+
+test('obtenerMasVendidos respeta el límite y no filtra el estado', async () => {
+  const resultado = await servicioEnMemoria.obtenerMasVendidos({ limit: 3 })
+
+  assert.equal(resultado.length, 3)
+  assert.equal(resultado.every((producto) => !('estado' in producto)), true)
+})
+
+test('obtenerMasVendidos devuelve copias seguras de los datos', async () => {
+  const primero = await servicioEnMemoria.obtenerMasVendidos({ limit: 1 })
+  primero[0].categoria.nombre = 'Categoría modificada'
+
+  const segundo = await servicioEnMemoria.obtenerMasVendidos({ limit: 1 })
+
+  assert.notEqual(segundo[0].categoria.nombre, 'Categoría modificada')
 })
 
 test('obtenerProductoPorSlug devuelve solo productos publicados', async () => {

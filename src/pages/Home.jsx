@@ -5,113 +5,53 @@ import TiraConfianza from "../components/TiraConfianza.jsx";
 import CarruselProductos from "../components/CarruselProductos.jsx";
 import Categorias from "../components/Categorias.jsx";
 import ComoComprar from "../components/ComoComprar.jsx";
-import Catalogo from "../components/Catalogo.jsx";
 import MarcasGondola from "../components/MarcasGondola.jsx";
 
-// Página de inicio: compone las secciones del Home en orden.
-function Home({
-  productos,
-  busqueda,
-  onBuscar,
-  categoria,
-  onSeleccionarCategoria,
-  soloOfertas,
-  onCambiarSoloOfertas,
-  precioMin,
-  precioMax,
-  onCambiarPrecioMin,
-  onCambiarPrecioMax,
-  orden,
-  onOrdenar,
-  productosCatalogo,
-  categorias,
-  metaCatalogo,
-  ofertasDestacadas,
-  usaPaginacionServidor,
-  cargandoMas,
-  onCargarMas,
-  onVerOfertas,
-  onVerCatalogo,
-}) {
-  // Fila "Destacados": los productos que el admin marcó como destacados; si aún
-  // no hay ninguno, mostramos los primeros del catálogo para que la fila no quede
-  // vacía. Máximo 12 por fila.
+// Página de inicio: banner + carruseles editoriales + marcas. El catálogo
+// completo ya no vive aquí: cada categoría/subcategoría/oferta/búsqueda abre su
+// propia página de listado (ver PaginaCatalogo). El Home solo "muestra y enlaza".
+function Home({ productos, categorias, ofertasDestacadas }) {
+  // Fila "Destacados": los productos marcados como destacados; si aún no hay
+  // ninguno, mostramos los primeros para que la fila no quede vacía. Máx. 12.
   const destacados = productos.filter((producto) => producto.destacado);
   const filaDestacados = (destacados.length ? destacados : productos).slice(0, 12);
 
-  // Fila "Ofertas de la semana": productos con precio anterior. El "Hasta X%" sale
-  // del resumen global de la API (todas las ofertas, no solo las cargadas); si no,
-  // se deriva de las ofertas visibles.
+  // Fila "Ofertas de la semana": productos con precio anterior. El "Hasta X%"
+  // sale del resumen global de la API; si no, se deriva de las ofertas visibles.
   const ofertas = productos.filter((producto) => producto.precioAnterior !== null);
   const filaOfertas = ofertas.slice(0, 12);
   const maxDescuento =
     ofertasDestacadas?.meta?.maxDescuento ??
     (ofertas.length
-      ? Math.max(
-          ...ofertas.map((p) => Math.round((1 - p.precio / p.precioAnterior) * 100)),
-        )
+      ? Math.max(...ofertas.map((p) => Math.round((1 - p.precio / p.precioAnterior) * 100)))
       : 0);
 
-  // Filas por categoría: una por cada categoría con productos suficientes. Se
-  // derivan de los propios productos (sin depender de otra fuente) y se limitan a
-  // unas pocas para no alargar la portada; el catálogo completo va más abajo.
+  // Filas por categoría: una por cada categoría con productos suficientes. El
+  // slug (para el enlace a su página) sale del propio producto.
   const MAX_FILAS_CATEGORIA = 3;
   const filasCategoria = [...new Set(productos.map((p) => p.categoria))]
-    .map((nombre) => ({
-      nombre,
-      productos: productos.filter((p) => p.categoria === nombre),
-    }))
-    .filter((fila) => fila.productos.length >= 4)
+    .map((nombre) => {
+      const productosCategoria = productos.filter((p) => p.categoria === nombre);
+      return { nombre, slug: productosCategoria[0]?.categoriaSlug, productos: productosCategoria };
+    })
+    .filter((fila) => fila.slug && fila.productos.length >= 4)
     .slice(0, MAX_FILAS_CATEGORIA);
-
-  // Aplica el filtro de una categoría y limpia búsqueda/ofertas, como en el Hero.
-  const verCategoria = (nombre) => {
-    onBuscar("");
-    onSeleccionarCategoria(nombre);
-    onCambiarSoloOfertas(false);
-  };
 
   return (
     <>
-      <BannerCarrusel
-        fallback={
-          <Hero
-            productos={productos}
-            busqueda={busqueda}
-            onBuscar={onBuscar}
-            onSeleccionarCategoria={onSeleccionarCategoria}
-            onCambiarSoloOfertas={onCambiarSoloOfertas}
-            onVerOfertas={onVerOfertas}
-            onVerCatalogo={onVerCatalogo}
-          />
-        }
-      />
+      <BannerCarrusel fallback={<Hero productos={productos} />} />
       <CarruselProductos
         eyebrow="Selección de la semana"
         titulo="Destacados"
         productos={filaDestacados}
-        accion={
-          <Link to="/#catalogo" onClick={onVerCatalogo}>
-            Ver todo →
-          </Link>
-        }
+        accion={<Link to="/catalogo">Ver todo →</Link>}
       />
-      <Categorias
-        productos={productos}
-        categorias={categorias}
-        onBuscar={onBuscar}
-        onSeleccionarCategoria={onSeleccionarCategoria}
-        onCambiarSoloOfertas={onCambiarSoloOfertas}
-      />
+      <Categorias productos={productos} categorias={categorias} />
       <CarruselProductos
         eyebrow={maxDescuento ? `Hasta ${maxDescuento}% menos` : "Precios rebajados"}
         titulo="Ofertas de la semana"
         productos={filaOfertas}
-        accion={
-          <Link to="/#catalogo" onClick={onVerOfertas}>
-            Ver ofertas →
-          </Link>
-        }
+        accion={<Link to="/ofertas">Ver ofertas →</Link>}
       />
       {filasCategoria.map((fila) => (
         <CarruselProductos
@@ -119,34 +59,9 @@ function Home({
           eyebrow="Categoría"
           titulo={fila.nombre}
           productos={fila.productos.slice(0, 12)}
-          accion={
-            <Link to="/#catalogo" onClick={() => verCategoria(fila.nombre)}>
-              Ver todo →
-            </Link>
-          }
+          accion={<Link to={`/categoria/${fila.slug}`}>Ver todo →</Link>}
         />
       ))}
-      <Catalogo
-        productos={productosCatalogo}
-        productosBase={productos}
-        categorias={categorias}
-        busqueda={busqueda}
-        onBuscar={onBuscar}
-        categoria={categoria}
-        onSeleccionarCategoria={onSeleccionarCategoria}
-        soloOfertas={soloOfertas}
-        onCambiarSoloOfertas={onCambiarSoloOfertas}
-        precioMin={precioMin}
-        precioMax={precioMax}
-        onCambiarPrecioMin={onCambiarPrecioMin}
-        onCambiarPrecioMax={onCambiarPrecioMax}
-        orden={orden}
-        onOrdenar={onOrdenar}
-        metaCatalogo={metaCatalogo}
-        usaPaginacionServidor={usaPaginacionServidor}
-        cargandoMas={cargandoMas}
-        onCargarMas={onCargarMas}
-      />
       <TiraConfianza />
       <ComoComprar />
       <MarcasGondola />

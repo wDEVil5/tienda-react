@@ -1,30 +1,20 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import styles from "./Hero.module.css";
 import { useReglas } from "../context/ReglasContext.jsx";
 
-// Sección héroe del Home: fondo neblina claro a todo el ancho, contenido
-// centrado. El buscador vive en el header (siempre visible); aquí quedan los
-// accesos por categoría, los CTA y la línea de estado de la tienda.
-function Hero({
-  productos,
-  onBuscar,
-  onSeleccionarCategoria,
-  onCambiarSoloOfertas,
-  onVerOfertas,
-  onVerCatalogo,
-}) {
+// Sección héroe del Home (fallback del banner): accesos por categoría, CTA y la
+// línea de estado de la tienda. Todo enlaza a las páginas de listado.
+function Hero({ productos }) {
   const { corteRetiroHoy } = useReglas();
-  const navegar = useNavigate();
 
-  // Accesos rápidos: primeras 3 categorías del catálogo + chip de ofertas.
-  const accesos = [...new Set(productos.map((p) => p.categoria))].slice(0, 3);
-
-  const seleccionarCategoria = (categoria) => {
-    onBuscar("");
-    onSeleccionarCategoria(categoria);
-    onCambiarSoloOfertas(false);
-    navegar("/#catalogo");
-  };
+  // Accesos rápidos: primeras 3 categorías del catálogo (con su slug para el
+  // enlace) + chip de ofertas.
+  const accesos = [...new Set(productos.map((p) => p.categoria))]
+    .slice(0, 3)
+    .map((nombre) => ({
+      nombre,
+      slug: productos.find((p) => p.categoria === nombre)?.categoriaSlug ?? nombre,
+    }));
 
   return (
     <section className={styles.hero}>
@@ -43,33 +33,21 @@ function Hero({
         {/* Accesos rápidos por categoría; el chip de ofertas va diferenciado. */}
         <div className={styles.accesos} aria-label="Categorías destacadas">
           {accesos.map((acceso) => (
-            <button
-              key={acceso}
-              type="button"
-              className={styles.acceso}
-              onClick={() => seleccionarCategoria(acceso)}
-            >
-              {acceso}
-            </button>
+            <Link key={acceso.nombre} className={styles.acceso} to={`/categoria/${acceso.slug}`}>
+              {acceso.nombre}
+            </Link>
           ))}
-          <button
-            type="button"
-            className={`${styles.acceso} ${styles.accesoOferta}`}
-            onClick={() => {
-              onVerOfertas();
-              navegar("/#catalogo");
-            }}
-          >
+          <Link className={`${styles.acceso} ${styles.accesoOferta}`} to="/ofertas">
             Ofertas −20%
-          </button>
+          </Link>
         </div>
 
         {/* Un único CTA sólido + el secundario como enlace subrayado. */}
         <div className={styles.acciones}>
-          <Link to="/#catalogo" className={styles.btnPrimario} onClick={onVerCatalogo}>
+          <Link to="/catalogo" className={styles.btnPrimario}>
             Ver el catálogo
           </Link>
-          <Link to="/#catalogo" className={styles.btnSecundario} onClick={onVerOfertas}>
+          <Link to="/ofertas" className={styles.btnSecundario}>
             Ofertas de la semana
           </Link>
         </div>

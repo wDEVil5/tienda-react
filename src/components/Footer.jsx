@@ -32,27 +32,15 @@ function AcordeonCol({ titulo, children }) {
   );
 }
 
-function Footer({
-  productos,
-  onBuscar,
-  onSeleccionarCategoria,
-  onCambiarSoloOfertas,
-  onVerOfertas,
-  onVerCatalogo,
-  onAbrirAcceso,
-}) {
-  // La lista se deriva del catálogo disponible. Cuando la API propia entregue
-  // categorías, el footer las reflejará sin mantener una segunda lista manual.
-  const categorias = [...new Set(productos.map((producto) => producto.categoria))].slice(
-    0,
-    LIMITE_CATEGORIAS_FOOTER,
-  );
-
-  const seleccionarCategoria = (categoria) => {
-    onBuscar("");
-    onSeleccionarCategoria(categoria);
-    onCambiarSoloOfertas(false);
-  };
+function Footer({ productos, onAbrirAcceso }) {
+  // La lista se deriva del catálogo disponible; cada categoría enlaza a su página
+  // (/categoria/:slug). El slug sale del propio producto.
+  const categorias = [...new Set(productos.map((producto) => producto.categoria))]
+    .slice(0, LIMITE_CATEGORIAS_FOOTER)
+    .map((nombre) => ({
+      nombre,
+      slug: productos.find((p) => p.categoria === nombre)?.categoriaSlug ?? nombre,
+    }));
 
   // Datos de marca desde la identidad de la tienda (editable en /admin/identidad).
   const identidad = useIdentidad();
@@ -174,20 +162,19 @@ function Footer({
 
           {/* En escritorio se ven como columnas; en móvil son acordeones. */}
           <AcordeonCol titulo="Comprar">
-            <Link to="/#catalogo" className={styles.enlace} onClick={onVerCatalogo}>
+            <Link to="/catalogo" className={styles.enlace}>
               Todo el catálogo
             </Link>
-            <Link to="/#catalogo" className={styles.enlace} onClick={onVerOfertas}>
+            <Link to="/ofertas" className={styles.enlace}>
               Ofertas de la semana
             </Link>
             {categorias.map((categoria) => (
               <Link
-                key={categoria}
-                to="/#catalogo"
+                key={categoria.nombre}
+                to={`/categoria/${categoria.slug}`}
                 className={styles.enlace}
-                onClick={() => seleccionarCategoria(categoria)}
               >
-                {categoria}
+                {categoria.nombre}
               </Link>
             ))}
           </AcordeonCol>
@@ -217,7 +204,7 @@ function Footer({
             )}
             <Link to="/mi-cuenta/pedidos" className={styles.enlace}>Mis pedidos</Link>
             <Link to="/mi-cuenta/datos" className={styles.enlace}>Mi perfil</Link>
-            <Link to="/#catalogo" className={styles.enlace} onClick={onVerCatalogo}>
+            <Link to="/catalogo" className={styles.enlace}>
               Volver a comprar
             </Link>
           </AcordeonCol>

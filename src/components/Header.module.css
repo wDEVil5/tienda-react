@@ -342,7 +342,11 @@
    Se despliega al pasar el mouse (ver Header.jsx). */
 .megaPanel {
   position: absolute;
-  top: calc(100% + 8px);
+  /* Pegado al botón (sin hueco) para que no exista una zona muerta entre ambos
+     que dispare el cierre al pasar el mouse. La separación visual la da la sombra.
+     El margen superior transparente se hace con un borde, que sí queda dentro del
+     área hovereable del panel. */
+  top: 100%;
   left: 0;
   z-index: 120;
   display: flex;
@@ -350,19 +354,11 @@
   max-height: 72vh;
   background-color: #fff;
   border: 1px solid var(--bnv-borde);
+  border-top: 8px solid transparent;
+  background-clip: padding-box;
   border-radius: var(--bnv-radio-card);
   box-shadow: var(--bnv-sombra);
   overflow: hidden;
-}
-/* Puente invisible sobre el hueco botón↔panel: evita que el mega-menú se cierre
-   al cruzar el espacio con el mouse. */
-.megaPanel::before {
-  content: "";
-  position: absolute;
-  top: -8px;
-  left: 0;
-  right: 0;
-  height: 8px;
 }
 .megaCategorias {
   list-style: none;

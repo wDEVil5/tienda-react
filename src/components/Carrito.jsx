@@ -8,7 +8,7 @@ import BarraEnvioGratis from "./BarraEnvioGratis.jsx";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 import { useReglas } from "../context/ReglasContext.jsx";
 
-function Carrito({ onCerrar, abierto, productos, onVerOfertas, onVerCatalogo }) {
+function Carrito({ onCerrar, abierto, productos }) {
   const {
     carrito,
     totalItems,
@@ -151,24 +151,10 @@ function Carrito({ onCerrar, abierto, productos, onVerOfertas, onVerCatalogo }) 
                 : "Explora el catálogo y encuentra productos para tu carrito."}
             </p>
             <div className={styles.vacioAcciones}>
-              <Link
-                className={styles.vacioBotonPrimario}
-                to="/#catalogo"
-                onClick={() => {
-                  onVerOfertas();
-                  onCerrar();
-                }}
-              >
+              <Link className={styles.vacioBotonPrimario} to="/ofertas" onClick={onCerrar}>
                 Ver ofertas
               </Link>
-              <Link
-                className={styles.vacioBotonSecundario}
-                to="/#catalogo"
-                onClick={() => {
-                  onVerCatalogo();
-                  onCerrar();
-                }}
-              >
+              <Link className={styles.vacioBotonSecundario} to="/catalogo" onClick={onCerrar}>
                 Ir al catálogo
               </Link>
             </div>

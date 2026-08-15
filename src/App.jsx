@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Navigate, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import Home from "./pages/Home.jsx";
+import PaginaCatalogo from "./pages/PaginaCatalogo.jsx";
 import ProductoDetalle from "./pages/ProductoDetalle.jsx";
 import Checkout from "./pages/Checkout.jsx";
 import CheckoutPago from "./pages/CheckoutPago.jsx";
@@ -38,110 +39,44 @@ import Footer from "./components/Footer.jsx";
 import RutaProtegida from "./components/RutaProtegida.jsx";
 import { obtenerCatalogo, obtenerCategorias } from "./services/productosApi.js";
 
-const PRODUCTOS_POR_PAGINA = 10;
-
 function App() {
   const ubicacion = useLocation();
   const navegar = useNavigate();
   const esAdmin = ubicacion.pathname.startsWith("/admin");
   const [busqueda, setBusqueda] = useState("");
-  // Header y catálogo comparten estos filtros: una sugerencia puede cambiar la
-  // categoría y el catálogo la refleja sin depender de un backend todavía.
-  const [categoria, setCategoria] = useState("todas");
-  // Drill-down del mega-menú: slug de subcategoría ("" = ninguna). Es un filtro
-  // aparte de la categoría; cualquier otra navegación lo limpia.
-  const [subcategoria, setSubcategoria] = useState("");
-  const [soloOfertas, setSoloOfertas] = useState(false);
-  const [orden, setOrden] = useState("relevancia");
-  const [precioMin, setPrecioMin] = useState(null);
-  const [precioMax, setPrecioMax] = useState(null);
-  const [productos, setProductos] = useState([]); // base: hero, detalle, sugerencias y footer
+  const [productos, setProductos] = useState([]); // base para Home (carruseles) y fichas
   const [categoriasDisponibles, setCategoriasDisponibles] = useState([]);
-  const [productosCatalogo, setProductosCatalogo] = useState([]); // resultado de la consulta actual
-  const [metaCatalogo, setMetaCatalogo] = useState(null);
   const [fuenteCatalogo, setFuenteCatalogo] = useState(null);
   const [ofertasDestacadas, setOfertasDestacadas] = useState(null);
-  const [cargandoMas, setCargandoMas] = useState(false);
   const [cargando, setCargando] = useState(true); // ¿esta cargando?
   const [error, setError] = useState(null); // null = sin error, string = mensaje a mostrar
+  const [reintento, setReintento] = useState(0);
 
   const [carritoAbierto, setCarritoAbierto] = useState(false);
   const [accesoAbierto, setAccesoAbierto] = useState(false);
   const [modoAcceso, setModoAcceso] = useState("login");
 
-  // La búsqueda espera un instante antes de consultar. Esto evita una petición
-  // por cada tecla y mantiene la respuesta del servidor como fuente de verdad.
-  const [busquedaParaApi, setBusquedaParaApi] = useState("");
-  useEffect(() => {
-    const espera = window.setTimeout(() => {
-      setBusquedaParaApi(busqueda);
-    }, 250);
-
-    return () => window.clearTimeout(espera);
-  }, [busqueda]);
-
+  // Categorías (con sus subcategorías) para el header y el Home.
   useEffect(() => {
     if (esAdmin) return;
-
     obtenerCategorias().then((categorias) => {
       if (categorias) setCategoriasDisponibles(categorias);
     });
   }, [esAdmin]);
 
+  // Carga base de la tienda: una página de productos que alimenta los carruseles
+  // del Home y las fichas. El catálogo por categoría/búsqueda/ofertas vive en su
+  // propia página (PaginaCatalogo), que hace sus propias consultas por URL.
   useEffect(() => {
-    // Sin API propia no hay sección editorial: no consultamos ni tocamos el
-    // estado aquí. La versión mostrada se deriva en render (ver más abajo), así
-    // el effect solo asigna estado en el camino asíncrono del .then().
-    if (esAdmin || fuenteCatalogo !== "api") return undefined;
-
+    if (esAdmin) return undefined;
     let vigente = true;
-
-    // Esta consulta editorial es independiente de los filtros del catálogo.
-    // Solo corre con API propia: la demo conserva la derivación de Fake Store.
-    obtenerCatalogo({ soloOfertas: true, limit: 3 }).then((resultado) => {
-      if (vigente && resultado.fuente === "api") {
-        setOfertasDestacadas({
-          productos: resultado.productos,
-          meta: resultado.meta,
-        });
-      }
-    });
-
-    return () => {
-      vigente = false;
-    };
-  }, [esAdmin, fuenteCatalogo]);
-
-  // La interfaz muestra el nombre, pero la API filtra con el slug estable. No
-  // derivamos el slug desde el texto: lo conservamos en el contrato de datos.
-  const categoriaParaApi =
-    categoria === "todas"
-      ? undefined
-      : categoriasDisponibles.find((categoriaActual) => categoriaActual.nombre === categoria)
-          ?.slug ??
-        productos.find((producto) => producto.categoria === categoria)?.categoriaSlug;
-
-  const cargarProductos = useCallback(({ page = 1, agregar = false } = {}) => {
-    obtenerCatalogo({
-      orden,
-      busqueda: busquedaParaApi,
-      categoria: categoriaParaApi,
-      subcategoria: subcategoria || undefined,
-      soloOfertas,
-      precioMin,
-      precioMax,
-      page,
-      limit: PRODUCTOS_POR_PAGINA,
-    })
+    obtenerCatalogo({ limit: 48 })
       .then((resultado) => {
-        setProductosCatalogo((actuales) =>
-          agregar ? [...actuales, ...resultado.productos] : resultado.productos,
-        );
-        setMetaCatalogo(resultado.meta);
+        if (!vigente) return;
+        setProductos(resultado.productos);
         setFuenteCatalogo(resultado.fuente);
-
-        // Sin API propia no existe /categorias. Fake Store llega completo, por
-        // lo que podemos conservar una lista temporal con el mismo contrato.
+        // Sin API propia no existe /categorias: derivamos una lista temporal de
+        // Fake Store con el mismo contrato (sin subcategorías).
         if (resultado.fuente === "fallback") {
           const conteos = new Map();
           resultado.productos.forEach((producto) => {
@@ -155,39 +90,32 @@ function App() {
           });
           setCategoriasDisponibles([...conteos.values()]);
         }
-
-        // El Home conserva una base independiente. Acumulamos los productos ya
-        // vistos para que un enlace de la página 2 siga encontrando su ficha.
-        setProductos((actuales) => {
-          const porId = new Map(actuales.map((producto) => [producto.id, producto]));
-          resultado.productos.forEach((producto) => porId.set(producto.id, producto));
-          return [...porId.values()];
-        });
+        setError(null);
       })
       .catch(() => {
-        setError("No se pudo cargar el catálogo. Revisa tu conexión e intenta de nuevo.");
+        if (vigente) setError("No se pudo cargar el catálogo. Revisa tu conexión e intenta de nuevo.");
       })
       .finally(() => {
-        setCargando(false);
-        setCargandoMas(false);
+        if (vigente) setCargando(false);
       });
-  }, [
-    busquedaParaApi,
-    categoriaParaApi,
-    subcategoria,
-    orden,
-    soloOfertas,
-    precioMin,
-    precioMax,
-  ]);
+    return () => {
+      vigente = false;
+    };
+  }, [esAdmin, reintento]);
 
+  // Ofertas destacadas del Home (solo con API propia). Independiente de la base.
   useEffect(() => {
-    // Si el usuario aún está escribiendo, esperamos al término diferido. Así
-    // no combinamos una categoría nueva con la búsqueda anterior por 250 ms.
-    if (esAdmin || busqueda !== busquedaParaApi) return;
-
-    cargarProductos();
-  }, [esAdmin, busqueda, busquedaParaApi, cargarProductos]);
+    if (esAdmin || fuenteCatalogo !== "api") return undefined;
+    let vigente = true;
+    obtenerCatalogo({ soloOfertas: true, limit: 3 }).then((resultado) => {
+      if (vigente && resultado.fuente === "api") {
+        setOfertasDestacadas({ productos: resultado.productos, meta: resultado.meta });
+      }
+    });
+    return () => {
+      vigente = false;
+    };
+  }, [esAdmin, fuenteCatalogo]);
 
   // React Router actualiza la URL, pero no desplaza automáticamente al hash.
   // Tras llegar a la sección limpiamos el hash: al recargar, la tienda vuelve
@@ -210,53 +138,7 @@ function App() {
   const reintentar = () => {
     setCargando(true);
     setError(null);
-    cargarProductos();
-  };
-
-  const cargarMasProductos = () => {
-    if (!metaCatalogo || cargandoMas || metaCatalogo.page >= metaCatalogo.totalPages) {
-      return;
-    }
-
-    setCargandoMas(true);
-    cargarProductos({ page: metaCatalogo.page + 1, agregar: true });
-  };
-
-  // Accesos globales: todos los CTA que hablan de ofertas aplican el mismo
-  // filtro real. Así no depende de qué sección originó la navegación.
-  const verOfertas = () => {
-    setSubcategoria("");
-    setBusqueda("");
-    setCategoria("todas");
-    setSoloOfertas(true);
-  };
-
-  const verCatalogo = () => {
-    setSubcategoria("");
-    setBusqueda("");
-    setCategoria("todas");
-    setSoloOfertas(false);
-  };
-
-  // El drill-down por subcategoría se descarta al hacer cualquier otra navegación
-  // (buscar o elegir categoría), para no combinar filtros que confundirían el
-  // resultado. Estos wrappers reemplazan a los setters crudos que van a los hijos.
-  const buscar = (texto) => {
-    setSubcategoria("");
-    setBusqueda(texto);
-  };
-
-  const seleccionarCategoria = (nombre) => {
-    setSubcategoria("");
-    setCategoria(nombre);
-  };
-
-  // Click en una subcategoría del mega-menú: activa ese filtro y resetea el resto.
-  const elegirSubcategoria = (slug) => {
-    setSubcategoria(slug);
-    setCategoria("todas");
-    setSoloOfertas(false);
-    setBusqueda("");
+    setReintento((n) => n + 1);
   };
 
   // Las destacadas solo valen con API propia. Derivarlas aquí (en vez de
@@ -330,12 +212,7 @@ function App() {
         <Header
           categorias={categoriasDisponibles}
           busqueda={busqueda}
-          onBuscar={buscar}
-          onSeleccionarCategoria={seleccionarCategoria}
-          onSeleccionarSubcategoria={elegirSubcategoria}
-          onCambiarSoloOfertas={setSoloOfertas}
-          onVerOfertas={verOfertas}
-          onVerCatalogo={verCatalogo}
+          onBuscar={setBusqueda}
           onAbrirCarrito={() => setCarritoAbierto(true)}
           onAbrirAcceso={(modo = "login") => {
             setModoAcceso(modo);
@@ -355,29 +232,26 @@ function App() {
             element={
               <Home
                 productos={productos}
-                busqueda={busqueda}
-                onBuscar={buscar}
-                categoria={categoria}
-                onSeleccionarCategoria={seleccionarCategoria}
-                soloOfertas={soloOfertas}
-                onCambiarSoloOfertas={setSoloOfertas}
-                precioMin={precioMin}
-                precioMax={precioMax}
-                onCambiarPrecioMin={setPrecioMin}
-                onCambiarPrecioMax={setPrecioMax}
-                orden={orden}
-                onOrdenar={setOrden}
-                productosCatalogo={productosCatalogo}
                 categorias={categoriasDisponibles}
-                metaCatalogo={metaCatalogo}
                 ofertasDestacadas={ofertasDestacadasVigentes}
-                usaPaginacionServidor={fuenteCatalogo === "api"}
-                cargandoMas={cargandoMas}
-                onCargarMas={cargarMasProductos}
-                onVerOfertas={verOfertas}
-                onVerCatalogo={verCatalogo}
               />
             }
+          />
+          <Route
+            path="/categoria/:slug"
+            element={<PaginaCatalogo key={ubicacion.pathname + ubicacion.search} categorias={categoriasDisponibles} />}
+          />
+          <Route
+            path="/catalogo"
+            element={<PaginaCatalogo key={ubicacion.pathname + ubicacion.search} categorias={categoriasDisponibles} />}
+          />
+          <Route
+            path="/ofertas"
+            element={<PaginaCatalogo key={ubicacion.pathname + ubicacion.search} categorias={categoriasDisponibles} />}
+          />
+          <Route
+            path="/buscar"
+            element={<PaginaCatalogo key={ubicacion.pathname + ubicacion.search} categorias={categoriasDisponibles} />}
           />
           <Route
             path="/producto/:slug"
@@ -452,8 +326,6 @@ function App() {
         onCerrar={() => setCarritoAbierto(false)}
         abierto={carritoAbierto}
         productos={productos}
-        onVerOfertas={verOfertas}
-        onVerCatalogo={verCatalogo}
       />
 
       {/* Los avisos normales siguen flotando siempre. Al borrar dentro del
@@ -463,11 +335,6 @@ function App() {
       {!esCheckout && !esPantallaPrivada && (
         <Footer
           productos={productos}
-          onBuscar={buscar}
-          onSeleccionarCategoria={seleccionarCategoria}
-          onCambiarSoloOfertas={setSoloOfertas}
-          onVerOfertas={verOfertas}
-          onVerCatalogo={verCatalogo}
           onAbrirAcceso={(modo = "login") => {
             setModoAcceso(modo);
             setAccesoAbierto(true);

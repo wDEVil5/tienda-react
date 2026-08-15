@@ -101,7 +101,7 @@ function iconoCategoria(nombre) {
 // Enlaces del segundo piso (además del desplegable de Categorías). Los hashes
 // también funcionan desde una ficha de producto.
 const NAV = [
-  { etiqueta: "Ofertas", hash: "/#catalogo", accion: "ofertas" },
+  { etiqueta: "Ofertas", hash: "/ofertas" },
   { etiqueta: "Cómo comprar", hash: "/#como-comprar" },
   { etiqueta: "Nuestra tienda", hash: "/#nuestra-tienda" },
 ];
@@ -139,11 +139,6 @@ function Header({
   categorias = [],
   busqueda = "",
   onBuscar,
-  onSeleccionarCategoria,
-  onSeleccionarSubcategoria,
-  onCambiarSoloOfertas,
-  onVerOfertas,
-  onVerCatalogo,
   onAbrirCarrito,
   onAbrirAcceso,
 }) {
@@ -168,7 +163,7 @@ function Header({
   const buscadorRef = useRef(null);
   // "Lo más buscado": accesos rápidos a las primeras categorías del catálogo (no
   // inventamos analítica de búsquedas; usamos las secciones reales de la tienda).
-  const populares = categorias.slice(0, 6).map((categoria) => categoria.nombre);
+  const populares = categorias.slice(0, 6);
   const [posicionCuenta, setPosicionCuenta] = useState({ top: 0, left: 0 });
   const cerrarMenu = () => setMenuAbierto(false);
   const cerrarCuenta = () => setCuentaAbierta(false);
@@ -225,16 +220,14 @@ function Header({
     });
   };
 
-  // Ejecuta una búsqueda de texto: aplica el filtro, la recuerda y lleva al
-  // catálogo. La usan tanto el submit del formulario como las búsquedas recientes.
+  // Ejecuta una búsqueda de texto: la recuerda y abre la página de resultados.
   const ejecutarBusqueda = (termino) => {
     const limpio = termino.trim();
+    if (!limpio) return;
     onBuscar?.(limpio);
-    onSeleccionarCategoria?.("todas");
-    onCambiarSoloOfertas?.(false);
-    if (limpio) agregarReciente(limpio);
+    agregarReciente(limpio);
     setBuscadorAbierto(false);
-    navegar("/#catalogo");
+    navegar(`/buscar?q=${encodeURIComponent(limpio)}`);
   };
 
   const buscarEnCatalogo = (evento) => {
@@ -242,27 +235,20 @@ function Header({
     ejecutarBusqueda(busqueda);
   };
 
-  // Chip de "Lo más buscado": salta directo a esa categoría (resultado asegurado).
-  const elegirCategoriaBuscador = (nombre) => {
-    seleccionarCategoria(nombre);
+  // Navega a la página de una categoría o subcategoría (cierra menús abiertos).
+  const irACategoria = (cat) => {
+    if (!cat) return;
+    setCategoriasAbierto(false);
     setBuscadorAbierto(false);
+    cerrarMenu();
+    navegar(`/categoria/${cat.slug}`);
   };
 
-  const seleccionarCategoria = (nombre) => {
-    onBuscar?.("");
-    onSeleccionarCategoria?.(nombre);
-    onCambiarSoloOfertas?.(false);
+  const irASubcategoria = (cat, sub) => {
+    if (!cat || !sub) return;
     setCategoriasAbierto(false);
     cerrarMenu();
-    navegar("/#catalogo");
-  };
-
-  // Click en una subcategoría del mega-menú: activa el filtro real del catálogo
-  // por su slug (?subcategoria=) y lleva al catálogo.
-  const elegirSubcategoria = (slug) => {
-    onSeleccionarSubcategoria?.(slug);
-    setCategoriasAbierto(false);
-    navegar("/#catalogo");
+    navegar(`/categoria/${cat.slug}?sub=${encodeURIComponent(sub.slug)}`);
   };
 
   // Abre el mega-menú y asegura una categoría activa (la primera por defecto).
@@ -382,9 +368,7 @@ function Header({
     </>
   );
 
-  const alNavegar = (item) => {
-    if (item.accion === "catalogo") onVerCatalogo?.();
-    if (item.accion === "ofertas") onVerOfertas?.();
+  const alNavegar = () => {
     cerrarMenu();
   };
 
@@ -457,14 +441,14 @@ function Header({
                 <div className={styles.buscadorCol}>
                   <p className={styles.buscadorColTitulo}>Lo más buscado</p>
                   <div className={styles.chips}>
-                    {populares.map((termino) => (
+                    {populares.map((categoria) => (
                       <button
-                        key={termino}
+                        key={categoria.slug ?? categoria.nombre}
                         type="button"
                         className={styles.chip}
-                        onClick={() => elegirCategoriaBuscador(termino)}
+                        onClick={() => irACategoria(categoria)}
                       >
-                        {termino}
+                        {categoria.nombre}
                       </button>
                     ))}
                   </div>
@@ -549,7 +533,7 @@ function Header({
                         role="menuitem"
                         onMouseEnter={() => setCategoriaActiva(categoria.nombre)}
                         onFocus={() => setCategoriaActiva(categoria.nombre)}
-                        onClick={() => seleccionarCategoria(categoria.nombre)}
+                        onClick={() => irACategoria(categoria)}
                       >
                         <span className={styles.megaCategoriaIcono}>{iconoCategoria(categoria.nombre)}</span>
                         <span className={styles.megaCategoriaNombre}>{categoria.nombre}</span>
@@ -564,7 +548,7 @@ function Header({
                     <button
                       className={styles.megaVerTodo}
                       type="button"
-                      onClick={() => seleccionarCategoria(categoriaActiva)}
+                      onClick={() => irACategoria(categoriaActivaObj)}
                     >
                       Ver todo →
                     </button>
@@ -576,7 +560,7 @@ function Header({
                           key={sub.slug ?? sub.id}
                           className={styles.megaSub}
                           type="button"
-                          onClick={() => elegirSubcategoria(sub.slug)}
+                          onClick={() => irASubcategoria(categoriaActivaObj, sub)}
                         >
                           {sub.nombre}
                         </button>
@@ -623,7 +607,7 @@ function Header({
                 key={categoria.slug ?? categoria.nombre}
                 className={styles.menuLink}
                 type="button"
-                onClick={() => seleccionarCategoria(categoria.nombre)}
+                onClick={() => irACategoria(categoria)}
               >
                 {categoria.nombre}
               </button>

@@ -6,6 +6,12 @@ const incluirProductoAdmin = {
   marca: true,
   imagenes: { orderBy: { orden: 'asc' } },
   etiquetas: { include: { etiqueta: true } },
+  atributos: {
+    include: {
+      atributo: { select: { id: true, nombre: true, slug: true, tipo: true } },
+      opcion: { select: { id: true, nombre: true, slug: true } },
+    },
+  },
 }
 
 // El listado usa una proyección pequeña: el editor completo se solicita solo
@@ -93,6 +99,21 @@ export function crearRepositorioProductosAdmin(cliente = prisma) {
 
     contarEtiquetas(ids) {
       return cliente.etiqueta.count({ where: { id: { in: ids } } })
+    },
+
+    // Una sola consulta comprueba atributo + opción + categoría. El servicio
+    // compara su conteo con el payload para rechazar combinaciones cruzadas.
+    contarAtributosValidos(categoriaId, atributos) {
+      return cliente.opcionAtributo.count({
+        where: {
+          atributo: {
+            categoriaId,
+            activo: true,
+          },
+          activa: true,
+          OR: atributos.map(({ atributoId, opcionId }) => ({ id: opcionId, atributoId })),
+        },
+      })
     },
 
     async reemplazarImagenesPorProducto(id, imagenes) {

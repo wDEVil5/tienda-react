@@ -2,6 +2,14 @@ import { z } from 'zod'
 
 const uuid = z.string().uuid()
 const textoOpcional = (maximo) => z.string().trim().min(1).max(maximo).nullable().optional()
+const atributoProducto = z.object({
+  atributoId: uuid,
+  opcionId: uuid,
+}).strict()
+const atributosProducto = z.array(atributoProducto).max(30).refine(
+  (atributos) => new Set(atributos.map((atributo) => atributo.atributoId)).size === atributos.length,
+  'atributos no puede repetir un atributo.',
+)
 
 // PATCH acepta solo cambios explícitos. El campo nombreBusqueda queda fuera:
 // se deriva siempre del nombre en el servicio, no desde el panel.
@@ -29,6 +37,7 @@ export const esquemaCambiosProductoAdmin = z.object({
     (ids) => new Set(ids).size === ids.length,
     'etiquetaIds no puede repetir etiquetas.',
   ).optional(),
+  atributos: atributosProducto.optional(),
 }).strict().refine(
   (cambios) => Object.keys(cambios).length > 0,
   {
@@ -73,6 +82,7 @@ const esquemaProductoNuevoAdmin = z.object({
     (ids) => new Set(ids).size === ids.length,
     'etiquetaIds no puede repetir etiquetas.',
   ).optional(),
+  atributos: atributosProducto.optional(),
 }).strict().refine(
   (producto) =>
     producto.precioAnterior === undefined ||

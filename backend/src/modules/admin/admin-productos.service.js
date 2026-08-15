@@ -76,6 +76,13 @@ function crearProductoParaEdicion(producto) {
       nombre: etiqueta.nombre,
       slug: etiqueta.slug,
     })),
+    atributos: (producto.atributos ?? []).map(({ atributo, opcion }) => ({
+      atributoId: atributo.id,
+      atributoNombre: atributo.nombre,
+      atributoTipo: atributo.tipo,
+      opcionId: opcion.id,
+      opcionNombre: opcion.nombre,
+    })),
   }
 }
 
@@ -98,7 +105,9 @@ function crearResumenProductoAdmin(producto) {
 }
 
 function construirDatosActualizacion(cambios) {
-  const { categoriaId, subcategoriaId, marcaId, etiquetaIds, fechaVencimiento, ...campos } = cambios
+  const {
+    categoriaId, subcategoriaId, marcaId, etiquetaIds, atributos, fechaVencimiento, ...campos
+  } = cambios
   const datos = { ...campos }
 
   if (cambios.nombre !== undefined) {
@@ -126,6 +135,13 @@ function construirDatosActualizacion(cambios) {
       create: etiquetaIds.map((etiquetaId) => ({
         etiqueta: { connect: { id: etiquetaId } },
       })),
+    }
+  }
+
+  if (atributos !== undefined) {
+    datos.atributos = {
+      deleteMany: {},
+      create: atributos.map(({ atributoId, opcionId }) => ({ atributoId, opcionId })),
     }
   }
 
@@ -163,6 +179,19 @@ async function validarReferencias(repositorio, cambios, categoriaIdEfectiva) {
       'INVALID_PRODUCT_REFERENCE',
       'Categoría, subcategoría, marca o etiquetas no son válidas.',
     )
+  }
+
+  if (cambios.atributos !== undefined) {
+    const atributosValidos = await repositorio.contarAtributosValidos(
+      categoriaIdEfectiva,
+      cambios.atributos,
+    )
+    if (atributosValidos !== cambios.atributos.length) {
+      throw new ErrorProductoAdmin(
+        'INVALID_PRODUCT_ATTRIBUTE',
+        'Los filtros elegidos no pertenecen a la categoría o ya no están activos.',
+      )
+    }
   }
 }
 
@@ -204,10 +233,16 @@ export function crearServicioProductosAdmin(
         return null
       }
 
-      const precio = cambios.precio ?? productoActual.precio
-      const precioAnterior = cambios.precioAnterior === undefined
+      // Si se mueve de categoría y no se informan nuevos valores, limpiamos las
+      // facetas anteriores: no existe una asignación válida entre categorías.
+      const cambiosEfectivos = (
+        cambios.categoriaId && cambios.categoriaId !== productoActual.categoriaId && cambios.atributos === undefined
+      ) ? { ...cambios, atributos: [] } : cambios
+
+      const precio = cambiosEfectivos.precio ?? productoActual.precio
+      const precioAnterior = cambiosEfectivos.precioAnterior === undefined
         ? productoActual.precioAnterior
-        : cambios.precioAnterior
+        : cambiosEfectivos.precioAnterior
       if (precioAnterior !== null && precioAnterior <= precio) {
         throw new ErrorProductoAdmin(
           'INVALID_PRODUCT_PRICE',
@@ -215,7 +250,7 @@ export function crearServicioProductosAdmin(
         )
       }
 
-      if (cambios.estado === 'PUBLICADO' && productoActual.imagenes.length === 0) {
+      if (cambiosEfectivos.estado === 'PUBLICADO' && productoActual.imagenes.length === 0) {
         throw new ErrorProductoAdmin(
           'PRODUCT_IMAGE_REQUIRED',
           'Debes asignar al menos una imagen antes de publicar el producto.',
@@ -224,13 +259,13 @@ export function crearServicioProductosAdmin(
 
       await validarReferencias(
         repositorio,
-        cambios,
-        cambios.categoriaId ?? productoActual.categoriaId,
+        cambiosEfectivos,
+        cambiosEfectivos.categoriaId ?? productoActual.categoriaId,
       )
 
       const productoActualizado = await repositorio.actualizarPorId(
         id,
-        construirDatosActualizacion(cambios),
+        construirDatosActualizacion(cambiosEfectivos),
       )
 
       // Reposición: si el producto pasó de agotado a disponible, los avisos

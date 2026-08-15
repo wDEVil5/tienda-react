@@ -44,6 +44,7 @@ export default function PaginaCatalogo({ categorias = [] }) {
   const [filtrosAbiertos, setFiltrosAbiertos] = useState(false);
   const [marcaBusqueda, setMarcaBusqueda] = useState("");
   const [seccionesAbiertas, setSeccionesAbiertas] = useState({ marcas: true, precio: true });
+  const [soloOfertasSeleccionado, setSoloOfertasSeleccionado] = useState(false);
 
   const categoriaActual = categorias.find((c) => c.slug === slug) ?? null;
   const subcategorias = categoriaActual?.subcategorias ?? [];
@@ -61,13 +62,14 @@ export default function PaginaCatalogo({ categorias = [] }) {
 
   // Contexto que se manda a la API según el modo (estable dentro del montaje).
   const filtros = useMemo(() => {
-    if (modo === "ofertas") return { soloOfertas: true };
-    if (modo === "todos") return {};
-    if (modo === "buscar") return { busqueda: consulta };
-    if (nivel3) return { subcategoria: sub, subcategoriaHija: nivel3 };
-    if (sub) return { subcategoria: sub };
-    return { categoria: slug };
-  }, [modo, slug, sub, nivel3, consulta]);
+    const conOfertas = modo === "ofertas" || soloOfertasSeleccionado ? { soloOfertas: true } : {};
+    if (modo === "ofertas") return conOfertas;
+    if (modo === "todos") return conOfertas;
+    if (modo === "buscar") return { busqueda: consulta, ...conOfertas };
+    if (nivel3) return { subcategoria: sub, subcategoriaHija: nivel3, ...conOfertas };
+    if (sub) return { subcategoria: sub, ...conOfertas };
+    return { categoria: slug, ...conOfertas };
+  }, [modo, slug, sub, nivel3, consulta, soloOfertasSeleccionado]);
 
   // Facetas (marcas + rango de precio) del contexto. Solo una vez por montaje.
   useEffect(() => {
@@ -154,9 +156,11 @@ export default function PaginaCatalogo({ categorias = [] }) {
     setPrecioMax(undefined);
     setPrecioMinTexto("");
     setPrecioMaxTexto("");
+    setSoloOfertasSeleccionado(false);
   }
 
-  const hayFiltros = marcasSel.length > 0 || precioMin !== undefined || precioMax !== undefined;
+  const hayFiltros = marcasSel.length > 0 || precioMin !== undefined || precioMax !== undefined || soloOfertasSeleccionado;
+  const cantidadFiltros = marcasSel.length + (precioMin !== undefined || precioMax !== undefined ? 1 : 0) + (soloOfertasSeleccionado ? 1 : 0);
   const total = meta?.total ?? productos.length;
   const marcasFaceta = facetas?.marcas ?? [];
   const marcasVisibles = marcasFaceta.filter((marca) =>
@@ -257,18 +261,26 @@ export default function PaginaCatalogo({ categorias = [] }) {
               onClick={() => setFiltrosAbiertos((v) => !v)}
               aria-expanded={filtrosAbiertos}
             >
-              Filtros{hayFiltros ? ` (${marcasSel.length + (precioMin !== undefined || precioMax !== undefined ? 1 : 0)})` : ""}
+              Filtros{hayFiltros ? ` (${cantidadFiltros})` : ""}
             </button>
             <aside className={`${styles.sidebar} ${filtrosAbiertos ? styles.sidebarAbierto : ""}`}>
               {modo === "categoria" && (
                 <Link className={styles.volverSidebar} to={enlaceVolver}>
-                  <span aria-hidden="true">‹</span> Volver
+                  <span className={styles.volverFlecha} aria-hidden="true">←</span>
+                  <span className={styles.volverTexto}>Volver</span>
                 </Link>
               )}
               {hayFiltros && (
                 <button type="button" className={styles.limpiar} onClick={limpiarFiltros}>
                   Limpiar filtros
                 </button>
+              )}
+
+              {modo !== "ofertas" && (
+                <label className={styles.ofertasFiltro}>
+                  <span>Solo ofertas</span>
+                  <input type="checkbox" checked={soloOfertasSeleccionado} onChange={(e) => { setCargando(true); setSoloOfertasSeleccionado(e.target.checked); }} />
+                </label>
               )}
 
               {marcasFaceta.length > 0 && (

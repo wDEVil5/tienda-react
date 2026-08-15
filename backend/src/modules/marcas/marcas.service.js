@@ -3,7 +3,7 @@ import { repositorioMarcas } from './marcas.repository.js'
 export function crearServicioMarcas(repositorio = repositorioMarcas) {
   return {
     async listarMarcas() {
-      const marcas = await repositorio.listarConProductosPublicados()
+      const marcas = await repositorio.listarTodas()
 
       return marcas
         .map(({ id, nombre, logoUrl, brandfetchDomain, _count }) => ({

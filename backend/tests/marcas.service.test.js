@@ -4,7 +4,7 @@ import { crearServicioMarcas } from '../src/modules/marcas/marcas.service.js'
 
 test('listarMarcas adapta marcas y cuenta productos publicados', async () => {
   const repositorio = {
-    async listarConProductosPublicados() {
+    async listarTodas() {
       return [
         { id: 'marca_cafe_barrio', nombre: 'Café del Barrio', slug: 'cafe-del-barrio', logoUrl: null, brandfetchDomain: 'cafedelbarrio.cl', _count: { productos: 1 } },
         { id: 'marca_campo_sur', nombre: 'Campo Sur', slug: 'campo-sur', logoUrl: null, _count: { productos: 2 } },

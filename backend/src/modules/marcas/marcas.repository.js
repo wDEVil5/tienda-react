@@ -2,11 +2,11 @@ import { prisma } from '../../lib/prisma.js'
 
 export function crearRepositorioMarcas(cliente = prisma) {
   return {
-    async listarConProductosPublicados() {
+    // TODAS las marcas cargadas (la góndola es editorial: "marcas con las que
+    // trabajamos"), tengan o no productos publicados. Igual devolvemos el conteo
+    // de productos publicados por si el front quiere mostrarlo.
+    async listarTodas() {
       return cliente.marca.findMany({
-        where: {
-          productos: { some: { estado: 'PUBLICADO' } },
-        },
         select: {
           id: true,
           nombre: true,

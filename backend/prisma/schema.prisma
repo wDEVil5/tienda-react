@@ -25,6 +25,14 @@ enum EstadoProducto {
   ARCHIVADO
 }
 
+// Las facetas configurables usan opciones (p. ej. Intensidad → Suave, Media,
+// Intensa). BOOLEAN se representa también con opciones para conservar un único
+// contrato de filtro y evitar campos especiales en Producto.
+enum TipoAtributoCatalogo {
+  SELECCION
+  BOOLEAN
+}
+
 // La modalidad se decide una vez por pedido y define si se necesita dirección
 // y si hay costo de envío (RETIRO siempre es gratis).
 enum ModalidadEntrega {
@@ -95,16 +103,55 @@ model Sesion {
 }
 
 model Categoria {
-  id            String         @id @default(uuid()) @db.Uuid
-  nombre        String         @unique @db.VarChar(100)
-  slug          String         @unique @db.VarChar(120)
-  activa        Boolean        @default(true)
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
+  id            String              @id @default(uuid()) @db.Uuid
+  nombre        String              @unique @db.VarChar(100)
+  slug          String              @unique @db.VarChar(120)
+  activa        Boolean             @default(true)
+  createdAt     DateTime            @default(now()) @map("created_at")
+  updatedAt     DateTime            @updatedAt @map("updated_at")
   productos     Producto[]
   subcategorias Subcategoria[]
+  atributos     AtributoCategoria[]
 
   @@map("categorias")
+}
+
+// Define qué filtros se muestran en cada categoría. No se codifican nombres
+// como "Intensidad" en React: café y limpieza pueden tener estructuras propias.
+model AtributoCategoria {
+  id          String               @id @default(uuid()) @db.Uuid
+  nombre      String               @db.VarChar(80)
+  slug        String               @unique @db.VarChar(120)
+  tipo        TipoAtributoCatalogo @default(SELECCION)
+  categoriaId String               @map("categoria_id") @db.Uuid
+  categoria   Categoria            @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
+  orden       Int                  @default(0)
+  activo      Boolean              @default(true)
+  createdAt   DateTime             @default(now()) @map("created_at")
+  updatedAt   DateTime             @updatedAt @map("updated_at")
+  opciones    OpcionAtributo[]
+  valores     ProductoAtributo[]
+
+  @@unique([categoriaId, nombre])
+  @@index([categoriaId, orden])
+  @@map("atributos_categoria")
+}
+
+model OpcionAtributo {
+  id         String             @id @default(uuid()) @db.Uuid
+  nombre     String             @db.VarChar(80)
+  slug       String             @unique @db.VarChar(140)
+  atributoId String             @map("atributo_id") @db.Uuid
+  atributo   AtributoCategoria  @relation(fields: [atributoId], references: [id], onDelete: Cascade)
+  orden      Int                @default(0)
+  activa     Boolean            @default(true)
+  createdAt  DateTime           @default(now()) @map("created_at")
+  updatedAt  DateTime           @updatedAt @map("updated_at")
+  valores    ProductoAtributo[]
+
+  @@unique([atributoId, nombre])
+  @@index([atributoId, orden])
+  @@map("opciones_atributo")
 }
 
 // Segundo nivel de la taxonomía (Despensa → Café y Cafeteras). El slug es único
@@ -212,6 +259,7 @@ model Producto {
   itemsPedido      ItemPedido[]
   avisosStock      AvisoStock[]
   movimientosStock MovimientoStock[]
+  atributos        ProductoAtributo[]
 
   @@index([categoriaId])
   @@index([subcategoriaHijaId])
@@ -219,6 +267,22 @@ model Producto {
   @@index([estado])
   @@index([destacado])
   @@map("productos")
+}
+
+// Valor elegido por producto. La restricción de que opción y atributo sean
+// coherentes se valida en el servicio administrativo antes de persistir.
+model ProductoAtributo {
+  productoId String            @map("producto_id") @db.Uuid
+  atributoId String            @map("atributo_id") @db.Uuid
+  opcionId   String            @map("opcion_id") @db.Uuid
+  producto   Producto          @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  atributo   AtributoCategoria @relation(fields: [atributoId], references: [id], onDelete: Cascade)
+  opcion     OpcionAtributo    @relation(fields: [opcionId], references: [id], onDelete: Cascade)
+  createdAt  DateTime          @default(now()) @map("created_at")
+
+  @@id([productoId, atributoId])
+  @@index([atributoId, opcionId])
+  @@map("producto_atributos")
 }
 
 // Bitácora append-only de ajustes MANUALES de stock (recepción, merma, conteo).

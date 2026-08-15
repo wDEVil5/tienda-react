@@ -42,6 +42,8 @@ export default function PaginaCatalogo({ categorias = [] }) {
   const [precioMinTexto, setPrecioMinTexto] = useState("");
   const [precioMaxTexto, setPrecioMaxTexto] = useState("");
   const [filtrosAbiertos, setFiltrosAbiertos] = useState(false);
+  const [marcaBusqueda, setMarcaBusqueda] = useState("");
+  const [seccionesAbiertas, setSeccionesAbiertas] = useState({ marcas: true, precio: true });
 
   const categoriaActual = categorias.find((c) => c.slug === slug) ?? null;
   const subcategorias = categoriaActual?.subcategorias ?? [];
@@ -157,7 +159,19 @@ export default function PaginaCatalogo({ categorias = [] }) {
   const hayFiltros = marcasSel.length > 0 || precioMin !== undefined || precioMax !== undefined;
   const total = meta?.total ?? productos.length;
   const marcasFaceta = facetas?.marcas ?? [];
+  const marcasVisibles = marcasFaceta.filter((marca) =>
+    marca.nombre.toLocaleLowerCase("es").includes(marcaBusqueda.trim().toLocaleLowerCase("es")),
+  );
   const mostrarSidebar = marcasFaceta.length > 0 || (facetas?.precio?.max ?? 0) > 0;
+  const enlaceVolver = nivel3
+    ? `/categoria/${slug}?sub=${encodeURIComponent(sub)}`
+    : sub
+      ? `/categoria/${slug}`
+      : "/";
+
+  function alternarSeccion(nombre) {
+    setSeccionesAbiertas((actual) => ({ ...actual, [nombre]: !actual[nombre] }));
+  }
 
   return (
     <main className={styles.pagina}>
@@ -176,7 +190,17 @@ export default function PaginaCatalogo({ categorias = [] }) {
         {subActual && (
           <>
             <span aria-hidden="true">/</span>
-            <span className={styles.migaActual}>{subActual.nombre}</span>
+            {nivel3Actual ? (
+              <Link to={`/categoria/${categoriaActual.slug}?sub=${encodeURIComponent(subActual.slug)}`}>{subActual.nombre}</Link>
+            ) : (
+              <span className={styles.migaActual}>{subActual.nombre}</span>
+            )}
+          </>
+        )}
+        {nivel3Actual && (
+          <>
+            <span aria-hidden="true">/</span>
+            <span className={styles.migaActual}>{nivel3Actual.nombre}</span>
           </>
         )}
         {modo !== "categoria" && (
@@ -236,6 +260,11 @@ export default function PaginaCatalogo({ categorias = [] }) {
               Filtros{hayFiltros ? ` (${marcasSel.length + (precioMin !== undefined || precioMax !== undefined ? 1 : 0)})` : ""}
             </button>
             <aside className={`${styles.sidebar} ${filtrosAbiertos ? styles.sidebarAbierto : ""}`}>
+              {modo === "categoria" && (
+                <Link className={styles.volverSidebar} to={enlaceVolver}>
+                  <span aria-hidden="true">‹</span> Volver
+                </Link>
+              )}
               {hayFiltros && (
                 <button type="button" className={styles.limpiar} onClick={limpiarFiltros}>
                   Limpiar filtros
@@ -244,9 +273,15 @@ export default function PaginaCatalogo({ categorias = [] }) {
 
               {marcasFaceta.length > 0 && (
                 <section className={styles.grupo}>
-                  <h2 className={styles.grupoTitulo}>Marcas</h2>
-                  <ul className={styles.opciones}>
-                    {marcasFaceta.map((m) => (
+                  <button type="button" className={styles.grupoTitulo} onClick={() => alternarSeccion("marcas")} aria-expanded={seccionesAbiertas.marcas}>
+                    <span>Marcas</span><span aria-hidden="true">{seccionesAbiertas.marcas ? "−" : "+"}</span>
+                  </button>
+                  {seccionesAbiertas.marcas && <>
+                    {marcasFaceta.length > 6 && (
+                      <input className={styles.buscarMarca} value={marcaBusqueda} onChange={(e) => setMarcaBusqueda(e.target.value)} placeholder="Buscar marca" aria-label="Buscar marca" />
+                    )}
+                    <ul className={styles.opciones}>
+                    {marcasVisibles.map((m) => (
                       <li key={m.slug}>
                         <label className={styles.opcion}>
                           <input
@@ -259,13 +294,16 @@ export default function PaginaCatalogo({ categorias = [] }) {
                         </label>
                       </li>
                     ))}
-                  </ul>
+                    </ul>
+                  </>}
                 </section>
               )}
 
               <section className={styles.grupo}>
-                <h2 className={styles.grupoTitulo}>Precio</h2>
-                <form className={styles.precio} onSubmit={aplicarPrecio}>
+                <button type="button" className={styles.grupoTitulo} onClick={() => alternarSeccion("precio")} aria-expanded={seccionesAbiertas.precio}>
+                  <span>Precio</span><span aria-hidden="true">{seccionesAbiertas.precio ? "−" : "+"}</span>
+                </button>
+                {seccionesAbiertas.precio && <form className={styles.precio} onSubmit={aplicarPrecio}>
                   <input
                     type="number"
                     min="0"
@@ -286,7 +324,7 @@ export default function PaginaCatalogo({ categorias = [] }) {
                     aria-label="Precio máximo"
                   />
                   <button type="submit">Aplicar</button>
-                </form>
+                </form>}
               </section>
             </aside>
           </>

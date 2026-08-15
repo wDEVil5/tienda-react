@@ -35,6 +35,11 @@ const IconoChevron = () => (
     <path d="m6 9 6 6 6-6" />
   </Svg>
 );
+const IconoChevronDer = () => (
+  <Svg size={14}>
+    <path d="m9 6 6 6-6 6" />
+  </Svg>
+);
 const IconoUsuario = () => (
   <Svg size={16}>
     <circle cx="12" cy="8" r="3.4" />
@@ -102,6 +107,7 @@ function guardarRecientes(lista) {
 
 function Header({
   categorias = [],
+  productos = [],
   busqueda = "",
   onBuscar,
   onSeleccionarCategoria,
@@ -117,6 +123,7 @@ function Header({
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [cuentaAbierta, setCuentaAbierta] = useState(false);
   const [categoriasAbierto, setCategoriasAbierto] = useState(false);
+  const [categoriaActiva, setCategoriaActiva] = useState("");
   // Estado condensado: el valor inicial se calcula del scroll actual para no
   // hacer un setState sincrónico dentro del efecto (solo suscribimos el listener).
   const [condensado, setCondensado] = useState(
@@ -218,6 +225,33 @@ function Header({
     setCategoriasAbierto(false);
     cerrarMenu();
     navegar("/#catalogo");
+  };
+
+  // Marcas presentes en una categoría, derivadas de los productos ya cargados
+  // (sin llamada extra). Únicas por nombre y ordenadas alfabéticamente.
+  const marcasDeCategoria = (nombre) => {
+    const vistas = new Map();
+    for (const producto of productos) {
+      if (producto.categoria !== nombre || !producto.marca?.nombre) continue;
+      if (!vistas.has(producto.marca.nombre)) vistas.set(producto.marca.nombre, producto.marca);
+    }
+    return [...vistas.values()].sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+  };
+
+  // Click en una marca del mega-menú: busca esa marca en el catálogo. Reusa el
+  // buscador (los nombres de producto suelen incluir la marca) → sin filtro nuevo.
+  const buscarMarca = (nombreMarca) => {
+    onBuscar?.(nombreMarca);
+    onSeleccionarCategoria?.("todas");
+    onCambiarSoloOfertas?.(false);
+    setCategoriasAbierto(false);
+    navegar("/#catalogo");
+  };
+
+  // Abre el mega-menú y asegura una categoría activa (la primera por defecto).
+  const abrirCategorias = () => {
+    setCategoriasAbierto(true);
+    setCategoriaActiva((actual) => actual || categorias[0]?.nombre || "");
   };
 
   // El menú de cuenta se cierra al hacer clic fuera o con Escape. Al estar
@@ -336,6 +370,8 @@ function Header({
     if (item.accion === "ofertas") onVerOfertas?.();
     cerrarMenu();
   };
+
+  const marcasActivas = categoriaActiva ? marcasDeCategoria(categoriaActiva) : [];
 
   return (
     <header className={`${styles.header} ${condensado ? styles.condensado : ""}`}>
@@ -465,31 +501,72 @@ function Header({
       {/* ---- Piso 2: navegación (se colapsa al bajar) ---- */}
       <div className={styles.barraNav}>
         <div className={styles.barraNavInner}>
-          <div className={styles.categorias} ref={categoriasRef}>
+          <div
+            className={styles.categorias}
+            ref={categoriasRef}
+            onMouseEnter={abrirCategorias}
+            onMouseLeave={() => setCategoriasAbierto(false)}
+          >
             <button
               className={`${styles.categoriasBoton} ${categoriasAbierto ? styles.categoriasBotonActivo : ""}`}
               type="button"
               aria-haspopup="menu"
               aria-expanded={categoriasAbierto}
-              onClick={() => setCategoriasAbierto((abierto) => !abierto)}
+              onClick={() => (categoriasAbierto ? setCategoriasAbierto(false) : abrirCategorias())}
             >
               <IconoGrilla />
               <span>Categorías</span>
               <IconoChevron />
             </button>
             {categoriasAbierto && categorias.length > 0 && (
-              <div className={styles.categoriasPanel} role="menu">
-                {categorias.map((categoria) => (
-                  <button
-                    key={categoria.slug ?? categoria.nombre}
-                    className={styles.categoriaItem}
-                    type="button"
-                    role="menuitem"
-                    onClick={() => seleccionarCategoria(categoria.nombre)}
-                  >
-                    {categoria.nombre}
-                  </button>
-                ))}
+              <div className={styles.megaPanel} role="menu">
+                <ul className={styles.megaCategorias}>
+                  {categorias.map((categoria) => (
+                    <li key={categoria.slug ?? categoria.nombre}>
+                      <button
+                        className={`${styles.megaCategoria} ${categoriaActiva === categoria.nombre ? styles.megaCategoriaActiva : ""}`}
+                        type="button"
+                        role="menuitem"
+                        onMouseEnter={() => setCategoriaActiva(categoria.nombre)}
+                        onFocus={() => setCategoriaActiva(categoria.nombre)}
+                        onClick={() => seleccionarCategoria(categoria.nombre)}
+                      >
+                        <span>{categoria.nombre}</span>
+                        <IconoChevronDer />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <div className={styles.megaContenido}>
+                  <div className={styles.megaCabecera}>
+                    <h3>{categoriaActiva}</h3>
+                    <button
+                      className={styles.megaVerTodo}
+                      type="button"
+                      onClick={() => seleccionarCategoria(categoriaActiva)}
+                    >
+                      Ver todo →
+                    </button>
+                  </div>
+                  {marcasActivas.length > 0 ? (
+                    <div className={styles.megaMarcas}>
+                      {marcasActivas.map((marca) => (
+                        <button
+                          key={marca.slug ?? marca.nombre}
+                          className={styles.megaMarca}
+                          type="button"
+                          onClick={() => buscarMarca(marca.nombre)}
+                        >
+                          {marca.nombre}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className={styles.megaVacio}>
+                      Explora todos los productos de {categoriaActiva}.
+                    </p>
+                  )}
+                </div>
               </div>
             )}
           </div>

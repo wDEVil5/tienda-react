@@ -2,13 +2,19 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { crearServicioCategorias } from '../src/modules/categorias/categorias.service.js'
 
-test('listarCategorias adapta categorías y cuenta productos publicados', async () => {
+test('listarCategorias adapta categorías, cuenta productos y conserva subcategorías', async () => {
   const repositorio = {
     async listarConProductosPublicados() {
       return [
-        { id: 'cat_despensa', nombre: 'Despensa', slug: 'despensa', _count: { productos: 2 } },
-        { id: 'cat_lacteos', nombre: 'Lácteos', slug: 'lacteos', _count: { productos: 2 } },
-        { id: 'cat_limpieza', nombre: 'Limpieza', slug: 'limpieza', _count: { productos: 1 } },
+        {
+          id: 'cat_despensa',
+          nombre: 'Despensa',
+          slug: 'despensa',
+          subcategorias: [{ id: 'sub_cafe', nombre: 'Café', slug: 'despensa-cafe' }],
+          _count: { productos: 2 },
+        },
+        { id: 'cat_lacteos', nombre: 'Lácteos', slug: 'lacteos', subcategorias: [], _count: { productos: 2 } },
+        { id: 'cat_limpieza', nombre: 'Limpieza', slug: 'limpieza', subcategorias: [], _count: { productos: 1 } },
       ]
     },
   }
@@ -16,8 +22,14 @@ test('listarCategorias adapta categorías y cuenta productos publicados', async 
   const resultado = await servicio.listarCategorias()
 
   assert.deepEqual(resultado, [
-    { id: 'cat_despensa', nombre: 'Despensa', slug: 'despensa', productCount: 2 },
-    { id: 'cat_lacteos', nombre: 'Lácteos', slug: 'lacteos', productCount: 2 },
-    { id: 'cat_limpieza', nombre: 'Limpieza', slug: 'limpieza', productCount: 1 },
+    {
+      id: 'cat_despensa',
+      nombre: 'Despensa',
+      slug: 'despensa',
+      subcategorias: [{ id: 'sub_cafe', nombre: 'Café', slug: 'despensa-cafe' }],
+      productCount: 2,
+    },
+    { id: 'cat_lacteos', nombre: 'Lácteos', slug: 'lacteos', subcategorias: [], productCount: 2 },
+    { id: 'cat_limpieza', nombre: 'Limpieza', slug: 'limpieza', subcategorias: [], productCount: 1 },
   ])
 })

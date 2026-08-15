@@ -299,6 +299,7 @@ function App() {
       {!esCheckout && !esPantallaPrivada && (
         <Header
           categorias={categoriasDisponibles}
+          productos={productos}
           busqueda={busqueda}
           onBuscar={setBusqueda}
           onSeleccionarCategoria={setCategoria}

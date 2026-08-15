@@ -12,6 +12,13 @@ export function crearRepositorioCategorias(cliente = prisma) {
           id: true,
           nombre: true,
           slug: true,
+          // Subcategorías activas para el mega-menú, ya ordenadas (orden, luego
+          // nombre). El front las agrupa bajo su categoría.
+          subcategorias: {
+            where: { activa: true },
+            select: { id: true, nombre: true, slug: true },
+            orderBy: [{ orden: 'asc' }, { nombre: 'asc' }],
+          },
           _count: {
             select: {
               productos: { where: { estado: 'PUBLICADO' } },

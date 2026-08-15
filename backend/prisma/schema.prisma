@@ -95,15 +95,35 @@ model Sesion {
 }
 
 model Categoria {
-  id        String     @id @default(uuid()) @db.Uuid
-  nombre    String     @unique @db.VarChar(100)
-  slug      String     @unique @db.VarChar(120)
-  activa    Boolean    @default(true)
-  createdAt DateTime   @default(now()) @map("created_at")
-  updatedAt DateTime   @updatedAt @map("updated_at")
-  productos Producto[]
+  id            String         @id @default(uuid()) @db.Uuid
+  nombre        String         @unique @db.VarChar(100)
+  slug          String         @unique @db.VarChar(120)
+  activa        Boolean        @default(true)
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  productos     Producto[]
+  subcategorias Subcategoria[]
 
   @@map("categorias")
+}
+
+// Segundo nivel de la taxonomía (Despensa → Café y Cafeteras). El slug es único
+// global (URL estable); el nombre es único dentro de su categoría.
+model Subcategoria {
+  id          String    @id @default(uuid()) @db.Uuid
+  nombre      String    @db.VarChar(100)
+  slug        String    @unique @db.VarChar(120)
+  categoriaId String    @map("categoria_id") @db.Uuid
+  categoria   Categoria @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
+  orden       Int       @default(0)
+  activa      Boolean   @default(true)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  productos   Producto[]
+
+  @@unique([categoriaId, nombre])
+  @@index([categoriaId, orden])
+  @@map("subcategorias")
 }
 
 model Marca {
@@ -150,13 +170,17 @@ model Producto {
   pesoDespachoGramos Int?      @map("peso_despacho_gramos")
   fechaVencimiento   DateTime? @map("fecha_vencimiento") @db.Date
 
-  categoriaId String   @map("categoria_id") @db.Uuid
-  marcaId     String   @map("marca_id") @db.Uuid
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  categoriaId    String   @map("categoria_id") @db.Uuid
+  // Subcategoría opcional: no todos los productos están clasificados a ese nivel.
+  // Si se borra la subcategoría, el producto queda sin ella (SetNull), no se borra.
+  subcategoriaId String?  @map("subcategoria_id") @db.Uuid
+  marcaId        String   @map("marca_id") @db.Uuid
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
-  categoria   Categoria           @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
-  marca       Marca               @relation(fields: [marcaId], references: [id], onDelete: Restrict)
+  categoria    Categoria           @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
+  subcategoria Subcategoria?       @relation(fields: [subcategoriaId], references: [id], onDelete: SetNull)
+  marca        Marca               @relation(fields: [marcaId], references: [id], onDelete: Restrict)
   imagenes    ProductoImagen[]
   promociones PromocionProducto[]
   etiquetas   ProductoEtiqueta[]

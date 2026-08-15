@@ -338,22 +338,46 @@
   background-color: #173d2c;
 }
 
-.categoriasPanel {
+/* Mega-menú de categorías: columna de categorías (izq) + panel de marcas (der).
+   Se despliega al pasar el mouse (ver Header.jsx). */
+.megaPanel {
   position: absolute;
   top: calc(100% + 8px);
   left: 0;
   z-index: 120;
-  width: 260px;
-  max-height: 60vh;
-  overflow-y: auto;
-  padding: 8px;
+  display: flex;
+  width: min(880px, 92vw);
+  max-height: 72vh;
   background-color: #fff;
   border: 1px solid var(--bnv-borde);
   border-radius: var(--bnv-radio-card);
   box-shadow: var(--bnv-sombra);
+  overflow: hidden;
 }
-.categoriaItem {
-  display: block;
+/* Puente invisible sobre el hueco botón↔panel: evita que el mega-menú se cierre
+   al cruzar el espacio con el mouse. */
+.megaPanel::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: 0;
+  right: 0;
+  height: 8px;
+}
+.megaCategorias {
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  width: 264px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  border-right: 1px solid var(--bnv-borde);
+}
+.megaCategoria {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   width: 100%;
   padding: 10px 12px;
   border: none;
@@ -366,9 +390,78 @@
   cursor: pointer;
   transition: background-color 0.14s ease, color 0.14s ease;
 }
-.categoriaItem:hover {
+.megaCategoria:hover,
+.megaCategoriaActiva {
   background-color: var(--bnv-neblina);
   color: var(--bnv-tinta);
+}
+.megaCategoria svg {
+  color: var(--bnv-tenue);
+  flex-shrink: 0;
+}
+
+.megaContenido {
+  flex: 1;
+  min-width: 0;
+  padding: 20px 24px;
+  overflow-y: auto;
+}
+.megaCabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--bnv-verde);
+}
+.megaCabecera h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--bnv-tinta);
+}
+.megaVerTodo {
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--bnv-verde);
+  cursor: pointer;
+}
+.megaVerTodo:hover {
+  text-decoration: underline;
+}
+.megaMarcas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2px 16px;
+}
+.megaMarca {
+  padding: 8px 6px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: var(--bnv-texto-2);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background-color 0.14s ease, color 0.14s ease;
+}
+.megaMarca:hover {
+  background-color: var(--bnv-neblina);
+  color: var(--bnv-verde);
+}
+.megaVacio {
+  color: var(--bnv-tenue);
+  font-size: 13.5px;
 }
 
 .navLinks {

@@ -487,8 +487,56 @@ async function sembrarCliente() {
   });
 }
 
+// Subcategorías por categoría (segundo nivel del mega-menú). El slug se prefija
+// con el de la categoría para garantizar unicidad global; el orden es el índice.
+const subcategoriasIniciales = [
+  {
+    categoria: "despensa",
+    items: [
+      "Café y Cafeteras",
+      "Aceites, Sal y Condimentos",
+      "Fideos, Pastas y Salsas",
+      "Conservas",
+      "Arroz, Legumbres y Semillas",
+      "Harinas y Repostería",
+    ],
+  },
+  {
+    categoria: "lacteos",
+    items: ["Leches", "Yogurt", "Mantequilla y Margarina", "Huevos", "Quesos"],
+  },
+  {
+    categoria: "limpieza",
+    items: [
+      "Lavado de Ropa",
+      "Limpieza de Cocina",
+      "Limpieza de Baño",
+      "Papeles y Desechables",
+    ],
+  },
+];
+
+async function sembrarSubcategorias() {
+  for (const grupo of subcategoriasIniciales) {
+    for (const [indice, nombre] of grupo.items.entries()) {
+      const slug = `${grupo.categoria}-${crearSlugEtiqueta(nombre)}`;
+      await prisma.subcategoria.upsert({
+        where: { slug },
+        create: {
+          nombre,
+          slug,
+          orden: indice,
+          categoria: { connect: { slug: grupo.categoria } },
+        },
+        update: { nombre, orden: indice, activa: true },
+      });
+    }
+  }
+}
+
 try {
   await sembrarCatalogo();
+  await sembrarSubcategorias(); // requiere las categorías ya sembradas
   await sembrarOfertaSemanal();
   await sembrarCliente(); // antes de los pedidos: estos se enlazan a su cuenta
   await sembrarPedidos();

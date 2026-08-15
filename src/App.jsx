@@ -37,7 +37,7 @@ import Header from "./components/Header.jsx";
 import ModalAcceso from "./components/ModalAcceso.jsx";
 import Footer from "./components/Footer.jsx";
 import RutaProtegida from "./components/RutaProtegida.jsx";
-import { obtenerCatalogo, obtenerCategorias } from "./services/productosApi.js";
+import { obtenerCatalogo, obtenerCategorias, obtenerMasVendidos } from "./services/productosApi.js";
 
 function App() {
   const ubicacion = useLocation();
@@ -48,6 +48,7 @@ function App() {
   const [categoriasDisponibles, setCategoriasDisponibles] = useState([]);
   const [fuenteCatalogo, setFuenteCatalogo] = useState(null);
   const [ofertasDestacadas, setOfertasDestacadas] = useState(null);
+  const [masVendidos, setMasVendidos] = useState(null);
   const [cargando, setCargando] = useState(true); // ¿esta cargando?
   const [error, setError] = useState(null); // null = sin error, string = mensaje a mostrar
   const [reintento, setReintento] = useState(0);
@@ -111,6 +112,19 @@ function App() {
       if (vigente && resultado.fuente === "api") {
         setOfertasDestacadas({ productos: resultado.productos, meta: resultado.meta });
       }
+    });
+    return () => {
+      vigente = false;
+    };
+  }, [esAdmin, fuenteCatalogo]);
+
+  // "Lo más vendido" del Home: ranking real de ventas (solo con API propia). Si
+  // aún no hay ventas o la fuente cae a Fake Store, queda null y la fila se oculta.
+  useEffect(() => {
+    if (esAdmin || fuenteCatalogo !== "api") return undefined;
+    let vigente = true;
+    obtenerMasVendidos({ limit: 12 }).then((productos) => {
+      if (vigente && productos?.length) setMasVendidos(productos);
     });
     return () => {
       vigente = false;
@@ -241,6 +255,7 @@ function App() {
                 productos={productos}
                 categorias={categoriasDisponibles}
                 ofertasDestacadas={ofertasDestacadasVigentes}
+                masVendidos={fuenteCatalogo === "api" ? masVendidos : null}
               />
             }
           />

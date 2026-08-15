@@ -10,7 +10,7 @@ import MarcasGondola from "../components/MarcasGondola.jsx";
 // Página de inicio: banner + carruseles editoriales + marcas. El catálogo
 // completo ya no vive aquí: cada categoría/subcategoría/oferta/búsqueda abre su
 // propia página de listado (ver PaginaCatalogo). El Home solo "muestra y enlaza".
-function Home({ productos, categorias, ofertasDestacadas }) {
+function Home({ productos, categorias, ofertasDestacadas, masVendidos }) {
   // Fila "Destacados": los productos marcados como destacados; si aún no hay
   // ninguno, mostramos los primeros para que la fila no quede vacía. Máx. 12.
   const destacados = productos.filter((producto) => producto.destacado);
@@ -40,6 +40,14 @@ function Home({ productos, categorias, ofertasDestacadas }) {
   return (
     <>
       <BannerCarrusel fallback={<Hero productos={productos} />} />
+      {masVendidos?.length > 0 && (
+        <CarruselProductos
+          eyebrow="Los favoritos de nuestros clientes"
+          titulo="Lo más vendido"
+          productos={masVendidos.slice(0, 12)}
+          accion={<Link to="/catalogo">Ver todo →</Link>}
+        />
+      )}
       <CarruselProductos
         eyebrow="Selección de la semana"
         titulo="Destacados"

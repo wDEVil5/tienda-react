@@ -220,6 +220,27 @@ export async function obtenerFacetas({
   }
 }
 
+// Ranking "Lo más vendido" del Home. Solo con API propia (Fake Store no tiene
+// ventas): ante cualquier fallo devolvemos null y el Home oculta la fila.
+export async function obtenerMasVendidos({
+  limit = 12,
+  fetchImpl = fetch,
+  apiUrl = import.meta.env.VITE_API_URL,
+} = {}) {
+  if (!apiUrl) return null;
+
+  try {
+    const respuesta = await fetchImpl(
+      `${apiUrl.replace(/\/$/, "")}/productos/mas-vendidos?limit=${limit}`,
+    );
+    if (!respuesta.ok) return null;
+    const cuerpo = await respuesta.json();
+    return Array.isArray(cuerpo.data) ? cuerpo.data.map(normalizarProductoApi) : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function obtenerCategorias({
   fetchImpl = fetch,
   apiUrl = import.meta.env.VITE_API_URL,

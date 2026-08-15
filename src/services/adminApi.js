@@ -258,6 +258,58 @@ export function eliminarSubcategoriaHijaAdmin(id, opciones = {}) {
   });
 }
 
+// Atributos/facetas configurables de una categoría (solo ADMIN). Sus opciones
+// se asignarán a productos en una etapa posterior del editor.
+export function listarAtributosCategoriaAdmin(categoriaId, opciones = {}) {
+  return solicitarAdmin(`/admin/categorias/${encodeURIComponent(categoriaId)}/atributos`, opciones);
+}
+
+export function crearAtributoCategoriaAdmin(categoriaId, datos, opciones = {}) {
+  return solicitarAdmin(`/admin/categorias/${encodeURIComponent(categoriaId)}/atributos`, {
+    ...opciones,
+    method: "POST",
+    cuerpo: datos,
+  });
+}
+
+export function actualizarAtributoCategoriaAdmin(id, cambios, opciones = {}) {
+  return solicitarAdmin(`/admin/atributos/${encodeURIComponent(id)}`, {
+    ...opciones,
+    method: "PATCH",
+    cuerpo: cambios,
+  });
+}
+
+export function eliminarAtributoCategoriaAdmin(id, opciones = {}) {
+  return solicitarAdmin(`/admin/atributos/${encodeURIComponent(id)}`, {
+    ...opciones,
+    method: "DELETE",
+  });
+}
+
+export function crearOpcionAtributoAdmin(atributoId, datos, opciones = {}) {
+  return solicitarAdmin(`/admin/atributos/${encodeURIComponent(atributoId)}/opciones`, {
+    ...opciones,
+    method: "POST",
+    cuerpo: datos,
+  });
+}
+
+export function actualizarOpcionAtributoAdmin(id, cambios, opciones = {}) {
+  return solicitarAdmin(`/admin/atributos-opciones/${encodeURIComponent(id)}`, {
+    ...opciones,
+    method: "PATCH",
+    cuerpo: cambios,
+  });
+}
+
+export function eliminarOpcionAtributoAdmin(id, opciones = {}) {
+  return solicitarAdmin(`/admin/atributos-opciones/${encodeURIComponent(id)}`, {
+    ...opciones,
+    method: "DELETE",
+  });
+}
+
 export function listarProductosAdmin(
   { page = 1, limit = 20, busqueda = "", estado, ...opciones } = {},
 ) {

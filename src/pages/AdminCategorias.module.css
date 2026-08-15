@@ -396,6 +396,121 @@
   font-size: 12.5px;
 }
 
+/* Facetas: catálogo configurable, aún separado de los valores del producto. */
+.atributos {
+  display: grid;
+  gap: 12px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-borde);
+}
+.seccionCabecera h3 {
+  color: var(--color-texto);
+  font-size: 16px;
+}
+.seccionCabecera p {
+  margin-top: 3px;
+  color: var(--color-texto-tenue);
+  font-size: 12.5px;
+}
+.nuevoAtributo,
+.nuevaOpcion {
+  display: flex;
+  gap: 8px;
+}
+.nuevoAtributo input,
+.nuevoAtributo select,
+.nuevaOpcion input {
+  min-width: 0;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-campo);
+  background: var(--color-superficie);
+  color: var(--color-texto);
+  font: inherit;
+  font-size: 13px;
+}
+.nuevoAtributo input,
+.nuevaOpcion input { flex: 1; }
+.nuevoAtributo select { width: 120px; }
+.nuevoAtributo button,
+.nuevaOpcion button {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--color-borde-3);
+  border-radius: var(--radio-control);
+  background: var(--color-superficie);
+  color: var(--color-texto-2);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.nuevoAtributo button {
+  border-color: var(--color-acento);
+  background: var(--color-acento);
+  color: #fff;
+}
+.atributoLista {
+  display: grid;
+  gap: 8px;
+}
+.atributo {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--color-borde-2);
+  border-radius: var(--radio-tarjeta);
+  background: var(--color-superficie);
+}
+.atributoCabecera,
+.atributoAcciones,
+.opciones {
+  display: flex;
+  align-items: center;
+}
+.atributoCabecera {
+  justify-content: space-between;
+  gap: 12px;
+}
+.atributoCabecera strong {
+  display: block;
+  color: var(--color-texto);
+  font-size: 13.5px;
+}
+.atributoCabecera span {
+  display: block;
+  margin-top: 2px;
+  color: var(--color-texto-tenue);
+  font-size: 11.5px;
+}
+.atributoAcciones { gap: 6px; }
+.opciones {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.opcion {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 7px 4px 9px;
+  border-radius: var(--radio-control);
+  background: var(--color-crudo);
+  color: var(--color-texto-2);
+  font-size: 11.5px;
+}
+.opcion button {
+  width: 17px;
+  height: 17px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-texto-tenue);
+  cursor: pointer;
+}
+.opcion button:hover { color: var(--color-oferta); }
+
 @media (max-width: 860px) {
   .cuerpo {
     flex-direction: column;
@@ -415,4 +530,6 @@
   .subEliminar {
     grid-column: span 1;
   }
+  .nuevoAtributo { flex-wrap: wrap; }
+  .nuevoAtributo input { flex-basis: 100%; }
 }

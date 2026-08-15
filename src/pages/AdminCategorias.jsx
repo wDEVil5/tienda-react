@@ -15,6 +15,12 @@ import {
   listarSubcategoriasAdmin,
   obtenerSesionAdmin,
   actualizarSubcategoriaHijaAdmin,
+  actualizarAtributoCategoriaAdmin,
+  crearAtributoCategoriaAdmin,
+  crearOpcionAtributoAdmin,
+  eliminarAtributoCategoriaAdmin,
+  eliminarOpcionAtributoAdmin,
+  listarAtributosCategoriaAdmin,
 } from "../services/adminApi.js";
 import styles from "./AdminCategorias.module.css";
 
@@ -24,6 +30,151 @@ function mensajeError(error, respaldo) {
 
 function ordenarPorOrden(lista) {
   return [...lista].sort((a, b) => a.orden - b.orden || a.nombre.localeCompare(b.nombre, "es"));
+}
+
+// Las facetas pertenecen a una categoría, no a una pantalla. Aquí solo se
+// configura su vocabulario; la asignación de valores ocurrirá en el producto.
+function GestionAtributos({ categoria }) {
+  const [atributos, setAtributos] = useState(null);
+  const [nombre, setNombre] = useState("");
+  const [tipo, setTipo] = useState("SELECCION");
+  const [opcionesNuevas, setOpcionesNuevas] = useState({});
+  const [creando, setCreando] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let vigente = true;
+    listarAtributosCategoriaAdmin(categoria.id)
+      .then((lista) => { if (vigente) setAtributos(Array.isArray(lista) ? lista : []); })
+      .catch((respuesta) => { if (vigente) setError(mensajeError(respuesta, "No pudimos cargar los atributos.")); });
+    return () => { vigente = false; };
+  }, [categoria.id]);
+
+  async function crear(evento) {
+    evento.preventDefault();
+    if (nombre.trim().length < 2) return setError("El atributo necesita al menos 2 caracteres.");
+    setCreando(true);
+    setError(null);
+    try {
+      const nuevo = await crearAtributoCategoriaAdmin(categoria.id, {
+        nombre: nombre.trim(), tipo, orden: atributos?.length ?? 0,
+      });
+      setAtributos((actuales) => ordenarPorOrden([...(actuales ?? []), { ...nuevo, opciones: [] }]));
+      setNombre("");
+    } catch (respuesta) {
+      setError(mensajeError(respuesta, "No pudimos crear el atributo."));
+    } finally {
+      setCreando(false);
+    }
+  }
+
+  async function actualizar(atributo, cambios) {
+    setError(null);
+    try {
+      const actualizado = await actualizarAtributoCategoriaAdmin(atributo.id, cambios);
+      setAtributos((actuales) => (actuales ?? []).map((item) =>
+        item.id === atributo.id ? { ...item, ...actualizado } : item,
+      ));
+    } catch (respuesta) {
+      setError(mensajeError(respuesta, "No pudimos guardar el atributo."));
+    }
+  }
+
+  async function eliminar(atributo) {
+    if (!window.confirm(`¿Eliminar el atributo “${atributo.nombre}”?`)) return;
+    setError(null);
+    try {
+      await eliminarAtributoCategoriaAdmin(atributo.id);
+      setAtributos((actuales) => (actuales ?? []).filter((item) => item.id !== atributo.id));
+    } catch (respuesta) {
+      setError(mensajeError(respuesta, "No pudimos eliminar el atributo."));
+    }
+  }
+
+  async function crearOpcion(evento, atributo) {
+    evento.preventDefault();
+    const valor = (opcionesNuevas[atributo.id] ?? "").trim();
+    if (valor.length < 2) return;
+    setError(null);
+    try {
+      const nueva = await crearOpcionAtributoAdmin(atributo.id, {
+        nombre: valor, orden: atributo.opciones.length,
+      });
+      setAtributos((actuales) => (actuales ?? []).map((item) => item.id === atributo.id
+        ? { ...item, opciones: ordenarPorOrden([...item.opciones, { ...nueva, productosAsignados: 0 }]) }
+        : item,
+      ));
+      setOpcionesNuevas((actuales) => ({ ...actuales, [atributo.id]: "" }));
+    } catch (respuesta) {
+      setError(mensajeError(respuesta, "No pudimos crear la opción."));
+    }
+  }
+
+  async function eliminarOpcion(atributo, opcion) {
+    if (!window.confirm(`¿Eliminar “${opcion.nombre}”?`)) return;
+    setError(null);
+    try {
+      await eliminarOpcionAtributoAdmin(opcion.id);
+      setAtributos((actuales) => (actuales ?? []).map((item) => item.id === atributo.id
+        ? { ...item, opciones: item.opciones.filter((actual) => actual.id !== opcion.id) }
+        : item,
+      ));
+    } catch (respuesta) {
+      setError(mensajeError(respuesta, "No pudimos eliminar la opción."));
+    }
+  }
+
+  return (
+    <section className={styles.atributos} aria-labelledby="atributos-titulo">
+      <div className={styles.seccionCabecera}>
+        <div>
+          <h3 id="atributos-titulo">Filtros del catálogo</h3>
+          <p>Define facetas reales para esta categoría; luego se asignarán por producto.</p>
+        </div>
+      </div>
+      <form className={styles.nuevoAtributo} onSubmit={crear}>
+        <input value={nombre} onChange={(e) => setNombre(e.target.value)} maxLength={80} placeholder="Ej. Intensidad" aria-label="Nombre del atributo" />
+        <select value={tipo} onChange={(e) => setTipo(e.target.value)} aria-label="Tipo de atributo">
+          <option value="SELECCION">Selección</option>
+          <option value="BOOLEAN">Sí / no</option>
+        </select>
+        <button type="submit" disabled={creando}>{creando ? "…" : "Agregar"}</button>
+      </form>
+      {atributos === null ? <p className={styles.estado}>Cargando filtros…</p> : atributos.length === 0 ? <p className={styles.estado}>Aún no hay filtros configurados.</p> : (
+        <div className={styles.atributoLista}>
+          {atributos.map((atributo) => (
+            <article className={styles.atributo} key={atributo.id}>
+              <div className={styles.atributoCabecera}>
+                <div>
+                  <strong>{atributo.nombre}</strong>
+                  <span>{atributo.tipo === "BOOLEAN" ? "Sí / no" : "Selección"} · {atributo.productosAsignados} productos</span>
+                </div>
+                <div className={styles.atributoAcciones}>
+                  <button type="button" className={atributo.activo ? styles.hijaActiva : styles.hijaOculta} onClick={() => actualizar(atributo, { activo: !atributo.activo })}>
+                    {atributo.activo ? "Activo" : "Oculto"}
+                  </button>
+                  <button type="button" className={styles.hijaEliminar} onClick={() => eliminar(atributo)} aria-label={`Eliminar ${atributo.nombre}`}>✕</button>
+                </div>
+              </div>
+              <div className={styles.opciones}>
+                {atributo.opciones.map((opcion) => (
+                  <span className={styles.opcion} key={opcion.id}>
+                    {opcion.nombre}
+                    <button type="button" onClick={() => eliminarOpcion(atributo, opcion)} aria-label={`Eliminar opción ${opcion.nombre}`}>×</button>
+                  </span>
+                ))}
+              </div>
+              <form className={styles.nuevaOpcion} onSubmit={(evento) => crearOpcion(evento, atributo)}>
+                <input value={opcionesNuevas[atributo.id] ?? ""} onChange={(e) => setOpcionesNuevas((actuales) => ({ ...actuales, [atributo.id]: e.target.value }))} maxLength={80} placeholder="Nueva opción" aria-label={`Nueva opción para ${atributo.nombre}`} />
+                <button type="submit">Añadir opción</button>
+              </form>
+            </article>
+          ))}
+        </div>
+      )}
+      {error && <p className={styles.mensajeError} role="alert">{error}</p>}
+    </section>
+  );
 }
 
 // Tercer nivel administrable dentro de su subcategoría. Mantenerlo aquí deja
@@ -311,6 +462,7 @@ function PanelSubcategorias({ categoria, onCambioConteo }) {
           ))}
         </div>
       )}
+      <GestionAtributos categoria={categoria} />
     </div>
   );
 }

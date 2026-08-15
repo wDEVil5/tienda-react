@@ -22,6 +22,7 @@ export const PRODUCTO_FORMULARIO_INICIAL = {
   pesoDespachoGramos: "",
   fechaVencimiento: "",
   categoriaId: "",
+  subcategoriaId: "",
   marcaId: "",
   etiquetaIds: [],
 };
@@ -40,6 +41,7 @@ export function crearFormularioProducto(producto = {}) {
     pesoDespachoGramos: convertirNumeroAEntrada(producto.pesoDespachoGramos),
     fechaVencimiento: producto.fechaVencimiento?.slice(0, 10) ?? "",
     categoriaId: producto.categoriaId ?? producto.categoria?.id ?? "",
+    subcategoriaId: producto.subcategoriaId ?? producto.subcategoria?.id ?? "",
     marcaId: producto.marcaId ?? producto.marca?.id ?? "",
     etiquetaIds: producto.etiquetaIds ?? producto.etiquetas?.map(({ id }) => id) ?? [],
   };
@@ -150,6 +152,8 @@ export function normalizarPayloadProductoAdmin(valores, { esNuevo = false } = {}
 
   if (!esNuevo && valores.estado) payload.estado = valores.estado;
 
+  // Subcategoría opcional: vacío al editar → null (desasocia); al crear se omite.
+  agregarTextoOpcional(payload, "subcategoriaId", valores.subcategoriaId, esNuevo);
   agregarTextoOpcional(payload, "codigoBarras", valores.codigoBarras, esNuevo);
   agregarTextoOpcional(payload, "origen", valores.origen, esNuevo);
   agregarNumeroOpcional(payload, "precioAnterior", valores.precioAnterior, esNuevo);

@@ -153,7 +153,7 @@ export default function AdminProductoEditor() {
   const esNuevo = !id;
   const [usuario, setUsuario] = useState(undefined);
   const [formulario, setFormulario] = useState(PRODUCTO_FORMULARIO_INICIAL);
-  const [referencias, setReferencias] = useState({ categorias: [], marcas: [], etiquetas: [] });
+  const [referencias, setReferencias] = useState({ categorias: [], subcategorias: [], marcas: [], etiquetas: [] });
   const [imagenes, setImagenes] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
@@ -202,6 +202,7 @@ export default function AdminProductoEditor() {
         if (!vigente) return;
         setReferencias({
           categorias: opciones?.categorias ?? [],
+          subcategorias: opciones?.subcategorias ?? [],
           marcas: opciones?.marcas ?? [],
           etiquetas: opciones?.etiquetas ?? [],
         });
@@ -231,6 +232,16 @@ export default function AdminProductoEditor() {
     setFormulario((actual) => ({ ...actual, [campo]: valor }));
     setTocados((actual) => ({ ...actual, [campo]: true }));
     setErrores((actual) => ({ ...actual, [campo]: undefined }));
+  };
+
+  // Al cambiar la categoría, la subcategoría elegida deja de ser válida (pertenece
+  // a la anterior): la limpiamos para no enviar una combinación inconsistente.
+  const cambiarCategoria = (evento) => {
+    const valor = evento.target.value;
+    setFormulario((actual) => ({ ...actual, categoriaId: valor, subcategoriaId: "" }));
+    setTocados((actual) => ({ ...actual, categoriaId: true }));
+    setErrores((actual) => ({ ...actual, categoriaId: undefined }));
+    setErrorGeneral(null);
   };
 
   const marcarTocado = (campo) => {
@@ -411,7 +422,7 @@ export default function AdminProductoEditor() {
             <div className={styles.filaDos}>
               <Campo id="categoriaId" etiqueta="Categoría" error={tocados.categoriaId && errores.categoriaId} requerido>
                 {(props) => (
-                  <select {...props} className={styles.input} value={formulario.categoriaId} onChange={cambiar("categoriaId")} onBlur={() => marcarTocado("categoriaId")}>
+                  <select {...props} className={styles.input} value={formulario.categoriaId} onChange={cambiarCategoria} onBlur={() => marcarTocado("categoriaId")}>
                     <option value="">Selecciona una categoría</option>
                     {referencias.categorias.map((categoria) => <option key={categoria.id} value={categoria.id}>{categoria.nombre}</option>)}
                   </select>
@@ -421,6 +432,30 @@ export default function AdminProductoEditor() {
                 {(props) => <input {...props} className={styles.input} type="text" value={formulario.sku} onChange={cambiar("sku")} onBlur={() => marcarTocado("sku")} maxLength="80" />}
               </Campo>
             </div>
+
+            <Campo id="subcategoriaId" etiqueta="Subcategoría" ayuda="Opcional. Depende de la categoría elegida (define el mega-menú).">
+              {(props) => {
+                const disponibles = referencias.subcategorias.filter((s) => s.categoriaId === formulario.categoriaId);
+                return (
+                  <select
+                    {...props}
+                    className={styles.input}
+                    value={formulario.subcategoriaId}
+                    onChange={cambiar("subcategoriaId")}
+                    disabled={!formulario.categoriaId || disponibles.length === 0}
+                  >
+                    <option value="">
+                      {!formulario.categoriaId
+                        ? "Elige una categoría primero"
+                        : disponibles.length === 0
+                          ? "Esta categoría no tiene subcategorías"
+                          : "Sin subcategoría"}
+                    </option>
+                    {disponibles.map((s) => <option key={s.id} value={s.id}>{s.nombre}</option>)}
+                  </select>
+                );
+              }}
+            </Campo>
 
             <div className={styles.filaTres}>
               <Campo id="precio" etiqueta="Precio" error={tocados.precio && errores.precio} requerido>

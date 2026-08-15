@@ -47,8 +47,9 @@ export function normalizarProductoFakeStore(p) {
     imagenes: p.image ? [p.image] : [],
     categoria: p.category,
     categoriaSlug: p.category,
-    // Fake Store no tiene marca; el contrato la deja en null.
+    // Fake Store no tiene marca ni subcategoría; el contrato las deja en null.
     marca: null,
+    subcategoria: null,
     descripcion: p.description,
     // La Fake Store API no trae ofertas. Simulamos una en los ids pares: el
     // precio anterior deja el actual con 25% de descuento. En la Fase 2
@@ -92,6 +93,9 @@ export function normalizarProductoApi(producto) {
           slug: producto.marca.slug,
           logoUrl: producto.marca.logoUrl ?? null,
         }
+      : null,
+    subcategoria: producto.subcategoria
+      ? { nombre: producto.subcategoria.nombre, slug: producto.subcategoria.slug }
       : null,
     descripcion: producto.descripcion,
     precioAnterior: producto.precioAnterior,

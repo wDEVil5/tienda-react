@@ -48,8 +48,6 @@ export default function PaginaCatalogo({ categorias = [] }) {
   const [atributosSel, setAtributosSel] = useState(() => leerAtributosUrl(searchParams.get("atributos")));
   const [precioMin, setPrecioMin] = useState(undefined);
   const [precioMax, setPrecioMax] = useState(undefined);
-  const [precioMinTexto, setPrecioMinTexto] = useState("");
-  const [precioMaxTexto, setPrecioMaxTexto] = useState("");
   const [filtrosAbiertos, setFiltrosAbiertos] = useState(false);
   const [marcaBusqueda, setMarcaBusqueda] = useState("");
   const [seccionesAbiertas, setSeccionesAbiertas] = useState({ marcas: true, precio: true, atributos: true });
@@ -168,13 +166,22 @@ export default function PaginaCatalogo({ categorias = [] }) {
     setSearchParams(parametros, { replace: true });
   }
 
-  function aplicarPrecio(evento) {
-    evento.preventDefault();
-    const min = precioMinTexto.trim() === "" ? undefined : Math.max(0, Number(precioMinTexto));
-    const max = precioMaxTexto.trim() === "" ? undefined : Math.max(0, Number(precioMaxTexto));
+  const rangoPrecioMinimo = Number(facetas?.precio?.min ?? 0);
+  const rangoPrecioMaximo = Math.max(rangoPrecioMinimo + 1, Number(facetas?.precio?.max ?? rangoPrecioMinimo + 1));
+  const precioRangoMinimo = precioMin ?? rangoPrecioMinimo;
+  const precioRangoMaximo = precioMax ?? rangoPrecioMaximo;
+
+  function cambiarPrecioRango(limite, valor) {
+    const siguienteValor = Number(valor);
+    const siguienteMinimo = limite === "min"
+      ? Math.min(siguienteValor, precioRangoMaximo)
+      : precioRangoMinimo;
+    const siguienteMaximo = limite === "max"
+      ? Math.max(siguienteValor, precioRangoMinimo)
+      : precioRangoMaximo;
     setCargando(true);
-    setPrecioMin(Number.isFinite(min) ? min : undefined);
-    setPrecioMax(Number.isFinite(max) ? max : undefined);
+    setPrecioMin(siguienteMinimo <= rangoPrecioMinimo ? undefined : siguienteMinimo);
+    setPrecioMax(siguienteMaximo >= rangoPrecioMaximo ? undefined : siguienteMaximo);
   }
 
   function limpiarFiltros() {
@@ -183,8 +190,6 @@ export default function PaginaCatalogo({ categorias = [] }) {
     setAtributosSel([]);
     setPrecioMin(undefined);
     setPrecioMax(undefined);
-    setPrecioMinTexto("");
-    setPrecioMaxTexto("");
     setSoloOfertasSeleccionado(false);
     setSoloDisponiblesSeleccionado(false);
     const parametros = new URLSearchParams(searchParams);
@@ -268,23 +273,6 @@ export default function PaginaCatalogo({ categorias = [] }) {
           </select>
         </label>
       </header>
-
-      {modo === "categoria" && subcategorias.length > 0 && (
-        <div className={styles.chips} aria-label="Subcategorías">
-          <Link to={`/categoria/${slug}`} className={`${styles.chip} ${!sub ? styles.chipActivo : ""}`}>
-            Todo
-          </Link>
-          {subcategorias.map((s) => (
-            <Link
-              key={s.slug ?? s.id}
-              to={`/categoria/${slug}?sub=${encodeURIComponent(s.slug)}`}
-              className={`${styles.chip} ${sub === s.slug ? styles.chipActivo : ""}`}
-            >
-              {s.nombre}
-            </Link>
-          ))}
-        </div>
-      )}
 
       <div className={styles.cuerpo}>
         {mostrarSidebar && (
@@ -382,34 +370,62 @@ export default function PaginaCatalogo({ categorias = [] }) {
                 <button type="button" className={styles.grupoTitulo} onClick={() => alternarSeccion("precio")} aria-expanded={seccionesAbiertas.precio}>
                   <span>Precio</span><span aria-hidden="true">{seccionesAbiertas.precio ? "−" : "+"}</span>
                 </button>
-                {seccionesAbiertas.precio && <form className={styles.precio} onSubmit={aplicarPrecio}>
-                  <input
-                    type="number"
-                    min="0"
-                    inputMode="numeric"
-                    placeholder="Mín"
-                    value={precioMinTexto}
-                    onChange={(e) => setPrecioMinTexto(e.target.value)}
-                    aria-label="Precio mínimo"
-                  />
-                  <span aria-hidden="true">–</span>
-                  <input
-                    type="number"
-                    min="0"
-                    inputMode="numeric"
-                    placeholder="Máx"
-                    value={precioMaxTexto}
-                    onChange={(e) => setPrecioMaxTexto(e.target.value)}
-                    aria-label="Precio máximo"
-                  />
-                  <button type="submit">Aplicar</button>
-                </form>}
+                {seccionesAbiertas.precio && (
+                  <div className={styles.precio}>
+                    <div className={styles.precioValores} aria-live="polite">
+                      <span>${precioRangoMinimo.toLocaleString("es-CL")}</span>
+                      <span>${precioRangoMaximo.toLocaleString("es-CL")}</span>
+                    </div>
+                    <div
+                      className={styles.precioRango}
+                      style={{
+                        "--rango-inicio": `${((precioRangoMinimo - rangoPrecioMinimo) / (rangoPrecioMaximo - rangoPrecioMinimo)) * 100}%`,
+                        "--rango-fin": `${((precioRangoMaximo - rangoPrecioMinimo) / (rangoPrecioMaximo - rangoPrecioMinimo)) * 100}%`,
+                      }}
+                    >
+                      <input
+                        className={styles.rangoMinimo}
+                        type="range"
+                        min={rangoPrecioMinimo}
+                        max={rangoPrecioMaximo}
+                        value={precioRangoMinimo}
+                        onChange={(e) => cambiarPrecioRango("min", e.target.value)}
+                        aria-label="Precio mínimo"
+                      />
+                      <input
+                        className={styles.rangoMaximo}
+                        type="range"
+                        min={rangoPrecioMinimo}
+                        max={rangoPrecioMaximo}
+                        value={precioRangoMaximo}
+                        onChange={(e) => cambiarPrecioRango("max", e.target.value)}
+                        aria-label="Precio máximo"
+                      />
+                    </div>
+                  </div>
+                )}
               </section>
             </aside>
           </>
         )}
 
         <div className={styles.contenido}>
+          {modo === "categoria" && subcategorias.length > 0 && (
+            <div className={styles.chips} aria-label="Subcategorías">
+              <Link to={`/categoria/${slug}`} className={`${styles.chip} ${!sub ? styles.chipActivo : ""}`}>
+                Todo
+              </Link>
+              {subcategorias.map((s) => (
+                <Link
+                  key={s.slug ?? s.id}
+                  to={`/categoria/${slug}?sub=${encodeURIComponent(s.slug)}`}
+                  className={`${styles.chip} ${sub === s.slug ? styles.chipActivo : ""}`}
+                >
+                  {s.nombre}
+                </Link>
+              ))}
+            </div>
+          )}
           {cargando ? (
             <p className={styles.estado} role="status">Cargando productos…</p>
           ) : error ? (

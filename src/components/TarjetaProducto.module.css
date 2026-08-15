@@ -1,17 +1,14 @@
 .tarjeta {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: var(--color-fondo);
-  border-radius: var(--radio-tarjeta);
-  padding: 14px;
-  transition: background-color 0.2s ease, box-shadow 0.2s ease,
-    transform 0.2s ease;
+  min-width: 0;
+  background: transparent;
+  transition: transform 0.2s ease;
 }
 
 .tarjeta:hover {
-  background-color: var(--color-superficie);
-  box-shadow: 0 12px 26px rgba(28, 27, 24, 0.08);
   transform: translateY(-2px);
 }
 
@@ -19,9 +16,10 @@
   position: relative;
   aspect-ratio: 1 / 1;
   background-color: var(--color-superficie);
-  border-radius: var(--radio-campo);
-  overflow: hidden;
-  margin-bottom: var(--e-md);
+  border-radius: var(--radio-caja);
+  /* El CTA se superpone a la base; el recorte queda en el enlace de imagen. */
+  overflow: visible;
+  margin-bottom: 30px;
 }
 
 .imagen {
@@ -37,6 +35,8 @@
   justify-content: center;
   width: 100%;
   height: 100%;
+  overflow: hidden;
+  border-radius: inherit;
   text-decoration: none;
 }
 
@@ -46,24 +46,28 @@
   left: var(--e-sm);
   background-color: var(--color-oferta);
   color: #fff;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 500;
-  padding: 3px 7px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 8px;
   border-radius: var(--radio-badge);
 }
 
+.info {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+}
+
 .nombre {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 500;
-  line-height: 1.35;
-  /* Alto fijo de 2 líneas para que todas las tarjetas se alineen. */
-  height: 2.7em;
+  line-height: 1.38;
+  /* El espacio de tres líneas conserva una grilla estable con nombres reales. */
+  min-height: 4.14em;
   overflow: hidden;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
-  margin-bottom: var(--e-sm);
 }
 
 .nombre a {
@@ -75,26 +79,19 @@
   color: var(--color-acento);
 }
 
-/* Pie: precio a la izquierda, botón "+" a la derecha, pegados al fondo. */
-.pie {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--e-sm);
-  margin-top: auto;
-}
-
+/* Precio comercial primero; marca y nombre describen después el producto. */
 .precios {
   display: flex;
-  flex-direction: column;
-  line-height: 1;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 5px 8px;
+  line-height: 1.15;
 }
 
 .precioAntes {
   font-size: 11.5px;
   color: var(--color-texto-tenue);
   text-decoration: line-through;
-  margin-bottom: 2px;
 }
 
 .precio {
@@ -107,25 +104,92 @@
   color: var(--color-texto);
 }
 
+.precioUnidad {
+  color: var(--color-texto-suave);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.ofertaInfo {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 16px;
+}
+
+.ahorro {
+  padding: 2px 5px;
+  border-radius: 3px;
+  background: var(--color-acento-bg);
+  color: var(--color-acento);
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.marca {
+  color: var(--color-texto-2);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
 .boton {
-  flex-shrink: 0;
-  width: 44px;
-  height: 44px;
+  position: absolute;
+  z-index: 1;
+  bottom: -22px;
+  left: 50%;
+  display: inline-flex;
+  min-width: min(172px, calc(100% - 24px));
+  height: 46px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: transparent;
-  color: var(--color-texto);
-  border: 1px solid #cfcbc0; /* borde claro del handoff §2 */
-  border-radius: var(--radio-control);
-  font-size: 16px;
+  gap: 8px;
+  padding: 0 20px;
+  transform: translateX(-50%);
+  background-color: var(--color-acento);
+  color: #fff;
+  border: 1px solid var(--color-acento);
+  border-radius: var(--radio-pill);
+  box-shadow: 0 5px 12px rgba(28, 27, 24, 0.18);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
   transition: background-color 0.2s ease, border-color 0.2s ease,
-    color 0.2s ease;
+    transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .boton:hover {
-  background-color: var(--color-texto);
-  border-color: var(--color-texto);
-  color: #fff;
+  background-color: #205638;
+  border-color: #205638;
+  box-shadow: 0 8px 16px rgba(28, 27, 24, 0.22);
+}
+
+.boton:active {
+  transform: translateX(-50%) translateY(1px);
+}
+
+@media (max-width: 767px) {
+  .imagenWrap { margin-bottom: 25px; }
+  .boton {
+    min-width: calc(100% - 16px);
+    height: 40px;
+    bottom: -20px;
+    gap: 6px;
+    padding: 0 12px;
+    font-size: 12px;
+  }
+  .precio { font-size: 18px; }
+  .precioUnidad { font-size: 10.5px; }
+  .ofertaInfo { gap: 4px; }
+  .ahorro,
+  .precioAntes { font-size: 9.5px; }
+  .marca { font-size: 11px; }
+  .nombre {
+    min-height: 3.96em;
+    font-size: 13px;
+    line-height: 1.32;
+  }
 }

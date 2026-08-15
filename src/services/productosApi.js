@@ -21,6 +21,7 @@ export async function obtenerCatalogo({
   busqueda = "",
   categoria,
   subcategoria,
+  marca = [],
   soloOfertas = false,
   precioMin,
   precioMax,
@@ -46,6 +47,10 @@ export async function obtenerCatalogo({
 
       if (subcategoria) {
         parametros.set("subcategoria", subcategoria);
+      }
+
+      if (Array.isArray(marca) && marca.length > 0) {
+        parametros.set("marca", marca.join(","));
       }
 
       if (soloOfertas) {
@@ -165,6 +170,37 @@ export async function obtenerProductoDetalle({
  * Recupera categorías completas para no depender de la página visible del
  * catálogo. Sin API propia devuelve null y la UI usa su derivación temporal.
  */
+// Facetas del sidebar del catálogo (marcas disponibles + rango de precio) para el
+// contexto actual. Si no hay API propia o falla, devuelve null y el sidebar se
+// oculta (Fake Store no tiene facetas reales).
+export async function obtenerFacetas({
+  categoria,
+  subcategoria,
+  busqueda = "",
+  soloOfertas = false,
+  fetchImpl = fetch,
+  apiUrl = import.meta.env.VITE_API_URL,
+} = {}) {
+  if (!apiUrl) return null;
+
+  const parametros = new URLSearchParams();
+  if (categoria) parametros.set("categoria", categoria);
+  if (subcategoria) parametros.set("subcategoria", subcategoria);
+  if (busqueda.trim()) parametros.set("q", busqueda.trim());
+  if (soloOfertas) parametros.set("ofertas", "true");
+
+  try {
+    const respuesta = await fetchImpl(
+      `${apiUrl.replace(/\/$/, "")}/productos/facetas?${parametros}`,
+    );
+    if (!respuesta.ok) return null;
+    const datos = await respuesta.json();
+    return datos?.data ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function obtenerCategorias({
   fetchImpl = fetch,
   apiUrl = import.meta.env.VITE_API_URL,

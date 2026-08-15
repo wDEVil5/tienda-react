@@ -120,7 +120,7 @@ function crearProductoPublico(producto) {
   }
 }
 
-function crearFiltrosPublicados({ query, categoria, subcategoria, soloOfertas, precioMin, precioMax, ahora } = {}) {
+function crearFiltrosPublicados({ query, categoria, subcategoria, marca, soloOfertas, precioMin, precioMax, ahora } = {}) {
   const where = { estado: 'PUBLICADO' }
 
   // Solo añadimos condiciones que llegaron desde la capa HTTP. Así Prisma
@@ -131,6 +131,11 @@ function crearFiltrosPublicados({ query, categoria, subcategoria, soloOfertas, p
 
   if (subcategoria) {
     where.subcategoria = { slug: subcategoria }
+  }
+
+  // Filtro por marca(s): una o varias, por slug (checkboxes del sidebar).
+  if (Array.isArray(marca) && marca.length > 0) {
+    where.marca = { slug: { in: marca } }
   }
 
   if (query) {
@@ -191,6 +196,31 @@ export function crearRepositorioProductos(cliente = prisma) {
 
     async contarPublicados(filtros = {}) {
       return cliente.producto.count({ where: crearFiltrosPublicados(filtros) })
+    },
+
+    // Facetas del sidebar: marcas presentes en el contexto (categoría/sub/búsqueda/
+    // ofertas) con su conteo, y el rango de precio. El contexto NO incluye marca ni
+    // precio: así la lista de marcas y el rango no cambian al ir seleccionando.
+    async facetasPublicadas(filtros = {}) {
+      const where = crearFiltrosPublicados(filtros)
+      const [marcas, precio] = await Promise.all([
+        cliente.marca.findMany({
+          where: { productos: { some: where } },
+          select: {
+            id: true,
+            nombre: true,
+            slug: true,
+            _count: { select: { productos: { where } } },
+          },
+          orderBy: { nombre: 'asc' },
+        }),
+        cliente.producto.aggregate({ where, _min: { precio: true }, _max: { precio: true } }),
+      ])
+
+      return {
+        marcas: marcas.map((m) => ({ id: m.id, nombre: m.nombre, slug: m.slug, total: m._count.productos })),
+        precio: { min: precio._min.precio ?? 0, max: precio._max.precio ?? 0 },
+      }
     },
 
     async obtenerMaximoDescuentoVigente(ahora = new Date()) {

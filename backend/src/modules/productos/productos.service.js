@@ -38,6 +38,7 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
       query = '',
       categoria = '',
       subcategoria = '',
+      marca = [],
       soloOfertas = false,
       precioMin = 0,
       precioMax = Infinity,
@@ -56,6 +57,7 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
         ...(textoBusqueda ? { query: textoBusqueda } : {}),
         ...(categoriaFiltrada ? { categoria: categoriaFiltrada } : {}),
         ...(subcategoriaFiltrada ? { subcategoria: subcategoriaFiltrada } : {}),
+        ...(marca.length ? { marca } : {}),
         ...(soloOfertas ? { soloOfertas: true } : {}),
         ...(precioMin !== 0 ? { precioMin } : {}),
         ...(Number.isFinite(precioMax) ? { precioMax } : {}),
@@ -88,6 +90,21 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
 
       return producto ? crearProductoPublico(producto) : null
     },
+
+    // Facetas del sidebar (marcas + rango de precio) para el mismo contexto de la
+    // lista, sin considerar marca/precio (para que no se auto-recorten).
+    async obtenerFacetas({ query = '', categoria = '', subcategoria = '', soloOfertas = false } = {}) {
+      const textoBusqueda = normalizarTextoBusqueda(query)
+      const categoriaFiltrada = normalizarTextoBusqueda(categoria)
+      const subcategoriaFiltrada = normalizarTextoBusqueda(subcategoria)
+      return repositorio.facetasPublicadas({
+        ahora: new Date(),
+        ...(textoBusqueda ? { query: textoBusqueda } : {}),
+        ...(categoriaFiltrada ? { categoria: categoriaFiltrada } : {}),
+        ...(subcategoriaFiltrada ? { subcategoria: subcategoriaFiltrada } : {}),
+        ...(soloOfertas ? { soloOfertas: true } : {}),
+      })
+    },
   }
 }
 
@@ -95,3 +112,4 @@ const servicioProductos = crearServicioProductos()
 
 export const listarProductos = servicioProductos.listarProductos
 export const obtenerProductoPorSlug = servicioProductos.obtenerProductoPorSlug
+export const obtenerFacetas = servicioProductos.obtenerFacetas

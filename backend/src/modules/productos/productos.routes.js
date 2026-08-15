@@ -5,6 +5,7 @@ import {
   ORDENES_PERMITIDOS,
   PAGINACION_PREDETERMINADA,
   listarProductos,
+  obtenerFacetas,
   obtenerProductoPorSlug,
 } from './productos.service.js'
 
@@ -37,6 +38,11 @@ productosRouter.get('/', async (request, response, next) => {
     typeof request.query.categoria === 'string' ? request.query.categoria : ''
   const subcategoria =
     typeof request.query.subcategoria === 'string' ? request.query.subcategoria : ''
+  // marca acepta varias separadas por coma: ?marca=kraft,nestle
+  const marca =
+    typeof request.query.marca === 'string' && request.query.marca.trim()
+      ? request.query.marca.split(',').map((valor) => valor.trim()).filter(Boolean)
+      : []
   const soloOfertas = request.query.ofertas === 'true'
   const precioMin = leerNumeroNoNegativo(request.query.precioMin)
   const precioMax = leerNumeroNoNegativo(request.query.precioMax)
@@ -81,6 +87,7 @@ productosRouter.get('/', async (request, response, next) => {
       query,
       categoria,
       subcategoria,
+      marca,
       soloOfertas,
       precioMin,
       precioMax,
@@ -90,6 +97,23 @@ productosRouter.get('/', async (request, response, next) => {
     })
 
     return response.json(catalogo)
+  } catch (error) {
+    return next(error)
+  }
+})
+
+// Facetas del sidebar del catálogo (marcas + rango de precio) para un contexto.
+// Debe ir ANTES de '/:slug' para no ser capturada como un slug de producto.
+productosRouter.get('/facetas', async (request, response, next) => {
+  const query = typeof request.query.q === 'string' ? request.query.q : ''
+  const categoria = typeof request.query.categoria === 'string' ? request.query.categoria : ''
+  const subcategoria =
+    typeof request.query.subcategoria === 'string' ? request.query.subcategoria : ''
+  const soloOfertas = request.query.ofertas === 'true'
+
+  try {
+    const facetas = await obtenerFacetas({ query, categoria, subcategoria, soloOfertas })
+    return response.json({ data: facetas })
   } catch (error) {
     return next(error)
   }

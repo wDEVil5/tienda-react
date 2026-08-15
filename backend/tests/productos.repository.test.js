@@ -130,3 +130,29 @@ test('el filtro por subcategoría acota la consulta por slug', async () => {
 
   assert.deepEqual(consulta.where.subcategoria, { slug: 'despensa-cafe-y-cafeteras' })
 })
+
+test('el filtro por marca(s) acota por slug con IN', async () => {
+  let consulta
+  const cliente = {
+    producto: {
+      async findMany(argumentos) {
+        consulta = argumentos
+        return []
+      },
+      async count() {
+        return 0
+      },
+    },
+  }
+
+  const repositorio = crearRepositorioProductos(cliente)
+  await repositorio.listarPublicados({
+    ahora: new Date('2026-08-01T12:00:00.000Z'),
+    marca: ['kraft', 'nestle'],
+    page: 1,
+    limit: 20,
+    orden: 'relevancia',
+  })
+
+  assert.deepEqual(consulta.where.marca, { slug: { in: ['kraft', 'nestle'] } })
+})

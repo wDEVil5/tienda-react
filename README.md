@@ -87,8 +87,9 @@ evoluciona con Express, PostgreSQL y Prisma.
   conteo) que escriben una bitácora de movimientos auditable.
 - **Clientes**: directorio paginado con métricas de compra, ficha con direcciones e
   historial, y activar/desactivar la cuenta (revoca sus sesiones).
-- **Categorías**: crear/ocultar categorías y gestionar sus **subcategorías**
-  (agregar, renombrar, reordenar, activar/eliminar) — alimentan el mega-menú.
+- **Categorías**: crear/ocultar categorías y gestionar la taxonomía de tres
+  niveles. Las subcategorías se editan en un acordeón —solo una abierta a la
+  vez— y permiten administrar sus niveles hijos y filtros configurables.
 - **Marcas**: alta y logo por dominio de Brandfetch o imagen propia de Cloudinary.
 - **Envíos**: reglas de entrega (umbral de envío gratis, tarifa base, tarifas por
   comuna, corte de retiro) que el servidor usa para cotizar.
@@ -106,11 +107,12 @@ evoluciona con Express, PostgreSQL y Prisma.
 
 ### API propia
 
-- Productos publicados con búsqueda sin tildes, categorías, **subcategorías**,
-  marcas, imágenes, etiquetas, promociones vigentes, filtros y paginación.
-- Taxonomía de dos niveles: categorías con sus subcategorías; el catálogo filtra por
-  categoría, subcategoría y marca(s), y expone **facetas** (marcas con conteo + rango
-  de precio) para el sidebar del listado.
+- Productos publicados con búsqueda sin tildes, categorías, subcategorías,
+  tercer nivel, marcas, imágenes, etiquetas, promociones vigentes, filtros y
+  paginación.
+- Taxonomía de tres niveles: categoría → subcategoría → nivel hijo. El catálogo
+  filtra por cada nivel, marca(s) y atributos; expone **facetas** (marcas,
+  rango de precio y atributos configurables) para el sidebar del listado.
 - Disponibilidad honesta por producto (`disponible` = stock − reservado,
   `estadoStock`) y suscripción "Avísame" para productos agotados.
 - Administración protegida de productos, categorías, subcategorías, marcas, logos,

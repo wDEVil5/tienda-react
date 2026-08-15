@@ -53,6 +53,10 @@ export default function PaginaCatalogo({ categorias = [] }) {
   const [seccionesAbiertas, setSeccionesAbiertas] = useState({ marcas: true, precio: true, atributos: true });
   const [soloOfertasSeleccionado, setSoloOfertasSeleccionado] = useState(false);
   const [soloDisponiblesSeleccionado, setSoloDisponiblesSeleccionado] = useState(false);
+  // Valor visual del rango de precio mientras se arrastra ({ min, max } | null).
+  // Solo alimenta la posición del thumb; el filtro real se aplica al soltar, para
+  // no lanzar una consulta por cada paso del arrastre.
+  const [precioBorrador, setPrecioBorrador] = useState(null);
 
   const categoriaActual = categorias.find((c) => c.slug === slug) ?? null;
   const subcategorias = categoriaActual?.subcategorias ?? [];
@@ -168,20 +172,25 @@ export default function PaginaCatalogo({ categorias = [] }) {
 
   const rangoPrecioMinimo = Number(facetas?.precio?.min ?? 0);
   const rangoPrecioMaximo = Math.max(rangoPrecioMinimo + 1, Number(facetas?.precio?.max ?? rangoPrecioMinimo + 1));
-  const precioRangoMinimo = precioMin ?? rangoPrecioMinimo;
-  const precioRangoMaximo = precioMax ?? rangoPrecioMaximo;
+  const precioRangoMinimo = precioBorrador?.min ?? precioMin ?? rangoPrecioMinimo;
+  const precioRangoMaximo = precioBorrador?.max ?? precioMax ?? rangoPrecioMaximo;
 
-  function cambiarPrecioRango(limite, valor) {
+  // Durante el arrastre solo movemos el thumb (sin consultar la API).
+  function arrastrarPrecio(limite, valor) {
     const siguienteValor = Number(valor);
-    const siguienteMinimo = limite === "min"
-      ? Math.min(siguienteValor, precioRangoMaximo)
-      : precioRangoMinimo;
-    const siguienteMaximo = limite === "max"
-      ? Math.max(siguienteValor, precioRangoMinimo)
-      : precioRangoMaximo;
+    setPrecioBorrador({
+      min: limite === "min" ? Math.min(siguienteValor, precioRangoMaximo) : precioRangoMinimo,
+      max: limite === "max" ? Math.max(siguienteValor, precioRangoMinimo) : precioRangoMaximo,
+    });
+  }
+
+  // Al soltar (o soltar la tecla) recién aplicamos el filtro y lanzamos la consulta.
+  function confirmarPrecio() {
+    if (!precioBorrador) return;
     setCargando(true);
-    setPrecioMin(siguienteMinimo <= rangoPrecioMinimo ? undefined : siguienteMinimo);
-    setPrecioMax(siguienteMaximo >= rangoPrecioMaximo ? undefined : siguienteMaximo);
+    setPrecioMin(precioBorrador.min <= rangoPrecioMinimo ? undefined : precioBorrador.min);
+    setPrecioMax(precioBorrador.max >= rangoPrecioMaximo ? undefined : precioBorrador.max);
+    setPrecioBorrador(null);
   }
 
   function limpiarFiltros() {
@@ -190,6 +199,7 @@ export default function PaginaCatalogo({ categorias = [] }) {
     setAtributosSel([]);
     setPrecioMin(undefined);
     setPrecioMax(undefined);
+    setPrecioBorrador(null);
     setSoloOfertasSeleccionado(false);
     setSoloDisponiblesSeleccionado(false);
     const parametros = new URLSearchParams(searchParams);
@@ -389,7 +399,10 @@ export default function PaginaCatalogo({ categorias = [] }) {
                         min={rangoPrecioMinimo}
                         max={rangoPrecioMaximo}
                         value={precioRangoMinimo}
-                        onChange={(e) => cambiarPrecioRango("min", e.target.value)}
+                        onChange={(e) => arrastrarPrecio("min", e.target.value)}
+                        onPointerUp={confirmarPrecio}
+                        onKeyUp={confirmarPrecio}
+                        onBlur={confirmarPrecio}
                         aria-label="Precio mínimo"
                       />
                       <input
@@ -398,7 +411,10 @@ export default function PaginaCatalogo({ categorias = [] }) {
                         min={rangoPrecioMinimo}
                         max={rangoPrecioMaximo}
                         value={precioRangoMaximo}
-                        onChange={(e) => cambiarPrecioRango("max", e.target.value)}
+                        onChange={(e) => arrastrarPrecio("max", e.target.value)}
+                        onPointerUp={confirmarPrecio}
+                        onKeyUp={confirmarPrecio}
+                        onBlur={confirmarPrecio}
                         aria-label="Precio máximo"
                       />
                     </div>

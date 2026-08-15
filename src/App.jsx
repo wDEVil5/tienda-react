@@ -152,6 +152,13 @@ function App() {
   const esMiCuenta = ubicacion.pathname.startsWith("/mi-cuenta");
   const esPantallaPrivada = esAcceso || esMiCuenta || esEstadoPago;
 
+  // Clave de remonte de PaginaCatalogo: solo el CONTEXTO (ruta + sub + nivel3 +
+  // q). Los filtros del sidebar que viven en la URL (?atributos=) se excluyen a
+  // propósito, para que marcar un atributo NO remonte la página ni borre las
+  // marcas/precio/orden ya elegidos; ese filtro se aplica vía efecto, no remonte.
+  const paramsUbicacion = new URLSearchParams(ubicacion.search);
+  const claveCatalogo = `${ubicacion.pathname}|${paramsUbicacion.get("sub") ?? ""}|${paramsUbicacion.get("nivel3") ?? ""}|${paramsUbicacion.get("q") ?? ""}`;
+
   // El panel tiene su propia sesión y shell. Se resuelve antes que la carga de
   // la tienda pública para no depender del catálogo ni montar carrito/footer.
   if (esAdmin) {
@@ -239,19 +246,19 @@ function App() {
           />
           <Route
             path="/categoria/:slug"
-            element={<PaginaCatalogo key={ubicacion.pathname + ubicacion.search} categorias={categoriasDisponibles} />}
+            element={<PaginaCatalogo key={claveCatalogo} categorias={categoriasDisponibles} />}
           />
           <Route
             path="/catalogo"
-            element={<PaginaCatalogo key={ubicacion.pathname + ubicacion.search} categorias={categoriasDisponibles} />}
+            element={<PaginaCatalogo key={claveCatalogo} categorias={categoriasDisponibles} />}
           />
           <Route
             path="/ofertas"
-            element={<PaginaCatalogo key={ubicacion.pathname + ubicacion.search} categorias={categoriasDisponibles} />}
+            element={<PaginaCatalogo key={claveCatalogo} categorias={categoriasDisponibles} />}
           />
           <Route
             path="/buscar"
-            element={<PaginaCatalogo key={ubicacion.pathname + ubicacion.search} categorias={categoriasDisponibles} />}
+            element={<PaginaCatalogo key={claveCatalogo} categorias={categoriasDisponibles} />}
           />
           <Route
             path="/producto/:slug"

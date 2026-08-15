@@ -70,7 +70,7 @@ function App() {
   useEffect(() => {
     if (esAdmin) return undefined;
     let vigente = true;
-    obtenerCatalogo({ limit: 48 })
+    obtenerCatalogo({ limit: 24 })
       .then((resultado) => {
         if (!vigente) return;
         setProductos(resultado.productos);

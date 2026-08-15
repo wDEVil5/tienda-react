@@ -49,8 +49,14 @@ evoluciona con Express, PostgreSQL y Prisma.
 
 ### Tienda pública
 
-- Catálogo con búsqueda, sugerencias, filtros, orden, rango de precio y
-  paginación.
+- Inicio editorial: carrusel de **banners** administrables, filas de destacados,
+  ofertas y categorías, sin catálogo embutido.
+- Navegación tipo supermercado: **mega-menú de categorías** (con íconos y sus
+  **subcategorías** reales) y un **buscador** con búsquedas recientes y accesos.
+- **Páginas de listado dedicadas** por categoría, subcategoría, búsqueda y ofertas
+  (`/categoria/:slug`, `?sub=`, `/buscar`, `/ofertas`), con breadcrumb, chips de
+  subcategorías, orden, paginación y un **sidebar de filtros** (marcas con conteo
+  y rango de precio, calculados por facetas del servidor).
 - Ficha de producto con galería, stock, precios, ofertas y productos
   relacionados.
 - Banda de ofertas derivada de promociones vigentes, no de texto fijo.
@@ -76,7 +82,20 @@ evoluciona con Express, PostgreSQL y Prisma.
   detalle, avance de estado, impresión de comanda y exportación a CSV.
 - **Productos**: alta, edición, archivado/restauración y eliminación definitiva
   (solo sin ventas; con pedidos asociados se archiva), con imágenes, categorías,
-  marcas, etiquetas y promociones.
+  subcategorías, marcas, etiquetas y promociones.
+- **Inventario**: vista de stock por producto con estado y ajustes (entrada, merma,
+  conteo) que escriben una bitácora de movimientos auditable.
+- **Clientes**: directorio paginado con métricas de compra, ficha con direcciones e
+  historial, y activar/desactivar la cuenta (revoca sus sesiones).
+- **Categorías**: crear/ocultar categorías y gestionar sus **subcategorías**
+  (agregar, renombrar, reordenar, activar/eliminar) — alimentan el mega-menú.
+- **Marcas**: alta y logo por dominio de Brandfetch o imagen propia de Cloudinary.
+- **Envíos**: reglas de entrega (umbral de envío gratis, tarifa base, tarifas por
+  comuna, corte de retiro) que el servidor usa para cotizar.
+- **Identidad**: nombre, contacto, dirección, redes y **horario estructurado** de la
+  tienda; el footer refleja "abierto/cerrado ahora" calculado de ese horario.
+- **Contenido**: páginas estáticas en **Markdown** (nosotros, términos, privacidad, faq).
+- **Banners**: carrusel de portada con subida de imagen, orden, activación y vigencia.
 - **Mi cuenta**: editar el nombre, cambiar la contraseña, cerrar sesión y cerrar
   la sesión en todos los dispositivos.
 - **Equipo** (solo administrador): crear operadores y activarlos, desactivarlos,
@@ -87,12 +106,17 @@ evoluciona con Express, PostgreSQL y Prisma.
 
 ### API propia
 
-- Productos publicados con búsqueda sin tildes, categorías, marcas, imágenes,
-  etiquetas, promociones vigentes, filtros y paginación.
+- Productos publicados con búsqueda sin tildes, categorías, **subcategorías**,
+  marcas, imágenes, etiquetas, promociones vigentes, filtros y paginación.
+- Taxonomía de dos niveles: categorías con sus subcategorías; el catálogo filtra por
+  categoría, subcategoría y marca(s), y expone **facetas** (marcas con conteo + rango
+  de precio) para el sidebar del listado.
 - Disponibilidad honesta por producto (`disponible` = stock − reservado,
   `estadoStock`) y suscripción "Avísame" para productos agotados.
-- Administración protegida de productos, categorías, marcas, logos, etiquetas,
-  promociones y operadores.
+- Administración protegida de productos, categorías, subcategorías, marcas, logos,
+  etiquetas, promociones, inventario, banners, identidad, contenido y operadores.
+- Identidad de la tienda, páginas de contenido en Markdown y banners del carrusel,
+  editables desde el panel y expuestos en endpoints públicos.
 - Sesiones de administrador/operador, roles y limitador de intentos de login.
 - Cuentas de clientes como dominio separado del staff: registro, login (con correo
   o con Google), recuperación de contraseña por correo y logout con cookie de sesión

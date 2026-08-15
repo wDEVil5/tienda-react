@@ -30,6 +30,14 @@ function Pista({ marcas, direccion }) {
   );
 }
 
+// Rota un arreglo n posiciones (sin mutar). Sirve para que la fila de abajo
+// empiece por otra marca y no parezca una copia de la de arriba.
+function rotar(arreglo, n) {
+  if (arreglo.length === 0) return arreglo;
+  const k = ((n % arreglo.length) + arreglo.length) % arreglo.length;
+  return [...arreglo.slice(k), ...arreglo.slice(0, k)];
+}
+
 function LogoMarca({ marca }) {
   const [fallo, setFallo] = useState(false);
   const origen = marca.logoUrl ?? crearUrlLogoBrandfetch(marca.brandfetchDomain);
@@ -65,14 +73,12 @@ function MarcasGondola() {
   // reales, esta franja editorial no aporta información al visitante.
   if (!marcas?.length) return null;
 
-  // Solo partimos en dos filas si hay suficientes marcas para que AMBAS tengan
-  // variedad. Con menos de 4, una segunda fila quedaría con una sola marca (que
-  // el carrusel repite hasta llenarse → "un solo logo"); en ese caso, una fila.
-  const usarDosFilas = marcas.length >= 4;
-  const filaArriba = usarDosFilas
-    ? marcas.slice(0, Math.ceil(marcas.length / 2))
-    : marcas;
-  const filaAbajo = usarDosFilas ? marcas.slice(filaArriba.length) : [];
+  // Ambas filas muestran TODAS las marcas → densidad idéntica, nunca se
+  // desbalancea al agregar más (era la causa de que "se concentrara" en una).
+  // La de abajo arranca rotada (media vuelta) para no verse como copia de la de
+  // arriba; además va en sentido contrario y a otra velocidad. La segunda fila
+  // solo aparece si hay más de una marca (con una sola, dos filas serían idénticas).
+  const filaAbajo = rotar(marcas, Math.floor(marcas.length / 2));
 
   return (
     <section id="nuestra-tienda" className={styles.marcas}>
@@ -90,8 +96,8 @@ function MarcasGondola() {
 
       {/* Decorativo: el lector de pantalla no necesita leer los logos repetidos. */}
       <div className={styles.pistas} aria-hidden="true">
-        <Pista marcas={filaArriba} direccion="izquierda" />
-        {filaAbajo.length > 0 && <Pista marcas={filaAbajo} direccion="derecha" />}
+        <Pista marcas={marcas} direccion="izquierda" />
+        {marcas.length > 1 && <Pista marcas={filaAbajo} direccion="derecha" />}
       </div>
     </section>
   );

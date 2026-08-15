@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import Hero from "../components/Hero.jsx";
+import BannerCarrusel from "../components/BannerCarrusel.jsx";
 import TiraConfianza from "../components/TiraConfianza.jsx";
 import CarruselProductos from "../components/CarruselProductos.jsx";
 import Categorias from "../components/Categorias.jsx";
@@ -72,16 +73,19 @@ function Home({
 
   return (
     <>
-      <Hero
-        productos={productos}
-        busqueda={busqueda}
-        onBuscar={onBuscar}
-        onSeleccionarCategoria={onSeleccionarCategoria}
-        onCambiarSoloOfertas={onCambiarSoloOfertas}
-        onVerOfertas={onVerOfertas}
-        onVerCatalogo={onVerCatalogo}
+      <BannerCarrusel
+        fallback={
+          <Hero
+            productos={productos}
+            busqueda={busqueda}
+            onBuscar={onBuscar}
+            onSeleccionarCategoria={onSeleccionarCategoria}
+            onCambiarSoloOfertas={onCambiarSoloOfertas}
+            onVerOfertas={onVerOfertas}
+            onVerCatalogo={onVerCatalogo}
+          />
+        }
       />
-      <TiraConfianza />
       <CarruselProductos
         eyebrow="Selección de la semana"
         titulo="Destacados"
@@ -143,6 +147,7 @@ function Home({
         cargandoMas={cargandoMas}
         onCargarMas={onCargarMas}
       />
+      <TiraConfianza />
       <ComoComprar />
       <MarcasGondola />
     </>

@@ -121,6 +121,17 @@ export function IconoMarcas(props) {
   );
 }
 
+export function IconoBanners(props) {
+  return (
+    <Svg {...props}>
+      <rect width="18" height="14" x="3" y="5" rx="2" ry="2" />
+      <path d="m3 15 4-4a2 2 0 0 1 2.8 0L14 15" />
+      <path d="m14 13 1.5-1.5a2 2 0 0 1 2.8 0L21 14" />
+      <circle cx="8" cy="9" r="1" />
+    </Svg>
+  );
+}
+
 export function IconoEquipo(props) {
   return (
     <Svg {...props}>

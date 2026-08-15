@@ -348,6 +348,45 @@ export function guardarPaginaAdmin(slug, { titulo, cuerpo, publicada }, opciones
   });
 }
 
+// Banners del carrusel del home (solo ADMIN). La imagen se sube aparte (como en
+// productos) y luego se crea/edita el banner con { imagenUrl, storageKey }.
+export function listarBannersAdmin(opciones = {}) {
+  return solicitarAdmin("/admin/banners", opciones);
+}
+
+export function obtenerBannerAdmin(id, opciones = {}) {
+  return solicitarAdmin(`/admin/banners/${encodeURIComponent(id)}`, opciones);
+}
+
+export function crearBannerAdmin(datos, opciones = {}) {
+  return solicitarAdmin("/admin/banners", { ...opciones, method: "POST", cuerpo: datos });
+}
+
+export function actualizarBannerAdmin(id, cambios, opciones = {}) {
+  return solicitarAdmin(`/admin/banners/${encodeURIComponent(id)}`, {
+    ...opciones,
+    method: "PATCH",
+    cuerpo: cambios,
+  });
+}
+
+export function eliminarBannerAdmin(id, opciones = {}) {
+  return solicitarAdmin(`/admin/banners/${encodeURIComponent(id)}`, {
+    ...opciones,
+    method: "DELETE",
+  });
+}
+
+export function subirImagenBannerAdmin(archivo, opciones = {}) {
+  const datos = new FormData();
+  datos.append("imagen", archivo);
+  return solicitarAdmin("/admin/banners/imagen", {
+    ...opciones,
+    method: "POST",
+    cuerpo: datos,
+  });
+}
+
 export function obtenerResumenAdmin({ periodo, ...opciones } = {}) {
   const parametros = new URLSearchParams();
   if (periodo) parametros.set("periodo", periodo);

@@ -3,7 +3,7 @@
 }
 
 .inner {
-  max-width: 1280px;
+  max-width: 1320px;
   margin: 0 auto;
   padding: 0 var(--e-2xl);
 }
@@ -50,7 +50,7 @@
 /* Pista con scroll horizontal + flechas superpuestas en los bordes. */
 .marco {
   position: relative;
-  max-width: 1280px;
+  max-width: 1320px;
   margin: 0 auto;
   padding: 0 var(--e-2xl);
 }

@@ -75,6 +75,31 @@ const NAV = [
 // (logo + buscador + carrito) queda pegado arriba.
 const UMBRAL_CONDENSADO = 80;
 
+// Búsquedas recientes: se guardan en el navegador (no en el backend) porque son
+// una comodidad local del dispositivo, no dato de negocio. Máximo 6, sin repetir.
+const CLAVE_RECIENTES = "sumarket.busquedasRecientes";
+const MAX_RECIENTES = 6;
+
+function leerRecientes() {
+  if (typeof localStorage === "undefined") return [];
+  try {
+    const bruto = JSON.parse(localStorage.getItem(CLAVE_RECIENTES) ?? "[]");
+    return Array.isArray(bruto)
+      ? bruto.filter((t) => typeof t === "string" && t.trim()).slice(0, MAX_RECIENTES)
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function guardarRecientes(lista) {
+  try {
+    localStorage.setItem(CLAVE_RECIENTES, JSON.stringify(lista));
+  } catch {
+    /* almacenamiento lleno o bloqueado: la búsqueda igual funciona */
+  }
+}
+
 function Header({
   categorias = [],
   busqueda = "",
@@ -97,10 +122,16 @@ function Header({
   const [condensado, setCondensado] = useState(
     () => typeof window !== "undefined" && window.scrollY > UMBRAL_CONDENSADO,
   );
+  const [buscadorAbierto, setBuscadorAbierto] = useState(false);
+  const [recientes, setRecientes] = useState(leerRecientes);
   const cuentaRef = useRef(null);
   const botonCuentaRef = useRef(null);
   const panelCuentaRef = useRef(null);
   const categoriasRef = useRef(null);
+  const buscadorRef = useRef(null);
+  // "Lo más buscado": accesos rápidos a las primeras categorías del catálogo (no
+  // inventamos analítica de búsquedas; usamos las secciones reales de la tienda).
+  const populares = categorias.slice(0, 6).map((categoria) => categoria.nombre);
   const [posicionCuenta, setPosicionCuenta] = useState({ top: 0, left: 0 });
   const cerrarMenu = () => setMenuAbierto(false);
   const cerrarCuenta = () => setCuentaAbierta(false);
@@ -140,11 +171,44 @@ function Header({
     return () => window.removeEventListener("scroll", alScroll);
   }, []);
 
-  const buscarEnCatalogo = (evento) => {
-    evento.preventDefault();
+  const agregarReciente = (termino) => {
+    setRecientes((actuales) => {
+      const sinDuplicado = actuales.filter((t) => t.toLowerCase() !== termino.toLowerCase());
+      const siguiente = [termino, ...sinDuplicado].slice(0, MAX_RECIENTES);
+      guardarRecientes(siguiente);
+      return siguiente;
+    });
+  };
+
+  const quitarReciente = (termino) => {
+    setRecientes((actuales) => {
+      const siguiente = actuales.filter((t) => t !== termino);
+      guardarRecientes(siguiente);
+      return siguiente;
+    });
+  };
+
+  // Ejecuta una búsqueda de texto: aplica el filtro, la recuerda y lleva al
+  // catálogo. La usan tanto el submit del formulario como las búsquedas recientes.
+  const ejecutarBusqueda = (termino) => {
+    const limpio = termino.trim();
+    onBuscar?.(limpio);
     onSeleccionarCategoria?.("todas");
     onCambiarSoloOfertas?.(false);
+    if (limpio) agregarReciente(limpio);
+    setBuscadorAbierto(false);
     navegar("/#catalogo");
+  };
+
+  const buscarEnCatalogo = (evento) => {
+    evento.preventDefault();
+    ejecutarBusqueda(busqueda);
+  };
+
+  // Chip de "Lo más buscado": salta directo a esa categoría (resultado asegurado).
+  const elegirCategoriaBuscador = (nombre) => {
+    seleccionarCategoria(nombre);
+    setBuscadorAbierto(false);
   };
 
   const seleccionarCategoria = (nombre) => {
@@ -182,6 +246,23 @@ function Header({
       window.removeEventListener("scroll", actualizarPosicionCuenta);
     };
   }, [actualizarPosicionCuenta, cuentaAbierta]);
+
+  // Cierre del panel de búsqueda (clic fuera / Escape).
+  useEffect(() => {
+    if (!buscadorAbierto) return undefined;
+    const alClicFuera = (evento) => {
+      if (!buscadorRef.current?.contains(evento.target)) setBuscadorAbierto(false);
+    };
+    const alEscape = (evento) => {
+      if (evento.key === "Escape") setBuscadorAbierto(false);
+    };
+    document.addEventListener("mousedown", alClicFuera);
+    document.addEventListener("keydown", alEscape);
+    return () => {
+      document.removeEventListener("mousedown", alClicFuera);
+      document.removeEventListener("keydown", alEscape);
+    };
+  }, [buscadorAbierto]);
 
   // Cierre del desplegable de categorías (clic fuera / Escape).
   useEffect(() => {
@@ -270,7 +351,7 @@ function Header({
           <IconoChevron />
         </button>
 
-        <form className={styles.buscador} role="search" onSubmit={buscarEnCatalogo}>
+        <form className={styles.buscador} role="search" onSubmit={buscarEnCatalogo} ref={buscadorRef}>
           <span className={styles.buscadorLupa}>
             <IconoLupa />
           </span>
@@ -279,11 +360,62 @@ function Header({
             placeholder="Busca productos, marcas o categorías"
             value={busqueda}
             onChange={(e) => onBuscar?.(e.target.value)}
+            onFocus={() => setBuscadorAbierto(true)}
             aria-label="Buscar productos"
           />
           <button className={styles.buscadorEnviar} type="submit" aria-label="Buscar">
             <IconoLupa />
           </button>
+
+          {buscadorAbierto && (recientes.length > 0 || populares.length > 0) && (
+            <div className={styles.buscadorPanel} role="dialog" aria-label="Sugerencias de búsqueda">
+              {recientes.length > 0 && (
+                <div className={styles.buscadorCol}>
+                  <p className={styles.buscadorColTitulo}>Búsqueda reciente</p>
+                  <ul className={styles.recientesLista}>
+                    {recientes.map((termino) => (
+                      <li key={termino} className={styles.recienteItem}>
+                        <button
+                          type="button"
+                          className={styles.recienteTexto}
+                          onClick={() => ejecutarBusqueda(termino)}
+                        >
+                          {termino}
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.recienteQuitar}
+                          aria-label={`Quitar “${termino}”`}
+                          onClick={() => quitarReciente(termino)}
+                        >
+                          <Svg size={14}>
+                            <path d="M6 6l12 12M18 6 6 18" />
+                          </Svg>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {populares.length > 0 && (
+                <div className={styles.buscadorCol}>
+                  <p className={styles.buscadorColTitulo}>Lo más buscado</p>
+                  <div className={styles.chips}>
+                    {populares.map((termino) => (
+                      <button
+                        key={termino}
+                        type="button"
+                        className={styles.chip}
+                        onClick={() => elegirCategoriaBuscador(termino)}
+                      >
+                        {termino}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </form>
 
         <div className={styles.acciones}>

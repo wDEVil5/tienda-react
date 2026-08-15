@@ -9,7 +9,7 @@
    (no en .app), para que Header y Footer sean full-bleed. */
 .contenido {
     width: 100%;
-    max-width: 1200px;
+    max-width: 1320px;
     margin: 0 auto;
     padding: var(--e-lg);
     flex: 1;                    /* empuja el footer hacia abajo */

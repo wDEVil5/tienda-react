@@ -390,10 +390,11 @@
 .megaCategorias {
   list-style: none;
   margin: 0;
-  padding: 12px;
+  padding: 14px 12px;
   width: 280px;
   flex-shrink: 0;
   overflow-y: auto;
+  background: #fff;
   border-right: 1px solid var(--bnv-borde);
 }
 .megaCategoria {
@@ -415,7 +416,7 @@
 }
 .megaCategoria:hover,
 .megaCategoriaActiva {
-  background-color: var(--bnv-neblina);
+  background-color: #e8f5e9;
   color: var(--bnv-tinta);
 }
 /* Resaltado de la categoría activa: acento verde a la izquierda (como Jumbo). */
@@ -443,24 +444,35 @@
 .megaContenido {
   flex: 1;
   min-width: 0;
-  padding: 28px 32px 32px;
+  padding: 30px 38px 36px;
   overflow-y: auto;
+  background: #f5f5f3;
 }
 .megaCabecera {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
+  position: relative;
+  margin-bottom: 28px;
+  padding: 0 0 17px;
   border-bottom: 1px solid var(--bnv-borde);
+}
+.megaCabecera::after {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: min(44%, 240px);
+  height: 3px;
+  background: var(--bnv-verde);
+  content: "";
 }
 .megaCabecera h3 {
   margin: 0;
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 24px;
+  font-size: 25px;
   font-weight: 600;
   color: var(--bnv-tinta);
 }
@@ -489,7 +501,8 @@
 .megaSubs {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 24px;
+  column-gap: 34px;
+  row-gap: 30px;
 }
 .megaGrupo {
   min-width: 0;
@@ -497,8 +510,8 @@
 .megaSubTitulo {
   display: block;
   width: 100%;
-  margin: 0 0 6px;
-  padding: 0 8px;
+  margin: 0 0 8px;
+  padding: 0;
   border: none;
   background: none;
   color: var(--bnv-tinta);
@@ -511,8 +524,8 @@
 .megaSubTitulo:hover { color: var(--bnv-verde); }
 .megaHijas { display: grid; gap: 2px; }
 .megaSub {
-  min-height: 32px;
-  padding: 6px 8px;
+  min-height: 30px;
+  padding: 5px 7px;
   border: none;
   border-radius: 8px;
   background: none;
@@ -528,7 +541,7 @@
 }
 .megaSinHijas {
   display: block;
-  padding: 6px 8px;
+  padding: 5px 0;
   color: var(--bnv-tenue);
   font-size: 12px;
 }

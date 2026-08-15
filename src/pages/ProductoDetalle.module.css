@@ -353,13 +353,11 @@
 
 .relGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-}
-
-/* Las relacionadas conservan el estilo de tarjeta y solo suman un borde fino. */
-.relGrid > article {
-  border: 1px solid var(--color-borde);
+  /* El detalle no estira una tarjeta si hay pocos relacionados: conserva la
+     misma medida comercial que el resto de los carruseles del sitio. */
+  grid-template-columns: repeat(auto-fit, 210px);
+  justify-content: start;
+  gap: 16px;
 }
 
 .noEncontrado {

@@ -14,7 +14,11 @@
 
 .imagenWrap {
   position: relative;
-  aspect-ratio: 1 / 1;
+  /* Marco cuadrado independiente del tamaño intrínseco de cada archivo. */
+  flex: 0 0 auto;
+  height: 0;
+  min-height: 0;
+  padding-bottom: 100%;
   background-color: var(--color-superficie);
   border-radius: var(--radio-caja);
   /* El CTA se superpone a la base; el recorte queda en el enlace de imagen. */
@@ -30,6 +34,8 @@
 
 /* El enlace envuelve la imagen: ocupa todo el cuadro y no se ve como enlace. */
 .imagenWrap a {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;

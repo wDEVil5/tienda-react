@@ -106,9 +106,10 @@ const NAV = [
   { etiqueta: "Nuestra tienda", hash: "/#nuestra-tienda" },
 ];
 
-// A partir de este scroll el segundo piso (navegación) se colapsa; el primero
-// (logo + buscador + carrito) queda pegado arriba.
-const UMBRAL_CONDENSADO = 80;
+// Dos umbrales evitan que el alto variable del header haga oscilar el estado
+// justo en el punto de colapso: baja después de 96 px y vuelve bajo 56 px.
+const UMBRAL_CONDENSADO_ENTRADA = 96;
+const UMBRAL_CONDENSADO_SALIDA = 56;
 
 // Búsquedas recientes: se guardan en el navegador (no en el backend) porque son
 // una comodidad local del dispositivo, no dato de negocio. Máximo 6, sin repetir.
@@ -152,7 +153,7 @@ function Header({
   // Estado condensado: el valor inicial se calcula del scroll actual para no
   // hacer un setState sincrónico dentro del efecto (solo suscribimos el listener).
   const [condensado, setCondensado] = useState(
-    () => typeof window !== "undefined" && window.scrollY > UMBRAL_CONDENSADO,
+    () => typeof window !== "undefined" && window.scrollY > UMBRAL_CONDENSADO_ENTRADA,
   );
   const [buscadorAbierto, setBuscadorAbierto] = useState(false);
   const [recientes, setRecientes] = useState(leerRecientes);
@@ -191,16 +192,31 @@ function Header({
     });
   }, []);
 
-  // Al bajar más del umbral el segundo piso se colapsa. Listener pasivo; el
-  // updater funcional evita renders cuando el estado no cambia.
+  // El margen entre entrada y salida evita parpadeos cuando el header cambia
+  // de alto. requestAnimationFrame limita la lectura de scroll a un frame.
   useEffect(() => {
-    const alScroll = () => {
-      const siguiente = window.scrollY > UMBRAL_CONDENSADO;
-      setCondensado((actual) => (actual === siguiente ? actual : siguiente));
+    let frame = null;
+
+    const actualizarCondensado = () => {
+      frame = null;
+      const posicion = window.scrollY;
+
+      setCondensado((actual) => {
+        if (actual) return posicion > UMBRAL_CONDENSADO_SALIDA;
+        return posicion >= UMBRAL_CONDENSADO_ENTRADA;
+      });
     };
-    alScroll();
+
+    const alScroll = () => {
+      if (frame === null) frame = window.requestAnimationFrame(actualizarCondensado);
+    };
+
+    actualizarCondensado();
     window.addEventListener("scroll", alScroll, { passive: true });
-    return () => window.removeEventListener("scroll", alScroll);
+    return () => {
+      window.removeEventListener("scroll", alScroll);
+      if (frame !== null) window.cancelAnimationFrame(frame);
+    };
   }, []);
 
   const agregarReciente = (termino) => {

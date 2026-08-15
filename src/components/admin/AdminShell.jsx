@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import {
   IconoBanners,
+  IconoCategorias,
   IconoClientes,
   IconoContenido,
   IconoEnvios,
@@ -25,6 +26,7 @@ const ICONOS_SECCION = {
   Contenido: IconoContenido,
   Banners: IconoBanners,
   Marcas: IconoMarcas,
+  Categorías: IconoCategorias,
   Equipo: IconoEquipo,
 };
 
@@ -39,6 +41,7 @@ const SECCIONES = [
   "Contenido",
   "Banners",
   "Marcas",
+  "Categorías",
 ];
 
 // Secciones ya implementadas: su ítem del menú navega. El resto queda deshabilitado
@@ -54,6 +57,7 @@ const RUTAS = {
   Contenido: "/admin/contenido",
   Banners: "/admin/banners",
   Marcas: "/admin/marcas",
+  Categorías: "/admin/categorias",
   Equipo: "/admin/equipo",
 };
 

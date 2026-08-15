@@ -41,6 +41,17 @@ import {
 } from './admin-categorias.service.js'
 import { validarCategoriaNuevaAdmin } from './admin-categorias.validacion.js'
 import {
+  ErrorSubcategoriaAdmin,
+  actualizarSubcategoriaAdmin,
+  crearSubcategoriaAdmin,
+  eliminarSubcategoriaAdmin,
+  listarSubcategoriasAdmin,
+} from './admin-subcategorias.service.js'
+import {
+  validarSubcategoriaCambios,
+  validarSubcategoriaNueva,
+} from './admin-subcategorias.validacion.js'
+import {
   ErrorMarcaAdmin,
   actualizarDominioBrandfetchAdmin,
   crearMarcaAdmin,
@@ -133,6 +144,10 @@ export function crearRouterAdmin({
     listarCategoriasAdmin,
     desactivarCategoriaAdmin,
     activarCategoriaAdmin,
+    listarSubcategoriasAdmin,
+    crearSubcategoriaAdmin,
+    actualizarSubcategoriaAdmin,
+    eliminarSubcategoriaAdmin,
     crearMarcaAdmin,
     listarMarcasAdmin,
     actualizarDominioBrandfetchAdmin,
@@ -423,6 +438,122 @@ export function crearRouterAdmin({
         }
         return response.json({ data: categoria })
       } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  // Subcategorías de una categoría (solo ADMIN). Segundo nivel de la taxonomía.
+  adminRouter.get(
+    '/categorias/:categoriaId/subcategorias',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      try {
+        const resultado = await servicio.listarSubcategoriasAdmin(request.params.categoriaId)
+        if (!resultado) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_CATEGORY_NOT_FOUND', message: 'No encontramos la categoría solicitada.' },
+          })
+        }
+        return response.json(resultado)
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.post(
+    '/categorias/:categoriaId/subcategorias',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      const validacion = validarSubcategoriaNueva(request.body)
+      if (!validacion.success) {
+        return response.status(422).json({
+          error: { code: 'INVALID_SUBCATEGORY_DATA', message: 'Revisa los datos de la subcategoría.' },
+        })
+      }
+
+      try {
+        const subcategoria = await servicio.crearSubcategoriaAdmin(
+          request.params.categoriaId,
+          validacion.data,
+        )
+        if (!subcategoria) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_CATEGORY_NOT_FOUND', message: 'No encontramos la categoría solicitada.' },
+          })
+        }
+        return response.status(201).json({ data: subcategoria })
+      } catch (error) {
+        if (error instanceof ErrorSubcategoriaAdmin) {
+          return response.status(422).json({ error: { code: error.code, message: error.message } })
+        }
+        if (error.code === 'P2002') {
+          return response.status(409).json({
+            error: { code: 'SUBCATEGORY_ALREADY_EXISTS', message: 'Ya existe una subcategoría con ese nombre en la categoría.' },
+          })
+        }
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.patch(
+    '/subcategorias/:id',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      const validacion = validarSubcategoriaCambios(request.body)
+      if (!validacion.success) {
+        return response.status(422).json({
+          error: { code: 'INVALID_SUBCATEGORY_DATA', message: 'Revisa los datos de la subcategoría.' },
+        })
+      }
+
+      try {
+        const subcategoria = await servicio.actualizarSubcategoriaAdmin(
+          request.params.id,
+          validacion.data,
+        )
+        if (!subcategoria) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_SUBCATEGORY_NOT_FOUND', message: 'No encontramos la subcategoría solicitada.' },
+          })
+        }
+        return response.json({ data: subcategoria })
+      } catch (error) {
+        if (error instanceof ErrorSubcategoriaAdmin) {
+          return response.status(422).json({ error: { code: error.code, message: error.message } })
+        }
+        if (error.code === 'P2002') {
+          return response.status(409).json({
+            error: { code: 'SUBCATEGORY_ALREADY_EXISTS', message: 'Ya existe una subcategoría con ese nombre en la categoría.' },
+          })
+        }
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.delete(
+    '/subcategorias/:id',
+    middlewareSesion,
+    requerirRoles('ADMIN'),
+    async (request, response, next) => {
+      try {
+        const eliminada = await servicio.eliminarSubcategoriaAdmin(request.params.id)
+        if (!eliminada) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_SUBCATEGORY_NOT_FOUND', message: 'No encontramos la subcategoría solicitada.' },
+          })
+        }
+        return response.status(204).end()
+      } catch (error) {
+        if (error instanceof ErrorSubcategoriaAdmin) {
+          return response.status(422).json({ error: { code: error.code, message: error.message } })
+        }
         return next(error)
       }
     },

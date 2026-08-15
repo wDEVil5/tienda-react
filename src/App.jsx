@@ -19,6 +19,7 @@ import AdminInventario from "./pages/AdminInventario.jsx";
 import AdminIdentidad from "./pages/AdminIdentidad.jsx";
 import AdminContenido from "./pages/AdminContenido.jsx";
 import AdminBanners from "./pages/AdminBanners.jsx";
+import AdminCategorias from "./pages/AdminCategorias.jsx";
 import AdminMarcas from "./pages/AdminMarcas.jsx";
 import { Login, Registro } from "./pages/Acceso.jsx";
 import { RecuperarContrasena, RestablecerContrasena } from "./pages/RecuperarCuenta.jsx";
@@ -263,6 +264,7 @@ function App() {
         <Route path="/admin/identidad" element={<AdminIdentidad />} />
         <Route path="/admin/contenido" element={<AdminContenido />} />
         <Route path="/admin/banners" element={<AdminBanners />} />
+        <Route path="/admin/categorias" element={<AdminCategorias />} />
         <Route path="/admin/marcas" element={<AdminMarcas />} />
         <Route path="/admin/*" element={<Navigate to="/admin/resumen" replace />} />
       </Routes>

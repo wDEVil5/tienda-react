@@ -181,6 +181,58 @@ export function actualizarDominioBrandfetchAdmin(id, brandfetchDomain, opciones 
   });
 }
 
+// Categorías (ADMIN + OPERADOR para leer/crear/activar). La lista llega como
+// { data } → solicitarAdmin la desenvuelve al arreglo.
+export function listarCategoriasAdmin(opciones = {}) {
+  return solicitarAdmin("/admin/categorias", opciones);
+}
+
+export function crearCategoriaAdmin(datos, opciones = {}) {
+  return solicitarAdmin("/admin/categorias", { ...opciones, method: "POST", cuerpo: datos });
+}
+
+export function activarCategoriaAdmin(id, opciones = {}) {
+  return solicitarAdmin(`/admin/categorias/${encodeURIComponent(id)}/activar`, {
+    ...opciones,
+    method: "PATCH",
+  });
+}
+
+export function desactivarCategoriaAdmin(id, opciones = {}) {
+  return solicitarAdmin(`/admin/categorias/${encodeURIComponent(id)}/desactivar`, {
+    ...opciones,
+    method: "PATCH",
+  });
+}
+
+// Subcategorías (solo ADMIN). Anidadas bajo su categoría para leer/crear.
+export function listarSubcategoriasAdmin(categoriaId, opciones = {}) {
+  return solicitarAdmin(`/admin/categorias/${encodeURIComponent(categoriaId)}/subcategorias`, opciones);
+}
+
+export function crearSubcategoriaAdmin(categoriaId, datos, opciones = {}) {
+  return solicitarAdmin(`/admin/categorias/${encodeURIComponent(categoriaId)}/subcategorias`, {
+    ...opciones,
+    method: "POST",
+    cuerpo: datos,
+  });
+}
+
+export function actualizarSubcategoriaAdmin(id, cambios, opciones = {}) {
+  return solicitarAdmin(`/admin/subcategorias/${encodeURIComponent(id)}`, {
+    ...opciones,
+    method: "PATCH",
+    cuerpo: cambios,
+  });
+}
+
+export function eliminarSubcategoriaAdmin(id, opciones = {}) {
+  return solicitarAdmin(`/admin/subcategorias/${encodeURIComponent(id)}`, {
+    ...opciones,
+    method: "DELETE",
+  });
+}
+
 export function listarProductosAdmin(
   { page = 1, limit = 20, busqueda = "", estado, ...opciones } = {},
 ) {

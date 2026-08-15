@@ -1,0 +1,359 @@
+.fondo {
+  min-width: 320px;
+}
+
+.acceso {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: clamp(24px, 4vw, 52px);
+  background: var(--color-crudo);
+  color: var(--color-texto-suave);
+  text-align: center;
+}
+.accesoCaja {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+.accesoCaja h1 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 400;
+}
+.accesoCaja button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--color-acento);
+  border-radius: var(--radio-control);
+  background: var(--color-acento);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cabecera {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 76px;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--color-borde);
+}
+.cabecera h1 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 400;
+}
+.subtitulo {
+  margin-top: 2px;
+  color: var(--color-texto-suave);
+  font-size: 12.5px;
+}
+.contador {
+  color: var(--color-texto-suave);
+  font-size: 13px;
+}
+.soloAdmin {
+  padding: 34px 22px;
+  color: var(--color-texto-suave);
+  font-size: 13.5px;
+}
+
+.cuerpo {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  background: var(--color-fondo);
+}
+
+/* Lista de categorías (izquierda). */
+.lista {
+  width: 320px;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  overflow-y: auto;
+  border-right: 1px solid var(--color-borde);
+}
+.nuevaCat {
+  display: flex;
+  gap: 8px;
+}
+.nuevaCat input {
+  flex: 1;
+  min-width: 0;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-campo);
+  background: var(--color-superficie);
+  font: inherit;
+  font-size: 14px;
+}
+.nuevaCat button {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--color-acento);
+  border-radius: var(--radio-control);
+  background: var(--color-acento);
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.fila {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "nombre toggle" "meta toggle";
+  align-items: center;
+  gap: 2px 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-borde-2);
+  border-radius: var(--radio-tarjeta);
+  background: var(--color-superficie);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.fila:hover {
+  border-color: var(--color-texto-tenue);
+}
+.filaActiva {
+  border-color: var(--color-acento);
+  box-shadow: 0 0 0 1px var(--color-acento);
+}
+.filaNombre {
+  grid-area: nombre;
+  color: var(--color-texto);
+  font-size: 14px;
+  font-weight: 500;
+}
+.filaMeta {
+  grid-area: meta;
+  color: var(--color-texto-tenue);
+  font-size: 11.5px;
+}
+.filaOculta {
+  color: var(--color-oferta);
+}
+.filaToggle {
+  grid-area: toggle;
+  padding: 5px 10px;
+  border: 1px solid var(--color-borde-3);
+  border-radius: var(--radio-control);
+  background: var(--color-fondo);
+  color: var(--color-texto-2);
+  font-size: 11.5px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.filaToggle:hover {
+  border-color: var(--color-texto-tenue);
+}
+
+/* Detalle: subcategorías (derecha). */
+.detalle {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  background: var(--color-fondo);
+}
+.panelVacio {
+  padding: 34px 32px;
+  color: var(--color-texto-tenue);
+  font-size: 14px;
+}
+.panel {
+  padding: 22px 26px 32px;
+}
+.panelCabecera {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.panelCabecera h2 {
+  font-family: var(--font-display);
+  font-size: 21px;
+  font-weight: 400;
+}
+.panelMeta {
+  color: var(--color-texto-tenue);
+  font-size: 12.5px;
+  font-family: var(--font-mono);
+}
+
+.nuevaSub {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.nuevaSub input {
+  flex: 1;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-campo);
+  background: var(--color-superficie);
+  font: inherit;
+  font-size: 14px;
+}
+.nuevaSub button {
+  min-height: 40px;
+  padding: 0 18px;
+  border: 1px solid var(--color-acento);
+  border-radius: var(--radio-control);
+  background: var(--color-acento);
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.estado {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 18px 4px;
+  color: var(--color-texto-suave);
+  font-size: 13.5px;
+}
+.estado button {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--color-borde-3);
+  border-radius: var(--radio-control);
+  background: var(--color-superficie);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.subLista {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 14px;
+}
+.subEncabezado {
+  display: grid;
+  grid-template-columns: 68px 1fr auto;
+  gap: 8px;
+  padding: 0 4px 4px;
+  color: var(--color-texto-tenue);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.subFila {
+  display: grid;
+  grid-template-columns: 68px 1fr auto auto auto;
+  align-items: center;
+  gap: 8px;
+}
+.subOrden,
+.subNombre {
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-campo);
+  background: var(--color-superficie);
+  font: inherit;
+  font-size: 14px;
+  color: var(--color-texto);
+}
+.subOrden {
+  text-align: center;
+}
+.subEstado {
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: var(--radio-badge);
+  border: 1px solid transparent;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.subActiva {
+  background: var(--color-acento-bg);
+  color: var(--color-acento);
+}
+.subInactiva {
+  background: var(--color-crudo);
+  color: var(--color-texto-tenue);
+}
+.subGuardar {
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--color-acento);
+  border-radius: var(--radio-control);
+  background: var(--color-acento);
+  color: #fff;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.subGuardar:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.subEliminar {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--color-borde-3);
+  border-radius: var(--radio-control);
+  background: var(--color-superficie);
+  color: var(--color-oferta);
+  font-size: 13px;
+  cursor: pointer;
+}
+.subEliminar:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.subError {
+  grid-column: 1 / -1;
+  color: var(--color-oferta);
+  font-size: 12px;
+}
+
+.mensajeOk {
+  color: var(--color-acento);
+  font-size: 12.5px;
+}
+.mensajeError {
+  color: var(--color-oferta);
+  font-size: 12.5px;
+}
+
+@media (max-width: 860px) {
+  .cuerpo {
+    flex-direction: column;
+  }
+  .lista {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--color-borde);
+  }
+  .subFila,
+  .subEncabezado {
+    grid-template-columns: 56px 1fr auto;
+  }
+  .subGuardar,
+  .subEliminar {
+    grid-column: span 1;
+  }
+}

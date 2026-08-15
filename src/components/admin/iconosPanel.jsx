@@ -121,6 +121,14 @@ export function IconoMarcas(props) {
   );
 }
 
+export function IconoCategorias(props) {
+  return (
+    <Svg {...props}>
+      <path d="M4 5h7v6H4zM13 5h7v4h-7zM13 12h7v7h-7zM4 14h7v5H4z" />
+    </Svg>
+  );
+}
+
 export function IconoBanners(props) {
   return (
     <Svg {...props}>

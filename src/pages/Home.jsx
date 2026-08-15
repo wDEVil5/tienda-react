@@ -1,5 +1,7 @@
+import { Link } from "react-router-dom";
 import Hero from "../components/Hero.jsx";
 import TiraConfianza from "../components/TiraConfianza.jsx";
+import CarruselProductos from "../components/CarruselProductos.jsx";
 import Categorias from "../components/Categorias.jsx";
 import BandaOfertas from "../components/BandaOfertas.jsx";
 import ComoComprar from "../components/ComoComprar.jsx";
@@ -31,6 +33,12 @@ function Home({
   onVerOfertas,
   onVerCatalogo,
 }) {
+  // Fila "Destacados": los productos que el admin marcó como destacados; si aún
+  // no hay ninguno, mostramos los primeros del catálogo para que la fila no quede
+  // vacía. Máximo 12 por fila.
+  const destacados = productos.filter((producto) => producto.destacado);
+  const filaDestacados = (destacados.length ? destacados : productos).slice(0, 12);
+
   return (
     <>
       <Hero
@@ -43,6 +51,16 @@ function Home({
         onVerCatalogo={onVerCatalogo}
       />
       <TiraConfianza />
+      <CarruselProductos
+        eyebrow="Selección de la semana"
+        titulo="Destacados"
+        productos={filaDestacados}
+        accion={
+          <Link to="/#catalogo" onClick={onVerCatalogo}>
+            Ver todo →
+          </Link>
+        }
+      />
       <Categorias
         productos={productos}
         categorias={categorias}

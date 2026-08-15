@@ -54,6 +54,8 @@ export function normalizarProductoFakeStore(p) {
     precioAnterior:
       p.id % 2 === 0 ? Math.round((p.price / 0.75) * 100) / 100 : null,
     oferta: p.id % 2 === 0 ? { porcentajeDescuento: 25 } : null,
+    // Fake Store no marca destacados; simulamos con múltiplos de 3.
+    destacado: p.id % 3 === 0,
   };
 }
 
@@ -83,6 +85,7 @@ export function normalizarProductoApi(producto) {
     descripcion: producto.descripcion,
     precioAnterior: producto.precioAnterior,
     oferta: producto.oferta ?? null,
+    destacado: producto.destacado ?? false,
     sku: producto.sku ?? producto.id,
     stock: producto.stock,
     fechaVencimiento: producto.fechaVencimiento ?? null,

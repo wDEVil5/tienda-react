@@ -1,0 +1,134 @@
+.seccion {
+  padding: var(--e-2xl) 0;
+}
+
+.inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--e-2xl);
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--e-lg);
+  margin-bottom: var(--e-xl);
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-texto-tenue);
+  margin-bottom: var(--e-sm);
+}
+
+.titulo {
+  font-family: var(--font-display);
+  font-size: 30px;
+  line-height: 1.1;
+  font-weight: 400;
+  color: var(--color-texto);
+}
+
+.accion {
+  flex: 0 0 auto;
+  font-size: 13.5px;
+}
+.accion a {
+  color: var(--color-acento);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.accion a:hover {
+  text-decoration: underline;
+}
+
+/* Pista con scroll horizontal + flechas superpuestas en los bordes. */
+.marco {
+  position: relative;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--e-2xl);
+}
+
+.pista {
+  display: flex;
+  gap: 16px;
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  /* Oculta la barra de scroll (el control son las flechas / el swipe). */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.pista::-webkit-scrollbar {
+  display: none;
+}
+
+.slot {
+  flex: 0 0 auto;
+  width: 210px;
+  scroll-snap-align: start;
+}
+
+/* Flechas circulares (como el súper): superpuestas en los extremos. */
+.flecha {
+  position: absolute;
+  top: 40%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--color-borde);
+  border-radius: 50%;
+  background: var(--color-superficie);
+  color: var(--color-texto);
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(21, 32, 26, 0.1);
+  transition: opacity 0.15s ease, background 0.15s ease;
+}
+.flechaIzq {
+  left: 4px;
+}
+.flechaDer {
+  right: 4px;
+}
+.flecha:hover:not(:disabled) {
+  background: var(--color-crudo);
+}
+.flecha:disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 1023px) {
+  .inner,
+  .marco {
+    padding-right: var(--e-xl);
+    padding-left: var(--e-xl);
+  }
+}
+
+@media (max-width: 767px) {
+  .titulo {
+    font-size: 24px;
+  }
+  .slot {
+    width: 150px;
+  }
+  /* En móvil el control es el swipe; ocultamos las flechas. */
+  .flecha {
+    display: none;
+  }
+}

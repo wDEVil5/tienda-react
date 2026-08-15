@@ -31,6 +31,26 @@ function leerNumeroNoNegativo(valor) {
   return Number.isFinite(numero) && numero >= 0 ? numero : null
 }
 
+// `atributos=intensidad:alta,formato:molido`. Los slugs evitan depender de
+// IDs internos y mantienen enlaces de catálogo legibles/compartibles.
+function leerAtributos(valor) {
+  if (valor === undefined) return []
+  if (typeof valor !== 'string' || !valor.trim()) return null
+
+  const atributos = valor.split(',').map((item) => {
+    const [atributo, opcion, extra] = item.trim().split(':')
+    return { atributo: atributo?.trim(), opcion: opcion?.trim(), extra }
+  })
+  const sonValidos = atributos.length <= 10 && atributos.every(({ atributo, opcion, extra }) =>
+    atributo && opcion && !extra && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(atributo) && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(opcion),
+  )
+
+  if (!sonValidos || new Set(atributos.map(({ atributo }) => atributo)).size !== atributos.length) {
+    return null
+  }
+  return atributos.map(({ atributo, opcion }) => ({ atributo, opcion }))
+}
+
 productosRouter.get('/', async (request, response, next) => {
   // La ruta traduce parámetros HTTP; el servicio recibe valores simples y no conoce Express.
   const query = typeof request.query.q === 'string' ? request.query.q : ''
@@ -47,6 +67,7 @@ productosRouter.get('/', async (request, response, next) => {
       : []
   const soloOfertas = request.query.ofertas === 'true'
   const soloDisponibles = request.query.disponibles === 'true'
+  const atributos = leerAtributos(request.query.atributos)
   const precioMin = leerNumeroNoNegativo(request.query.precioMin)
   const precioMax = leerNumeroNoNegativo(request.query.precioMax)
   const orden =
@@ -66,6 +87,7 @@ productosRouter.get('/', async (request, response, next) => {
     limit === null ||
     precioMin === null ||
     precioMax === null ||
+    atributos === null ||
     (precioMin !== undefined && precioMax !== undefined && precioMin > precioMax)
   ) {
     return response.status(400).json({
@@ -92,6 +114,7 @@ productosRouter.get('/', async (request, response, next) => {
       subcategoria,
       subcategoriaHija,
       marca,
+      atributos,
       soloOfertas,
       soloDisponibles,
       precioMin,

@@ -32,6 +32,12 @@ function crearInclusionProductoPublico(ahora) {
     etiquetas: {
       select: { etiqueta: { select: { id: true, nombre: true, slug: true } } },
     },
+    atributos: {
+      select: {
+        atributo: { select: { id: true, nombre: true, slug: true } },
+        opcion: { select: { id: true, nombre: true, slug: true } },
+      },
+    },
     promociones: {
       where: { promocion: crearPromocionVigenteDonde(ahora) },
       select: {
@@ -117,6 +123,10 @@ function crearProductoPublico(producto) {
     subcategoriaHija: producto.subcategoriaHija,
     marca: producto.marca,
     etiquetas: producto.etiquetas.map((enlace) => enlace.etiqueta),
+    atributos: (producto.atributos ?? []).map(({ atributo, opcion }) => ({
+      atributo: { id: atributo.id, nombre: atributo.nombre, slug: atributo.slug },
+      opcion: { id: opcion.id, nombre: opcion.nombre, slug: opcion.slug },
+    })),
     imagenes: producto.imagenes.map((imagen) => ({
       url: imagen.url,
       alt: imagen.textoAlternativo,
@@ -125,7 +135,7 @@ function crearProductoPublico(producto) {
   }
 }
 
-function crearFiltrosPublicados({ query, categoria, subcategoria, subcategoriaHija, marca, soloOfertas, soloDisponibles, precioMin, precioMax, ahora } = {}, camposProducto) {
+function crearFiltrosPublicados({ query, categoria, subcategoria, subcategoriaHija, marca, atributos, soloOfertas, soloDisponibles, precioMin, precioMax, ahora } = {}, camposProducto) {
   const where = { estado: 'PUBLICADO' }
 
   // Solo añadimos condiciones que llegaron desde la capa HTTP. Así Prisma
@@ -151,6 +161,19 @@ function crearFiltrosPublicados({ query, categoria, subcategoria, subcategoriaHi
   // Filtro por marca(s): una o varias, por slug (checkboxes del sidebar).
   if (Array.isArray(marca) && marca.length > 0) {
     where.marca = { slug: { in: marca } }
+  }
+
+  // Cada atributo seleccionado debe coincidir con su propia opción. Usamos un
+  // AND de relaciones `some` porque la tabla puente tiene una fila por atributo.
+  if (Array.isArray(atributos) && atributos.length > 0) {
+    where.AND = atributos.map(({ atributo, opcion }) => ({
+      atributos: {
+        some: {
+          atributo: { slug: atributo },
+          opcion: { slug: opcion },
+        },
+      },
+    }))
   }
 
   if (query) {
@@ -218,7 +241,7 @@ export function crearRepositorioProductos(cliente = prisma) {
     // precio: así la lista de marcas y el rango no cambian al ir seleccionando.
     async facetasPublicadas(filtros = {}) {
       const where = crearFiltrosPublicados(filtros, cliente.producto.fields)
-      const [marcas, precio] = await Promise.all([
+      const [marcas, precio, atributos] = await Promise.all([
         cliente.marca.findMany({
           where: { productos: { some: where } },
           select: {
@@ -230,11 +253,45 @@ export function crearRepositorioProductos(cliente = prisma) {
           orderBy: { nombre: 'asc' },
         }),
         cliente.producto.aggregate({ where, _min: { precio: true }, _max: { precio: true } }),
+        cliente.atributoCategoria.findMany({
+          where: { valores: { some: { producto: where } }, activo: true },
+          select: {
+            id: true,
+            nombre: true,
+            slug: true,
+            tipo: true,
+            orden: true,
+            opciones: {
+              where: { activa: true },
+              select: {
+                id: true,
+                nombre: true,
+                slug: true,
+                orden: true,
+                _count: { select: { valores: { where: { producto: where } } } },
+              },
+              orderBy: [{ orden: 'asc' }, { nombre: 'asc' }],
+            },
+          },
+          orderBy: [{ orden: 'asc' }, { nombre: 'asc' }],
+        }),
       ])
 
       return {
         marcas: marcas.map((m) => ({ id: m.id, nombre: m.nombre, slug: m.slug, total: m._count.productos })),
         precio: { min: precio._min.precio ?? 0, max: precio._max.precio ?? 0 },
+        atributos: atributos.map((atributo) => ({
+          id: atributo.id,
+          nombre: atributo.nombre,
+          slug: atributo.slug,
+          tipo: atributo.tipo,
+          opciones: atributo.opciones.map((opcion) => ({
+            id: opcion.id,
+            nombre: opcion.nombre,
+            slug: opcion.slug,
+            total: opcion._count.valores,
+          })),
+        })),
       }
     },
 

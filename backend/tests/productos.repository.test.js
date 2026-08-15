@@ -202,3 +202,30 @@ test('el filtro por marca(s) acota por slug con IN', async () => {
 
   assert.deepEqual(consulta.where.marca, { slug: { in: ['kraft', 'nestle'] } })
 })
+
+test('los filtros por atributos exigen cada combinación atributo y opción', async () => {
+  let consulta
+  const cliente = {
+    producto: {
+      async findMany(argumentos) { consulta = argumentos; return [] },
+      async count() { return 0 },
+    },
+  }
+
+  const repositorio = crearRepositorioProductos(cliente)
+  await repositorio.listarPublicados({
+    ahora: new Date('2026-08-01T12:00:00.000Z'),
+    atributos: [
+      { atributo: 'intensidad', opcion: 'alta' },
+      { atributo: 'formato', opcion: 'molido' },
+    ],
+    page: 1,
+    limit: 20,
+    orden: 'relevancia',
+  })
+
+  assert.deepEqual(consulta.where.AND, [
+    { atributos: { some: { atributo: { slug: 'intensidad' }, opcion: { slug: 'alta' } } } },
+    { atributos: { some: { atributo: { slug: 'formato' }, opcion: { slug: 'molido' } } } },
+  ])
+})

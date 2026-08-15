@@ -11,6 +11,15 @@ export const ORDENES_PERMITIDOS = new Set([
   'nombre-asc',
 ])
 
+function normalizarAtributos(atributos) {
+  return atributos
+    .map(({ atributo, opcion }) => ({
+      atributo: normalizarTextoBusqueda(atributo),
+      opcion: normalizarTextoBusqueda(opcion),
+    }))
+    .filter(({ atributo, opcion }) => atributo && opcion)
+}
+
 function crearProductoPublico(producto) {
   const productoPublico = { ...producto }
 
@@ -20,8 +29,13 @@ function crearProductoPublico(producto) {
     ...productoPublico,
     categoria: { ...producto.categoria },
     subcategoria: producto.subcategoria ? { ...producto.subcategoria } : null,
+    subcategoriaHija: producto.subcategoriaHija ? { ...producto.subcategoriaHija } : null,
     marca: { ...producto.marca },
     etiquetas: (producto.etiquetas ?? []).map((etiqueta) => ({ ...etiqueta })),
+    atributos: (producto.atributos ?? []).map(({ atributo, opcion }) => ({
+      atributo: { ...atributo },
+      opcion: { ...opcion },
+    })),
     oferta: producto.oferta ? { ...producto.oferta } : null,
     imagenes: producto.imagenes.map((imagen) => ({ ...imagen })),
   }
@@ -40,6 +54,7 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
       subcategoria = '',
       subcategoriaHija = '',
       marca = [],
+      atributos = [],
       soloOfertas = false,
       soloDisponibles = false,
       precioMin = 0,
@@ -52,6 +67,7 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
       const categoriaFiltrada = normalizarTextoBusqueda(categoria)
       const subcategoriaFiltrada = normalizarTextoBusqueda(subcategoria)
       const subcategoriaHijaFiltrada = normalizarTextoBusqueda(subcategoriaHija)
+      const atributosFiltrados = normalizarAtributos(atributos)
       // Una sola hora por petición evita que la lista y el total discrepen al
       // cruzar el límite temporal de una promoción.
       const ahora = new Date()
@@ -62,6 +78,7 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
         ...(subcategoriaFiltrada ? { subcategoria: subcategoriaFiltrada } : {}),
         ...(subcategoriaHijaFiltrada ? { subcategoriaHija: subcategoriaHijaFiltrada } : {}),
         ...(marca.length ? { marca } : {}),
+        ...(atributosFiltrados.length ? { atributos: atributosFiltrados } : {}),
         ...(soloOfertas ? { soloOfertas: true } : {}),
         ...(soloDisponibles ? { soloDisponibles: true } : {}),
         ...(precioMin !== 0 ? { precioMin } : {}),

@@ -379,6 +379,20 @@ function Header({
 
   return (
     <header className={`${styles.header} ${condensado ? styles.condensado : ""}`}>
+      {/* El mega-menú no es un drawer, pero necesita separar visualmente el
+          contenido que queda detrás. Se porta al body para cubrir la página sin
+          quedar limitado por el header sticky; su z-index queda bajo el header. */}
+      {categoriasAbierto && typeof document !== "undefined" && createPortal(
+        <button
+          type="button"
+          className={styles.megaOverlay}
+          aria-label="Cerrar menú de categorías"
+          tabIndex={-1}
+          onClick={() => setCategoriasAbierto(false)}
+        />,
+        document.body,
+      )}
+
       {/* ---- Piso 1: identidad, buscador y acciones ---- */}
       <div className={styles.barra}>
         <Link to="/" className={styles.logo}>

@@ -338,6 +338,23 @@
   background-color: #173d2c;
 }
 
+/* Capa bajo el header sticky y el mega-menú. Oscurece suavemente la tienda y
+   permite cerrarlo con clic fuera, igual que el drawer del carrito. */
+.megaOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  border: 0;
+  background: rgba(28, 27, 24, 0.38);
+  cursor: default;
+  animation: aparecerOverlay 0.2s ease;
+}
+
+@keyframes aparecerOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 /* Mega-menú de categorías: columna de categorías (izq) + panel de marcas (der).
    Se despliega al pasar el mouse (ver Header.jsx). */
 .megaPanel {

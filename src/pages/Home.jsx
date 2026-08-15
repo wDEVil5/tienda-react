@@ -51,6 +51,25 @@ function Home({
         )
       : 0);
 
+  // Filas por categoría: una por cada categoría con productos suficientes. Se
+  // derivan de los propios productos (sin depender de otra fuente) y se limitan a
+  // unas pocas para no alargar la portada; el catálogo completo va más abajo.
+  const MAX_FILAS_CATEGORIA = 3;
+  const filasCategoria = [...new Set(productos.map((p) => p.categoria))]
+    .map((nombre) => ({
+      nombre,
+      productos: productos.filter((p) => p.categoria === nombre),
+    }))
+    .filter((fila) => fila.productos.length >= 4)
+    .slice(0, MAX_FILAS_CATEGORIA);
+
+  // Aplica el filtro de una categoría y limpia búsqueda/ofertas, como en el Hero.
+  const verCategoria = (nombre) => {
+    onBuscar("");
+    onSeleccionarCategoria(nombre);
+    onCambiarSoloOfertas(false);
+  };
+
   return (
     <>
       <Hero
@@ -90,6 +109,19 @@ function Home({
           </Link>
         }
       />
+      {filasCategoria.map((fila) => (
+        <CarruselProductos
+          key={fila.nombre}
+          eyebrow="Categoría"
+          titulo={fila.nombre}
+          productos={fila.productos.slice(0, 12)}
+          accion={
+            <Link to="/#catalogo" onClick={() => verCategoria(fila.nombre)}>
+              Ver todo →
+            </Link>
+          }
+        />
+      ))}
       <Catalogo
         productos={productosCatalogo}
         productosBase={productos}

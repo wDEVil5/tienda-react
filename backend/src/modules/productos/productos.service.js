@@ -19,6 +19,7 @@ function crearProductoPublico(producto) {
   return {
     ...productoPublico,
     categoria: { ...producto.categoria },
+    subcategoria: producto.subcategoria ? { ...producto.subcategoria } : null,
     marca: { ...producto.marca },
     etiquetas: (producto.etiquetas ?? []).map((etiqueta) => ({ ...etiqueta })),
     oferta: producto.oferta ? { ...producto.oferta } : null,
@@ -36,6 +37,7 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
     async listarProductos({
       query = '',
       categoria = '',
+      subcategoria = '',
       soloOfertas = false,
       precioMin = 0,
       precioMax = Infinity,
@@ -45,6 +47,7 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
     } = {}) {
       const textoBusqueda = normalizarTextoBusqueda(query)
       const categoriaFiltrada = normalizarTextoBusqueda(categoria)
+      const subcategoriaFiltrada = normalizarTextoBusqueda(subcategoria)
       // Una sola hora por petición evita que la lista y el total discrepen al
       // cruzar el límite temporal de una promoción.
       const ahora = new Date()
@@ -52,6 +55,7 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
         ahora,
         ...(textoBusqueda ? { query: textoBusqueda } : {}),
         ...(categoriaFiltrada ? { categoria: categoriaFiltrada } : {}),
+        ...(subcategoriaFiltrada ? { subcategoria: subcategoriaFiltrada } : {}),
         ...(soloOfertas ? { soloOfertas: true } : {}),
         ...(precioMin !== 0 ? { precioMin } : {}),
         ...(Number.isFinite(precioMax) ? { precioMax } : {}),

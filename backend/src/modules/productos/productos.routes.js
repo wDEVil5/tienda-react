@@ -35,6 +35,8 @@ productosRouter.get('/', async (request, response, next) => {
   const query = typeof request.query.q === 'string' ? request.query.q : ''
   const categoria =
     typeof request.query.categoria === 'string' ? request.query.categoria : ''
+  const subcategoria =
+    typeof request.query.subcategoria === 'string' ? request.query.subcategoria : ''
   const soloOfertas = request.query.ofertas === 'true'
   const precioMin = leerNumeroNoNegativo(request.query.precioMin)
   const precioMax = leerNumeroNoNegativo(request.query.precioMax)
@@ -78,6 +80,7 @@ productosRouter.get('/', async (request, response, next) => {
     const catalogo = await listarProductos({
       query,
       categoria,
+      subcategoria,
       soloOfertas,
       precioMin,
       precioMax,

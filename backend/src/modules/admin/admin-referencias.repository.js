@@ -15,6 +15,16 @@ export function crearRepositorioReferenciasAdmin(cliente = prisma) {
       })
     },
 
+    // Subcategorías activas (con su categoriaId) para que el editor ofrezca solo
+    // las de la categoría elegida.
+    listarSubcategoriasActivas() {
+      return cliente.subcategoria.findMany({
+        where: { activa: true },
+        select: { id: true, nombre: true, slug: true, categoriaId: true },
+        orderBy: [{ orden: 'asc' }, { nombre: 'asc' }],
+      })
+    },
+
     listarMarcas() {
       return cliente.marca.findMany({
         select: { id: true, nombre: true, slug: true, logoUrl: true },

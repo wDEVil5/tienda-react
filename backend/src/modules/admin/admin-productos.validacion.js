@@ -23,6 +23,7 @@ export const esquemaCambiosProductoAdmin = z.object({
   pesoDespachoGramos: z.number().int().positive().nullable().optional(),
   fechaVencimiento: z.string().date().nullable().optional(),
   categoriaId: uuid.optional(),
+  subcategoriaId: uuid.nullable().optional(),
   marcaId: uuid.optional(),
   etiquetaIds: z.array(uuid).max(10).refine(
     (ids) => new Set(ids).size === ids.length,
@@ -66,6 +67,7 @@ const esquemaProductoNuevoAdmin = z.object({
   pesoDespachoGramos: z.number().int().positive().nullable().optional(),
   fechaVencimiento: z.string().date().nullable().optional(),
   categoriaId: uuid,
+  subcategoriaId: uuid.nullable().optional(),
   marcaId: uuid,
   etiquetaIds: z.array(uuid).max(10).refine(
     (ids) => new Set(ids).size === ids.length,

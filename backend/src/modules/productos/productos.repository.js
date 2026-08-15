@@ -16,6 +16,9 @@ function crearInclusionProductoPublico(ahora) {
     categoria: {
       select: { id: true, nombre: true, slug: true },
     },
+    subcategoria: {
+      select: { id: true, nombre: true, slug: true },
+    },
     marca: {
       select: { id: true, nombre: true, slug: true, logoUrl: true },
     },
@@ -117,13 +120,17 @@ function crearProductoPublico(producto) {
   }
 }
 
-function crearFiltrosPublicados({ query, categoria, soloOfertas, precioMin, precioMax, ahora } = {}) {
+function crearFiltrosPublicados({ query, categoria, subcategoria, soloOfertas, precioMin, precioMax, ahora } = {}) {
   const where = { estado: 'PUBLICADO' }
 
   // Solo añadimos condiciones que llegaron desde la capa HTTP. Así Prisma
   // genera una consulta acotada y no cargamos el catálogo completo en Node.
   if (categoria) {
     where.categoria = { slug: categoria }
+  }
+
+  if (subcategoria) {
+    where.subcategoria = { slug: subcategoria }
   }
 
   if (query) {

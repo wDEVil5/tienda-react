@@ -104,3 +104,29 @@ test('el repositorio consulta solo productos publicados y adapta sus imágenes',
     _max: { porcentajeDescuento: true },
   })
 })
+
+test('el filtro por subcategoría acota la consulta por slug', async () => {
+  let consulta
+  const cliente = {
+    producto: {
+      async findMany(argumentos) {
+        consulta = argumentos
+        return []
+      },
+      async count() {
+        return 0
+      },
+    },
+  }
+
+  const repositorio = crearRepositorioProductos(cliente)
+  await repositorio.listarPublicados({
+    ahora: new Date('2026-08-01T12:00:00.000Z'),
+    subcategoria: 'despensa-cafe-y-cafeteras',
+    page: 1,
+    limit: 20,
+    orden: 'relevancia',
+  })
+
+  assert.deepEqual(consulta.where.subcategoria, { slug: 'despensa-cafe-y-cafeteras' })
+})

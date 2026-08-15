@@ -3,13 +3,14 @@ import { repositorioReferenciasAdmin } from './admin-referencias.repository.js'
 export function crearServicioReferenciasAdmin(repositorio = repositorioReferenciasAdmin) {
   return {
     async listarOpcionesProducto() {
-      const [categorias, marcas, etiquetas] = await Promise.all([
+      const [categorias, subcategorias, marcas, etiquetas] = await Promise.all([
         repositorio.listarCategoriasActivas(),
+        repositorio.listarSubcategoriasActivas(),
         repositorio.listarMarcas(),
         repositorio.listarEtiquetas(),
       ])
 
-      return { data: { categorias, marcas, etiquetas } }
+      return { data: { categorias, subcategorias, marcas, etiquetas } }
     },
   }
 }

@@ -534,9 +534,30 @@ async function sembrarSubcategorias() {
   }
 }
 
+// Clasifica algunos productos del seed en su subcategoría (segundo nivel) para
+// que el mega-menú muestre resultados reales al filtrar. Requiere productos y
+// subcategorías ya sembrados.
+const productosPorSubcategoria: Record<string, string> = {
+  "aceite-oliva-extra-virgen-500-ml": "despensa-aceites-sal-y-condimentos",
+  "cafe-de-grano-tostado-250-g": "despensa-cafe-y-cafeteras",
+  "leche-entera-1-l": "lacteos-leches",
+  "queso-mantecoso-laminado-250-g": "lacteos-quesos",
+  "detergente-liquido-concentrado-3-l": "limpieza-lavado-de-ropa",
+};
+
+async function clasificarProductos() {
+  for (const [productoSlug, subcategoriaSlug] of Object.entries(productosPorSubcategoria)) {
+    await prisma.producto.update({
+      where: { slug: productoSlug },
+      data: { subcategoria: { connect: { slug: subcategoriaSlug } } },
+    });
+  }
+}
+
 try {
   await sembrarCatalogo();
   await sembrarSubcategorias(); // requiere las categorías ya sembradas
+  await clasificarProductos(); // requiere productos y subcategorías ya sembrados
   await sembrarOfertaSemanal();
   await sembrarCliente(); // antes de los pedidos: estos se enlazan a su cuenta
   await sembrarPedidos();

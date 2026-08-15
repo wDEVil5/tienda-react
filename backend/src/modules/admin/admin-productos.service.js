@@ -53,6 +53,11 @@ function crearProductoParaEdicion(producto) {
       nombre: producto.categoria.nombre,
       slug: producto.categoria.slug,
     },
+    // Puede no tener subcategoría; el editor la preselecciona con subcategoriaId.
+    subcategoriaId: producto.subcategoriaId ?? null,
+    subcategoria: producto.subcategoria
+      ? { id: producto.subcategoria.id, nombre: producto.subcategoria.nombre, slug: producto.subcategoria.slug }
+      : null,
     marca: {
       id: producto.marca.id,
       nombre: producto.marca.nombre,
@@ -93,7 +98,7 @@ function crearResumenProductoAdmin(producto) {
 }
 
 function construirDatosActualizacion(cambios) {
-  const { categoriaId, marcaId, etiquetaIds, fechaVencimiento, ...campos } = cambios
+  const { categoriaId, subcategoriaId, marcaId, etiquetaIds, fechaVencimiento, ...campos } = cambios
   const datos = { ...campos }
 
   if (cambios.nombre !== undefined) {
@@ -102,6 +107,13 @@ function construirDatosActualizacion(cambios) {
 
   if (categoriaId !== undefined) {
     datos.categoria = { connect: { id: categoriaId } }
+  }
+
+  // Subcategoría opcional: null la desasocia (SetNull), un id la conecta.
+  if (subcategoriaId !== undefined) {
+    datos.subcategoria = subcategoriaId === null
+      ? { disconnect: true }
+      : { connect: { id: subcategoriaId } }
   }
 
   if (marcaId !== undefined) {
@@ -126,7 +138,7 @@ function construirDatosActualizacion(cambios) {
   return datos
 }
 
-async function validarReferencias(repositorio, cambios) {
+async function validarReferencias(repositorio, cambios, categoriaIdEfectiva) {
   const categoriaInvalida =
     cambios.categoriaId !== undefined &&
     !(await repositorio.existeCategoriaActiva(cambios.categoriaId))
@@ -136,10 +148,20 @@ async function validarReferencias(repositorio, cambios) {
     cambios.etiquetaIds !== undefined &&
     (await repositorio.contarEtiquetas(cambios.etiquetaIds)) !== cambios.etiquetaIds.length
 
-  if (categoriaInvalida || marcaInvalida || etiquetasInvalidas) {
+  // Subcategoría: null la limpia (siempre válido). Si viene un id, debe existir y
+  // pertenecer a la categoría efectiva del producto (no a otra).
+  let subcategoriaInvalida = false
+  if (cambios.subcategoriaId != null) {
+    const subcategoria = await repositorio.obtenerSubcategoria(cambios.subcategoriaId)
+    subcategoriaInvalida =
+      !subcategoria ||
+      (categoriaIdEfectiva !== undefined && subcategoria.categoriaId !== categoriaIdEfectiva)
+  }
+
+  if (categoriaInvalida || marcaInvalida || etiquetasInvalidas || subcategoriaInvalida) {
     throw new ErrorProductoAdmin(
       'INVALID_PRODUCT_REFERENCE',
-      'Categoría, marca o etiquetas no son válidas.',
+      'Categoría, subcategoría, marca o etiquetas no son válidas.',
     )
   }
 }
@@ -200,7 +222,11 @@ export function crearServicioProductosAdmin(
         )
       }
 
-      await validarReferencias(repositorio, cambios)
+      await validarReferencias(
+        repositorio,
+        cambios,
+        cambios.categoriaId ?? productoActual.categoriaId,
+      )
 
       const productoActualizado = await repositorio.actualizarPorId(
         id,
@@ -224,7 +250,7 @@ export function crearServicioProductosAdmin(
     },
 
     async crearProducto(datos) {
-      await validarReferencias(repositorio, datos)
+      await validarReferencias(repositorio, datos, datos.categoriaId)
       const slug = datos.slug ?? crearSlug(datos.nombre)
       const producto = await repositorio.crear({
         ...construirDatosActualizacion({ ...datos, slug }),

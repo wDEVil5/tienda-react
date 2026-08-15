@@ -2,6 +2,7 @@ import { prisma } from '../../lib/prisma.js'
 
 const incluirProductoAdmin = {
   categoria: true,
+  subcategoria: { select: { id: true, nombre: true, slug: true } },
   marca: true,
   imagenes: { orderBy: { orden: 'asc' } },
   etiquetas: { include: { etiqueta: true } },
@@ -79,6 +80,15 @@ export function crearRepositorioProductosAdmin(cliente = prisma) {
     async existeMarca(id) {
       const marca = await cliente.marca.findUnique({ where: { id }, select: { id: true } })
       return Boolean(marca)
+    },
+
+    // Devuelve { id, categoriaId } o null: sirve para validar que la subcategoría
+    // existe y pertenece a la categoría del producto.
+    obtenerSubcategoria(id) {
+      return cliente.subcategoria.findUnique({
+        where: { id },
+        select: { id: true, categoriaId: true },
+      })
     },
 
     contarEtiquetas(ids) {

@@ -170,9 +170,11 @@ function crearDetallePedido(pedido) {
 }
 
 // Ventana por defecto tras la cual un pedido PENDIENTE sin confirmar se expira y
-// libera su reserva. Configurable por entorno; 24 h es holgado para no cancelar
-// pedidos legítimos que el dueño todavía no alcanzó a aceptar.
-const MINUTOS_EXPIRACION_PENDIENTE = Number(process.env.MINUTOS_EXPIRACION_PENDIENTE) || 24 * 60
+// libera su reserva. Configurable por entorno. 60 min: el pago es Mercado Pago
+// online (aprueba en segundos por webhook), así que un pendiente de más de una
+// hora es casi siempre un checkout abandonado; una hora deja margen de sobra
+// para cualquier demora real de red o de la cola del proveedor.
+const MINUTOS_EXPIRACION_PENDIENTE = Number(process.env.MINUTOS_EXPIRACION_PENDIENTE) || 60
 
 // A partir de cuántos pedidos pagados un cliente se marca como "frecuente" en el
 // panel. Umbral de negocio, fácil de ajustar; 3 es el punto típico de "cliente

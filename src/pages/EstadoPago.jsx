@@ -7,6 +7,10 @@ import styles from "./EstadoPago.module.css";
 
 const clp = (monto) => `$\u202F${Number(monto ?? 0).toLocaleString("es-CL")}`;
 const INTERVALO_CONSULTA_MS = 2000;
+// Tope de espera antes de ofrecer una salida: si tras esto el pago sigue
+// PENDIENTE, es casi seguro que el checkout se abandon\u00F3 (no habr\u00E1 webhook).
+// El cliente puede seguir esperando o reintentar; no lo dejamos girando sin fin.
+const LIMITE_ESPERA_MS = 90000;
 
 // El retorno de MP incluye external_reference (nuestro pagoId). Solo se usa
 // como respaldo si la pasarela vuelve en otra pestaña y sessionStorage no viaja;
@@ -22,12 +26,16 @@ function EstadoPago() {
     pago: null,
     error: "",
   }));
+  // Cada "comprobar de nuevo" incrementa esto para reiniciar el ciclo de polling
+  // (reejecuta el efecto con la ventana de espera limpia).
+  const [reintento, setReintento] = useState(0);
 
   useEffect(() => {
     if (!pagoId) return undefined;
 
     let vigente = true;
     let temporizador;
+    const inicio = Date.now();
 
     const consultar = async () => {
       try {
@@ -43,6 +51,13 @@ function EstadoPago() {
           return;
         }
 
+        // Sigue PENDIENTE: si ya agotamos la ventana de espera, dejamos de sondear
+        // y ofrecemos salidas en vez de girar indefinidamente.
+        if (Date.now() - inicio >= LIMITE_ESPERA_MS) {
+          setEstado({ tipo: "demorado", pago, error: "" });
+          return;
+        }
+
         setEstado({ tipo: "pendiente", pago, error: "" });
         temporizador = window.setTimeout(consultar, INTERVALO_CONSULTA_MS);
       } catch (error) {
@@ -55,7 +70,12 @@ function EstadoPago() {
       vigente = false;
       window.clearTimeout(temporizador);
     };
-  }, [pagoId]);
+  }, [pagoId, reintento]);
+
+  const seguirEsperando = () => {
+    setEstado((actual) => ({ ...actual, tipo: "cargando" }));
+    setReintento((n) => n + 1);
+  };
 
   if (estado.tipo === "cargando" || estado.tipo === "pendiente") {
     return <PagoProcesando />;
@@ -67,6 +87,10 @@ function EstadoPago() {
 
   if (estado.tipo === "rechazado") {
     return <PagoRechazado pago={estado.pago} estaAutenticado={estaAutenticado} />;
+  }
+
+  if (estado.tipo === "demorado") {
+    return <PagoDemorado pago={estado.pago} estaAutenticado={estaAutenticado} onSeguirEsperando={seguirEsperando} />;
   }
 
   return (
@@ -138,6 +162,28 @@ function PagoRechazado({ pago, estaAutenticado }) {
       <div className={styles.acciones}>
         <button type="button" className={styles.botonOscuro} onClick={() => navegar("/checkout/pago", { replace: true })}>Probar nuevamente</button>
         {estaAutenticado && <Link to={`/mi-cuenta/pedidos/${pago.pedido.id}`} className={styles.botonSecundario}>Ver el pedido</Link>}
+      </div>
+    </EstadoBase>
+  );
+}
+
+function PagoDemorado({ pago, estaAutenticado, onSeguirEsperando }) {
+  const navegar = useNavigate();
+  const pedidoId = pago?.pedido?.id;
+
+  return (
+    <EstadoBase>
+      <span className={`${styles.iconoEstado} ${styles.iconoPendiente}`} aria-hidden="true">−</span>
+      <h1>Aún no confirmamos tu pago</h1>
+      <p>
+        Está tardando más de lo habitual. Si ya pagaste, espera unos segundos y vuelve a
+        comprobar. Si no llegaste a completar el pago, tu pedido queda pendiente y puedes
+        reintentarlo cuando quieras.
+      </p>
+      <div className={styles.acciones}>
+        <button type="button" className={styles.botonOscuro} onClick={onSeguirEsperando}>Comprobar de nuevo</button>
+        <button type="button" className={styles.botonSecundario} onClick={() => navegar("/checkout/pago", { replace: true })}>Reintentar el pago</button>
+        {estaAutenticado && pedidoId && <Link to={`/mi-cuenta/pedidos/${pedidoId}`} className={styles.botonSecundario}>Ver mi pedido</Link>}
       </div>
     </EstadoBase>
   );

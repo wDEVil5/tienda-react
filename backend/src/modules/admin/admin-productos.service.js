@@ -58,12 +58,16 @@ function crearProductoParaEdicion(producto) {
     subcategoria: producto.subcategoria
       ? { id: producto.subcategoria.id, nombre: producto.subcategoria.nombre, slug: producto.subcategoria.slug }
       : null,
-    marca: {
-      id: producto.marca.id,
-      nombre: producto.marca.nombre,
-      slug: producto.marca.slug,
-      logoUrl: producto.marca.logoUrl,
-    },
+    // Marca opcional: el editor la preselecciona con marcaId (null = sin marca).
+    marcaId: producto.marcaId ?? null,
+    marca: producto.marca
+      ? {
+          id: producto.marca.id,
+          nombre: producto.marca.nombre,
+          slug: producto.marca.slug,
+          logoUrl: producto.marca.logoUrl,
+        }
+      : null,
     imagenes: producto.imagenes.map((imagen) => ({
       id: imagen.id,
       url: imagen.url,
@@ -125,8 +129,11 @@ function construirDatosActualizacion(cambios) {
       : { connect: { id: subcategoriaId } }
   }
 
+  // Marca opcional: null la desasocia (SetNull), un id la conecta.
   if (marcaId !== undefined) {
-    datos.marca = { connect: { id: marcaId } }
+    datos.marca = marcaId === null
+      ? { disconnect: true }
+      : { connect: { id: marcaId } }
   }
 
   if (etiquetaIds !== undefined) {
@@ -158,8 +165,9 @@ async function validarReferencias(repositorio, cambios, categoriaIdEfectiva) {
   const categoriaInvalida =
     cambios.categoriaId !== undefined &&
     !(await repositorio.existeCategoriaActiva(cambios.categoriaId))
+  // Marca: null la limpia (siempre válido). Si viene un id, debe existir.
   const marcaInvalida =
-    cambios.marcaId !== undefined && !(await repositorio.existeMarca(cambios.marcaId))
+    cambios.marcaId != null && !(await repositorio.existeMarca(cambios.marcaId))
   const etiquetasInvalidas =
     cambios.etiquetaIds !== undefined &&
     (await repositorio.contarEtiquetas(cambios.etiquetaIds)) !== cambios.etiquetaIds.length

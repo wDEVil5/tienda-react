@@ -32,7 +32,7 @@ export const esquemaCambiosProductoAdmin = z.object({
   fechaVencimiento: z.string().date().nullable().optional(),
   categoriaId: uuid.optional(),
   subcategoriaId: uuid.nullable().optional(),
-  marcaId: uuid.optional(),
+  marcaId: uuid.nullable().optional(),
   etiquetaIds: z.array(uuid).max(10).refine(
     (ids) => new Set(ids).size === ids.length,
     'etiquetaIds no puede repetir etiquetas.',
@@ -77,7 +77,7 @@ const esquemaProductoNuevoAdmin = z.object({
   fechaVencimiento: z.string().date().nullable().optional(),
   categoriaId: uuid,
   subcategoriaId: uuid.nullable().optional(),
-  marcaId: uuid,
+  marcaId: uuid.nullable().optional(),
   etiquetaIds: z.array(uuid).max(10).refine(
     (ids) => new Set(ids).size === ids.length,
     'etiquetaIds no puede repetir etiquetas.',

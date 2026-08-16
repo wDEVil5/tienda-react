@@ -30,7 +30,7 @@ function crearProductoPublico(producto) {
     categoria: { ...producto.categoria },
     subcategoria: producto.subcategoria ? { ...producto.subcategoria } : null,
     subcategoriaHija: producto.subcategoriaHija ? { ...producto.subcategoriaHija } : null,
-    marca: { ...producto.marca },
+    marca: producto.marca ? { ...producto.marca } : null,
     etiquetas: (producto.etiquetas ?? []).map((etiqueta) => ({ ...etiqueta })),
     atributos: (producto.atributos ?? []).map(({ atributo, opcion }) => ({
       atributo: { ...atributo },

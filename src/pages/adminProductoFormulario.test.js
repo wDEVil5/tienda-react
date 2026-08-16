@@ -46,7 +46,6 @@ describe("adminProductoFormulario", () => {
       precioAnterior: "Debe ser mayor que el precio actual.",
       stock: "El stock debe ser un número entero no negativo.",
       categoriaId: expect.any(String),
-      marcaId: expect.any(String),
     });
   });
 
@@ -102,7 +101,7 @@ describe("adminProductoFormulario", () => {
           stock: "4",
           estado: "PUBLICADO",
           categoriaId: "cat_1",
-          marcaId: "marca_1",
+          marcaId: "",
           codigoBarras: "",
           origen: "",
           precioAnterior: "",
@@ -112,6 +111,7 @@ describe("adminProductoFormulario", () => {
       ),
     ).toMatchObject({
       estado: "PUBLICADO",
+      marcaId: null,
       codigoBarras: null,
       origen: null,
       precioAnterior: null,

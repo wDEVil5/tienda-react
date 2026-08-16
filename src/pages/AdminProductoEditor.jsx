@@ -569,10 +569,10 @@ export default function AdminProductoEditor() {
               {detallesAbiertos && (
                 <div id="panel-mas-detalles" className={styles.detallesPanel}>
                   <div className={styles.filaDos}>
-                    <Campo id="marcaId" etiqueta="Marca" error={tocados.marcaId && errores.marcaId} requerido>
+                    <Campo id="marcaId" etiqueta="Marca" error={tocados.marcaId && errores.marcaId}>
                       {(props) => (
                         <select {...props} className={styles.input} value={formulario.marcaId} onChange={cambiar("marcaId")} onBlur={() => marcarTocado("marcaId")}>
-                          <option value="">Selecciona una marca</option>
+                          <option value="">Sin marca</option>
                           {referencias.marcas.map((marca) => <option key={marca.id} value={marca.id}>{marca.nombre}</option>)}
                         </select>
                       )}

@@ -94,7 +94,6 @@ export function validarFormularioProducto(valores, { esNuevo = false } = {}) {
     errores.precioAnterior = "Debe ser mayor que el precio actual.";
   }
   if (!valores.categoriaId) errores.categoriaId = "Selecciona una categoría.";
-  if (!valores.marcaId) errores.marcaId = "Selecciona una marca.";
   if (valores.estado && !ESTADOS_PRODUCTO.includes(valores.estado)) {
     errores.estado = "Selecciona un estado válido.";
   }
@@ -144,7 +143,6 @@ export function normalizarPayloadProductoAdmin(valores, { esNuevo = false } = {}
     precio: Number(valores.precio),
     stock: Number(valores.stock),
     categoriaId: valores.categoriaId,
-    marcaId: valores.marcaId,
     etiquetaIds: Array.isArray(valores.etiquetaIds) ? valores.etiquetaIds : [],
     destacado: Boolean(valores.destacado),
   };
@@ -159,8 +157,9 @@ export function normalizarPayloadProductoAdmin(valores, { esNuevo = false } = {}
 
   if (!esNuevo && valores.estado) payload.estado = valores.estado;
 
-  // Subcategoría opcional: vacío al editar → null (desasocia); al crear se omite.
+  // Subcategoría y marca opcionales: vacío al editar → null (desasocia); al crear se omite.
   agregarTextoOpcional(payload, "subcategoriaId", valores.subcategoriaId, esNuevo);
+  agregarTextoOpcional(payload, "marcaId", valores.marcaId, esNuevo);
   agregarTextoOpcional(payload, "codigoBarras", valores.codigoBarras, esNuevo);
   agregarTextoOpcional(payload, "origen", valores.origen, esNuevo);
   agregarNumeroOpcional(payload, "precioAnterior", valores.precioAnterior, esNuevo);

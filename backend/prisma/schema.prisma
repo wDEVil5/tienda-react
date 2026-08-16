@@ -245,14 +245,14 @@ model Producto {
   // El tercer nivel es opcional durante la migración: los productos ya
   // clasificados en nivel dos siguen siendo válidos hasta que se completen.
   subcategoriaHijaId String?  @map("subcategoria_hija_id") @db.Uuid
-  marcaId            String   @map("marca_id") @db.Uuid
+  marcaId            String?  @map("marca_id") @db.Uuid
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @updatedAt @map("updated_at")
 
   categoria        Categoria           @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
   subcategoria     Subcategoria?       @relation(fields: [subcategoriaId], references: [id], onDelete: SetNull)
   subcategoriaHija SubcategoriaHija?   @relation(fields: [subcategoriaHijaId], references: [id], onDelete: SetNull)
-  marca            Marca               @relation(fields: [marcaId], references: [id], onDelete: Restrict)
+  marca            Marca?              @relation(fields: [marcaId], references: [id], onDelete: SetNull)
   imagenes         ProductoImagen[]
   promociones      PromocionProducto[]
   etiquetas        ProductoEtiqueta[]

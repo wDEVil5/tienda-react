@@ -44,6 +44,10 @@
 .total { color: var(--color-texto); font-family: var(--font-precio); font-size: var(--tam-precio-drawer-total); font-weight: var(--peso-precio); letter-spacing: var(--tracking-precio); white-space: nowrap; }
 .ver { color: var(--color-acento); font-size: 15px; font-weight: 600; text-decoration: none; white-space: nowrap; }
 .ver:hover { text-decoration: underline; }
+.accionesFila { display: flex; align-items: center; gap: 16px; white-space: nowrap; }
+.repetirFila { padding: 0; border: 0; background: transparent; color: var(--color-texto-2); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.repetirFila:hover:not(:disabled) { color: var(--color-acento); text-decoration: underline; }
+.repetirFila:disabled { cursor: wait; opacity: .6; }
 
 .estado, .error { padding: 32px 42px; color: var(--color-texto-suave); font-size: 14px; }
 .error { color: var(--color-oferta); }

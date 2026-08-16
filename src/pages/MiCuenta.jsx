@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import CuentaShell from "../components/CuentaShell.jsx";
 import { useCuenta } from "../context/CuentaContext.jsx";
+import { useRepetirPedido } from "../hooks/useRepetirPedido.js";
 import { listarDireccionesCuenta, listarPedidosCuenta } from "../services/cuentaApi.js";
 import styles from "./MiCuenta.module.css";
 
@@ -34,6 +35,7 @@ function esDelMesActual(fecha) {
 // predeterminada. La gestión vive en sus propias secciones (Direcciones, Datos).
 function MiCuenta() {
   const { cliente } = useCuenta();
+  const { repetirPorId, repitiendoId } = useRepetirPedido();
   const [direcciones, setDirecciones] = useState([]);
   const [pedidos, setPedidos] = useState([]);
   const [cargandoDatos, setCargandoDatos] = useState(true);
@@ -114,15 +116,29 @@ function MiCuenta() {
             <Link className={styles.accionEditar} to="/mi-cuenta/pedidos">Ver todos</Link>
           </div>
           {resumen.ultimoPedido ? (
-            <Link className={styles.ultimoPedido} to={`/mi-cuenta/pedidos/${resumen.ultimoPedido.id}`}>
+            <div className={styles.ultimoPedido}>
               <div>
                 <strong>#SE-{resumen.ultimoPedido.numero}</strong>
                 <span>
                   {etiquetasEstado[resumen.ultimoPedido.estado] ?? "registrada"} · {formatearCLP(resumen.ultimoPedido.total)}
                 </span>
               </div>
-              <span className={styles.verMas}>Ver detalle →</span>
-            </Link>
+              <div className={styles.ultimoPedidoAcciones}>
+                {resumen.ultimoPedido.estado !== "CANCELADO" && (
+                  <button
+                    type="button"
+                    className={styles.repetirResumen}
+                    onClick={() => repetirPorId(resumen.ultimoPedido.id)}
+                    disabled={repitiendoId === resumen.ultimoPedido.id}
+                  >
+                    {repitiendoId === resumen.ultimoPedido.id ? "Agregando…" : "Repetir"}
+                  </button>
+                )}
+                <Link className={styles.verMas} to={`/mi-cuenta/pedidos/${resumen.ultimoPedido.id}`}>
+                  Ver detalle →
+                </Link>
+              </div>
+            </div>
           ) : (
             <p className={styles.sinDatos}>
               Aún no tienes pedidos. <Link to="/">Ir a comprar</Link>

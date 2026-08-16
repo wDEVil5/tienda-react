@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import CuentaShell from "../components/CuentaShell.jsx";
 import ImagenProducto from "../components/ImagenProducto.jsx";
-import { useCarritoContext } from "../context/CarritoContext.jsx";
+import { useRepetirPedido } from "../hooks/useRepetirPedido.js";
 import { obtenerPedidoCuenta } from "../services/cuentaApi.js";
 import styles from "./DetallePedido.module.css";
 
@@ -67,7 +67,7 @@ function pasosEntrega(pedido) {
 function DetallePedido() {
   const { id } = useParams();
   const navegar = useNavigate();
-  const { agregarAlCarrito, mostrarAviso } = useCarritoContext();
+  const { repetirPedido } = useRepetirPedido();
   const [pedido, setPedido] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
@@ -112,20 +112,8 @@ function DetallePedido() {
     return etapas;
   }, [pedido]);
 
-  const repetirPedido = () => {
-    const productosDisponibles = pedido.items.filter((item) => item.productoActual?.stock > 0);
-    if (productosDisponibles.length === 0) {
-      mostrarAviso("Los productos de este pedido ya no están disponibles.", null, "advertencia");
-      return;
-    }
-
-    productosDisponibles.forEach((item) => {
-      agregarAlCarrito(item.productoActual, item.cantidad);
-    });
-    mostrarAviso(
-      `${productosDisponibles.length} ${productosDisponibles.length === 1 ? "producto se agregó" : "productos se agregaron"} al carrito`,
-    );
-    navegar("/");
+  const alRepetir = () => {
+    if (repetirPedido(pedido)) navegar("/");
   };
 
   return (
@@ -183,7 +171,7 @@ function DetallePedido() {
               </section>
 
               <div className={styles.acciones}>
-                <button type="button" className={styles.repetir} onClick={repetirPedido}>Repetir pedido</button>
+                <button type="button" className={styles.repetir} onClick={alRepetir}>Repetir pedido</button>
                 <a href={`mailto:hola@sumarketexpress.cl?subject=${encodeURIComponent(`Ayuda con pedido #SE-${pedido.numero}`)}`} className={styles.ayuda}>Necesito ayuda</a>
               </div>
             </>

@@ -163,11 +163,15 @@
 .seccionCabecera { display: flex; align-items: center; justify-content: space-between; gap: var(--e-xl); }
 .seccionCabecera h2 { color: var(--color-texto); font-size: 18px; font-weight: 650; line-height: 1.3; }
 
-.ultimoPedido { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 16px; padding: 20px 22px; border: 1px solid var(--color-borde); border-radius: var(--radio-tarjeta); background: var(--color-superficie); text-decoration: none; transition: border-color .2s ease, box-shadow .2s ease; }
-.ultimoPedido:hover { border-color: var(--color-acento); box-shadow: 0 8px 20px rgba(28, 27, 24, .06); }
+.ultimoPedido { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 16px; padding: 20px 22px; border: 1px solid var(--color-borde); border-radius: var(--radio-tarjeta); background: var(--color-superficie); }
 .ultimoPedido strong { display: block; color: var(--color-texto); font-size: 16px; }
-.ultimoPedido > div span { display: block; margin-top: 4px; color: var(--color-texto-suave); font-size: 14px; }
-.verMas { color: var(--color-acento); font-size: 14px; white-space: nowrap; }
+.ultimoPedido > div:first-child span { display: block; margin-top: 4px; color: var(--color-texto-suave); font-size: 14px; }
+.ultimoPedidoAcciones { display: flex; align-items: center; gap: 18px; white-space: nowrap; }
+.repetirResumen { padding: 0; border: 0; background: transparent; color: var(--color-texto-2); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.repetirResumen:hover:not(:disabled) { color: var(--color-acento); text-decoration: underline; }
+.repetirResumen:disabled { cursor: wait; opacity: .6; }
+.verMas { color: var(--color-acento); font-size: 14px; text-decoration: none; white-space: nowrap; }
+.verMas:hover { text-decoration: underline; }
 
 .sinDatos { margin-top: 16px; color: var(--color-texto-suave); font-size: 14px; }
 .sinDatos a { color: var(--color-acento); text-decoration: none; }

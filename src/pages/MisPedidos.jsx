@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import CuentaShell from "../components/CuentaShell.jsx";
 import ImagenProducto from "../components/ImagenProducto.jsx";
+import { useRepetirPedido } from "../hooks/useRepetirPedido.js";
 import { listarPedidosCuenta } from "../services/cuentaApi.js";
 import styles from "./MisPedidos.module.css";
 
@@ -51,6 +52,7 @@ function descripcionPedido(pedido) {
 // Listado paginado de la cuenta. Las miniaturas llegan dentro del resumen de
 // pedido para no disparar una consulta adicional por cada fila mostrada.
 function MisPedidos() {
+  const { repetirPorId, repitiendoId } = useRepetirPedido();
   const [pedidos, setPedidos] = useState([]);
   const [meta, setMeta] = useState(null);
   const [filtro, setFiltro] = useState("todos");
@@ -149,7 +151,19 @@ function MisPedidos() {
                   </div>
                   <span className={`${styles.estadoPedido} ${styles[`estado${pedido.estado}`] || ""}`}>{etiquetasEstado[pedido.estado] ?? pedido.estado}</span>
                   <strong className={styles.total}>{formatearCLP(pedido.total)}</strong>
-                  <Link className={styles.ver} to={`/mi-cuenta/pedidos/${pedido.id}`}>Ver</Link>
+                  <div className={styles.accionesFila}>
+                    {pedido.estado !== "CANCELADO" && (
+                      <button
+                        type="button"
+                        className={styles.repetirFila}
+                        onClick={() => repetirPorId(pedido.id)}
+                        disabled={repitiendoId === pedido.id}
+                      >
+                        {repitiendoId === pedido.id ? "Agregando…" : "Repetir"}
+                      </button>
+                    )}
+                    <Link className={styles.ver} to={`/mi-cuenta/pedidos/${pedido.id}`}>Ver</Link>
+                  </div>
                 </article>
               ))}
             </div>

@@ -111,6 +111,13 @@ export function crearRepositorioCuenta(db = prisma) {
         data: { revocadaEn: ahora },
       })
     },
+
+    // Borrado duro del cliente. El schema hace el resto: direcciones, sesiones y
+    // tokens se borran en cascada; los pedidos y avisos quedan disociados
+    // (clienteId → null) para conservar el historial de compra del negocio.
+    eliminarCliente(clienteId) {
+      return db.cliente.delete({ where: { id: clienteId } })
+    },
   }
 }
 

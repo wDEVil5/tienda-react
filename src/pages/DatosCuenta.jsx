@@ -24,6 +24,7 @@ function DatosCuenta() {
     actualizarPerfil,
     cambiarContrasena,
     cerrarTodasLasSesiones,
+    eliminarCuenta,
   } = useCuenta();
   const navegar = useNavigate();
   const [perfil, setPerfil] = useState(() => crearPerfilEditable(cliente));
@@ -41,6 +42,10 @@ function DatosCuenta() {
   const [cargandoBoletin, setCargandoBoletin] = useState(true);
   const [guardandoBoletin, setGuardandoBoletin] = useState(false);
   const [errorBoletin, setErrorBoletin] = useState("");
+  const [modalEliminarAbierto, setModalEliminarAbierto] = useState(false);
+  const [textoEliminar, setTextoEliminar] = useState("");
+  const [eliminandoCuenta, setEliminandoCuenta] = useState(false);
+  const [errorEliminar, setErrorEliminar] = useState("");
 
   useEffect(() => {
     let vigente = true;
@@ -73,6 +78,27 @@ function DatosCuenta() {
       setGuardandoBoletin(false);
     }
   };
+
+  const abrirEliminarCuenta = () => {
+    setTextoEliminar("");
+    setErrorEliminar("");
+    setModalEliminarAbierto(true);
+  };
+  const cerrarEliminarCuenta = () => {
+    if (!eliminandoCuenta) setModalEliminarAbierto(false);
+  };
+  const confirmarEliminarCuenta = async () => {
+    setEliminandoCuenta(true);
+    setErrorEliminar("");
+    try {
+      await eliminarCuenta();
+      navegar("/", { replace: true });
+    } catch {
+      setErrorEliminar("No pudimos eliminar tu cuenta. Intenta de nuevo.");
+      setEliminandoCuenta(false);
+    }
+  };
+  const puedeEliminar = textoEliminar.trim().toUpperCase() === "ELIMINAR";
 
   const tieneCambios =
     perfil.nombre.trim() !== (cliente?.nombre ?? "") ||
@@ -302,6 +328,26 @@ function DatosCuenta() {
               </div>
             </div>
           </section>
+
+          <section className={`${styles.tarjeta} ${styles.tarjetaPeligro}`} aria-labelledby="titulo-peligro">
+            <div className={styles.cabeceraTarjeta}>
+              <div>
+                <h2 id="titulo-peligro">Eliminar cuenta</h2>
+                <p>Borra tu cuenta y tus datos personales de forma permanente. Tus pedidos se conservan como registro, pero sin quedar asociados a ti.</p>
+              </div>
+            </div>
+            <div className={styles.ajustesSeguridad}>
+              <div className={styles.ajuste}>
+                <div>
+                  <strong>Esta acción no se puede deshacer</strong>
+                  <p>Perderás tu perfil, direcciones y sesiones.</p>
+                </div>
+                <button type="button" className={styles.accionDestructiva} onClick={abrirEliminarCuenta}>
+                  Eliminar cuenta
+                </button>
+              </div>
+            </div>
+          </section>
         </main>
 
       {modalContrasenaAbierto && (
@@ -397,6 +443,63 @@ function DatosCuenta() {
                 <button type="button" className={styles.cancelarModal} onClick={cerrarCierreSesiones} disabled={cerrandoSesiones}>Cancelar</button>
                 <button type="button" className={styles.confirmarDestructivo} onClick={confirmarCierreSesiones} disabled={cerrandoSesiones}>
                   {cerrandoSesiones ? "Cerrando…" : "Cerrar sesiones"}
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {modalEliminarAbierto && (
+        <div
+          className={styles.modalFondo}
+          onMouseDown={(evento) => {
+            if (evento.target === evento.currentTarget) cerrarEliminarCuenta();
+          }}
+        >
+          <section
+            className={styles.modalContrasena}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="titulo-modal-eliminar"
+            onKeyDown={(evento) => {
+              if (evento.key === "Escape") cerrarEliminarCuenta();
+            }}
+          >
+            <header className={styles.modalCabecera}>
+              <div>
+                <p className={styles.eyebrow}>Zona de peligro</p>
+                <h2 id="titulo-modal-eliminar">Eliminar tu cuenta</h2>
+              </div>
+              <button type="button" className={styles.cerrarModal} onClick={cerrarEliminarCuenta} disabled={eliminandoCuenta} aria-label="Cerrar">
+                <i className="fa-solid fa-xmark" aria-hidden="true" />
+              </button>
+            </header>
+            <div className={styles.formularioContrasena}>
+              <p className={styles.introduccionModal}>Esta acción es permanente: se borran tu perfil, direcciones y sesiones. Tus pedidos se conservan, pero disociados de tu cuenta.</p>
+              <label className={styles.campoContrasena} htmlFor="confirmar-eliminar">
+                Escribe ELIMINAR para confirmar
+                <input
+                  id="confirmar-eliminar"
+                  type="text"
+                  autoComplete="off"
+                  value={textoEliminar}
+                  onChange={(evento) => setTextoEliminar(evento.target.value)}
+                  autoFocus
+                />
+              </label>
+              {errorEliminar && <p className={styles.errorModal} role="alert">{errorEliminar}</p>}
+              <div className={styles.accionesModal}>
+                <button type="button" className={styles.cancelarModal} onClick={cerrarEliminarCuenta} disabled={eliminandoCuenta}>
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className={styles.confirmarDestructivo}
+                  onClick={confirmarEliminarCuenta}
+                  disabled={!puedeEliminar || eliminandoCuenta}
+                >
+                  {eliminandoCuenta ? "Eliminando…" : "Eliminar mi cuenta"}
                 </button>
               </div>
             </div>

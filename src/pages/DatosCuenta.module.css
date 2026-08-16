@@ -114,6 +114,8 @@
   border-radius: var(--radio-tarjeta);
   background: var(--color-superficie);
 }
+.tarjetaPeligro { border-color: #e7d3d0; background: #fdf7f6; }
+.tarjetaPeligro h2 { color: #ad3b26; }
 
 .cabeceraTarjeta {
   display: flex;
@@ -289,6 +291,7 @@
   width: 48px;
   min-width: 48px;
   height: 27px;
+  min-height: 0;
   padding: 0;
   border: 0;
   border-radius: var(--radio-pill);

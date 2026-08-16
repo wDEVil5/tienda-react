@@ -150,11 +150,24 @@
 }
 .navegacion a:hover {
   color: var(--color-acento);
+  background: var(--color-crudo);
 }
 .navActiva {
-  color: var(--color-texto);
-  background: var(--color-crudo);
+  position: relative;
+  color: var(--color-acento);
+  background: var(--color-acento-bg);
   font-weight: 650;
+}
+/* Barra de acento a la izquierda para marcar con claridad la sección actual. */
+.navActiva::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--color-acento);
 }
 
 @keyframes aparecerMenu {

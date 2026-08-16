@@ -126,6 +126,12 @@ export function cerrarTodasLasSesionesCuenta(opciones = {}) {
   return solicitarCuenta("/cuenta/sesiones", { ...opciones, method: "DELETE" });
 }
 
+// Borra la cuenta del cliente con sesión. La API elimina al cliente y borra la
+// cookie; el contexto limpia el perfil en memoria.
+export function eliminarCuentaApi(opciones = {}) {
+  return solicitarCuenta("/cuenta", { ...opciones, method: "DELETE" });
+}
+
 // Recuperación de contraseña (olvidé mi clave). La API responde SIEMPRE igual,
 // exista o no el correo: la interfaz nunca sabe (ni muestra) si está registrado.
 export function solicitarRecuperacionCuenta(email, opciones = {}) {

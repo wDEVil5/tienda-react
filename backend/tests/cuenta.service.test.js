@@ -170,3 +170,18 @@ test('cerrarTodasLasSesiones revoca solo las sesiones vigentes del cliente', asy
   assert.deepEqual(recibido, { clienteId: 'c1', ahora })
   assert.deepEqual(resultado, { count: 3 })
 })
+
+test('eliminarCuenta borra al cliente por su id', async () => {
+  let recibido = null
+  const servicio = crearServicioCuenta({
+    async eliminarCliente(clienteId) {
+      recibido = clienteId
+      return { id: clienteId }
+    },
+  })
+
+  const resultado = await servicio.eliminarCuenta('c1')
+
+  assert.equal(recibido, 'c1')
+  assert.deepEqual(resultado, { id: 'c1' })
+})

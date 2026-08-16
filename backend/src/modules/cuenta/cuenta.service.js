@@ -192,6 +192,10 @@ export function crearServicioCuenta(
     cerrarTodasLasSesiones(clienteId, ahora = new Date()) {
       return repositorio.revocarTodasLasSesiones(clienteId, ahora)
     },
+
+    eliminarCuenta(clienteId) {
+      return repositorio.eliminarCliente(clienteId)
+    },
   }
 }
 
@@ -205,3 +209,4 @@ export const cerrarSesion = servicioCuenta.cerrarSesion
 export const actualizarPerfil = servicioCuenta.actualizarPerfil
 export const cambiarContrasena = servicioCuenta.cambiarContrasena
 export const cerrarTodasLasSesiones = servicioCuenta.cerrarTodasLasSesiones
+export const eliminarCuenta = servicioCuenta.eliminarCuenta

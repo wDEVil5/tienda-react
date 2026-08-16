@@ -4,6 +4,7 @@ import {
   cambiarContrasenaCuenta,
   cerrarTodasLasSesionesCuenta,
   cerrarSesionCuenta,
+  eliminarCuentaApi,
   iniciarSesionCuenta,
   iniciarSesionConGoogleCuenta,
   obtenerCuenta,
@@ -90,6 +91,11 @@ export function CuentaProvider({ children }) {
     setCliente(null);
   }, []);
 
+  const eliminarCuenta = useCallback(async () => {
+    await eliminarCuentaApi();
+    setCliente(null);
+  }, []);
+
   return (
     <CuentaContext.Provider
       value={{
@@ -103,6 +109,7 @@ export function CuentaProvider({ children }) {
         actualizarPerfil,
         cambiarContrasena,
         cerrarTodasLasSesiones,
+        eliminarCuenta,
         recargarSesion,
       }}
     >

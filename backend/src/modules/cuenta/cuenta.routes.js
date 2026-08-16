@@ -9,6 +9,7 @@ import {
   actualizarPerfil,
   cambiarContrasena,
   cerrarTodasLasSesiones,
+  eliminarCuenta,
 } from './cuenta.service.js'
 import { crearRequerirCliente } from './cuenta.middleware.js'
 import {
@@ -45,6 +46,7 @@ export function crearRouterCuenta(
     actualizarPerfil,
     cambiarContrasena,
     cerrarTodasLasSesiones,
+    eliminarCuenta,
     obtenerEstadoSuscripcion,
     establecerSuscripcion,
   },
@@ -248,6 +250,18 @@ export function crearRouterCuenta(
   cuentaRouter.post('/logout', requerirCliente, async (request, response, next) => {
     try {
       await servicio.cerrarSesion(request.tokenSesion)
+      response.clearCookie('sesion_cliente', opcionesCookie())
+      return response.status(204).end()
+    } catch (error) {
+      return next(error)
+    }
+  })
+
+  // Borra la cuenta del propio cliente (id desde la sesión, nunca del body) y
+  // limpia la cookie. Los pedidos quedan disociados (historial del negocio intacto).
+  cuentaRouter.delete('/', requerirCliente, async (request, response, next) => {
+    try {
+      await servicio.eliminarCuenta(request.cliente.id)
       response.clearCookie('sesion_cliente', opcionesCookie())
       return response.status(204).end()
     } catch (error) {

@@ -1,0 +1,97 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(26, 31, 28, 0.42);
+  /* Prefijo -webkit- primero y estándar al final: el minificador de rolldown-vite
+     descarta la estándar si va antes de la prefijada (dejaría a Firefox sin blur). */
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  animation: aparecer 0.16s ease-out;
+}
+
+.dialogo {
+  width: min(100%, 420px);
+  padding: 26px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-tarjeta);
+  background: var(--color-fondo);
+  box-shadow: 0 26px 70px rgba(18, 23, 20, 0.24);
+  animation: subir 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.titulo {
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--color-texto);
+}
+
+.mensaje {
+  margin: 0 0 22px;
+  color: var(--color-texto-2);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.cancelar,
+.confirmar {
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: var(--radio-control);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.18s ease, filter 0.18s ease;
+}
+.cancelar {
+  border: 1px solid var(--color-borde);
+  background: #fff;
+  color: var(--color-texto);
+}
+.cancelar:hover {
+  background: var(--color-crudo);
+}
+.confirmar {
+  border: 1px solid var(--color-acento);
+  background: var(--color-acento);
+  color: #fff;
+}
+.confirmar:hover {
+  filter: brightness(0.95);
+}
+.confirmar.peligro {
+  border-color: #c0362c;
+  background: #c0362c;
+}
+.cancelar:focus-visible,
+.confirmar:focus-visible {
+  outline: 2px solid var(--color-acento);
+  outline-offset: 2px;
+}
+
+@keyframes aparecer {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes subir {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .dialogo {
+    animation: none;
+  }
+}

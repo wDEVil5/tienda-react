@@ -7,6 +7,7 @@ import Toast from "./Toast.jsx";
 import BarraEnvioGratis from "./BarraEnvioGratis.jsx";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 import { useReglas } from "../context/ReglasContext.jsx";
+import { useConfirm } from "../context/ConfirmContext.jsx";
 
 function Carrito({ onCerrar, abierto, productos }) {
   const {
@@ -20,6 +21,7 @@ function Carrito({ onCerrar, abierto, productos }) {
 
   const navegar = useNavigate();
   const { envioGratisDesde } = useReglas();
+  const confirmar = useConfirm();
 
   // Refs: cajas que persisten entre renders sin causar re-render.
   const drawerRef = useRef(null); // handle al <aside> del DOM
@@ -283,10 +285,14 @@ function Carrito({ onCerrar, abierto, productos }) {
             {/* Acción destructiva: confirmamos antes de borrar todo. */}
             <button
               className={styles.vaciar}
-              onClick={() => {
-                if (window.confirm("¿Vaciar todo el carrito?")) {
-                  vaciarCarrito();
-                }
+              onClick={async () => {
+                const confirmado = await confirmar({
+                  titulo: "Vaciar carrito",
+                  mensaje: "Se quitarán todos los productos de tu carrito.",
+                  textoConfirmar: "Vaciar",
+                  peligro: true,
+                });
+                if (confirmado) vaciarCarrito();
               }}
             >
               Vaciar carrito

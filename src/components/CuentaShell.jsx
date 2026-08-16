@@ -86,17 +86,19 @@ export default function CuentaShell({ seccion, children }) {
 
       <div className={styles.cuerpo}>
         <aside className={styles.navegacion} aria-label="Secciones de mi cuenta">
-          {NAV.map((item) =>
-            item.etiqueta === seccion ? (
-              <span key={item.a} className={styles.navActiva} aria-current="page">
-                {item.etiqueta}
-              </span>
-            ) : (
-              <Link key={item.a} to={item.a}>
-                {item.etiqueta}
-              </Link>
-            ),
-          )}
+          <div className={styles.navSticky}>
+            {NAV.map((item) =>
+              item.etiqueta === seccion ? (
+                <span key={item.a} className={styles.navActiva} aria-current="page">
+                  {item.etiqueta}
+                </span>
+              ) : (
+                <Link key={item.a} to={item.a}>
+                  {item.etiqueta}
+                </Link>
+              ),
+            )}
+          </div>
         </aside>
         {children}
       </div>

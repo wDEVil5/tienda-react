@@ -1,7 +1,9 @@
 .pantalla {
   width: min(100%, 1180px);
   margin: 0 auto;
-  overflow: hidden;
+  /* `clip` (no `hidden`) recorta las esquinas redondeadas sin crear un contenedor
+     de scroll, que rompería el `position: sticky` del nav lateral. */
+  overflow: clip;
   border: 1px solid var(--color-borde);
   border-radius: 18px;
   background: var(--color-fondo);
@@ -9,6 +11,9 @@
 }
 
 .cabecera {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   min-height: 64px;
   display: flex;
   align-items: center;
@@ -126,13 +131,19 @@
 }
 
 .navegacion {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-height: 710px;
   padding: 38px 28px;
   border-right: 1px solid var(--color-borde);
   background: #fcfbf8;
+}
+/* Los enlaces se quedan a la vista (sticky) mientras el contenido hace scroll.
+   La columna (.navegacion) mantiene su alto completo por el grid. */
+.navSticky {
+  position: sticky;
+  /* Debajo de la cabecera fija (64px) + un respiro. */
+  top: 84px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 .navegacion a,
 .navegacion .navActiva {
@@ -180,11 +191,13 @@
     grid-template-columns: 1fr;
   }
   .navegacion {
-    min-height: 0;
-    flex-direction: row;
-    flex-wrap: wrap;
     border-right: 0;
     border-bottom: 1px solid var(--color-borde);
+  }
+  .navSticky {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
   }
   .navegacion a,
   .navegacion .navActiva {

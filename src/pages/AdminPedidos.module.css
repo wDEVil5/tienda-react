@@ -958,6 +958,24 @@ td.colCant {
   font-size: 12.5px;
 }
 
+.esperandoPago {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 18px;
+  padding: 12px 14px;
+  border-radius: var(--radio-tarjeta, 10px);
+  background: #f6ecd2;
+  color: #8a6d1f;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.esperandoPago svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
 .footerAcciones {
   display: flex;
   flex-wrap: wrap;

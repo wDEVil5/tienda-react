@@ -313,7 +313,12 @@ const ICO_DESCARGA = (
 function DetallePedido({ detalle, umbralEnvioGratis, horarioEntrega, onCambiarEstado, onImprimir, cambiando, errorCambio }) {
   const pagoAprobado = (detalle.pagos ?? []).find((pago) => pago.estado === "APROBADO");
   const transiciones = TRANSICIONES[detalle.modalidad]?.[detalle.estado] ?? [];
-  const siguiente = transiciones.find((estadoDestino) => estadoDestino !== "CANCELADO") ?? null;
+  // Barrera de pago (espeja el guard del backend): un pedido PENDIENTE sin pago
+  // aprobado no puede avanzar a mano; solo cancelarse. Evita despachar sin pago.
+  const esperandoPago = detalle.estado === "PENDIENTE" && !pagoAprobado;
+  const siguiente = esperandoPago
+    ? null
+    : transiciones.find((estadoDestino) => estadoDestino !== "CANCELADO") ?? null;
   const puedeCancelar = transiciones.includes("CANCELADO");
   const stats = detalle.cliente;
   const cancelado = detalle.estado === "CANCELADO";
@@ -562,6 +567,16 @@ function DetallePedido({ detalle, umbralEnvioGratis, horarioEntrega, onCambiarEs
                 >
                   <Ico d={ICO_AVION} size={16} /> Marcar como {ETIQUETA_ESTADO[siguiente].toLowerCase()}
                 </button>
+              </div>
+            )}
+
+            {esperandoPago && (
+              <div className={styles.esperandoPago} role="status">
+                <Ico d={ICO_INFO} size={16} />
+                <span>
+                  <strong>Esperando confirmación del pago.</strong> No se puede preparar
+                  el pedido hasta que el pago sea aprobado; por ahora solo puedes cancelarlo.
+                </span>
               </div>
             )}
           </div>

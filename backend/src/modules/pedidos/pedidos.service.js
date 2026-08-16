@@ -327,6 +327,20 @@ export function crearServicioPedidos(
         )
       }
 
+      // Barrera de pago: sacar un pedido de PENDIENTE hacia el cumplimiento
+      // (PREPARANDO) equivale a confirmar la venta y CONSUME el stock reservado.
+      // Solo el pago aprobado habilita ese salto; a mano únicamente se puede
+      // CANCELAR un pedido impago. Esto evita despachar mercadería no pagada.
+      if (pedido.estado === 'PENDIENTE' && nuevoEstado !== 'CANCELADO') {
+        const tienePagoAprobado = pedido.pagos.some((pago) => pago.estado === 'APROBADO')
+        if (!tienePagoAprobado) {
+          throw new ErrorPedido(
+            'PAYMENT_REQUIRED',
+            'El pedido no tiene un pago aprobado: solo puede cancelarse hasta que se confirme el pago.',
+          )
+        }
+      }
+
       // El efecto sobre el inventario depende del par (estado actual → nuevo).
       const efecto = efectoStockTransicion(pedido.estado, nuevoEstado)
 

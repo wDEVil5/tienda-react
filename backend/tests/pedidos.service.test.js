@@ -301,6 +301,8 @@ const PEDIDO_PENDIENTE = {
   createdAt: new Date('2026-08-02T10:00:00.000Z'),
   items: [{ productoId: 'prod-1', nombre: 'Café', sku: 'CAFE', cantidad: 1, precioNormal: 5490, precioFinal: 5490, subtotal: 5490 }],
   eventos: [],
+  // Con pago aprobado: es el pedido pagado que sí puede avanzar a PREPARANDO.
+  pagos: [{ proveedor: 'MERCADO_PAGO', estado: 'APROBADO', createdAt: new Date(), updatedAt: new Date() }],
 }
 
 function crearRepoEstado(pedido) {
@@ -338,6 +340,30 @@ test('cambiarEstadoPedido rechaza una transición inválida sin tocar el reposit
     (error) => error instanceof ErrorPedido && error.code === 'INVALID_ORDER_TRANSITION',
   )
   assert.equal(captura.llamadas, 0)
+})
+
+test('cambiarEstadoPedido bloquea avanzar un PENDIENTE sin pago aprobado (PAYMENT_REQUIRED)', async () => {
+  const sinPago = { ...PEDIDO_PENDIENTE, pagos: [{ proveedor: 'MERCADO_PAGO', estado: 'PENDIENTE', createdAt: new Date(), updatedAt: new Date() }] }
+  const { repositorio, captura } = crearRepoEstado(sinPago)
+  const servicio = crearServicioPedidos(repositorio, reglasFalsas)
+
+  await assert.rejects(
+    servicio.cambiarEstadoPedido('ped-1', 'PREPARANDO'),
+    (error) => error instanceof ErrorPedido && error.code === 'PAYMENT_REQUIRED',
+  )
+  // No debe tocar el inventario ni avanzar el pedido.
+  assert.equal(captura.llamadas, 0)
+})
+
+test('cambiarEstadoPedido permite CANCELAR un PENDIENTE impago (única salida a mano)', async () => {
+  const sinPago = { ...PEDIDO_PENDIENTE, pagos: [] }
+  const { repositorio, captura } = crearRepoEstado(sinPago)
+  const servicio = crearServicioPedidos(repositorio, reglasFalsas)
+
+  await servicio.cambiarEstadoPedido('ped-1', 'CANCELADO')
+
+  assert.equal(captura.llamadas, 1)
+  assert.equal(captura.cambio.efecto, 'LIBERAR')
 })
 
 test('cambiarEstadoPedido cancela un pedido ya aceptado restituyendo stock', async () => {

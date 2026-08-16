@@ -26,6 +26,7 @@ import { Login, Registro } from "./pages/Acceso.jsx";
 import { RecuperarContrasena, RestablecerContrasena } from "./pages/RecuperarCuenta.jsx";
 import NewsletterBaja from "./pages/NewsletterBaja.jsx";
 import PaginaContenido from "./pages/PaginaContenido.jsx";
+import ComoComprar from "./pages/ComoComprar.jsx";
 import MiCuenta from "./pages/MiCuenta.jsx";
 import MisPedidos from "./pages/MisPedidos.jsx";
 import DetallePedido from "./pages/DetallePedido.jsx";
@@ -293,6 +294,7 @@ function App() {
           <Route path="/terminos" element={<PaginaContenido slug="terminos" />} />
           <Route path="/privacidad" element={<PaginaContenido slug="privacidad" />} />
           <Route path="/faq" element={<PaginaContenido slug="faq" />} />
+          <Route path="/como-comprar" element={<ComoComprar />} />
           <Route
             path="/mi-cuenta"
             element={

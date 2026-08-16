@@ -4,7 +4,6 @@ import BannerCarrusel from "../components/BannerCarrusel.jsx";
 import TiraConfianza from "../components/TiraConfianza.jsx";
 import CarruselProductos from "../components/CarruselProductos.jsx";
 import Categorias from "../components/Categorias.jsx";
-import ComoComprar from "../components/ComoComprar.jsx";
 import MarcasGondola from "../components/MarcasGondola.jsx";
 
 // Página de inicio: banner + carruseles editoriales + marcas. El catálogo
@@ -71,7 +70,6 @@ function Home({ productos, categorias, ofertasDestacadas, masVendidos }) {
         />
       ))}
       <TiraConfianza />
-      <ComoComprar />
       <MarcasGondola />
     </>
   );

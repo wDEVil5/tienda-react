@@ -102,7 +102,6 @@ function iconoCategoria(nombre) {
 // también funcionan desde una ficha de producto.
 const NAV = [
   { etiqueta: "Ofertas", hash: "/ofertas" },
-  { etiqueta: "Cómo comprar", hash: "/#como-comprar" },
   { etiqueta: "Nuestra tienda", hash: "/#nuestra-tienda" },
 ];
 

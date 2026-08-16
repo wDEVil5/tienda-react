@@ -219,9 +219,9 @@ function Footer({ productos, onAbrirAcceso }) {
           </AcordeonCol>
 
           <AcordeonCol titulo="Ayuda">
-            <button className={styles.enlace} type="button">
+            <Link to="/como-comprar" className={styles.enlace}>
               Cómo comprar
-            </button>
+            </Link>
             <button className={styles.enlace} type="button">
               Retiro y despacho
             </button>

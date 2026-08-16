@@ -23,10 +23,12 @@ function LogoMarca({ marca }) {
   return <img className={styles.logo} src={origen} alt={`Logo de ${marca.nombre}`} onError={() => setFallo(true)} />;
 }
 
-function FilaMarca({ marca, onActualizada, onEliminada }) {
+function FilaMarca({ marca, otrasMarcas, onActualizada, onEliminada }) {
   const [dominio, setDominio] = useState(marca.brandfetchDomain ?? "");
   const [guardando, setGuardando] = useState(false);
   const [eliminando, setEliminando] = useState(false);
+  const [confirmando, setConfirmando] = useState(false);
+  const [marcaDestino, setMarcaDestino] = useState("");
   const [mensaje, setMensaje] = useState(null);
   const tieneProductos = marca.productosAsignados > 0;
 
@@ -48,12 +50,23 @@ function FilaMarca({ marca, onActualizada, onEliminada }) {
     }
   }
 
-  async function eliminar() {
-    if (!window.confirm(`¿Eliminar la marca "${marca.nombre}"? Esta acción no se puede deshacer.`)) return;
+  // Sin productos: confirmación simple. Con productos: abre el panel para elegir
+  // entre reasignarlos a otra marca o dejarlos sin marca.
+  function pedirEliminar() {
+    if (tieneProductos) {
+      setConfirmando(true);
+      return;
+    }
+    if (window.confirm(`¿Eliminar la marca "${marca.nombre}"? Esta acción no se puede deshacer.`)) {
+      eliminar(null);
+    }
+  }
+
+  async function eliminar(reasignarA) {
     setEliminando(true);
     setMensaje(null);
     try {
-      await eliminarMarcaAdmin(marca.id);
+      await eliminarMarcaAdmin(marca.id, reasignarA);
       onEliminada(marca.id); // el padre quita la fila; este componente se desmonta
     } catch (error) {
       setMensaje({
@@ -61,6 +74,7 @@ function FilaMarca({ marca, onActualizada, onEliminada }) {
         texto: error instanceof ErrorAdminApi ? error.message : "No pudimos eliminar la marca.",
       });
       setEliminando(false);
+      setConfirmando(false);
     }
   }
 
@@ -93,11 +107,10 @@ function FilaMarca({ marca, onActualizada, onEliminada }) {
         <button
           type="button"
           className={styles.botonEliminar}
-          onClick={eliminar}
-          disabled={eliminando || tieneProductos}
-          title={tieneProductos ? "No se puede eliminar: tiene productos asignados" : undefined}
+          onClick={pedirEliminar}
+          disabled={eliminando || confirmando}
         >
-          {eliminando ? "Eliminando…" : "Eliminar"}
+          Eliminar
         </button>
         <span
           id={`estado-marca-${marca.id}`}
@@ -108,6 +121,45 @@ function FilaMarca({ marca, onActualizada, onEliminada }) {
           {mensaje?.texto}
         </span>
       </div>
+
+      {confirmando && (
+        <div className={styles.confirmarEliminar}>
+          <p>
+            «{marca.nombre}» tiene {marca.productosAsignados} {marca.productosAsignados === 1 ? "producto" : "productos"}.
+            Al eliminarla, ¿qué hago con ellos?
+          </p>
+          <div className={styles.confirmarControles}>
+            <select
+              className={styles.selectDestino}
+              value={marcaDestino}
+              onChange={(event) => setMarcaDestino(event.target.value)}
+              disabled={eliminando}
+              aria-label="Qué hacer con los productos"
+            >
+              <option value="">Dejarlos sin marca</option>
+              {otrasMarcas.map((otra) => (
+                <option key={otra.id} value={otra.id}>Reasignar a {otra.nombre}</option>
+              ))}
+            </select>
+            <button
+              type="button"
+              className={styles.botonEliminar}
+              onClick={() => eliminar(marcaDestino || null)}
+              disabled={eliminando}
+            >
+              {eliminando ? "Eliminando…" : "Eliminar marca"}
+            </button>
+            <button
+              type="button"
+              className={styles.botonCancelar}
+              onClick={() => setConfirmando(false)}
+              disabled={eliminando}
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
     </article>
   );
 }
@@ -242,7 +294,7 @@ export default function AdminMarcas() {
               <div className={styles.listaTitulo}><h2>Marcas existentes</h2><p>Los cambios se reflejan en la sección “Marcas en góndola”.</p></div>
               {cargando ? <p className={styles.estado} role="status">Cargando marcas…</p> : error ? (
                 <div className={styles.estado} role="alert"><strong>No pudimos cargar las marcas.</strong><span>{error}</span><button type="button" onClick={() => { setCargando(true); setReintento((valor) => valor + 1); }}>Reintentar</button></div>
-              ) : marcas.length ? marcas.map((marca) => <FilaMarca key={marca.id} marca={marca} onActualizada={actualizarMarca} onEliminada={quitarMarca} />) : <p className={styles.estado}>Aún no hay marcas creadas.</p>}
+              ) : marcas.length ? marcas.map((marca) => <FilaMarca key={marca.id} marca={marca} otrasMarcas={marcas.filter((otra) => otra.id !== marca.id)} onActualizada={actualizarMarca} onEliminada={quitarMarca} />) : <p className={styles.estado}>Aún no hay marcas creadas.</p>}
             </section>
           </div>
         )}

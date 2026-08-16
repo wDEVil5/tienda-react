@@ -57,6 +57,15 @@ export function crearRepositorioMarcasAdmin(cliente = prisma) {
     eliminar(id) {
       return cliente.marca.delete({ where: { id } })
     },
+
+    // Reasigna todos los productos de una marca a otra y borra la original, en una
+    // sola transacción para no dejar productos a medio migrar si algo falla.
+    reasignarYEliminar(id, destinoId) {
+      return cliente.$transaction([
+        cliente.producto.updateMany({ where: { marcaId: id }, data: { marcaId: destinoId } }),
+        cliente.marca.delete({ where: { id } }),
+      ])
+    },
   }
 }
 

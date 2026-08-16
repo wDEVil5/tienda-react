@@ -82,25 +82,67 @@ test('eliminarMarca borra la marca y su logo cuando no tiene productos', async (
 
   const resultado = await servicio.eliminarMarca('marca-1')
 
-  assert.deepEqual(resultado, { id: 'marca-1' })
+  assert.deepEqual(resultado, { id: 'marca-1', reasignados: 0 })
   assert.deepEqual(eliminadas, ['marca-1'])
   assert.deepEqual(logosEliminados, ['sumarket/marcas/cafe'])
 })
 
-test('eliminarMarca rechaza si la marca tiene productos asignados', async () => {
-  let eliminada = false
-  const servicio = crearServicioMarcasAdmin({
-    async obtenerConConteo() {
-      return { id: 'marca-1', logoStorageKey: null, _count: { productos: 3 } }
+test('eliminarMarca sin reasignar borra aunque tenga productos (quedan sin marca)', async () => {
+  const eliminadas = []
+  let reasigno = false
+  const servicio = crearServicioMarcasAdmin(
+    {
+      async obtenerConConteo() {
+        return { id: 'marca-1', logoStorageKey: null, _count: { productos: 3 } }
+      },
+      async eliminar(id) { eliminadas.push(id) },
+      async reasignarYEliminar() { reasigno = true },
     },
-    async eliminar() { eliminada = true },
+    { async eliminarLogoMarca() {} },
+  )
+
+  const resultado = await servicio.eliminarMarca('marca-1')
+
+  assert.deepEqual(resultado, { id: 'marca-1', reasignados: 0 })
+  assert.deepEqual(eliminadas, ['marca-1'])
+  assert.equal(reasigno, false)
+})
+
+test('eliminarMarca reasigna los productos a otra marca y luego borra', async () => {
+  const reasignaciones = []
+  let borradoDirecto = false
+  const servicio = crearServicioMarcasAdmin(
+    {
+      async obtenerConConteo(id) {
+        if (id === 'marca-1') return { id: 'marca-1', logoStorageKey: null, _count: { productos: 3 } }
+        return { id, logoStorageKey: null, _count: { productos: 0 } }
+      },
+      async eliminar() { borradoDirecto = true },
+      async reasignarYEliminar(id, destino) { reasignaciones.push([id, destino]) },
+    },
+    { async eliminarLogoMarca() {} },
+  )
+
+  const resultado = await servicio.eliminarMarca('marca-1', { reasignarA: 'marca-2' })
+
+  assert.deepEqual(resultado, { id: 'marca-1', reasignados: 3 })
+  assert.deepEqual(reasignaciones, [['marca-1', 'marca-2']])
+  assert.equal(borradoDirecto, false)
+})
+
+test('eliminarMarca rechaza si la marca destino no existe', async () => {
+  const servicio = crearServicioMarcasAdmin({
+    async obtenerConConteo(id) {
+      if (id === 'marca-1') return { id: 'marca-1', logoStorageKey: null, _count: { productos: 2 } }
+      return null
+    },
+    async reasignarYEliminar() { throw new Error('no debería llamarse') },
   })
 
   await assert.rejects(
-    () => servicio.eliminarMarca('marca-1'),
-    (error) => error.code === 'BRAND_HAS_PRODUCTS',
+    () => servicio.eliminarMarca('marca-1', { reasignarA: 'inexistente' }),
+    (error) => error.code === 'REASSIGN_TARGET_NOT_FOUND',
   )
-  assert.equal(eliminada, false)
 })
 
 test('eliminarMarca devuelve null cuando la marca no existe', async () => {

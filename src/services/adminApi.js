@@ -181,9 +181,11 @@ export function actualizarDominioBrandfetchAdmin(id, brandfetchDomain, opciones 
   });
 }
 
-// El servidor responde 409 (BRAND_HAS_PRODUCTS) si la marca tiene productos.
-export function eliminarMarcaAdmin(id, opciones = {}) {
-  return solicitarAdmin(`/admin/marcas/${encodeURIComponent(id)}`, {
+// Borra la marca. Si se pasa reasignarA, sus productos se mueven a esa otra marca;
+// si no, quedan sin marca. Devuelve { id, reasignados }.
+export function eliminarMarcaAdmin(id, reasignarA = null, opciones = {}) {
+  const query = reasignarA ? `?reasignarA=${encodeURIComponent(reasignarA)}` : "";
+  return solicitarAdmin(`/admin/marcas/${encodeURIComponent(id)}${query}`, {
     ...opciones,
     method: "DELETE",
   });

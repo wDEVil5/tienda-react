@@ -77,25 +77,31 @@ export function crearServicioMarcasAdmin(
       })
     },
 
-    // `Producto.marcaId` es onDelete: Restrict, así que una marca con productos no
-    // se puede borrar en la base. Lo comprobamos antes para dar un mensaje claro en
-    // vez de un 500, y de paso limpiamos su logo propio en Cloudinary.
-    async eliminarMarca(id) {
+    // Borrar una marca ya no se bloquea: `Producto.marcaId` es onDelete SetNull,
+    // así que sus productos quedan sin marca. Si se pasa `reasignarA`, primero se
+    // mueven a esa otra marca (transacción) y ninguno queda sin marca. En ambos
+    // casos limpiamos el logo propio en Cloudinary.
+    async eliminarMarca(id, { reasignarA = null } = {}) {
       const marca = await repositorio.obtenerConConteo(id)
       if (!marca) return null
 
-      if (marca._count.productos > 0) {
-        throw new ErrorMarcaAdmin(
-          'BRAND_HAS_PRODUCTS',
-          'No se puede eliminar una marca con productos asignados. Reasigna esos productos a otra marca primero.',
-        )
+      if (reasignarA) {
+        if (reasignarA === id) {
+          throw new ErrorMarcaAdmin('INVALID_REASSIGN_TARGET', 'La marca destino debe ser distinta de la que eliminas.')
+        }
+        const destino = await repositorio.obtenerConConteo(reasignarA)
+        if (!destino) {
+          throw new ErrorMarcaAdmin('REASSIGN_TARGET_NOT_FOUND', 'La marca destino no existe.')
+        }
+        await repositorio.reasignarYEliminar(id, reasignarA)
+      } else {
+        await repositorio.eliminar(id)
       }
 
-      await repositorio.eliminar(id)
       if (marca.logoStorageKey) {
         await almacenamiento.eliminarLogoMarca(marca.logoStorageKey).catch(() => {})
       }
-      return { id }
+      return { id, reasignados: reasignarA ? marca._count.productos : 0 }
     },
   }
 }

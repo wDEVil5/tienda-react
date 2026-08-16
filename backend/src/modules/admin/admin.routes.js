@@ -914,14 +914,17 @@ export function crearRouterAdmin({
     middlewareSesion,
     requerirRoles('ADMIN', 'OPERADOR'),
     async (request, response, next) => {
+      const reasignarA = typeof request.query.reasignarA === 'string' && request.query.reasignarA
+        ? request.query.reasignarA
+        : null
       try {
-        const eliminada = await servicio.eliminarMarcaAdmin(request.params.id)
+        const eliminada = await servicio.eliminarMarcaAdmin(request.params.id, { reasignarA })
         if (!eliminada) {
           return response.status(404).json({
             error: { code: 'ADMIN_BRAND_NOT_FOUND', message: 'No encontramos la marca solicitada.' },
           })
         }
-        return response.status(204).end()
+        return response.json({ data: eliminada })
       } catch (error) {
         if (error instanceof ErrorMarcaAdmin) {
           return response.status(409).json({ error: { code: error.code, message: error.message } })

@@ -26,6 +26,14 @@
 .botonEliminar { min-height: 34px; padding: 0 15px; border: 1px solid var(--color-borde); border-radius: var(--radio-control); background: none; color: var(--color-texto-2); font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
 .botonEliminar:hover:not(:disabled) { border-color: #c0362c; color: #c0362c; }
 .botonEliminar:disabled { cursor: not-allowed; opacity: .45; }
+.botonCancelar { min-height: 34px; padding: 0 15px; border: none; border-radius: var(--radio-control); background: none; color: var(--color-texto-2); font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.botonCancelar:hover:not(:disabled) { color: var(--color-texto); }
+
+/* Panel de confirmación de borrado: ocupa todo el ancho de la fila. */
+.confirmarEliminar { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 12px; padding: 12px 14px; border: 1px solid #e7d3d0; border-radius: var(--radio-control); background: #fbf3f2; }
+.confirmarEliminar p { margin: 0; flex: 1; min-width: 200px; font-size: 13px; color: var(--color-texto); }
+.confirmarControles { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.selectDestino { min-height: 34px; padding: 0 10px; border: 1px solid var(--color-borde); border-radius: var(--radio-control); background: #fff; font: inherit; font-size: 12.5px; color: var(--color-texto); cursor: pointer; }
 .mensaje, .mensajeError { min-height: 15px; color: var(--color-acento); font-size: 11px; }
 .mensajeError { color: #b43b25; }
 .lista { margin-top: 30px; }

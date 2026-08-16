@@ -157,6 +157,8 @@
 
 .label { color: var(--color-texto-2); font-size: 13px; }
 .opcional { color: var(--color-texto-tenue); font-weight: 400; }
+/* Nota de "datos precargados desde tu cuenta": se acerca al título de la tarjeta. */
+.notaCuenta { margin: calc(-1 * var(--e-md)) 0 var(--e-md); color: var(--color-texto-2); font-size: 13px; line-height: 1.4; }
 
 .input,
 .textarea {

@@ -5,10 +5,12 @@ import ImagenProducto from "../components/ImagenProducto.jsx";
 import BarraEnvioGratis from "../components/BarraEnvioGratis.jsx";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 import { useReglas } from "../context/ReglasContext.jsx";
+import { useCuenta } from "../context/CuentaContext.jsx";
 import {
   cotizarPedido,
   hayApiPedidos,
 } from "../services/pedidosApi.js";
+import { listarDireccionesCuenta } from "../services/cuentaApi.js";
 import { guardarCheckoutPendiente } from "../services/checkoutPendiente.js";
 
 // Espacio fino inseparable: separa el símbolo de la cifra sin permitir que se
@@ -20,7 +22,13 @@ const clp = (n) => `$\u202F${(n ?? 0).toLocaleString("es-CL")}`;
 // el admin edita en /admin/envios. El costo real siempre lo decide el servidor.
 const COMUNAS_RESPALDO = ["Providencia", "Ñuñoa", "Las Condes", "Maipú"];
 
-const CONTACTO_INICIAL = { nombre: "", email: "", telefono: "" };
+// Contacto precargado desde la sesión del cliente (si la tiene). Un invitado
+// arranca con todo vacío. Así quien ya inició sesión no reescribe sus datos.
+const crearContactoDesde = (cliente) => ({
+  nombre: cliente?.nombre ?? "",
+  email: cliente?.email ?? "",
+  telefono: cliente?.telefono ?? "",
+});
 const DIRECCION_INICIAL = {
   calle: "",
   depto: "",
@@ -32,6 +40,7 @@ const DIRECCION_INICIAL = {
 function Checkout() {
   const { carrito } = useCarritoContext();
   const { envioGratisDesde, tarifasComuna } = useReglas();
+  const { cliente, estaAutenticado } = useCuenta();
   const navegar = useNavigate();
 
   // Comunas del desplegable: las que el dueño configuró en /admin/envios. Así,
@@ -44,9 +53,12 @@ function Checkout() {
     return nombres.length > 0 ? nombres : COMUNAS_RESPALDO;
   }, [tarifasComuna]);
 
-  const [contacto, setContacto] = useState(CONTACTO_INICIAL);
+  const [contacto, setContacto] = useState(() => crearContactoDesde(cliente));
   const [modalidad, setModalidad] = useState("DESPACHO");
   const [direccion, setDireccion] = useState(DIRECCION_INICIAL);
+  // Direcciones guardadas del cliente y cuál está aplicada al formulario.
+  const [direccionesGuardadas, setDireccionesGuardadas] = useState([]);
+  const [direccionSeleccionada, setDireccionSeleccionada] = useState("");
 
   // Cotización del servidor (fuente de verdad de los montos). Mientras no llega
   // —o en la demo sin API— mostramos una estimación local claramente marcada.
@@ -56,6 +68,48 @@ function Checkout() {
   const [enviando, setEnviando] = useState(false);
   const [errorEnvio, setErrorEnvio] = useState(null);
   const conApi = hayApiPedidos();
+
+  // Cliente con sesión: precargamos su contacto y sus direcciones guardadas para
+  // que no tenga que reescribir nada. Todo el setState vive en el callback async
+  // (no en el cuerpo del efecto), y se rellenan solo los campos vacíos.
+  useEffect(() => {
+    if (!estaAutenticado) return undefined;
+    let vigente = true;
+
+    listarDireccionesCuenta()
+      .then((direcciones) => {
+        if (!vigente) return;
+
+        // Reaplica el contacto por si la sesión terminó de cargar tras el montaje.
+        setContacto((actual) => ({
+          nombre: actual.nombre || cliente?.nombre || "",
+          email: actual.email || cliente?.email || "",
+          telefono: actual.telefono || cliente?.telefono || "",
+        }));
+
+        const lista = Array.isArray(direcciones) ? direcciones : [];
+        setDireccionesGuardadas(lista);
+
+        // Preselecciona la predeterminada (o la primera) y rellena el formulario.
+        const preferida = lista.find((item) => item.predeterminada) ?? lista[0];
+        if (preferida) {
+          setDireccionSeleccionada(preferida.id);
+          setDireccion((actual) => ({
+            ...actual,
+            calle: preferida.calle ?? "",
+            depto: preferida.depto ?? "",
+            comuna: preferida.comuna ?? "",
+            region: preferida.region ?? actual.region,
+            instrucciones: preferida.instrucciones ?? "",
+          }));
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      vigente = false;
+    };
+  }, [estaAutenticado, cliente]);
 
   // El cliente manda QUÉ compra; el precio lo pone el servidor. Por eso al API
   // solo le enviamos productoId + cantidad.
@@ -152,8 +206,26 @@ function Checkout() {
   const cambiarContacto = (campo) => (evento) =>
     setContacto((previo) => ({ ...previo, [campo]: evento.target.value }));
 
-  const cambiarDireccion = (campo) => (evento) =>
+  const cambiarDireccion = (campo) => (evento) => {
     setDireccion((previo) => ({ ...previo, [campo]: evento.target.value }));
+    // Al editar a mano, el selector deja de reflejar una dirección guardada.
+    setDireccionSeleccionada("");
+  };
+
+  // Aplica una dirección guardada al formulario (o la vacía para escribir otra).
+  const elegirDireccionGuardada = (evento) => {
+    const id = evento.target.value;
+    setDireccionSeleccionada(id);
+    const elegida = direccionesGuardadas.find((item) => item.id === id);
+    setDireccion((previo) => ({
+      ...previo,
+      calle: elegida?.calle ?? "",
+      depto: elegida?.depto ?? "",
+      comuna: elegida?.comuna ?? "",
+      region: elegida?.region ?? previo.region,
+      instrucciones: elegida?.instrucciones ?? "",
+    }));
+  };
 
   async function manejarEnvio(evento) {
     evento.preventDefault();
@@ -237,6 +309,11 @@ function Checkout() {
             <h2 id="titulo-contacto" className={styles.tarjetaTitulo}>
               Datos de contacto
             </h2>
+            {estaAutenticado && (
+              <p className={styles.notaCuenta}>
+                Completamos tus datos desde tu cuenta. Puedes editarlos si lo necesitas.
+              </p>
+            )}
             <div className={styles.fila2}>
               <div className={styles.grupo}>
                 <label className={styles.label} htmlFor="nombre">
@@ -331,6 +408,26 @@ function Checkout() {
 
             {modalidad === "DESPACHO" && (
               <div className={styles.direccion}>
+                {direccionesGuardadas.length > 0 && (
+                  <div className={styles.grupo}>
+                    <label className={styles.label} htmlFor="direccionGuardada">
+                      Usar una dirección guardada
+                    </label>
+                    <select
+                      id="direccionGuardada"
+                      className={styles.input}
+                      value={direccionSeleccionada}
+                      onChange={elegirDireccionGuardada}
+                    >
+                      {direccionesGuardadas.map((guardada) => (
+                        <option key={guardada.id} value={guardada.id}>
+                          {(guardada.etiqueta ? `${guardada.etiqueta} · ` : "") + `${guardada.calle}, ${guardada.comuna}`}
+                        </option>
+                      ))}
+                      <option value="">Otra dirección…</option>
+                    </select>
+                  </div>
+                )}
                 <div className={styles.grupo}>
                   <label className={styles.label} htmlFor="calle">
                     Dirección

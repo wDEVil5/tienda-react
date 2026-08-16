@@ -100,6 +100,18 @@ export function actualizarPerfilCuenta(datos, opciones = {}) {
   });
 }
 
+export function obtenerPreferenciasCuenta(opciones = {}) {
+  return solicitarCuenta("/cuenta/preferencias", opciones);
+}
+
+export function actualizarPreferenciasCuenta(datos, opciones = {}) {
+  return solicitarCuenta("/cuenta/preferencias", {
+    ...opciones,
+    method: "PUT",
+    cuerpo: datos,
+  });
+}
+
 export function cambiarContrasenaCuenta(datos, opciones = {}) {
   return solicitarCuenta("/cuenta/contrasena", {
     ...opciones,

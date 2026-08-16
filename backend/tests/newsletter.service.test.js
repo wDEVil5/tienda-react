@@ -131,3 +131,47 @@ test('darDeBaja falla con SUBSCRIPTION_NOT_FOUND si el token no existe', async (
     (error) => error instanceof ErrorNewsletter && error.code === 'SUBSCRIPTION_NOT_FOUND',
   )
 })
+
+test('obtenerEstadoSuscripcion es true solo si el correo está ACTIVO', async () => {
+  const activo = crearServicio({ async buscarPorEmail() { return { id: 's1', estado: 'ACTIVO' } } })
+  const baja = crearServicio({ async buscarPorEmail() { return { id: 's1', estado: 'BAJA' } } })
+  const ausente = crearServicio()
+
+  assert.equal(await activo.servicio.obtenerEstadoSuscripcion('ana@correo.cl'), true)
+  assert.equal(await baja.servicio.obtenerEstadoSuscripcion('ana@correo.cl'), false)
+  assert.equal(await ausente.servicio.obtenerEstadoSuscripcion('ana@correo.cl'), false)
+})
+
+test('establecerSuscripcion activo=true crea y envía bienvenida si no existía', async () => {
+  const { servicio, notificador } = crearServicio()
+  await servicio.establecerSuscripcion({ email: 'ana@correo.cl', clienteId: 'c1', activo: true })
+  assert.equal(notificador.llamadas.length, 1)
+})
+
+test('establecerSuscripcion activo=true es idempotente si ya está ACTIVO (sin bienvenida)', async () => {
+  const { servicio, notificador } = crearServicio({
+    async buscarPorEmail() { return { id: 's1', estado: 'ACTIVO' } },
+  })
+  await servicio.establecerSuscripcion({ email: 'ana@correo.cl', activo: true })
+  assert.equal(notificador.llamadas.length, 0)
+})
+
+test('establecerSuscripcion activo=false da de baja por email si estaba ACTIVO', async () => {
+  let bajaEmail
+  const { servicio } = crearServicio({
+    async buscarPorEmail() { return { id: 's1', email: 'ana@correo.cl', estado: 'ACTIVO' } },
+    async darDeBajaPorEmail(email) { bajaEmail = email; return { id: 's1', estado: 'BAJA' } },
+  })
+  await servicio.establecerSuscripcion({ email: 'ana@correo.cl', activo: false })
+  assert.equal(bajaEmail, 'ana@correo.cl')
+})
+
+test('establecerSuscripcion activo=false no hace nada si no estaba suscrito', async () => {
+  let llamada = false
+  const { servicio } = crearServicio({
+    async darDeBajaPorEmail() { llamada = true; return null },
+  })
+  const resultado = await servicio.establecerSuscripcion({ email: 'ana@correo.cl', activo: false })
+  assert.equal(llamada, false)
+  assert.equal(resultado, null)
+})

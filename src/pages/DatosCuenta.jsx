@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import CuentaShell from "../components/CuentaShell.jsx";
 import { useCuenta } from "../context/CuentaContext.jsx";
+import { obtenerPreferenciasCuenta, actualizarPreferenciasCuenta } from "../services/cuentaApi.js";
 import styles from "./DatosCuenta.module.css";
 
 const crearPerfilEditable = (cliente) => ({
@@ -36,6 +37,42 @@ function DatosCuenta() {
   const [modalSesionesAbierto, setModalSesionesAbierto] = useState(false);
   const [cerrandoSesiones, setCerrandoSesiones] = useState(false);
   const [errorSesiones, setErrorSesiones] = useState("");
+  const [boletin, setBoletin] = useState(false);
+  const [cargandoBoletin, setCargandoBoletin] = useState(true);
+  const [guardandoBoletin, setGuardandoBoletin] = useState(false);
+  const [errorBoletin, setErrorBoletin] = useState("");
+
+  useEffect(() => {
+    let vigente = true;
+    obtenerPreferenciasCuenta()
+      .then((preferencias) => {
+        if (vigente) setBoletin(Boolean(preferencias?.boletin));
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (vigente) setCargandoBoletin(false);
+      });
+    return () => {
+      vigente = false;
+    };
+  }, []);
+
+  // Optimista: reflejamos el cambio al instante y revertimos si el servidor falla.
+  const alternarBoletin = async () => {
+    if (guardandoBoletin) return;
+    const siguiente = !boletin;
+    setBoletin(siguiente);
+    setGuardandoBoletin(true);
+    setErrorBoletin("");
+    try {
+      await actualizarPreferenciasCuenta({ boletin: siguiente });
+    } catch {
+      setBoletin(!siguiente);
+      setErrorBoletin("No pudimos guardar tu preferencia. Intenta de nuevo.");
+    } finally {
+      setGuardandoBoletin(false);
+    }
+  };
 
   const tieneCambios =
     perfil.nombre.trim() !== (cliente?.nombre ?? "") ||
@@ -232,6 +269,35 @@ function DatosCuenta() {
                 </div>
                 <button type="button" className={styles.accionDestructiva} onClick={abrirCierreSesiones}>
                   Cerrar sesiones
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <section className={styles.tarjeta} aria-labelledby="titulo-comunicaciones">
+            <div className={styles.cabeceraTarjeta}>
+              <div>
+                <h2 id="titulo-comunicaciones">Comunicaciones</h2>
+                <p>Elige qué correos quieres recibir de nosotros.</p>
+              </div>
+            </div>
+            <div className={styles.ajustesSeguridad}>
+              <div className={styles.ajuste}>
+                <div>
+                  <strong>Avisos de ofertas por correo</strong>
+                  <p>Novedades y promociones. Puedes darte de baja cuando quieras.</p>
+                  {errorBoletin && <p className={styles.errorBoletin} role="alert">{errorBoletin}</p>}
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={boletin}
+                  aria-label="Avisos de ofertas por correo"
+                  className={`${styles.interruptor} ${boletin ? styles.interruptorActivo : ""}`}
+                  onClick={alternarBoletin}
+                  disabled={cargandoBoletin || guardandoBoletin}
+                >
+                  <span className={styles.interruptorBolita} />
                 </button>
               </div>
             </div>

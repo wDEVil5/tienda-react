@@ -18,6 +18,7 @@ import {
 } from './cuenta.validacion.js'
 import { crearLimitadorIntentosLogin } from '../auth/limite-intentos.js'
 import { opcionesCookieSesion } from '../../lib/cookies.js'
+import { obtenerEstadoSuscripcion, establecerSuscripcion } from '../newsletter/newsletter.service.js'
 
 const DURACION_COOKIE_SESION_MS = 7 * 24 * 60 * 60 * 1000
 
@@ -44,6 +45,8 @@ export function crearRouterCuenta(
     actualizarPerfil,
     cambiarContrasena,
     cerrarTodasLasSesiones,
+    obtenerEstadoSuscripcion,
+    establecerSuscripcion,
   },
   { limitarLogin = crearLimitadorIntentosLogin() } = {},
 ) {
@@ -166,6 +169,36 @@ export function crearRouterCuenta(
       // no puede apuntar al perfil de otra persona.
       const cliente = await servicio.actualizarPerfil(request.cliente.id, validacion.data)
       return response.json({ data: { cliente } })
+    } catch (error) {
+      return next(error)
+    }
+  })
+
+  // Preferencias de comunicación del cliente. Hoy solo el boletín de ofertas, que
+  // se refleja/gestiona sobre su correo en la lista de suscriptores.
+  cuentaRouter.get('/preferencias', requerirCliente, async (request, response, next) => {
+    try {
+      const boletin = await servicio.obtenerEstadoSuscripcion(request.cliente.email)
+      return response.json({ data: { boletin } })
+    } catch (error) {
+      return next(error)
+    }
+  })
+
+  cuentaRouter.put('/preferencias', requerirCliente, async (request, response, next) => {
+    const boletin = request.body?.boletin
+    if (typeof boletin !== 'boolean') {
+      return response.status(422).json({
+        error: { code: 'INVALID_PREFERENCE', message: 'boletin debe ser verdadero o falso.' },
+      })
+    }
+    try {
+      await servicio.establecerSuscripcion({
+        email: request.cliente.email,
+        clienteId: request.cliente.id,
+        activo: boletin,
+      })
+      return response.json({ data: { boletin } })
     } catch (error) {
       return next(error)
     }

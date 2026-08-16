@@ -34,6 +34,20 @@ export function crearRepositorioNewsletter(db = prisma) {
         throw error
       }
     },
+
+    // Baja por email: la usa la preferencia del cliente desde su cuenta (no tiene
+    // el token del correo). Devuelve null si ese email no estaba suscrito.
+    async darDeBajaPorEmail(email) {
+      try {
+        return await db.suscriptor.update({
+          where: { email },
+          data: { estado: 'BAJA', bajaEn: new Date() },
+        })
+      } catch (error) {
+        if (error.code === 'P2025') return null
+        throw error
+      }
+    },
   }
 }
 

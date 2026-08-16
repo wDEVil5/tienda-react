@@ -54,6 +54,34 @@ export function crearServicioNewsletter(
       }
       return suscriptor
     },
+
+    // ¿El correo está suscrito y activo? Lo consulta la preferencia de la cuenta.
+    async obtenerEstadoSuscripcion(email) {
+      const suscriptor = await repositorio.buscarPorEmail(email)
+      return suscriptor?.estado === 'ACTIVO'
+    },
+
+    // Preferencia idempotente desde la cuenta: activar o dar de baja por email,
+    // sin lanzar si ya estaba en ese estado (a diferencia de `suscribir`).
+    async establecerSuscripcion({ email, clienteId = null, activo }) {
+      const existente = await repositorio.buscarPorEmail(email)
+
+      if (activo) {
+        if (existente?.estado === 'ACTIVO') return existente
+        const suscriptor = existente
+          ? await repositorio.reactivar(existente.id, { clienteId })
+          : await repositorio.crear({ email, clienteId })
+        notificador
+          .enviarBienvenida(suscriptor)
+          .catch((error) => console.error(`No se pudo enviar la bienvenida a ${email}: ${error.message}`))
+        return suscriptor
+      }
+
+      if (existente?.estado === 'ACTIVO') {
+        return repositorio.darDeBajaPorEmail(email)
+      }
+      return existente ?? null
+    },
   }
 }
 
@@ -61,3 +89,5 @@ const servicioNewsletter = crearServicioNewsletter()
 
 export const suscribirNewsletter = servicioNewsletter.suscribir
 export const darDeBajaNewsletter = servicioNewsletter.darDeBaja
+export const obtenerEstadoSuscripcion = servicioNewsletter.obtenerEstadoSuscripcion
+export const establecerSuscripcion = servicioNewsletter.establecerSuscripcion

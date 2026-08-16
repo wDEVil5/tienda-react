@@ -23,7 +23,8 @@
   border-radius: var(--radio-caja);
   /* El CTA se superpone a la base; el recorte queda en el enlace de imagen. */
   overflow: visible;
-  margin-bottom: 30px;
+  /* Deja aire entre el botón (que cuelga por debajo) y el texto de abajo. */
+  margin-bottom: 44px;
 }
 
 .imagen {
@@ -143,7 +144,8 @@
 .boton {
   position: absolute;
   z-index: 1;
-  bottom: -22px;
+  /* Cuelga más abajo del marco para tapar menos la foto. */
+  bottom: -28px;
   left: 50%;
   display: inline-flex;
   min-width: min(172px, calc(100% - 24px));
@@ -178,11 +180,11 @@
 }
 
 @media (max-width: 767px) {
-  .imagenWrap { margin-bottom: 25px; }
+  .imagenWrap { margin-bottom: 38px; }
   .boton {
     min-width: calc(100% - 16px);
     height: 40px;
-    bottom: -20px;
+    bottom: -26px;
     gap: 6px;
     padding: 0 12px;
     font-size: 12px;

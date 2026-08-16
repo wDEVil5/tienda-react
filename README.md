@@ -18,7 +18,9 @@ construida con Express, PostgreSQL y Prisma. Proyecto personal de aprendizaje.
 ![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white)
 ![Cloudinary](https://img.shields.io/badge/Cloudinary-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white)
 ![Brandfetch](https://img.shields.io/badge/Brandfetch-171717?style=for-the-badge&logo=brandfetch&logoColor=white)
+![Brevo](https://img.shields.io/badge/Brevo-0B996E?style=for-the-badge&logo=brevo&logoColor=white)
 ![Mercado Pago](https://img.shields.io/badge/Mercado_Pago-00B1EA?style=for-the-badge&logo=mercadopago&logoColor=white)
+![Google Auth](https://img.shields.io/badge/Google_Auth-4285F4?style=for-the-badge&logo=google&logoColor=white)
 ![Vitest](https://img.shields.io/badge/Vitest-6E9F18?style=for-the-badge&logo=vitest&logoColor=white)
 
 [**🌐 Ver demo en vivo**](https://sumarketexpress.sumarket.workers.dev/)
@@ -104,6 +106,7 @@ y la API aplica sus migraciones durante el build.
 | Logos de marcas | Brandfetch |
 | Correo | Brevo |
 | Pagos | Mercado Pago (pruebas) |
+| Login social | Google Identity Services |
 
 > **Limitación conocida (Safari):** front (`workers.dev`) y API (`onrender.com`) son
 > sitios distintos, así que la cookie de sesión es *cross-site* (`SameSite=None; Secure`).

@@ -46,6 +46,17 @@ export function crearRepositorioMarcasAdmin(cliente = prisma) {
         select: { id: true, nombre: true, slug: true, logoUrl: true, logoStorageKey: true, brandfetchDomain: true },
       })
     },
+
+    obtenerConConteo(id) {
+      return cliente.marca.findUnique({
+        where: { id },
+        select: { id: true, logoStorageKey: true, _count: { select: { productos: true } } },
+      })
+    },
+
+    eliminar(id) {
+      return cliente.marca.delete({ where: { id } })
+    },
   }
 }
 

@@ -181,6 +181,14 @@ export function actualizarDominioBrandfetchAdmin(id, brandfetchDomain, opciones 
   });
 }
 
+// El servidor responde 409 (BRAND_HAS_PRODUCTS) si la marca tiene productos.
+export function eliminarMarcaAdmin(id, opciones = {}) {
+  return solicitarAdmin(`/admin/marcas/${encodeURIComponent(id)}`, {
+    ...opciones,
+    method: "DELETE",
+  });
+}
+
 // Categorías (ADMIN + OPERADOR para leer/crear/activar). La lista llega como
 // { data } → solicitarAdmin la desenvuelve al arreglo.
 export function listarCategoriasAdmin(opciones = {}) {

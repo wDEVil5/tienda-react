@@ -82,6 +82,7 @@ import {
   actualizarDominioBrandfetchAdmin,
   crearMarcaAdmin,
   listarMarcasAdmin,
+  eliminarMarcaAdmin,
 } from './admin-marcas.service.js'
 import { validarDominioBrandfetchAdmin, validarMarcaNuevaAdmin } from './admin-marcas.validacion.js'
 import { asignarLogoMarcaAdmin } from './admin-marcas.service.js'
@@ -183,6 +184,7 @@ export function crearRouterAdmin({
     eliminarOpcionAtributoAdmin,
     crearMarcaAdmin,
     listarMarcasAdmin,
+    eliminarMarcaAdmin,
     actualizarDominioBrandfetchAdmin,
     asignarLogoMarcaAdmin,
     subirLogoMarca,
@@ -902,6 +904,28 @@ export function crearRouterAdmin({
       try {
         return response.json(await servicio.listarMarcasAdmin())
       } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  adminRouter.delete(
+    '/marcas/:id',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      try {
+        const eliminada = await servicio.eliminarMarcaAdmin(request.params.id)
+        if (!eliminada) {
+          return response.status(404).json({
+            error: { code: 'ADMIN_BRAND_NOT_FOUND', message: 'No encontramos la marca solicitada.' },
+          })
+        }
+        return response.status(204).end()
+      } catch (error) {
+        if (error instanceof ErrorMarcaAdmin) {
+          return response.status(409).json({ error: { code: error.code, message: error.message } })
+        }
         return next(error)
       }
     },

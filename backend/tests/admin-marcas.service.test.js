@@ -66,3 +66,47 @@ test('actualizarDominioBrandfetch permite limpiar o cambiar el dominio de una ma
   await servicio.actualizarDominioBrandfetch('marca-1', null)
   assert.equal(dominioRecibido, null)
 })
+
+test('eliminarMarca borra la marca y su logo cuando no tiene productos', async () => {
+  const eliminadas = []
+  const logosEliminados = []
+  const servicio = crearServicioMarcasAdmin(
+    {
+      async obtenerConConteo() {
+        return { id: 'marca-1', logoStorageKey: 'sumarket/marcas/cafe', _count: { productos: 0 } }
+      },
+      async eliminar(id) { eliminadas.push(id) },
+    },
+    { async eliminarLogoMarca(clave) { logosEliminados.push(clave) } },
+  )
+
+  const resultado = await servicio.eliminarMarca('marca-1')
+
+  assert.deepEqual(resultado, { id: 'marca-1' })
+  assert.deepEqual(eliminadas, ['marca-1'])
+  assert.deepEqual(logosEliminados, ['sumarket/marcas/cafe'])
+})
+
+test('eliminarMarca rechaza si la marca tiene productos asignados', async () => {
+  let eliminada = false
+  const servicio = crearServicioMarcasAdmin({
+    async obtenerConConteo() {
+      return { id: 'marca-1', logoStorageKey: null, _count: { productos: 3 } }
+    },
+    async eliminar() { eliminada = true },
+  })
+
+  await assert.rejects(
+    () => servicio.eliminarMarca('marca-1'),
+    (error) => error.code === 'BRAND_HAS_PRODUCTS',
+  )
+  assert.equal(eliminada, false)
+})
+
+test('eliminarMarca devuelve null cuando la marca no existe', async () => {
+  const servicio = crearServicioMarcasAdmin({
+    async obtenerConConteo() { return null },
+  })
+
+  assert.equal(await servicio.eliminarMarca('inexistente'), null)
+})

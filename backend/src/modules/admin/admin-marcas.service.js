@@ -76,6 +76,27 @@ export function crearServicioMarcasAdmin(
         slug: datos.slug ?? crearSlug(datos.nombre),
       })
     },
+
+    // `Producto.marcaId` es onDelete: Restrict, así que una marca con productos no
+    // se puede borrar en la base. Lo comprobamos antes para dar un mensaje claro en
+    // vez de un 500, y de paso limpiamos su logo propio en Cloudinary.
+    async eliminarMarca(id) {
+      const marca = await repositorio.obtenerConConteo(id)
+      if (!marca) return null
+
+      if (marca._count.productos > 0) {
+        throw new ErrorMarcaAdmin(
+          'BRAND_HAS_PRODUCTS',
+          'No se puede eliminar una marca con productos asignados. Reasigna esos productos a otra marca primero.',
+        )
+      }
+
+      await repositorio.eliminar(id)
+      if (marca.logoStorageKey) {
+        await almacenamiento.eliminarLogoMarca(marca.logoStorageKey).catch(() => {})
+      }
+      return { id }
+    },
   }
 }
 
@@ -85,3 +106,4 @@ export const crearMarcaAdmin = servicioMarcasAdmin.crearMarca
 export const asignarLogoMarcaAdmin = servicioMarcasAdmin.asignarLogoMarca
 export const listarMarcasAdmin = servicioMarcasAdmin.listarMarcas
 export const actualizarDominioBrandfetchAdmin = servicioMarcasAdmin.actualizarDominioBrandfetch
+export const eliminarMarcaAdmin = servicioMarcasAdmin.eliminarMarca

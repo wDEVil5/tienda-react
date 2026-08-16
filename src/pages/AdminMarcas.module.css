@@ -23,6 +23,9 @@
 .formularioAcciones, .accionesMarca { display: grid; gap: 5px; align-items: center; }
 .botonCrear, .botonGuardar { min-height: 40px; padding: 0 15px; border: 1px solid var(--color-acento); border-radius: var(--radio-control); background: var(--color-acento); color: #fff; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
 .botonCrear:disabled, .botonGuardar:disabled { cursor: wait; opacity: .7; }
+.botonEliminar { min-height: 34px; padding: 0 15px; border: 1px solid var(--color-borde); border-radius: var(--radio-control); background: none; color: var(--color-texto-2); font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.botonEliminar:hover:not(:disabled) { border-color: #c0362c; color: #c0362c; }
+.botonEliminar:disabled { cursor: not-allowed; opacity: .45; }
 .mensaje, .mensajeError { min-height: 15px; color: var(--color-acento); font-size: 11px; }
 .mensajeError { color: #b43b25; }
 .lista { margin-top: 30px; }

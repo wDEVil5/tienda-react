@@ -5,6 +5,7 @@ import {
   ErrorAdminApi,
   actualizarDominioBrandfetchAdmin,
   crearMarcaAdmin,
+  eliminarMarcaAdmin,
   listarMarcasAdmin,
   obtenerSesionAdmin,
 } from "../services/adminApi.js";
@@ -22,10 +23,12 @@ function LogoMarca({ marca }) {
   return <img className={styles.logo} src={origen} alt={`Logo de ${marca.nombre}`} onError={() => setFallo(true)} />;
 }
 
-function FilaMarca({ marca, onActualizada }) {
+function FilaMarca({ marca, onActualizada, onEliminada }) {
   const [dominio, setDominio] = useState(marca.brandfetchDomain ?? "");
   const [guardando, setGuardando] = useState(false);
+  const [eliminando, setEliminando] = useState(false);
   const [mensaje, setMensaje] = useState(null);
+  const tieneProductos = marca.productosAsignados > 0;
 
   async function guardar() {
     setGuardando(true);
@@ -42,6 +45,22 @@ function FilaMarca({ marca, onActualizada }) {
       });
     } finally {
       setGuardando(false);
+    }
+  }
+
+  async function eliminar() {
+    if (!window.confirm(`¿Eliminar la marca "${marca.nombre}"? Esta acción no se puede deshacer.`)) return;
+    setEliminando(true);
+    setMensaje(null);
+    try {
+      await eliminarMarcaAdmin(marca.id);
+      onEliminada(marca.id); // el padre quita la fila; este componente se desmonta
+    } catch (error) {
+      setMensaje({
+        tipo: "error",
+        texto: error instanceof ErrorAdminApi ? error.message : "No pudimos eliminar la marca.",
+      });
+      setEliminando(false);
     }
   }
 
@@ -70,6 +89,15 @@ function FilaMarca({ marca, onActualizada }) {
       <div className={styles.accionesMarca}>
         <button type="button" className={styles.botonGuardar} onClick={guardar} disabled={guardando}>
           {guardando ? "Guardando…" : "Guardar"}
+        </button>
+        <button
+          type="button"
+          className={styles.botonEliminar}
+          onClick={eliminar}
+          disabled={eliminando || tieneProductos}
+          title={tieneProductos ? "No se puede eliminar: tiene productos asignados" : undefined}
+        >
+          {eliminando ? "Eliminando…" : "Eliminar"}
         </button>
         <span
           id={`estado-marca-${marca.id}`}
@@ -137,6 +165,10 @@ export default function AdminMarcas() {
 
   function actualizarMarca(actualizada) {
     setMarcas((actuales) => actuales.map((marca) => marca.id === actualizada.id ? { ...marca, ...actualizada } : marca));
+  }
+
+  function quitarMarca(id) {
+    setMarcas((actuales) => actuales.filter((marca) => marca.id !== id));
   }
 
   async function crear(evento) {
@@ -210,7 +242,7 @@ export default function AdminMarcas() {
               <div className={styles.listaTitulo}><h2>Marcas existentes</h2><p>Los cambios se reflejan en la sección “Marcas en góndola”.</p></div>
               {cargando ? <p className={styles.estado} role="status">Cargando marcas…</p> : error ? (
                 <div className={styles.estado} role="alert"><strong>No pudimos cargar las marcas.</strong><span>{error}</span><button type="button" onClick={() => { setCargando(true); setReintento((valor) => valor + 1); }}>Reintentar</button></div>
-              ) : marcas.length ? marcas.map((marca) => <FilaMarca key={marca.id} marca={marca} onActualizada={actualizarMarca} />) : <p className={styles.estado}>Aún no hay marcas creadas.</p>}
+              ) : marcas.length ? marcas.map((marca) => <FilaMarca key={marca.id} marca={marca} onActualizada={actualizarMarca} onEliminada={quitarMarca} />) : <p className={styles.estado}>Aún no hay marcas creadas.</p>}
             </section>
           </div>
         )}

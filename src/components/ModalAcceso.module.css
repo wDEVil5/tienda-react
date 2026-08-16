@@ -7,8 +7,12 @@
   padding: 24px;
   overflow-y: auto;
   background: rgba(26, 31, 28, .42);
-  backdrop-filter: blur(9px);
+  /* El prefijo -webkit- va PRIMERO y la estándar al final: en ese orden es
+     como la cascada deja ganar a la estándar, y además evita que el
+     minificador de rolldown-vite funda ambas en solo la -webkit- (lo que
+     dejaba a Firefox/algunos Android sin blur en producción). */
   -webkit-backdrop-filter: blur(9px);
+  backdrop-filter: blur(9px);
   animation: aparecer .2s ease-out;
 }
 

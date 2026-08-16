@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import CuentaShell from "../components/CuentaShell.jsx";
 import ImagenProducto from "../components/ImagenProducto.jsx";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 import { obtenerPedidoCuenta } from "../services/cuentaApi.js";
@@ -128,19 +129,7 @@ function DetallePedido() {
   };
 
   return (
-    <section className={styles.pantalla} aria-labelledby="titulo-pedido">
-      <header className={styles.cabecera}>
-        <Link to="/" className={styles.logo}><span aria-hidden="true">←</span> Volver a la tienda</Link>
-      </header>
-
-      <div className={styles.cuerpo}>
-        <aside className={styles.navegacion} aria-label="Secciones de mi cuenta">
-          <Link to="/mi-cuenta">Resumen</Link>
-          <Link className={styles.navActiva} to="/mi-cuenta/pedidos">Mis pedidos</Link>
-          <Link to="/mi-cuenta#direcciones">Direcciones</Link>
-          <Link to="/mi-cuenta/datos">Datos y seguridad</Link>
-        </aside>
-
+    <CuentaShell seccion="Mis pedidos">
         <main className={styles.contenidoPedido}>
           {cargando && <p className={styles.estado}>Cargando pedido…</p>}
           {error && <p className={styles.error} role="alert">{error}</p>}
@@ -200,8 +189,7 @@ function DetallePedido() {
             </>
           )}
         </main>
-      </div>
-    </section>
+    </CuentaShell>
   );
 }
 

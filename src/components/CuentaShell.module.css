@@ -1,0 +1,183 @@
+.pantalla {
+  width: min(100%, 1180px);
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--color-borde);
+  border-radius: 18px;
+  background: var(--color-fondo);
+  box-shadow: 0 22px 54px rgba(28, 27, 24, 0.1);
+}
+
+.cabecera {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-xl);
+  padding: 0 42px;
+  border-bottom: 1px solid var(--color-borde);
+  background: var(--color-superficie);
+}
+
+.volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-texto-2);
+  font-size: 14px;
+  line-height: 1;
+  text-decoration: none;
+}
+.volver:hover {
+  color: var(--color-texto);
+}
+
+/* Chip de usuario con menú desplegable. */
+.usuario {
+  position: relative;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 10px 6px 6px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pill);
+  background: var(--color-fondo);
+  color: var(--color-texto);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.chip:hover {
+  border-color: var(--color-acento);
+  box-shadow: 0 4px 12px rgba(28, 27, 24, 0.08);
+}
+.avatar {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-acento);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 15px;
+}
+.chipNombre {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chipFlecha {
+  color: var(--color-texto-tenue);
+  font-size: 11px;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 30;
+  min-width: 190px;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  background: var(--color-fondo);
+  box-shadow: 0 16px 40px rgba(28, 27, 24, 0.16);
+  animation: aparecerMenu 0.15s ease-out;
+}
+.menu a,
+.menu button {
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-texto);
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.menu a:hover,
+.menu button:hover:not(:disabled) {
+  background: var(--color-crudo);
+}
+.menuSalir {
+  margin-top: 2px;
+  border-top: 1px solid var(--color-borde) !important;
+  border-radius: 0 0 8px 8px !important;
+  color: var(--color-oferta) !important;
+}
+.menuSalir:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.cuerpo {
+  display: grid;
+  grid-template-columns: 236px minmax(0, 1fr);
+}
+
+.navegacion {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 710px;
+  padding: 38px 28px;
+  border-right: 1px solid var(--color-borde);
+  background: #fcfbf8;
+}
+.navegacion a,
+.navegacion .navActiva {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: var(--radio-caja);
+  background: transparent;
+  color: var(--color-texto-suave);
+  font: inherit;
+  font-size: 15px;
+  text-align: left;
+  text-decoration: none;
+}
+.navegacion a:hover {
+  color: var(--color-acento);
+}
+.navActiva {
+  color: var(--color-texto);
+  background: var(--color-crudo);
+  font-weight: 650;
+}
+
+@keyframes aparecerMenu {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (max-width: 860px) {
+  .cuerpo {
+    grid-template-columns: 1fr;
+  }
+  .navegacion {
+    min-height: 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-borde);
+  }
+  .navegacion a,
+  .navegacion .navActiva {
+    width: auto;
+  }
+  .chipNombre {
+    max-width: 96px;
+  }
+}

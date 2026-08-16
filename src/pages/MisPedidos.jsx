@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import CuentaShell from "../components/CuentaShell.jsx";
 import ImagenProducto from "../components/ImagenProducto.jsx";
 import { listarPedidosCuenta } from "../services/cuentaApi.js";
 import styles from "./MisPedidos.module.css";
@@ -106,21 +107,7 @@ function MisPedidos() {
   const puedeCargarMas = meta && meta.page < meta.totalPages;
 
   return (
-    <section className={styles.pantalla} aria-labelledby="titulo-pedidos">
-      <header className={styles.cabecera}>
-        <Link to="/" className={styles.logo}>
-          <span aria-hidden="true">←</span> Volver a la tienda
-        </Link>
-      </header>
-
-      <div className={styles.cuerpo}>
-        <aside className={styles.navegacion} aria-label="Secciones de mi cuenta">
-          <Link to="/mi-cuenta">Resumen</Link>
-          <span className={styles.navActiva} aria-current="page">Mis pedidos</span>
-          <Link to="/mi-cuenta#direcciones">Direcciones</Link>
-          <Link to="/mi-cuenta/datos">Datos y seguridad</Link>
-        </aside>
-
+    <CuentaShell seccion="Mis pedidos">
         <div className={styles.contenidoPedidos}>
           <div className={styles.encabezadoPagina}>
             <h1 id="titulo-pedidos">Mis pedidos</h1>
@@ -176,8 +163,7 @@ function MisPedidos() {
             </div>
           )}
         </div>
-      </div>
-    </section>
+    </CuentaShell>
   );
 }
 

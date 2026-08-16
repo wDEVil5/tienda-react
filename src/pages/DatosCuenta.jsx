@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import CuentaShell from "../components/CuentaShell.jsx";
 import { useCuenta } from "../context/CuentaContext.jsx";
 import styles from "./DatosCuenta.module.css";
 
@@ -19,7 +20,6 @@ const CONTRASENA_INICIAL = {
 function DatosCuenta() {
   const {
     cliente,
-    cerrarSesion,
     actualizarPerfil,
     cambiarContrasena,
     cerrarTodasLasSesiones,
@@ -40,11 +40,6 @@ function DatosCuenta() {
   const tieneCambios =
     perfil.nombre.trim() !== (cliente?.nombre ?? "") ||
     perfil.telefono.trim() !== (cliente?.telefono ?? "");
-
-  const manejarCerrarSesion = async () => {
-    await cerrarSesion();
-    navegar("/", { replace: true });
-  };
 
   const cambiarCampo = (evento) => {
     const { name, value } = evento.target;
@@ -149,26 +144,7 @@ function DatosCuenta() {
   };
 
   return (
-    <section className={styles.pantalla} aria-labelledby="titulo-datos-cuenta">
-      <header className={styles.cabecera}>
-        <Link to="/" className={styles.logo}>
-          <span aria-hidden="true">←</span> Volver a la tienda
-        </Link>
-        <div className={styles.sesionActual}>
-          <span>{cliente?.nombre}</span>
-          <span aria-hidden="true">·</span>
-          <button type="button" onClick={manejarCerrarSesion}>Salir</button>
-        </div>
-      </header>
-
-      <div className={styles.cuerpo}>
-        <aside className={styles.navegacion} aria-label="Secciones de mi cuenta">
-          <Link to="/mi-cuenta">Resumen</Link>
-          <Link to="/mi-cuenta/pedidos">Mis pedidos</Link>
-          <Link to="/mi-cuenta#direcciones">Direcciones</Link>
-          <span className={styles.navActiva} aria-current="page">Datos y seguridad</span>
-        </aside>
-
+    <CuentaShell seccion="Datos y seguridad">
         <main className={styles.contenido}>
           <header className={styles.encabezadoPagina}>
             <p className={styles.eyebrow}>Mi cuenta</p>
@@ -261,7 +237,6 @@ function DatosCuenta() {
             </div>
           </section>
         </main>
-      </div>
 
       {modalContrasenaAbierto && (
         <div
@@ -362,7 +337,7 @@ function DatosCuenta() {
           </section>
         </div>
       )}
-    </section>
+    </CuentaShell>
   );
 }
 

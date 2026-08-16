@@ -1,253 +1,154 @@
+<div align="center">
+
 # 🛒 SumarketExpress
 
-E-commerce de minimarket desarrollado como proyecto personal de aprendizaje
-full-stack. La tienda pública está hecha con React y consume una API propia que
-evoluciona con Express, PostgreSQL y Prisma.
+**E-commerce full-stack de un minimarket** — tienda en React sobre una API propia
+construida con Express, PostgreSQL y Prisma. Proyecto personal de aprendizaje.
 
-## Demo
+![React](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-5FA04E?style=for-the-badge&logo=nodedotjs&logoColor=white)
+![Express](https://img.shields.io/badge/Express_5-000000?style=for-the-badge&logo=express&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL_16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma_7-2D3748?style=for-the-badge&logo=prisma&logoColor=white)
+![Zod](https://img.shields.io/badge/Zod-3E67B1?style=for-the-badge&logo=zod&logoColor=white)
 
-[Ver demo pública](https://sumarketexpress.sumarket.workers.dev/)
+![Cloudflare Pages](https://img.shields.io/badge/Cloudflare_Pages-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)
+![Render](https://img.shields.io/badge/Render-000000?style=for-the-badge&logo=render&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white)
+![Cloudinary](https://img.shields.io/badge/Cloudinary-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white)
+![Brandfetch](https://img.shields.io/badge/Brandfetch-171717?style=for-the-badge&logo=brandfetch&logoColor=white)
+![Mercado Pago](https://img.shields.io/badge/Mercado_Pago-00B1EA?style=for-the-badge&logo=mercadopago&logoColor=white)
+![Vitest](https://img.shields.io/badge/Vitest-6E9F18?style=for-the-badge&logo=vitest&logoColor=white)
 
-> La demo en vivo consume la **API propia desplegada** (Render + PostgreSQL en
-> Supabase). Si esa API gratuita está dormida y la primera petición se pasa de
-> tiempo, el catálogo cae automáticamente a Fake Store como respaldo; recargar
-> lo soluciona.
+[**🌐 Ver demo en vivo**](https://sumarketexpress.sumarket.workers.dev/)
 
-![Vista previa de SumarketExpress](./src/assets/vistaprevia.png)
+</div>
 
-## Tecnologías
+> La demo consume la **API propia desplegada** (Render + Supabase). Si el plan
+> gratuito de la API está dormido y la primera petición expira, el catálogo cae
+> automáticamente a [Fake Store](https://fakestoreapi.com/) como respaldo; recargar lo soluciona.
 
-### Frontend
+![Vista previa de la tienda](./src/assets/vistaprevia.png)
+![Vista del panel de administración](./src/assets/vistaAdmin.png)
 
-- React 19, React Router y Vite.
-- JavaScript moderno, hooks, Context API y `useReducer`.
-- CSS Modules y design tokens CSS para el sistema visual responsive.
-- Font Awesome para iconografía.
-- Vitest + React Testing Library.
-- Cloudflare Pages para la demo pública.
+## ✨ Stack
 
-### Backend y datos
+**Frontend** — React 19, React Router, Vite. Hooks, Context API y `useReducer`;
+CSS Modules + design tokens para un sistema visual responsive. Vitest + Testing Library.
 
-- Node.js, Express 5 y API REST.
-- PostgreSQL 16, Prisma 7 y migraciones versionadas.
-- Zod para contratos y validación de entradas.
-- Argon2id, cookies `httpOnly` y sesiones con token hasheado para el personal.
-- Login con Google para clientes (Google Identity Services + verificación del ID
-  token en el servidor).
-- Cloudinary, Multer y Sharp para imágenes de productos y logos de marcas.
-- Correo transaccional con plantillas HTML profesionales y transporte inyectable
-  (memoria/consola en desarrollo, Brevo en producción).
-- Mercado Pago Checkout Pro en modo prueba, con webhook verificado por servidor.
-- `node:test` + Supertest para reglas y contratos HTTP.
+**Backend** — Node.js + Express 5 (API REST), PostgreSQL 16 con Prisma 7 y
+migraciones versionadas, Zod para validar todo contrato de entrada. Argon2id y
+sesiones con token hasheado en cookie `httpOnly`; login con Google (verificación
+del ID token en el servidor). Cloudinary + Sharp para imágenes y Brandfetch para logos de marcas, correo transaccional
+(Brevo) y Mercado Pago Checkout Pro con webhook verificado. `node:test` + Supertest.
 
-### Servicios temporales
+## 🧩 Funcionalidades
 
-- [Fake Store API](https://fakestoreapi.com/) como respaldo automático de la
-  demo si la API propia (plan gratuito) está temporalmente dormida.
+### 🛍️ Tienda pública
+- Inicio editorial: **carrusel de banners** administrable, filas de destacados,
+  **lo más vendido** (ranking real de ventas) y ofertas — sin catálogo embutido.
+- Navegación tipo supermercado: **mega-menú** de categorías con subcategorías y
+  **buscador** (por nombre, categoría o marca) con historial y accesos rápidos.
+- **Páginas de listado** por categoría/subcategoría/búsqueda/ofertas con breadcrumb,
+  orden, paginación y **sidebar de filtros** (marcas, rango de precio y atributos,
+  calculados por facetas del servidor).
+- Ficha de producto con galería, stock, ofertas y relacionados.
+- Carrito persistente (`localStorage`) con deshacer y drawer accesible.
+- **Checkout** en dos pasos (retiro o despacho), cotización en vivo y pago iniciado
+  desde el servidor.
+- Cuentas de cliente: registro/login (correo o Google), recuperación de contraseña,
+  direcciones, historial y detalle de pedidos.
+- Responsive, con foco visible y navegación por teclado.
 
-## Funcionalidades actuales
+### 🔐 Panel de administración
+Resumen (KPIs, gráficos SVG sin librerías), Pedidos (comanda + CSV), Productos,
+Inventario (con bitácora de movimientos), Clientes, Categorías (**taxonomía de 3
+niveles + atributos configurables**), Marcas, Envíos, Identidad, Contenido (Markdown),
+Banners y Equipo. Control por rol (`ADMIN` / `OPERADOR`).
 
-### Tienda pública
+### ⚙️ API propia (garantías del servidor)
+- Los **montos, descuentos, envío y stock los recalcula el servidor**: el cliente
+  solo manda productos, cantidades y modalidad de entrega.
+- **Reserva atómica de stock** y máquina de estados por modalidad de entrega, con
+  snapshots históricos por pedido.
+- Disponibilidad honesta (`disponible` = stock − reservado) y suscripción "Avísame".
+- **Facetas** de catálogo (marcas, precio, atributos) para el sidebar del listado.
+- Webhook de Mercado Pago **idempotente** que avanza stock/pedido tras la aprobación.
+- Correo transaccional con plantillas HTML (confirmación, cambio de estado,
+  recuperación, boletín, reposición de stock).
 
-- Inicio editorial: carrusel de **banners** administrables, filas de destacados,
-  ofertas y categorías, sin catálogo embutido.
-- Navegación tipo supermercado: **mega-menú de categorías** (con íconos y sus
-  **subcategorías** reales) y un **buscador** con búsquedas recientes y accesos.
-- **Páginas de listado dedicadas** por categoría, subcategoría, búsqueda y ofertas
-  (`/categoria/:slug`, `?sub=`, `/buscar`, `/ofertas`), con breadcrumb, chips de
-  subcategorías, orden, paginación y un **sidebar de filtros** (marcas con conteo
-  y rango de precio, calculados por facetas del servidor).
-- Ficha de producto con galería, stock, precios, ofertas y productos
-  relacionados.
-- Banda de ofertas derivada de promociones vigentes, no de texto fijo.
-- Carrito persistente en `localStorage`: cantidades, límite por stock,
-  eliminación, deshacer, vaciado y drawer accesible.
-- Checkout en dos pasos con contacto, retiro o despacho, cotización en vivo y
-  pago iniciado desde el servidor.
-- Login (con correo o con Google), registro, recuperación de contraseña, perfil,
-  direcciones, historial y detalle de pedidos para clientes.
-- Suscripción al boletín desde el footer, con correo de bienvenida y baja en un clic.
-- Diseño responsive para escritorio, tablet y móvil; foco visible, navegación
-  por teclado y animaciones moderadas.
+## 🏗️ Arquitectura
 
-### Panel de administración (staff)
-
-- **Resumen**: tablero con KPIs por período y su variación (ventas de pagos
-  aprobados, pedidos, ticket promedio, stock crítico), gráfico de ventas por día,
-  ranking de más vendidos, pipeline de pedidos por estado, cobros e ingresos por
-  modalidad. Trae acciones inline sobre los pedidos que requieren atención, panel
-  de productos por reponer, selector de período y refresco en vivo; gráficos y
-  donuts hechos con SVG, sin librerías de terceros.
-- **Pedidos**: listado con búsqueda por número o cliente y conteos por estado,
-  detalle, avance de estado, impresión de comanda y exportación a CSV.
-- **Productos**: alta, edición, archivado/restauración y eliminación definitiva
-  (solo sin ventas; con pedidos asociados se archiva), con imágenes, categorías,
-  subcategorías, marcas, etiquetas y promociones.
-- **Inventario**: vista de stock por producto con estado y ajustes (entrada, merma,
-  conteo) que escriben una bitácora de movimientos auditable.
-- **Clientes**: directorio paginado con métricas de compra, ficha con direcciones e
-  historial, y activar/desactivar la cuenta (revoca sus sesiones).
-- **Categorías**: crear/ocultar categorías y gestionar la taxonomía de tres
-  niveles. Las subcategorías se editan en un acordeón —solo una abierta a la
-  vez— y permiten administrar sus niveles hijos y filtros configurables.
-- **Marcas**: alta y logo por dominio de Brandfetch o imagen propia de Cloudinary.
-- **Envíos**: reglas de entrega (umbral de envío gratis, tarifa base, tarifas por
-  comuna, corte de retiro) que el servidor usa para cotizar.
-- **Identidad**: nombre, contacto, dirección, redes y **horario estructurado** de la
-  tienda; el footer refleja "abierto/cerrado ahora" calculado de ese horario.
-- **Contenido**: páginas estáticas en **Markdown** (nosotros, términos, privacidad, faq).
-- **Banners**: carrusel de portada con subida de imagen, orden, activación y vigencia.
-- **Mi cuenta**: editar el nombre, cambiar la contraseña, cerrar sesión y cerrar
-  la sesión en todos los dispositivos.
-- **Equipo** (solo administrador): crear operadores y activarlos, desactivarlos,
-  restablecer su contraseña o eliminarlos; gestionar una cuenta revoca sus
-  sesiones.
-- Navegación lateral con iconos, acceso directo a la tienda pública, login en su
-  propia ruta y control por rol (`ADMIN` / `OPERADOR`).
-
-### API propia
-
-- Productos publicados con búsqueda sin tildes, categorías, subcategorías,
-  tercer nivel, marcas, imágenes, etiquetas, promociones vigentes, filtros y
-  paginación.
-- Taxonomía de tres niveles: categoría → subcategoría → nivel hijo. El catálogo
-  filtra por cada nivel, marca(s) y atributos; expone **facetas** (marcas,
-  rango de precio y atributos configurables) para el sidebar del listado.
-- Disponibilidad honesta por producto (`disponible` = stock − reservado,
-  `estadoStock`) y suscripción "Avísame" para productos agotados.
-- Administración protegida de productos, categorías, subcategorías, marcas, logos,
-  etiquetas, promociones, inventario, banners, identidad, contenido y operadores.
-- Identidad de la tienda, páginas de contenido en Markdown y banners del carrusel,
-  editables desde el panel y expuestos en endpoints públicos.
-- Sesiones de administrador/operador, roles y limitador de intentos de login.
-- Cuentas de clientes como dominio separado del staff: registro, login (con correo
-  o con Google), recuperación de contraseña por correo y logout con cookie de sesión
-  propia, direcciones guardadas e historial de pedidos.
-- Pedidos con montos recalculados por el servidor, snapshots históricos,
-  reserva atómica de stock y máquina de estados por modalidad de entrega.
-- Reglas de entrega editables por el administrador (umbral de envío gratis,
-  tarifa base, tarifas por comuna y corte de retiro), persistidas en la base;
-  el servidor calcula el costo de envío.
-- Correo transaccional con plantillas HTML profesionales (tablas, botones CTA,
-  dark mode) y transporte inyectable (Brevo en producción): confirmación de
-  pedido, cambio de estado, bienvenida al boletín, recuperación de contraseña
-  y aviso de reposición de stock.
-- Pagos de prueba con Mercado Pago: preferencia, webhook idempotente y avance
-  transaccional de stock/pedido tras la aprobación.
-
-## Arquitectura
-
-El frontend y `backend/` son aplicaciones separadas dentro del mismo
-repositorio. La API sigue un monolito modular:
+Frontend y `backend/` son aplicaciones separadas en el mismo repo. La API es un
+monolito modular:
 
 ```text
 routes → services → repositories → Prisma → PostgreSQL
 ```
 
-La UI se comunica mediante HTTP y normaliza sus respuestas; así Fake Store
-puede retirarse sin acoplar la interfaz a su estructura. En pedidos, el cliente
-solo envía productos, cantidades y entrega: precio, descuento, envío y stock
-los determina el servidor.
+La UI se comunica por HTTP y **normaliza las respuestas**, así el respaldo Fake Store
+puede retirarse sin acoplar la interfaz a su estructura.
 
-## Despliegue en producción
+## 🚀 Despliegue en producción
 
-La aplicación está desplegada de forma gratuita (portafolio):
+Desplegado de forma gratuita (portafolio); el frontend se publica en cada push a `main`
+y la API aplica sus migraciones durante el build.
 
-| Capa | Servicio | URL |
-|---|---|---|
-| Frontend | Cloudflare Pages (Workers) | https://sumarketexpress.sumarket.workers.dev/ |
-| API | Render | https://sumarket-express-api.onrender.com/api |
-| Base de datos | Supabase (PostgreSQL) | — |
-| Imágenes | Cloudinary | — |
-| Correo | Brevo (Sendinblue) | — |
-| Pagos | Mercado Pago (pruebas) | — |
+| Capa | Servicio |
+|---|---|
+| Frontend | Cloudflare Pages |
+| API | Render |
+| Base de datos | Supabase (PostgreSQL, con RLS activo) |
+| Imágenes | Cloudinary |
+| Logos de marcas | Brandfetch |
+| Correo | Brevo |
+| Pagos | Mercado Pago (pruebas) |
 
-El frontend se publica automáticamente con cada push a `main` (Cloudflare Pages
-hace build + deploy). La API corre en Render y aplica las migraciones durante el
-build. Como el plan gratuito de Render suspende el servicio tras unos minutos de
-inactividad, la primera visita puede tardar unos segundos en responder mientras
-despierta.
+> **Limitación conocida (Safari):** front (`workers.dev`) y API (`onrender.com`) son
+> sitios distintos, así que la cookie de sesión es *cross-site* (`SameSite=None; Secure`).
+> Chrome la acepta; Safari la bloquea por defecto. Se resuelve con un dominio propio
+> que unifique el origen. En local no ocurre.
 
-> **Limitación conocida — sesión en Safari (y navegadores con cookies de
-> terceros bloqueadas).** El frontend (`workers.dev`) y la API (`onrender.com`)
-> son **sitios distintos**, así que la cookie de sesión viaja *cross-site*
-> (`SameSite=None; Secure`). Chrome la acepta, pero Safari la bloquea por
-> defecto. Se resuelve sirviendo front y API desde el **mismo origen** (dominio
-> propio con subdominio para la API). En local no ocurre: `localhost:5173` y
-> `localhost:3000` son el mismo sitio.
-
-## Ejecutar localmente
-
-### 1. Frontend
+## 💻 Ejecutar localmente
 
 ```bash
+# 1. Frontend
 git clone https://github.com/wDEVil5/tienda-react.git
 cd tienda-react
 npm install
-npm run dev
-```
+npm run dev          # http://localhost:5173
 
-Frontend: `http://localhost:5173/`
-
-### 2. API y base de datos
-
-Con PostgreSQL 16 iniciado, abre otra terminal:
-
-```bash
+# 2. API + base de datos (otra terminal, con PostgreSQL 16 iniciado)
 cd backend
 cp .env.example .env
 npm install
 npx prisma migrate dev
 npm run db:seed
-npm run dev
+npm run dev          # http://localhost:3000
 ```
 
-API: `http://localhost:3000`
+Puntos de entrada de la API: catálogo y facetas (`/api/productos`, `/api/productos/facetas`),
+categorías y marcas, pedidos (`/api/pedidos/cotizar`, `/api/pedidos`), pagos
+(`/api/pagos`) y cuentas de cliente (`/api/cuenta`). Ver `backend/` para el detalle.
 
-Endpoints públicos principales:
-
-```text
-GET  /api/health
-GET  /api/productos?q=cafe&categoria=despensa&ofertas=true&page=1&limit=12
-GET  /api/productos/:slug
-GET  /api/categorias
-GET  /api/marcas
-GET  /api/reglas
-POST /api/pedidos/cotizar
-POST /api/pedidos
-POST /api/pagos
-GET  /api/pagos/:pagoId
-POST /api/avisos
-POST /api/newsletter
-```
-
-Las cuentas de clientes viven bajo `/api/cuenta` (registro, login, logout,
-direcciones e historial de pedidos) con su propia cookie de sesión.
-
-## Calidad
+## 🧪 Calidad
 
 ```bash
-# Frontend
-npm test
-npm run lint
-npm run build
-
-# Backend
-cd backend && npm test
+npm test && npm run lint && npm run build   # frontend
+cd backend && npm test                      # backend
 ```
 
-## Próximos pasos
+## 🗺️ Próximos pasos
 
-1. Resolver y verificar el retorno de Mercado Pago hacia la confirmación de la
-   tienda en el entorno público HTTPS; el webhook ya es la fuente de verdad.
-2. Completar las secciones del panel aún pendientes (Inventario, Clientes,
-   Identidad y Contenido) sobre los endpoints ya existentes.
-3. Verificar la firma del webhook de Mercado Pago (`x-signature`) en producción.
-4. Dominio propio para unificar front y API bajo el mismo origen y resolver la
-   limitación de cookies cross-site en Safari.
-5. App móvil con React Native/Expo (fase posterior del roadmap).
+1. Verificar en producción (HTTPS) el retorno de Mercado Pago hacia la confirmación;
+   el webhook ya es la fuente de verdad.
+2. Verificar la firma del webhook (`x-signature`) en producción.
+3. Dominio propio para unificar front y API bajo el mismo origen (resuelve las
+   cookies cross-site en Safari).
+4. App móvil con React Native / Expo (fase posterior del roadmap).
 
-El alcance y las decisiones de producto se mantienen en un PRD.
+El alcance y las decisiones de producto se mantienen en un PRD en Notion.
 
 ---
 

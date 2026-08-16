@@ -262,6 +262,7 @@ model Producto {
   atributos        ProductoAtributo[]
 
   @@index([categoriaId])
+  @@index([subcategoriaId])
   @@index([subcategoriaHijaId])
   @@index([marcaId])
   @@index([estado])
@@ -282,6 +283,7 @@ model ProductoAtributo {
 
   @@id([productoId, atributoId])
   @@index([atributoId, opcionId])
+  @@index([opcionId])
   @@map("producto_atributos")
 }
 
@@ -305,6 +307,7 @@ model MovimientoStock {
   usuario  Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
 
   @@index([productoId, createdAt])
+  @@index([usuarioId])
   @@map("movimientos_stock")
 }
 

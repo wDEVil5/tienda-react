@@ -26,23 +26,14 @@
   animation: subir .26s cubic-bezier(.16, 1, .3, 1);
 }
 
+/* Sin wordmark: la cabecera solo aloja la X, arrinconada arriba a la derecha.
+   Sin borde ni fondo para que las pestañas sean lo primero (aspecto pleno). */
 .cabecera {
-  min-height: 68px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 22px;
-  border-bottom: 1px solid var(--color-borde);
-  background: var(--color-superficie);
+  justify-content: flex-end;
+  padding: 12px 12px 0;
+  background: transparent;
 }
-
-.logo {
-  color: var(--color-texto);
-  font-family: var(--font-display);
-  font-size: 24px;
-  line-height: 1;
-}
-.logo em { color: var(--color-acento); }
 
 .cerrar {
   width: 34px;
@@ -67,7 +58,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4px;
-  margin: 22px 34px 0;
+  margin: 10px 34px 0;
   padding: 4px;
   border-radius: var(--radio-control);
   background: var(--color-crudo);

@@ -315,7 +315,7 @@ function Acceso({ modo, enModal = false, alCompletar, alCambiarModo }) {
     <section className={styles.pantalla} aria-labelledby="titulo-acceso">
       <header className={styles.cabecera}>
         <Link to="/" className={styles.logo}>
-          Sumarket<em>Express</em>
+          <span aria-hidden="true">←</span> Volver a la tienda
         </Link>
       </header>
       {contenido}

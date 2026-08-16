@@ -520,8 +520,8 @@ function CabeceraCheckout({ pasoActual }) {
 
   return (
     <header className={styles.cabecera}>
-      <Link to="/" className={styles.logo} aria-label="Volver a Sumarket Express">
-        Sumarket<em>Express</em>
+      <Link to="/" className={styles.logo} aria-label="Volver a la tienda">
+        <span aria-hidden="true">←</span> Volver a la tienda
       </Link>
       <ol className={styles.progreso} aria-label={`Paso ${pasoActual} de 3`}>
         {pasos.map((nombre, indice) => {

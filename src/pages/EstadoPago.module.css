@@ -8,18 +8,20 @@
   box-shadow: 0 22px 54px rgba(28, 27, 24, .12);
 }
 
+/* Antes era el wordmark; ahora un enlace discreto de vuelta a la tienda, pero
+   se mantiene como barra superior (borde inferior de ancho completo). */
 .logo {
-  display: block;
-  padding: 30px 40px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 18px 40px;
   border-bottom: 1px solid var(--color-borde);
-  color: var(--color-texto);
-  font-family: var(--font-display);
-  font-size: 31px;
+  color: var(--color-texto-2);
+  font-size: 14px;
   line-height: 1;
   text-decoration: none;
 }
-
-.logo em { color: var(--color-acento); }
+.logo:hover { color: var(--color-texto); }
 
 .contenido {
   display: flex;
@@ -131,7 +133,7 @@
 
 @media (max-width: 680px) {
   .pantalla { border-right: 0; border-left: 0; border-radius: 0; }
-  .logo { padding: 24px 20px; font-size: 26px; }
+  .logo { padding: 14px 20px; }
   .contenido { padding: 38px 22px 42px; }
   .resumenPedido { padding: 13px 18px; }
   .resumenPedido > div { align-items: center; }

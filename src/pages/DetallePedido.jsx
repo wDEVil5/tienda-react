@@ -130,7 +130,7 @@ function DetallePedido() {
   return (
     <section className={styles.pantalla} aria-labelledby="titulo-pedido">
       <header className={styles.cabecera}>
-        <Link to="/" className={styles.logo}>Sumarket<em>Express</em></Link>
+        <Link to="/" className={styles.logo}><span aria-hidden="true">←</span> Volver a la tienda</Link>
       </header>
 
       <div className={styles.cuerpo}>

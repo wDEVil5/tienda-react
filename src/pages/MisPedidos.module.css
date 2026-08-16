@@ -8,9 +8,10 @@
   box-shadow: 0 22px 54px rgba(28, 27, 24, .1);
 }
 
-.cabecera { min-height: 108px; display: flex; align-items: center; padding: 0 42px; border-bottom: 1px solid var(--color-borde); background: var(--color-superficie); }
-.logo { color: var(--color-texto); font-family: var(--font-display); font-size: 34px; line-height: 1; text-decoration: none; }
-.logo em { color: var(--color-acento); }
+.cabecera { min-height: 64px; display: flex; align-items: center; padding: 0 42px; border-bottom: 1px solid var(--color-borde); background: var(--color-superficie); }
+/* Antes era el wordmark; ahora un enlace discreto de vuelta a la tienda. */
+.logo { display: inline-flex; align-items: center; gap: 6px; color: var(--color-texto-2); font-size: 14px; line-height: 1; text-decoration: none; }
+.logo:hover { color: var(--color-texto); }
 
 .cuerpo { display: grid; grid-template-columns: 236px minmax(0, 1fr); }
 .navegacion { display: flex; flex-direction: column; gap: 6px; min-height: 710px; padding: 38px 28px; border-right: 1px solid var(--color-borde); background: #fcfbf8; }

@@ -19,17 +19,17 @@
   background: #fff;
 }
 
+/* Antes era el wordmark; ahora un enlace discreto de vuelta a la tienda. */
 .logo {
-  color: var(--color-texto);
-  font-family: var(--font-display);
-  font-size: 27px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-texto-2);
+  font-size: 14px;
+  line-height: 1;
   text-decoration: none;
 }
-
-.logo em {
-  color: var(--color-acento);
-  font-style: italic;
-}
+.logo:hover { color: var(--color-texto); }
 
 .progreso {
   display: flex;
@@ -465,7 +465,6 @@
     margin-bottom: var(--e-lg);
     padding: 0 16px;
   }
-  .logo { font-size: 17px; }
   .progreso { gap: 7px; }
   .pasoProgreso { gap: 4px; font-size: 11px; }
   .pasoProgreso + .pasoProgreso::before { width: 12px; margin-right: 3px; }

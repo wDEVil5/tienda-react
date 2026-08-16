@@ -14,7 +14,7 @@ function Marco({ titulo, tituloId, children }) {
     <section className={styles.pantalla} aria-labelledby={tituloId}>
       <header className={styles.cabecera}>
         <Link to="/" className={styles.logo}>
-          Sumarket<em>Express</em>
+          <span aria-hidden="true">←</span> Volver a la tienda
         </Link>
       </header>
       <div className={styles.contenido}>

@@ -82,8 +82,8 @@ function EstadoPago() {
 function EstadoBase({ children }) {
   return (
     <section className={styles.pantalla}>
-      <Link to="/" className={styles.logo} aria-label="Volver a Sumarket Express">
-        Sumarket<em>Express</em>
+      <Link to="/" className={styles.logo} aria-label="Volver a la tienda">
+        <span aria-hidden="true">←</span> Volver a la tienda
       </Link>
       <div className={styles.contenido}>{children}</div>
     </section>

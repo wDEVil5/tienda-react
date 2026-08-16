@@ -39,7 +39,6 @@ function ModalAcceso({ alCerrar, modoInicial = "login" }) {
         aria-labelledby="titulo-acceso"
       >
         <header className={styles.cabecera}>
-          <p className={styles.logo}>Sumarket<em>Express</em></p>
           <button className={styles.cerrar} type="button" onClick={alCerrar} aria-label="Cerrar acceso">
             ×
           </button>

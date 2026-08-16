@@ -109,7 +109,7 @@ function MisPedidos() {
     <section className={styles.pantalla} aria-labelledby="titulo-pedidos">
       <header className={styles.cabecera}>
         <Link to="/" className={styles.logo}>
-          Sumarket<em>Express</em>
+          <span aria-hidden="true">←</span> Volver a la tienda
         </Link>
       </header>
 

@@ -152,7 +152,7 @@ function DatosCuenta() {
     <section className={styles.pantalla} aria-labelledby="titulo-datos-cuenta">
       <header className={styles.cabecera}>
         <Link to="/" className={styles.logo}>
-          Sumarket<em>Express</em>
+          <span aria-hidden="true">←</span> Volver a la tienda
         </Link>
         <div className={styles.sesionActual}>
           <span>{cliente?.nombre}</span>

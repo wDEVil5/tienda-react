@@ -112,7 +112,9 @@ export function crearRepositorioPagos(db = prisma) {
           },
         })
 
-        return { aplicado: true, consumido: true }
+        // Devolvemos el pedido (con items) para que el servicio envíe la
+        // confirmación por correo SOLO ahora que el pago está aprobado.
+        return { aplicado: true, consumido: true, pedido }
       })
     },
 

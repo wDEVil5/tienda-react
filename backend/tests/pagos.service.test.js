@@ -142,6 +142,41 @@ test('procesarNotificacion aprobada llama a aprobarPagoTransaccional', async () 
   assert.deepEqual(r, { procesado: true, estado: 'APROBADO', aplicado: true, consumido: true })
 })
 
+test('procesarNotificacion aprobada envía la confirmación del pedido y NO la filtra en la respuesta', async () => {
+  let pedidoConfirmado = null
+  const servicio = crearServicioPagos({
+    repositorio: {
+      async buscarPorReferencia() { return { id: 'pago1', estado: 'PENDIENTE' } },
+      async aprobarPagoTransaccional() {
+        return { aplicado: true, consumido: true, pedido: { numero: 7, contactoEmail: 'ana@correo.cl', items: [] } }
+      },
+    },
+    pasarela: crearPasarelaWebhook({ referenciaExterna: 'ref1', estado: 'APROBADO' }),
+    notificador: { async enviarConfirmacion(pedido) { pedidoConfirmado = pedido } },
+  })
+
+  const r = await servicio.procesarNotificacion({})
+
+  assert.equal(pedidoConfirmado?.numero, 7)
+  assert.equal(r.pedido, undefined)
+})
+
+test('procesarNotificacion NO envía confirmación si el pedido no avanzó (idempotente)', async () => {
+  let enviada = false
+  const servicio = crearServicioPagos({
+    repositorio: {
+      async buscarPorReferencia() { return { id: 'pago1', estado: 'PENDIENTE' } },
+      async aprobarPagoTransaccional() { return { aplicado: false, motivo: 'YA_PROCESADO' } },
+    },
+    pasarela: crearPasarelaWebhook({ referenciaExterna: 'ref1', estado: 'APROBADO' }),
+    notificador: { async enviarConfirmacion() { enviada = true } },
+  })
+
+  await servicio.procesarNotificacion({})
+
+  assert.equal(enviada, false)
+})
+
 test('procesarNotificacion es idempotente si el pago ya está en el estado entrante', async () => {
   let aprobLlamado = false
   const servicio = crearServicioPagos({

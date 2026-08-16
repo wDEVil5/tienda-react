@@ -2,6 +2,7 @@ import { repositorioPagos } from './pagos.repository.js'
 import { crearPasarelaFalsa } from './pagos.pasarela.js'
 import { crearPasarelaMercadoPago } from './pagos.pasarela.mercadopago.js'
 import { esTransicionPagoValida } from './pagos.estados.js'
+import { notificadorPedidos } from '../pedidos/pedidos.notificaciones.js'
 
 // Selección de pasarela por entorno: si hay access token de Mercado Pago se usa
 // la real; si no, la falsa (dev/tests). Mismo criterio que el transporte de correo.
@@ -24,6 +25,7 @@ export class ErrorPago extends Error {
 export function crearServicioPagos({
   repositorio = repositorioPagos,
   pasarela = pasarelaPorDefecto(),
+  notificador = notificadorPedidos,
 } = {}) {
   return {
     // Inicia el pago de un pedido: crea el registro de pago, pide una preferencia
@@ -93,6 +95,22 @@ export function crearServicioPagos({
 
       if (interpretada.estado === 'APROBADO') {
         const resultado = await repositorio.aprobarPagoTransaccional(pago.id)
+
+        // La confirmación por correo sale AQUÍ, no al crear el pedido: solo si el
+        // pago quedó aprobado y el pedido avanzó (consumido). Fire-and-forget para
+        // no bloquear el webhook; la idempotencia de `consumido` evita duplicados.
+        if (resultado.consumido && resultado.pedido) {
+          notificador
+            .enviarConfirmacion(resultado.pedido)
+            .catch((error) =>
+              console.error(
+                `No se pudo enviar la confirmación del pedido ${resultado.pedido.numero}: ${error.message}`,
+              ),
+            )
+        }
+
+        // El pedido completo no debe viajar en la respuesta del webhook.
+        delete resultado.pedido
         return { procesado: true, estado: 'APROBADO', ...resultado }
       }
 

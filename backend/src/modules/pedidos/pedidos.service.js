@@ -221,15 +221,9 @@ export function crearServicioPedidos(
 
       const pedidoCreado = await repositorio.crearPedidoTransaccional({ pedido, items })
 
-      // Confirmación por correo, fire-and-forget: la compra no debe fallar ni
-      // demorarse si el proveedor de correo está caído. Un fallo se registra.
-      notificador
-        .enviarConfirmacion(pedidoCreado)
-        .catch((error) =>
-          console.error(
-            `No se pudo enviar la confirmación del pedido ${pedidoCreado.numero}: ${error.message}`,
-          ),
-        )
+      // OJO: la confirmación por correo NO se envía aquí. El pedido recién creado
+      // está PENDIENTE de pago; el correo saldría aunque el pago falle o nunca se
+      // haga. Se envía cuando el pago se aprueba (webhook), en el módulo de pagos.
 
       return pedidoCreado
     },

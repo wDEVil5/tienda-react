@@ -200,44 +200,24 @@ test('delega la persistencia en una sola transacción y devuelve su resultado', 
   assert.equal(creado.estado, 'PENDIENTE')
 })
 
-test('crearPedido dispara la confirmación por correo con el pedido creado', async () => {
+test('crearPedido NO envía la confirmación por correo (el pedido queda pendiente de pago)', async () => {
   const { repositorio } = crearRepoFalso([CAFE])
-  let pedidoNotificado
+  let confirmacionEnviada = false
   const servicio = crearServicioPedidos(repositorio, {
     obtenerReglas: async () => REGLAS_POR_DEFECTO,
     notificador: {
-      async enviarConfirmacion(pedido) { pedidoNotificado = pedido },
+      async enviarConfirmacion() { confirmacionEnviada = true },
     },
   })
 
-  const creado = await servicio.crearPedido({
+  await servicio.crearPedido({
     contacto,
     modalidad: 'RETIRO',
     items: [{ productoId: 'p2', cantidad: 1 }],
   })
 
-  assert.equal(pedidoNotificado.numero, creado.numero)
-  assert.equal(pedidoNotificado.contactoEmail, 'camila@correo.cl')
-})
-
-test('un fallo al enviar la confirmación no rompe la creación del pedido', async () => {
-  const { repositorio, captura } = crearRepoFalso([CAFE])
-  const servicio = crearServicioPedidos(repositorio, {
-    obtenerReglas: async () => REGLAS_POR_DEFECTO,
-    notificador: {
-      async enviarConfirmacion() { throw new Error('proveedor caído') },
-    },
-  })
-
-  const creado = await servicio.crearPedido({
-    contacto,
-    modalidad: 'RETIRO',
-    items: [{ productoId: 'p2', cantidad: 1 }],
-  })
-
-  // La compra se persistió igual; el fallo del correo quedó aislado.
-  assert.equal(captura.llamadas, 1)
-  assert.equal(creado.numero, 1)
+  // La confirmación se envía cuando el pago se aprueba (webhook), no al crear.
+  assert.equal(confirmacionEnviada, false)
 })
 
 test('listarPedidos entrega resumen paginado con conteos de productos y unidades', async () => {

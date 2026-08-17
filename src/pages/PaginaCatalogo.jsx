@@ -44,7 +44,12 @@ export default function PaginaCatalogo({ categorias = [] }) {
 
   // Filtros del sidebar.
   const [facetas, setFacetas] = useState(null);
-  const [marcasSel, setMarcasSel] = useState([]);
+  // Inicializa desde ?marca= (deep-link, p. ej. clic en la marca de una ficha).
+  // Luego el filtro sigue siendo local, como el resto del sidebar.
+  const [marcasSel, setMarcasSel] = useState(() => {
+    const marcaUrl = searchParams.get("marca");
+    return marcaUrl ? marcaUrl.split(",").filter(Boolean) : [];
+  });
   const [atributosSel, setAtributosSel] = useState(() => leerAtributosUrl(searchParams.get("atributos")));
   const [precioMin, setPrecioMin] = useState(undefined);
   const [precioMax, setPrecioMax] = useState(undefined);

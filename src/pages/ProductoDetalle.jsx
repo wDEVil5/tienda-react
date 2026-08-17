@@ -178,6 +178,7 @@ function ProductoDetalle({ productos }) {
   const descuento = enOferta
     ? Math.round((1 - producto.precio / producto.precioAnterior) * 100)
     : 0;
+  const ahorro = enOferta ? producto.precioAnterior - producto.precio : 0;
   const stockConocido = Number.isInteger(producto.stock) && producto.stock >= 0;
   const sinStock = stockConocido && producto.stock === 0;
   const cantidadEnCarrito = carrito.find((item) => item.id === producto.id)?.cantidad ?? 0;
@@ -286,7 +287,7 @@ function ProductoDetalle({ productos }) {
 
           {producto.marca?.nombre && (
             producto.marca.slug ? (
-              <Link to={`/marca/${producto.marca.slug}`} className={styles.marcaLink}>{producto.marca.nombre}</Link>
+              <Link to={`/catalogo?marca=${encodeURIComponent(producto.marca.slug)}`} className={styles.marcaLink}>{producto.marca.nombre}</Link>
             ) : (
               <span className={styles.marcaLink}>{producto.marca.nombre}</span>
             )
@@ -306,10 +307,6 @@ function ProductoDetalle({ productos }) {
             </div>
           )}
 
-          {producto.oferta?.nombre && (
-            <span className={styles.promoPill}>{producto.oferta.nombre}</span>
-          )}
-
           <div className={styles.precios}>
             <span className={styles.precio}>
               {"$\u202F"}{producto.precio.toLocaleString("es-CL")}
@@ -318,6 +315,9 @@ function ProductoDetalle({ productos }) {
               <>
                 <span className={styles.precioAntes}>
                   {"$\u202F"}{producto.precioAnterior.toLocaleString("es-CL")}
+                </span>
+                <span className={styles.ahorro}>
+                  Ahorras ${ahorro.toLocaleString("es-CL")}
                 </span>
               </>
             )}

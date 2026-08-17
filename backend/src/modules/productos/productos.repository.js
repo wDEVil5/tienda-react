@@ -1,5 +1,34 @@
 import { prisma } from '../../lib/prisma.js'
 import { calcularDisponible, calcularEstadoStock } from '../../lib/estadoStock.js'
+import { colapsarBusqueda } from '../../lib/texto.js'
+
+// Encuentra los slugs de marca/categoría/subcategoría que coinciden con el
+// término, comparando en forma COLAPSADA (sin espacios ni guiones). Así "camposur"
+// calza "Campo Sur"/"campo-sur". Las tablas de taxonomía son chicas, así que
+// resolverlas en Node por búsqueda es barato y evita transformar la columna en SQL.
+async function resolverSlugsPorTexto(cliente, query) {
+  const colapsado = colapsarBusqueda(query)
+  if (!colapsado) return null
+
+  const [marcas, categorias, subcategorias, subcategoriasHijas] = await Promise.all([
+    cliente.marca.findMany({ select: { slug: true, nombre: true } }),
+    cliente.categoria.findMany({ select: { slug: true, nombre: true } }),
+    cliente.subcategoria.findMany({ select: { slug: true, nombre: true } }),
+    cliente.subcategoriaHija.findMany({ select: { slug: true, nombre: true } }),
+  ])
+
+  const coincide = (item) =>
+    colapsarBusqueda(item.nombre).includes(colapsado) ||
+    item.slug.replace(/-/g, '').includes(colapsado)
+  const slugsDe = (lista) => lista.filter(coincide).map((item) => item.slug)
+
+  return {
+    marca: slugsDe(marcas),
+    categoria: slugsDe(categorias),
+    subcategoria: slugsDe(subcategorias),
+    subcategoriaHija: slugsDe(subcategoriasHijas),
+  }
+}
 
 // Seleccionamos y traducimos solo el contrato público que ya consume React.
 // Así los campos internos de PostgreSQL no se filtran por accidente a la API.
@@ -144,7 +173,7 @@ function crearProductoPublico(producto) {
   }
 }
 
-function crearFiltrosPublicados({ query, categoria, subcategoria, subcategoriaHija, marca, atributos, soloOfertas, soloDisponibles, precioMin, precioMax, ahora } = {}, camposProducto) {
+function crearFiltrosPublicados({ query, categoria, subcategoria, subcategoriaHija, marca, atributos, soloOfertas, soloDisponibles, precioMin, precioMax, ahora, slugsPorTexto } = {}, camposProducto) {
   const where = { estado: 'PUBLICADO' }
 
   // Solo añadimos condiciones que llegaron desde la capa HTTP. Así Prisma
@@ -186,19 +215,30 @@ function crearFiltrosPublicados({ query, categoria, subcategoria, subcategoriaHi
   }
 
   if (query) {
-    // No basta con el nombre del producto: quien escribe "despensa" o "coca
-    // cola" busca una categoría o una marca, no un producto que se llame así.
-    // Ampliamos a la taxonomía y la marca por slug (sin tildes, como el término
-    // ya normalizado; los espacios se vuelven guiones para calzar el slug).
-    // nombreBusqueda ya llega normalizado; el modo insensitive protege datos viejos.
-    const querySlug = query.replace(/\s+/g, '-')
-    where.OR = [
-      { nombreBusqueda: { contains: query, mode: 'insensitive' } },
-      { categoria: { slug: { contains: querySlug } } },
-      { subcategoria: { slug: { contains: querySlug } } },
-      { subcategoriaHija: { slug: { contains: querySlug } } },
-      { marca: { slug: { contains: querySlug } } },
-    ]
+    // No basta con el nombre del producto: quien escribe "despensa" o "campo sur"
+    // busca una categoría o una marca, no un producto que se llame así.
+    // El nombre del producto se compara por substring (insensitive); la taxonomía
+    // se resuelve aparte de forma COLAPSADA (`slugsPorTexto`), tolerante a la
+    // separación (camposur == campo sur == campo-sur).
+    const or = [{ nombreBusqueda: { contains: query, mode: 'insensitive' } }]
+
+    if (slugsPorTexto) {
+      if (slugsPorTexto.marca.length) or.push({ marca: { slug: { in: slugsPorTexto.marca } } })
+      if (slugsPorTexto.categoria.length) or.push({ categoria: { slug: { in: slugsPorTexto.categoria } } })
+      if (slugsPorTexto.subcategoria.length) or.push({ subcategoria: { slug: { in: slugsPorTexto.subcategoria } } })
+      if (slugsPorTexto.subcategoriaHija.length) or.push({ subcategoriaHija: { slug: { in: slugsPorTexto.subcategoriaHija } } })
+    } else {
+      // Respaldo sin resolución previa: match por slug (espacios → guiones).
+      const querySlug = query.replace(/\s+/g, '-')
+      or.push(
+        { categoria: { slug: { contains: querySlug } } },
+        { subcategoria: { slug: { contains: querySlug } } },
+        { subcategoriaHija: { slug: { contains: querySlug } } },
+        { marca: { slug: { contains: querySlug } } },
+      )
+    }
+
+    where.OR = or
   }
 
   if (soloOfertas) {
@@ -239,7 +279,8 @@ export function crearRepositorioProductos(cliente = prisma) {
   return {
     async listarPublicados({ page = 1, limit = 12, orden = 'relevancia', ...filtros } = {}) {
       const ahora = filtros.ahora ?? new Date()
-      const where = crearFiltrosPublicados(filtros, cliente.producto.fields)
+      const slugsPorTexto = filtros.query ? await resolverSlugsPorTexto(cliente, filtros.query) : undefined
+      const where = crearFiltrosPublicados({ ...filtros, slugsPorTexto }, cliente.producto.fields)
       const productos = await cliente.producto.findMany({
         where,
         include: crearInclusionProductoPublico(ahora),
@@ -252,14 +293,16 @@ export function crearRepositorioProductos(cliente = prisma) {
     },
 
     async contarPublicados(filtros = {}) {
-      return cliente.producto.count({ where: crearFiltrosPublicados(filtros, cliente.producto.fields) })
+      const slugsPorTexto = filtros.query ? await resolverSlugsPorTexto(cliente, filtros.query) : undefined
+      return cliente.producto.count({ where: crearFiltrosPublicados({ ...filtros, slugsPorTexto }, cliente.producto.fields) })
     },
 
     // Facetas del sidebar: marcas presentes en el contexto (categoría/sub/búsqueda/
     // ofertas) con su conteo, y el rango de precio. El contexto NO incluye marca ni
     // precio: así la lista de marcas y el rango no cambian al ir seleccionando.
     async facetasPublicadas(filtros = {}) {
-      const where = crearFiltrosPublicados(filtros, cliente.producto.fields)
+      const slugsPorTexto = filtros.query ? await resolverSlugsPorTexto(cliente, filtros.query) : undefined
+      const where = crearFiltrosPublicados({ ...filtros, slugsPorTexto }, cliente.producto.fields)
       const [marcas, precio, atributos] = await Promise.all([
         cliente.marca.findMany({
           where: { productos: { some: where } },

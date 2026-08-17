@@ -48,6 +48,27 @@ test('el repositorio consulta solo productos publicados y adapta sus imágenes',
         return { _max: { porcentajeDescuento: 25 } }
       },
     },
+    // Taxonomía para la resolución colapsada del término de búsqueda.
+    marca: {
+      async findMany() {
+        return [{ slug: 'cafe-instantaneo', nombre: 'Café Instantáneo' }]
+      },
+    },
+    categoria: {
+      async findMany() {
+        return [{ slug: 'despensa', nombre: 'Despensa' }]
+      },
+    },
+    subcategoria: {
+      async findMany() {
+        return []
+      },
+    },
+    subcategoriaHija: {
+      async findMany() {
+        return []
+      },
+    },
   }
 
   const repositorio = crearRepositorioProductos(cliente)
@@ -67,10 +88,9 @@ test('el repositorio consulta solo productos publicados y adapta sus imágenes',
     estado: 'PUBLICADO',
     OR: [
       { nombreBusqueda: { contains: 'cafe', mode: 'insensitive' } },
-      { categoria: { slug: { contains: 'cafe' } } },
-      { subcategoria: { slug: { contains: 'cafe' } } },
-      { subcategoriaHija: { slug: { contains: 'cafe' } } },
-      { marca: { slug: { contains: 'cafe' } } },
+      // "cafe" colapsado calza la marca "Café Instantáneo" (slug cafe-instantaneo);
+      // la categoría "Despensa" no calza, así que no se agrega.
+      { marca: { slug: { in: ['cafe-instantaneo'] } } },
     ],
     categoria: { slug: 'despensa' },
     promociones: {
@@ -109,6 +129,34 @@ test('el repositorio consulta solo productos publicados y adapta sus imágenes',
     },
     _max: { porcentajeDescuento: true },
   })
+})
+
+test('la búsqueda es tolerante a la separación: "camposur" calza la marca "Campo Sur"', async () => {
+  let consulta
+  const cliente = {
+    producto: {
+      async findMany(argumentos) { consulta = argumentos; return [] },
+    },
+    marca: {
+      async findMany() {
+        return [
+          { slug: 'campo-sur', nombre: 'Campo Sur' },
+          { slug: 'valle-oliva', nombre: 'Valle Oliva' },
+        ]
+      },
+    },
+    categoria: { async findMany() { return [] } },
+    subcategoria: { async findMany() { return [] } },
+    subcategoriaHija: { async findMany() { return [] } },
+  }
+
+  const repositorio = crearRepositorioProductos(cliente)
+  await repositorio.listarPublicados({ query: 'camposur' })
+
+  assert.deepEqual(consulta.where.OR, [
+    { nombreBusqueda: { contains: 'camposur', mode: 'insensitive' } },
+    { marca: { slug: { in: ['campo-sur'] } } },
+  ])
 })
 
 test('el filtro por subcategoría acota la consulta por slug', async () => {

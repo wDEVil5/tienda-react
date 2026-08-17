@@ -6,6 +6,7 @@ import { useFavoritos } from "../context/FavoritosContext.jsx";
 import ImagenProducto from "../components/ImagenProducto.jsx";
 import TarjetaProducto from "../components/TarjetaProducto.jsx";
 import ControlCantidad from "../components/ControlCantidad.jsx";
+import ResenasProducto from "../components/ResenasProducto.jsx";
 import { obtenerProductoDetalle, obtenerProductosSimilares } from "../services/productosApi.js";
 import styles from "./ProductoDetalle.module.css";
 
@@ -170,6 +171,12 @@ function ProductoDetalle({ productos }) {
     .filter((p) => p.categoria === producto.categoria && p.id !== producto.id)
     .slice(0, 6);
   const sugeridos = similares.length > 0 ? similares : relacionadosLocales;
+
+  // Las reseñas usan el id real (UUID) del backend. En el fallback de demo
+  // (Fake Store, ids numéricos) no hay reseñas: ocultamos la sección.
+  const productoTieneResenas = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+    String(producto.id),
+  );
 
   // Compatibilidad con productos antiguos: si aún no llega `imagenes`, usamos
   // la imagen principal. Al integrar backend se reciben hasta 5 URLs aquí.
@@ -336,6 +343,8 @@ function ProductoDetalle({ productos }) {
           )}
         </div>
       </div>
+
+      {productoTieneResenas && <ResenasProducto key={producto.id} productoId={producto.id} />}
 
       {sugeridos.length > 0 && (
         <section className={styles.relacionados}>

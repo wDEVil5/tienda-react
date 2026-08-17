@@ -1,0 +1,12 @@
+.estrellas {
+  display: inline-flex;
+  gap: 2px;
+  color: #f5a623; /* ámbar de calificación, consistente con las capturas */
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Las estrellas vacías se ven como contorno tenue. */
+.estrellas .fa-regular {
+  color: #d8d3c8;
+}

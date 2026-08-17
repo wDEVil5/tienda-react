@@ -180,7 +180,8 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--e-md);
+  gap: 10px;
+  width: 100%;
   /* Panel de compra fijo al hacer scroll (como en Jumbo). El navegador lo
      desactiva solo si el panel no cabe; en una columna corta funciona bien. */
   position: sticky;
@@ -194,6 +195,69 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--color-texto-tenue);
+}
+
+/* Pill "Oferta" amarilla en la parte superior del panel. */
+.ofertaTag {
+  padding: 6px 16px;
+  border-radius: var(--radio-pill, 999px);
+  background: var(--color-aviso-bg, #f6ecd2);
+  color: var(--color-texto);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Marca como enlace verde. */
+.marcaLink {
+  color: var(--color-acento);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.marcaLink:hover {
+  color: #205638;
+}
+
+.codigo {
+  color: var(--color-texto-suave);
+  font-size: 14px;
+}
+
+/* Fila de calificación: estrellas + nota + enlace a comentarios. */
+.notaFila {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.nota {
+  color: var(--color-texto);
+  font-size: 15px;
+  font-weight: 600;
+}
+.comentariosLink {
+  color: var(--color-acento);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.comentariosLink:hover {
+  color: #205638;
+}
+
+/* Pill de promoción (ej. "Lleva 2 por $3.090"). */
+.promoPill {
+  align-self: flex-start;
+  padding: 8px 16px;
+  border-radius: var(--radio-pill, 999px);
+  background: var(--color-aviso-bg, #f6ecd2);
+  color: var(--color-texto);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .nombre {
@@ -234,11 +298,13 @@
   color: var(--color-oferta);
 }
 
-/* Lo calcula la API a partir de contenido y precio; no se muestra si la
-   unidad del producto no permite una comparación útil (por ejemplo, unidades). */
+/* Precio por unidad como pill gris (estilo marketplace). */
 .precioPorUnidad {
-  margin-top: calc(var(--e-sm) * -1);
-  font-size: 12.5px;
+  align-self: flex-start;
+  padding: 5px 12px;
+  border-radius: var(--radio-pill, 999px);
+  background: var(--color-crudo, #f2efe9);
+  font-size: 13px;
   color: var(--color-texto-suave);
 }
 
@@ -274,15 +340,17 @@
 }
 
 .boton {
-  height: 48px;
+  width: 100%;
+  height: 52px;
+  margin-top: 4px;
   padding: 0 var(--e-2xl);
   border: none;
-  border-radius: var(--radio-control);
+  border-radius: var(--radio-caja, 10px);
   background-color: var(--color-acento);
   color: #fff;
   font-family: inherit;
-  font-size: 14.5px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 700;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
@@ -294,6 +362,62 @@
 .boton:disabled {
   cursor: not-allowed;
   opacity: 0.55;
+}
+
+/* Divisor y acciones secundarias (Mis listas / Compartir). */
+.divisor {
+  width: 100%;
+  height: 1px;
+  margin: 6px 0;
+  background: var(--color-borde-2);
+}
+
+.accionesSecundarias {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.accionSecundaria {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+  border: none;
+  background: transparent;
+  color: var(--color-texto-2);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.18s ease;
+}
+.accionSecundaria:hover {
+  color: var(--color-acento);
+}
+
+.accionIcono {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--color-acento);
+  border-radius: var(--radio-caja, 10px);
+  color: var(--color-acento);
+  font-size: 15px;
+}
+
+.accionActiva .accionIcono {
+  background: var(--color-acento);
+  color: #fff;
+}
+
+.accionesLinea {
+  width: 1px;
+  height: 28px;
+  background: var(--color-borde-2);
 }
 
 /* Favorito: botón secundario con contorno; se tiñe de rojo al marcar. */

@@ -6,7 +6,7 @@ import { useFavoritos } from "../context/FavoritosContext.jsx";
 import { useAccesoModal } from "../context/AccesoModalContext.jsx";
 import ImagenProducto from "../components/ImagenProducto.jsx";
 import TarjetaProducto from "../components/TarjetaProducto.jsx";
-import ControlCantidad from "../components/ControlCantidad.jsx";
+import Estrellas from "../components/Estrellas.jsx";
 import ResenasProducto from "../components/ResenasProducto.jsx";
 import { obtenerMasVendidos, obtenerProductoDetalle, obtenerProductosSimilares } from "../services/productosApi.js";
 import styles from "./ProductoDetalle.module.css";
@@ -36,8 +36,8 @@ function ProductoDetalle({ productos }) {
   const { estaAutenticado } = useCuenta();
   const { esFavorito, alternarFavorito } = useFavoritos();
   const { abrirAcceso } = useAccesoModal();
-  const [cantidad, setCantidad] = useState(1); // cantidad a agregar
   const [imagenSeleccionada, setImagenSeleccionada] = useState(null);
+  const [copiado, setCopiado] = useState(false); // "Compartir" copió el enlace
 
   // La colección actual resuelve navegación interna. Si se abre una URL directa
   // de una página aún no cargada, el efecto consulta su ficha al backend.
@@ -154,11 +154,30 @@ function ProductoDetalle({ productos }) {
     }
   };
 
+  // Compartir: usa la hoja nativa del sistema si existe; si no, copia el enlace.
+  const compartir = async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: producto.nombre, url });
+      } catch {
+        // El usuario canceló el diálogo: no hacemos nada.
+      }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2000);
+    } catch {
+      // Sin permiso de portapapeles: silencioso.
+    }
+  };
+
   const enOferta = producto.precioAnterior !== null;
   const descuento = enOferta
     ? Math.round((1 - producto.precio / producto.precioAnterior) * 100)
     : 0;
-  const ahorro = enOferta ? producto.precioAnterior - producto.precio : 0;
   const stockConocido = Number.isInteger(producto.stock) && producto.stock >= 0;
   const sinStock = stockConocido && producto.stock === 0;
   const cantidadEnCarrito = carrito.find((item) => item.id === producto.id)?.cantidad ?? 0;
@@ -263,10 +282,33 @@ function ProductoDetalle({ productos }) {
 
         {/* Columna derecha (sticky): panel de compra */}
         <div className={styles.info}>
-          <p className={styles.eyebrow}>
-            {producto.categoria} · SKU {producto.sku ?? producto.id}
-          </p>
+          {(enOferta || producto.oferta) && <span className={styles.ofertaTag}>Oferta</span>}
+
+          {producto.marca?.nombre && (
+            producto.marca.slug ? (
+              <Link to={`/marca/${producto.marca.slug}`} className={styles.marcaLink}>{producto.marca.nombre}</Link>
+            ) : (
+              <span className={styles.marcaLink}>{producto.marca.nombre}</span>
+            )
+          )}
+
           <h1 className={styles.nombre}>{producto.nombre}</h1>
+
+          <p className={styles.codigo}>Código: {producto.sku ?? producto.id}</p>
+
+          {producto.resenas?.conteo > 0 && producto.resenas.promedio !== null && (
+            <div className={styles.notaFila}>
+              <Estrellas valor={producto.resenas.promedio} tamano={17} />
+              <span className={styles.nota}>Nota {producto.resenas.promedio.toFixed(1)}</span>
+              <a href="#titulo-resenas" className={styles.comentariosLink}>
+                ({producto.resenas.conteo} {producto.resenas.conteo === 1 ? "comentario" : "comentarios"})
+              </a>
+            </div>
+          )}
+
+          {producto.oferta?.nombre && (
+            <span className={styles.promoPill}>{producto.oferta.nombre}</span>
+          )}
 
           <div className={styles.precios}>
             <span className={styles.precio}>
@@ -276,9 +318,6 @@ function ProductoDetalle({ productos }) {
               <>
                 <span className={styles.precioAntes}>
                   {"$\u202F"}{producto.precioAnterior.toLocaleString("es-CL")}
-                </span>
-                <span className={styles.ahorro}>
-                  Ahorras ${ahorro.toLocaleString("es-CL")}
                 </span>
               </>
             )}
@@ -295,56 +334,35 @@ function ProductoDetalle({ productos }) {
             {textoStock}
           </p>
 
-          <div className={styles.compra}>
-            <ControlCantidad
-              grande
-              cantidad={cantidad}
-              onDisminuir={() => setCantidad((c) => Math.max(1, c - 1))}
-              onAumentar={() =>
-                setCantidad((c) =>
-                  disponiblesParaAgregar === null ? c + 1 : Math.min(c + 1, disponiblesParaAgregar),
-                )
-              }
-              onFijar={(n) =>
-                setCantidad(
-                  disponiblesParaAgregar === null ? n : Math.min(n, disponiblesParaAgregar),
-                )
-              }
-              puedeAumentar={disponiblesParaAgregar === null || cantidad < disponiblesParaAgregar}
-            />
+          <button
+            className={styles.boton}
+            onClick={() => agregarAlCarrito(producto)}
+            disabled={!puedeAgregar}
+          >
+            {puedeAgregar ? "Agregar" : "Stock completo en tu carrito"}
+          </button>
 
-            <button
-              className={styles.boton}
-              onClick={() => agregarAlCarrito(producto, cantidad)}
-              disabled={!puedeAgregar}
-            >
-              {puedeAgregar ? "Agregar al carrito" : "Stock completo en tu carrito"}
-            </button>
+          <div className={styles.divisor} />
 
+          <div className={styles.accionesSecundarias}>
             <button
               type="button"
-              className={`${styles.botonFavorito} ${favorito ? styles.botonFavoritoActivo : ""}`}
+              className={`${styles.accionSecundaria} ${favorito ? styles.accionActiva : ""}`}
               onClick={alternarFavoritoDetalle}
               aria-pressed={favorito}
             >
-              <i className={`${favorito ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" />
-              {favorito ? "En favoritos" : "Agregar a favoritos"}
+              <span className={styles.accionIcono}>
+                <i className={`${favorito ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" />
+              </span>
+              {favorito ? "En Mis listas" : "Agregar a Mis listas"}
             </button>
-          </div>
-
-          <div className={styles.infoBox}>
-            <div className={styles.infoRow}>
-              <span className={styles.infoLabel}>Retiro hoy</span>
-              <span>Gratis en tienda, listo en ~2 h</span>
-            </div>
-            <div className={styles.infoRow}>
-              <span className={styles.infoLabel}>Despacho</span>
-              <span>$2.990 · gratis sobre $20.000</span>
-            </div>
-            <div className={styles.infoRow}>
-              <span className={styles.infoLabel}>Devolución</span>
-              <span>Hasta 30 días</span>
-            </div>
+            <span className={styles.accionesLinea} aria-hidden="true" />
+            <button type="button" className={styles.accionSecundaria} onClick={compartir}>
+              <span className={styles.accionIcono}>
+                <i className="fa-solid fa-arrow-up-from-bracket" aria-hidden="true" />
+              </span>
+              {copiado ? "¡Enlace copiado!" : "Compartir producto"}
+            </button>
           </div>
 
         </div>

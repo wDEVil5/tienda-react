@@ -94,13 +94,36 @@
 
 .chips {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 10px;
   margin-bottom: 22px;
+  padding: 2px 0;
+  /* Cuando hay más píldoras de las que caben, se desliza en horizontal. */
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  /* Sombras de borde (truco de "scroll shadows"): solo aparecen cuando hay
+     contenido oculto hacia ese lado. Las dos capas "cover" (color de fondo) van
+     con background-attachment:local y tapan la sombra en los extremos; las dos
+     radiales van con :scroll y quedan fijas al marco. */
+  background:
+    linear-gradient(to right, var(--color-fondo, #fbfaf7) 30%, rgba(251, 250, 247, 0)) left center,
+    linear-gradient(to left, var(--color-fondo, #fbfaf7) 30%, rgba(251, 250, 247, 0)) right center,
+    radial-gradient(farthest-side at 0 50%, rgba(28, 27, 24, 0.16), rgba(28, 27, 24, 0)) left center,
+    radial-gradient(farthest-side at 100% 50%, rgba(28, 27, 24, 0.16), rgba(28, 27, 24, 0)) right center;
+  background-repeat: no-repeat;
+  background-size: 46px 100%, 46px 100%, 18px 100%, 18px 100%;
+  background-attachment: local, local, scroll, scroll;
+}
+.chips::-webkit-scrollbar {
+  display: none;
 }
 .chip {
   display: inline-flex;
   align-items: center;
+  /* No se encogen ni se parten: el sobrante se desliza. */
+  flex: 0 0 auto;
+  white-space: nowrap;
   min-height: 38px;
   padding: 0 18px;
   border: 1px solid var(--bnv-borde);

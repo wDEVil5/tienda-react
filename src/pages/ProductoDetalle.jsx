@@ -154,6 +154,14 @@ function ProductoDetalle({ productos }) {
     }
   };
 
+  // Desliza suave hacia las reseñas en vez del salto brusco del ancla.
+  const irAResenas = (evento) => {
+    evento.preventDefault();
+    document
+      .getElementById("titulo-resenas")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   // Compartir: usa la hoja nativa del sistema si existe; si no, copia el enlace.
   const compartir = async () => {
     const url = window.location.href;
@@ -301,7 +309,7 @@ function ProductoDetalle({ productos }) {
             <div className={styles.notaFila}>
               <Estrellas valor={producto.resenas.promedio} tamano={17} />
               <span className={styles.nota}>Nota {producto.resenas.promedio.toFixed(1)}</span>
-              <a href="#titulo-resenas" className={styles.comentariosLink}>
+              <a href="#titulo-resenas" className={styles.comentariosLink} onClick={irAResenas}>
                 ({producto.resenas.conteo} {producto.resenas.conteo === 1 ? "comentario" : "comentarios"})
               </a>
             </div>

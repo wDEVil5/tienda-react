@@ -1438,7 +1438,7 @@ export function crearRouterAdmin({
       if (
         page === null ||
         limit === null ||
-        (estado !== undefined && !ESTADOS_PEDIDO.includes(estado))
+        (estado !== undefined && estado !== 'POR_ATENDER' && !ESTADOS_PEDIDO.includes(estado))
       ) {
         return response.status(400).json({
           error: {

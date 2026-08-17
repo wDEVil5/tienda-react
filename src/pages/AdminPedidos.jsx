@@ -18,6 +18,7 @@ const LIMITE = 20;
 // estado que llega por la URL (drill-down desde el Resumen: ?estado=PENDIENTE).
 const ESTADOS_VALIDOS = new Set([
   "",
+  "POR_ATENDER",
   "PENDIENTE",
   "PREPARANDO",
   "LISTO_PARA_RETIRO",
@@ -26,10 +27,15 @@ const ESTADOS_VALIDOS = new Set([
   "CANCELADO",
 ]);
 
+// Cola operativa: pedidos pagados y en curso (espeja ESTADOS_POR_ATENDER del
+// backend). El chip "Por atender" agrupa estos estados y es la vista por defecto.
+const ESTADOS_POR_ATENDER = ["PREPARANDO", "LISTO_PARA_RETIRO", "ENVIADO"];
+
 // Los chips y badges usan los estados REALES del backend (no hay "Pagado" como
 // estado: un pago aprobado ya mueve el pedido a PREPARANDO). "Pagado" se muestra
 // como un indicador aparte, derivado del pago aprobado.
 const FILTROS = [
+  { valor: "POR_ATENDER", etiqueta: "Por atender" },
   { valor: "", etiqueta: "Todos" },
   { valor: "PENDIENTE", etiqueta: "Pendientes" },
   { valor: "PREPARANDO", etiqueta: "Preparando" },
@@ -659,10 +665,12 @@ export default function AdminPedidos() {
   const [searchParams] = useSearchParams();
   const [pedidos, setPedidos] = useState([]);
   const [meta, setMeta] = useState(null);
-  // Estado inicial del filtro: el de la URL si es válido (drill-down), o Todos.
+  // Estado inicial del filtro: el de la URL si es válido (drill-down desde el
+  // Resumen), o la cola operativa "Por atender" por defecto —así los PENDIENTE
+  // (impagos, muchos abandonados) no ensucian la vista de trabajo.
   const [estado, setEstado] = useState(() => {
     const inicial = searchParams.get("estado");
-    return inicial && ESTADOS_VALIDOS.has(inicial) ? inicial : "";
+    return inicial && ESTADOS_VALIDOS.has(inicial) ? inicial : "POR_ATENDER";
   });
   const [busqueda, setBusqueda] = useState("");
   const [busquedaAplicada, setBusquedaAplicada] = useState("");
@@ -818,7 +826,11 @@ export default function AdminPedidos() {
     : null;
   const conteoDe = (valor) => {
     if (!conteos) return null;
-    return valor === "" ? totalGeneral : conteos[valor] ?? 0;
+    if (valor === "") return totalGeneral;
+    if (valor === "POR_ATENDER") {
+      return ESTADOS_POR_ATENDER.reduce((suma, estadoGrupo) => suma + (conteos[estadoGrupo] ?? 0), 0);
+    }
+    return conteos[valor] ?? 0;
   };
 
   async function cambiarEstado(nuevoEstado) {

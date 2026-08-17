@@ -4,6 +4,7 @@ import { obtenerReglas as obtenerReglasVigentes } from '../reglas/reglas.service
 import { notificadorPedidos } from './pedidos.notificaciones.js'
 import {
   ESTADO_INICIAL,
+  ESTADOS_POR_ATENDER,
   efectoStockTransicion,
   esTransicionValida,
 } from './pedidos.estados.js'
@@ -261,7 +262,10 @@ export function crearServicioPedidos(
     },
 
     async listarPedidos({ page = 1, limit = 20, estado, q } = {}) {
-      const filtros = { page, limit, q, ...(estado ? { estado } : {}) }
+      // "POR_ATENDER" es un grupo virtual (la cola operativa): se traduce al
+      // conjunto de estados pagados y en curso antes de tocar el repositorio.
+      const filtroEstado = estado === 'POR_ATENDER' ? ESTADOS_POR_ATENDER : estado
+      const filtros = { page, limit, q, ...(filtroEstado ? { estado: filtroEstado } : {}) }
       // Los conteos por estado ignoran el filtro de estado (cada chip cuenta lo
       // suyo) pero respetan la búsqueda, así los números cuadran con la lista.
       const [pedidos, total, conteos] = await Promise.all([

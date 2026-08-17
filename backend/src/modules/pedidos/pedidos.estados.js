@@ -19,6 +19,11 @@ export const ESTADOS_PEDIDO = [
 // Estados finales: no admiten ninguna transición de salida.
 export const ESTADOS_TERMINALES = ['ENTREGADO', 'CANCELADO']
 
+// Cola operativa del panel: pedidos PAGADOS y en curso que el dueño debe
+// atender. Excluye los PENDIENTE (impagos, esperando pago) y los terminales
+// (ENTREGADO/CANCELADO). Es un grupo virtual para el filtro "Por atender".
+export const ESTADOS_POR_ATENDER = ['PREPARANDO', 'LISTO_PARA_RETIRO', 'ENVIADO']
+
 // Un flujo por modalidad: para cada estado, la lista de estados a los que puede
 // avanzar. CANCELADO es alcanzable desde cualquier estado no terminal.
 const FLUJOS = {

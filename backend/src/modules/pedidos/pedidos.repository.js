@@ -26,7 +26,9 @@ function crearFiltroBusqueda(q) {
 // búsqueda. Cada filtro es opcional; los ausentes no restringen.
 function crearWherePedidos({ estado, clienteId, q } = {}) {
   return {
-    ...(estado ? { estado } : {}),
+    // `estado` puede ser un valor único (igualdad) o un arreglo de estados (IN),
+    // para soportar grupos como "Por atender" sin cambiar quien lo llama.
+    ...(estado ? { estado: Array.isArray(estado) ? { in: estado } : estado } : {}),
     ...(clienteId ? { clienteId } : {}),
     ...crearFiltroBusqueda(q),
   }

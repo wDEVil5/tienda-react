@@ -259,6 +259,19 @@ test('listarPedidos pasa la búsqueda al repositorio y expone los conteos por es
   assert.deepEqual(resultado.meta.conteos, { PENDIENTE: 2, ENVIADO: 3 })
 })
 
+test('listarPedidos traduce el grupo POR_ATENDER al conjunto de estados en curso', async () => {
+  let filtros
+  const servicio = crearServicioPedidos({
+    async listar(recibidos) { filtros = recibidos; return [] },
+    async contar() { return 0 },
+    async contarPorEstado() { return {} },
+  })
+
+  await servicio.listarPedidos({ page: 1, limit: 20, estado: 'POR_ATENDER' })
+
+  assert.deepEqual(filtros.estado, ['PREPARANDO', 'LISTO_PARA_RETIRO', 'ENVIADO'])
+})
+
 test('obtenerDetallePedido arma la ficha con timeline y sin dirección en retiro', async () => {
   const servicio = crearServicioPedidos({
     async obtenerPorId() {

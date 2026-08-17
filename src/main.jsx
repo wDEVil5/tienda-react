@@ -8,6 +8,7 @@ import { CuentaProvider } from './context/CuentaContext.jsx'
 import { ReglasProvider } from './context/ReglasContext.jsx'
 import { IdentidadProvider } from './context/IdentidadContext.jsx'
 import { ConfirmProvider } from './context/ConfirmContext.jsx'
+import { FavoritosProvider } from './context/FavoritosContext.jsx'
 import { aplicarRetornoPago } from './lib/retornoPago.js'
 
 // Debe ocurrir antes de montar BrowserRouter: Pages entrega la raíz estática y
@@ -20,11 +21,13 @@ createRoot(document.getElementById('root')).render(
       <ReglasProvider>
         <IdentidadProvider>
           <CuentaProvider>
-            <CarritoProvider>
-              <ConfirmProvider>
-                <App />
-              </ConfirmProvider>
-            </CarritoProvider>
+            <FavoritosProvider>
+              <CarritoProvider>
+                <ConfirmProvider>
+                  <App />
+                </ConfirmProvider>
+              </CarritoProvider>
+            </FavoritosProvider>
           </CuentaProvider>
         </IdentidadProvider>
       </ReglasProvider>

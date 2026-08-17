@@ -1,11 +1,31 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import styles from "./TarjetaProducto.module.css";
 import ImagenProducto from "./ImagenProducto.jsx";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
+import { useCuenta } from "../context/CuentaContext.jsx";
+import { useFavoritos } from "../context/FavoritosContext.jsx";
 
 function TarjetaProducto({ producto }) {
     const { agregarAlCarrito } = useCarritoContext();
+    const { estaAutenticado } = useCuenta();
+    const { esFavorito, alternarFavorito } = useFavoritos();
+    const navegar = useNavigate();
+    const favorito = esFavorito(producto.id);
     const enOferta = producto.precioAnterior !== null;
+
+    // Un invitado no tiene lista de deseos: lo mandamos a iniciar sesión. Con
+    // sesión, el toggle es optimista; si la API falla, el contexto revierte solo.
+    const alternarCorazon = async () => {
+        if (!estaAutenticado) {
+            navegar("/login");
+            return;
+        }
+        try {
+            await alternarFavorito(producto.id);
+        } catch {
+            // El corazón ya volvió a su estado previo; no molestamos con un error.
+        }
+    };
     // % de descuento derivado del precio anterior (se muestra en el badge).
     const descuento = enOferta
         ? Math.round((1 - producto.precio / producto.precioAnterior) * 100)
@@ -26,6 +46,16 @@ function TarjetaProducto({ producto }) {
                     />
                 </Link>
                 {enOferta && <span className={styles.badge}>−{descuento}%</span>}
+                <button
+                    type="button"
+                    className={`${styles.corazon} ${favorito ? styles.corazonActivo : ""}`}
+                    onClick={alternarCorazon}
+                    aria-pressed={favorito}
+                    aria-label={favorito ? `Quitar ${producto.nombre} de favoritos` : `Agregar ${producto.nombre} a favoritos`}
+                    title={favorito ? "Quitar de favoritos" : "Agregar a favoritos"}
+                >
+                    <i className={`${favorito ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true"></i>
+                </button>
                 <button
                     className={styles.boton}
                     onClick={() => agregarAlCarrito(producto)}

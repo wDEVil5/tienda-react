@@ -141,6 +141,44 @@
   line-height: 1.2;
 }
 
+/* Corazón de favoritos: arriba-derecha, no choca con el badge (arriba-izq). */
+.corazon {
+  position: absolute;
+  z-index: 2;
+  top: var(--e-sm);
+  right: var(--e-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: var(--color-texto-tenue, #6b6b6b);
+  border: 1px solid var(--color-borde-2, rgba(28, 27, 24, 0.12));
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(28, 27, 24, 0.12);
+  font-size: 15px;
+  cursor: pointer;
+  transition: color 0.18s ease, background-color 0.18s ease,
+    transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.corazon:hover {
+  color: var(--color-oferta);
+  background-color: #fff;
+  transform: scale(1.08);
+  box-shadow: 0 4px 10px rgba(28, 27, 24, 0.18);
+}
+
+.corazon:active {
+  transform: scale(0.94);
+}
+
+.corazonActivo {
+  color: var(--color-oferta);
+}
+
 .boton {
   position: absolute;
   z-index: 1;

@@ -410,6 +410,18 @@
 .itemsPago { display: flex; flex-direction: column; gap: var(--e-md); margin: 0 0 var(--e-lg); padding: 0; list-style: none; }
 .resumenPago { align-self: start; }
 .errorPago { margin: var(--e-md) 0 0; padding: 11px 12px; border-radius: var(--radio-caja); background: #fdecec; color: #a3352d; font-size: 12.5px; line-height: 1.45; }
+
+/* Panel de stock insuficiente: qué productos y ajuste en línea. */
+.faltantes { margin: var(--e-md) 0 0; padding: 13px 14px; border: 1px solid #f3c9c4; border-radius: var(--radio-caja); background: #fdf0ee; }
+.faltantesTitulo { display: flex; align-items: center; gap: 7px; color: #a3352d; font-size: 13px; font-weight: 600; }
+.faltantesLista { margin: 10px 0; display: flex; flex-direction: column; gap: 7px; list-style: none; }
+.faltantesLista li { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-size: 13px; }
+.faltanteNombre { color: var(--color-texto); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.faltanteDetalle { color: #a3352d; white-space: nowrap; }
+.ajustar { width: 100%; min-height: 42px; padding: 0 16px; border: none; border-radius: var(--radio-pill); background: var(--color-acento); color: #fff; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: background-color .2s ease; }
+.ajustar:hover:not(:disabled) { background: #205638; }
+.ajustar:disabled { opacity: .7; cursor: default; }
+.faltantesNota { margin-top: 9px; color: var(--color-texto-suave); font-size: 12px; line-height: 1.45; }
 .estadoPagoAusente { max-width: 500px; display: flex; flex-direction: column; align-items: center; margin: 30px auto 10px; padding: 48px 30px; text-align: center; }
 .estadoPagoAusente > span { width: 54px; height: 54px; display: grid; place-items: center; border-radius: 50%; background: var(--color-crudo); color: var(--color-texto-suave); font-size: 20px; }
 .estadoPagoAusente h1 { margin-top: 18px; font-family: var(--font-display); font-size: 34px; font-weight: 400; }

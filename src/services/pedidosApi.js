@@ -25,6 +25,8 @@ async function postJson(url, cuerpo, fetchImpl) {
     const error = new Error(datos?.error?.message ?? "No se pudo procesar el pedido.");
     error.code = datos?.error?.code;
     error.status = respuesta.status;
+    // Faltantes de stock (qué producto y cuánto hay), para ajustar en el checkout.
+    error.details = datos?.error?.details ?? null;
     throw error;
   }
 

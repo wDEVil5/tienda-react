@@ -149,7 +149,47 @@ test('rechaza si la cantidad supera el stock disponible', async () => {
       modalidad: 'RETIRO',
       items: [{ productoId: 'p1', cantidad: 2 }],
     }),
-    (error) => error instanceof ErrorPedido && error.code === 'INSUFFICIENT_STOCK',
+    (error) =>
+      error instanceof ErrorPedido &&
+      error.code === 'INSUFFICIENT_STOCK' &&
+      // Detalla el producto y cuánto hay disponible, para ajustar en línea.
+      Array.isArray(error.details) &&
+      error.details.length === 1 &&
+      error.details[0].nombre === 'Leche' &&
+      error.details[0].disponible === 1 &&
+      error.details[0].solicitado === 2,
+  )
+})
+
+test('junta TODOS los productos sin stock en error.details (no corta en el primero)', async () => {
+  const leche = {
+    id: 'p1', sku: 'LE', nombre: 'Leche', precio: 4290, precioAnterior: null,
+    stock: 1, stockReservado: 1, tieneOfertaVigente: false, // disponible = 0
+  }
+  const pan = {
+    id: 'p2', sku: 'PA', nombre: 'Pan', precio: 1990, precioAnterior: null,
+    stock: 3, stockReservado: 1, tieneOfertaVigente: false, // disponible = 2
+  }
+  const { repositorio } = crearRepoFalso([leche, pan])
+  const servicio = crearServicioPedidos(repositorio, reglasFalsas)
+
+  await assert.rejects(
+    servicio.crearPedido({
+      contacto,
+      modalidad: 'RETIRO',
+      items: [
+        { productoId: 'p1', cantidad: 2 },
+        { productoId: 'p2', cantidad: 5 },
+      ],
+    }),
+    (error) =>
+      error instanceof ErrorPedido &&
+      error.code === 'INSUFFICIENT_STOCK' &&
+      error.details.length === 2 &&
+      error.details[0].productoId === 'p1' &&
+      error.details[0].disponible === 0 &&
+      error.details[1].productoId === 'p2' &&
+      error.details[1].disponible === 2,
   )
 })
 

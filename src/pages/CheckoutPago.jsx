@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import ImagenProducto from "../components/ImagenProducto.jsx";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
-import { crearPedido } from "../services/pedidosApi.js";
+import { crearPedido, cotizarPedido } from "../services/pedidosApi.js";
 import { iniciarPago } from "../services/pagosApi.js";
 import {
   actualizarCheckoutPendiente,
@@ -45,11 +45,15 @@ function CabeceraCheckoutPago() {
 
 function CheckoutPago() {
   const navegar = useNavigate();
-  const { vaciarCarrito } = useCarritoContext();
+  const { vaciarCarrito, fijarCantidad, eliminarDelCarrito } = useCarritoContext();
   const [checkout, setCheckout] = useState(() => obtenerCheckoutPendiente());
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
   const [procesandoPago, setProcesandoPago] = useState(false);
   const [errorPago, setErrorPago] = useState("");
+  // Productos que quedaron sin stock suficiente al intentar crear el pedido, con
+  // cuánto hay disponible. Mientras haya faltantes, el pago se bloquea hasta ajustar.
+  const [faltantes, setFaltantes] = useState(null);
+  const [ajustando, setAjustando] = useState(false);
 
   if (!checkout) {
     return (
@@ -76,8 +80,60 @@ function CheckoutPago() {
     if (!pedidoCreado) navegar("/checkout", { replace: true });
   };
 
+  // Baja las cantidades sin stock al máximo disponible (quita los agotados),
+  // recotiza y actualiza el pedido pendiente y el carrito, todo sin volver al
+  // carrito. Al terminar, el cliente ya puede pagar.
+  const ajustarYReintentar = async () => {
+    if (ajustando || !faltantes) return;
+    setAjustando(true);
+    setErrorPago("");
+    try {
+      const porId = new Map(faltantes.map((falta) => [falta.productoId, falta]));
+      const nuevosVisuales = itemsVisuales
+        .map((item) => {
+          const falta = porId.get(item.id);
+          return falta ? { ...item, cantidad: falta.disponible } : item;
+        })
+        .filter((item) => item.cantidad > 0);
+
+      // Sincroniza el carrito real con el mismo ajuste.
+      faltantes.forEach((falta) => {
+        if (falta.disponible <= 0) eliminarDelCarrito(falta.productoId);
+        else fijarCantidad(falta.productoId, falta.disponible);
+      });
+
+      // Si no quedó nada que comprar, volvemos al carrito (que estará vacío).
+      if (nuevosVisuales.length === 0) {
+        vaciarCarrito();
+        navegar("/checkout", { replace: true });
+        return;
+      }
+
+      const nuevaCotizacion = await cotizarPedido({
+        modalidad,
+        comuna: modalidad === "DESPACHO" ? direccionPedido?.comuna : undefined,
+        items: nuevosVisuales.map(({ id, cantidad }) => ({ productoId: id, cantidad })),
+      });
+
+      const siguiente = {
+        ...checkout,
+        itemsVisuales: nuevosVisuales,
+        cotizacion: nuevaCotizacion,
+        // El pedido no llegó a crearse; forzamos que el próximo pago lo cree limpio.
+        pedidoCreado: null,
+      };
+      guardarCheckoutPendiente(siguiente);
+      setCheckout(siguiente);
+      setFaltantes(null);
+    } catch (errorSolicitud) {
+      setErrorPago(mensajeErrorPago(errorSolicitud));
+    } finally {
+      setAjustando(false);
+    }
+  };
+
   const manejarPago = async () => {
-    if (!aceptaTerminos || procesandoPago) return;
+    if (!aceptaTerminos || procesandoPago || faltantes) return;
 
     setProcesandoPago(true);
     setErrorPago("");
@@ -102,7 +158,14 @@ function CheckoutPago() {
       vaciarCarrito();
       window.location.assign(pago.urlPago);
     } catch (errorSolicitud) {
-      setErrorPago(mensajeErrorPago(errorSolicitud));
+      // Sin stock: en vez de un mensaje genérico, mostramos qué productos y
+      // ofrecemos ajustarlos en línea (no hace falta volver al carrito).
+      if (errorSolicitud?.code === "INSUFFICIENT_STOCK" && Array.isArray(errorSolicitud.details)) {
+        setFaltantes(errorSolicitud.details);
+        setErrorPago("");
+      } else {
+        setErrorPago(mensajeErrorPago(errorSolicitud));
+      }
       setProcesandoPago(false);
     }
   };
@@ -196,7 +259,36 @@ function CheckoutPago() {
           </div>
           <div className={styles.totalFila}><span>Total</span><span className={styles.totalMonto}>{clp(cotizacion.total)}</span></div>
           {errorPago && <p className={styles.errorPago} role="alert">{errorPago}</p>}
-          <button type="button" className={styles.confirmar} onClick={manejarPago} disabled={!aceptaTerminos || procesandoPago}>
+
+          {faltantes && (
+            <div className={styles.faltantes} role="alert">
+              <p className={styles.faltantesTitulo}>
+                <i className="fa-solid fa-triangle-exclamation" aria-hidden="true" />{" "}
+                {faltantes.length === 1
+                  ? "Un producto ya no tiene el stock que pediste:"
+                  : "Algunos productos ya no tienen el stock que pediste:"}
+              </p>
+              <ul className={styles.faltantesLista}>
+                {faltantes.map((falta) => (
+                  <li key={falta.productoId}>
+                    <span className={styles.faltanteNombre} title={falta.nombre}>{falta.nombre}</span>
+                    <span className={styles.faltanteDetalle}>
+                      {falta.disponible === 0 ? "Agotado" : `Quedan ${falta.disponible}`}
+                      <span aria-hidden="true"> · </span>pediste {falta.solicitado}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <button type="button" className={styles.ajustar} onClick={ajustarYReintentar} disabled={ajustando}>
+                {ajustando ? "Ajustando…" : "Ajustar mi pedido"}
+              </button>
+              <p className={styles.faltantesNota}>
+                Bajamos las cantidades al máximo disponible y quitamos los agotados. Después podrás pagar.
+              </p>
+            </div>
+          )}
+
+          <button type="button" className={styles.confirmar} onClick={manejarPago} disabled={!aceptaTerminos || procesandoPago || Boolean(faltantes)}>
             {procesandoPago ? "Abriendo Mercado Pago…" : `Pagar ${clp(cotizacion.total)}`}
           </button>
           <p className={styles.notaServidor}>Montos calculados en el servidor. Mercado Pago confirmará el pago mediante webhook.</p>

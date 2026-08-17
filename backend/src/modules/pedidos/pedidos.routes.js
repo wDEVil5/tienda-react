@@ -100,7 +100,12 @@ export function crearRouterPedidos({
       // cumplir un pedido que en sí venía bien formado.
       if (error instanceof ErrorPedido) {
         return response.status(409).json({
-          error: { code: error.code, message: error.message },
+          error: {
+            code: error.code,
+            message: error.message,
+            // Faltantes de stock (qué producto y cuánto hay), si el error los trae.
+            ...(error.details ? { details: error.details } : {}),
+          },
         })
       }
       return next(error)

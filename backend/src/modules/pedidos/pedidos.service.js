@@ -39,7 +39,11 @@ function calcularLinea(producto, cantidad) {
 function construirLineas(entrada, productos, { validarStock }) {
   const porId = new Map(productos.map((producto) => [producto.id, producto]))
 
-  return entrada.items.map((item) => {
+  // Recolectamos TODOS los faltantes de stock (no cortamos en el primero) para
+  // que el cliente vea de una sola vez qué productos ajustar y cuánto hay.
+  const sinStock = []
+
+  const lineas = entrada.items.map((item) => {
     const producto = porId.get(item.productoId)
     if (!producto) {
       throw new ErrorPedido(
@@ -52,15 +56,31 @@ function construirLineas(entrada, productos, { validarStock }) {
       // Chequeo optimista (la reserva atómica definitiva ocurre en la transacción).
       const disponible = producto.stock - producto.stockReservado
       if (item.cantidad > disponible) {
-        throw new ErrorPedido(
-          'INSUFFICIENT_STOCK',
-          `No hay stock suficiente de ${producto.nombre}.`,
-        )
+        sinStock.push({
+          productoId: producto.id,
+          nombre: producto.nombre,
+          disponible: Math.max(0, disponible),
+          solicitado: item.cantidad,
+        })
       }
     }
 
     return calcularLinea(producto, item.cantidad)
   })
+
+  if (sinStock.length > 0) {
+    const error = new ErrorPedido(
+      'INSUFFICIENT_STOCK',
+      sinStock.length === 1
+        ? `No hay stock suficiente de ${sinStock[0].nombre}.`
+        : `${sinStock.length} productos no tienen stock suficiente.`,
+    )
+    // La ruta expone estos detalles para que el checkout ofrezca ajustar en línea.
+    error.details = sinStock
+    throw error
+  }
+
+  return lineas
 }
 
 // total = subtotal (a precio normal) - descuento + envío. Reproduce el resumen

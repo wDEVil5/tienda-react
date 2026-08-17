@@ -22,10 +22,9 @@
   aspect-ratio: 1 / 1;
   background-color: var(--color-superficie);
   border-radius: var(--radio-caja);
-  /* El CTA se superpone a la base; el recorte queda en el enlace de imagen. */
-  overflow: visible;
-  /* Deja aire entre el botón (que cuelga por debajo) y el texto de abajo. */
-  margin-bottom: 44px;
+  overflow: hidden;
+  /* Aire entre la imagen y el bloque de texto. */
+  margin-bottom: 12px;
 }
 
 .imagen {
@@ -92,9 +91,8 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  /* Anclada al fondo de la tarjeta: todas las calificaciones quedan alineadas. */
-  margin-top: auto;
-  padding-top: 6px;
+  /* Va justo debajo del botón (que ya está anclado al fondo con margin-top:auto). */
+  margin-top: 10px;
   color: #f5a623; /* estrella ámbar de calificación */
   font-size: 13px;
 }
@@ -212,53 +210,41 @@
   color: var(--color-oferta);
 }
 
+/* Botón de ancho completo bajo el nombre. margin-top:auto lo ancla (junto con la
+   calificación) al fondo de la tarjeta, manteniendo las filas alineadas. */
 .boton {
-  position: absolute;
-  z-index: 1;
-  /* Cuelga más abajo del marco para tapar menos la foto. */
-  bottom: -28px;
-  left: 50%;
-  display: inline-flex;
-  min-width: min(172px, calc(100% - 24px));
+  width: 100%;
+  margin-top: auto;
   height: 46px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 0 20px;
-  transform: translateX(-50%);
+  padding: 0 16px;
   background-color: var(--color-acento);
   color: #fff;
-  border: 1px solid var(--color-acento);
-  border-radius: var(--radio-pill);
-  box-shadow: 0 5px 12px rgba(28, 27, 24, 0.18);
+  border: none;
+  border-radius: var(--radio-caja);
   font: inherit;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease,
-    transform 0.2s ease, box-shadow 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
 .boton:hover {
   background-color: #205638;
-  border-color: #205638;
-  box-shadow: 0 8px 16px rgba(28, 27, 24, 0.22);
 }
 
 .boton:active {
-  transform: translateX(-50%) translateY(1px);
+  transform: translateY(1px);
 }
 
 @media (max-width: 767px) {
-  .imagenWrap { margin-bottom: 38px; }
+  .imagenWrap { margin-bottom: 10px; }
   .boton {
-    min-width: calc(100% - 16px);
     height: 40px;
-    bottom: -26px;
-    gap: 6px;
-    padding: 0 12px;
-    font-size: 12px;
+    padding: 0 10px;
+    font-size: 13px;
   }
   .precio { font-size: 18px; }
   .precioUnidad { font-size: 10.5px; }

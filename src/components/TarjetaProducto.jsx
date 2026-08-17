@@ -56,14 +56,6 @@ function TarjetaProducto({ producto }) {
                 >
                     <i className={`${favorito ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true"></i>
                 </button>
-                <button
-                    className={styles.boton}
-                    onClick={() => agregarAlCarrito(producto)}
-                    aria-label={`Agregar ${producto.nombre} al carrito`}
-                >
-                    <i className="fa-solid fa-plus" aria-hidden="true"></i>
-                    Agregar
-                </button>
             </div>
 
             <div className={styles.info}>
@@ -90,6 +82,14 @@ function TarjetaProducto({ producto }) {
                 <h3 className={styles.nombre}>
                     <Link to={`/producto/${producto.slug ?? producto.id}`}>{producto.nombre}</Link>
                 </h3>
+                <button
+                    type="button"
+                    className={styles.boton}
+                    onClick={() => agregarAlCarrito(producto)}
+                    aria-label={`Agregar ${producto.nombre} al carrito`}
+                >
+                    Agregar
+                </button>
                 {producto.resenas?.conteo > 0 && producto.resenas.promedio !== null ? (
                     <p className={styles.calificacion}>
                         <i className="fa-solid fa-star" aria-hidden="true"></i>

@@ -231,6 +231,13 @@ model Producto {
   destacado       Boolean        @default(false)
   alertaStockBajo Int?           @map("alerta_stock_bajo")
 
+  // Agregado de reseñas DENORMALIZADO: guardamos la suma de calificaciones y el
+  // conteo, recomputados en transacción en cada alta/edición/baja de reseña. Así
+  // el catálogo y la ficha leen promedio (suma/conteo) y total sin un groupBy por
+  // consulta. La verdad de cada reseña vive en la tabla `resenas`.
+  resenaSuma      Int            @default(0) @map("resena_suma")
+  resenaConteo    Int            @default(0) @map("resena_conteo")
+
   codigoBarras       String?   @unique @map("codigo_barras") @db.VarChar(50)
   origen             String?   @db.VarChar(120)
   contenidoCantidad  Decimal?  @map("contenido_cantidad") @db.Decimal(10, 3)
@@ -261,6 +268,7 @@ model Producto {
   movimientosStock MovimientoStock[]
   atributos        ProductoAtributo[]
   favoritos        Favorito[]
+  resenas          Resena[]
 
   @@index([categoriaId])
   @@index([subcategoriaId])
@@ -620,6 +628,7 @@ model Cliente {
   suscripciones      Suscriptor[]
   tokensRecuperacion TokenRecuperacion[]
   favoritos          Favorito[]
+  resenas            Resena[]
 
   @@index([activo])
   @@map("clientes")
@@ -735,6 +744,32 @@ model Favorito {
   @@index([clienteId])
   @@index([productoId])
   @@map("favoritos")
+}
+
+// Reseña/calificación de un producto por un cliente. Regla de negocio (validada
+// en el servicio, no en el schema): solo puede reseñar quien COMPRÓ el producto
+// (pedido pagado propio). Una reseña por cliente y producto (editable). El nombre
+// del autor se lee del cliente vía relación; si el cliente o el producto se
+// borran, la reseña cae en cascada.
+model Resena {
+  id           String   @id @default(uuid()) @db.Uuid
+  productoId   String   @map("producto_id") @db.Uuid
+  clienteId    String   @map("cliente_id") @db.Uuid
+  // Entero 1..5. El rango se valida en la capa de entrada (Zod), no en SQL.
+  calificacion Int
+  titulo       String?  @db.VarChar(120)
+  cuerpo       String?  @db.VarChar(1000)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  producto Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  cliente  Cliente  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+
+  // Una reseña por cliente y producto; volver a enviar edita la existente.
+  @@unique([productoId, clienteId])
+  @@index([productoId])
+  @@index([clienteId])
+  @@map("resenas")
 }
 
 // Suscripción al boletín (newsletter del footer). A diferencia de "Avísame", no

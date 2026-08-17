@@ -16,6 +16,7 @@ import cuentaRouter from './modules/cuenta/cuenta.routes.js'
 import direccionesRouter from './modules/cuenta/cuenta.direcciones.routes.js'
 import pedidosClienteRouter from './modules/cuenta/cuenta.pedidos.routes.js'
 import favoritosRouter from './modules/favoritos/favoritos.routes.js'
+import resenasRouter from './modules/resenas/resenas.routes.js'
 import adminRouter from './modules/admin/admin.routes.js'
 import { crearRouterRecuperacion } from './modules/recuperacion/recuperacion.routes.js'
 import {
@@ -70,6 +71,7 @@ app.use('/api/cuenta/contrasena', crearRouterRecuperacion({ servicio: servicioRe
 app.use('/api/cuenta/direcciones', direccionesRouter)
 app.use('/api/cuenta/pedidos', pedidosClienteRouter)
 app.use('/api/cuenta/favoritos', favoritosRouter)
+app.use('/api/resenas', resenasRouter)
 app.use('/api/admin', adminRouter)
 
 // Debe ir después de las rutas: responde de forma predecible cuando la API no reconoce una URL.

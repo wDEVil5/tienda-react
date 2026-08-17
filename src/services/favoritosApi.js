@@ -1,3 +1,5 @@
+import { normalizarProductoApi } from "../data/producto.js";
+
 // Cliente de la lista de deseos (favoritos). Como el resto de la cuenta, siempre
 // requiere la API propia y envía la cookie httpOnly cross-site.
 const apiUrlPorDefecto = () => import.meta.env.VITE_API_URL;
@@ -36,10 +38,15 @@ async function solicitar(
   return datos;
 }
 
-// Tarjetas completas + ids de la página "Favoritos".
+// Tarjetas completas + ids de la página "Favoritos". Los productos llegan en la
+// forma pública de la API y se normalizan a la forma que consume TarjetaProducto
+// (imagen principal, precioPorUnidad, etc.), igual que el catálogo.
 export async function obtenerFavoritos(opciones = {}) {
   const cuerpo = await solicitar("/cuenta/favoritos", opciones);
-  return { data: cuerpo?.data ?? [], ids: cuerpo?.ids ?? [] };
+  return {
+    data: (cuerpo?.data ?? []).map(normalizarProductoApi),
+    ids: cuerpo?.ids ?? [],
+  };
 }
 
 // Solo los ids: barato, para hidratar el estado de los corazones al cargar.

@@ -29,6 +29,7 @@ import PaginaContenido from "./pages/PaginaContenido.jsx";
 import ComoComprar from "./pages/ComoComprar.jsx";
 import MiCuenta from "./pages/MiCuenta.jsx";
 import Direcciones from "./pages/Direcciones.jsx";
+import Favoritos from "./pages/Favoritos.jsx";
 import MisPedidos from "./pages/MisPedidos.jsx";
 import DetallePedido from "./pages/DetallePedido.jsx";
 import DatosCuenta from "./pages/DatosCuenta.jsx";
@@ -317,6 +318,14 @@ function App() {
             element={
               <RutaProtegida>
                 <DetallePedido />
+              </RutaProtegida>
+            }
+          />
+          <Route
+            path="/mi-cuenta/favoritos"
+            element={
+              <RutaProtegida>
+                <Favoritos />
               </RutaProtegida>
             }
           />

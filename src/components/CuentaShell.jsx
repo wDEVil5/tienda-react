@@ -9,6 +9,7 @@ import styles from "./CuentaShell.module.css";
 const NAV = [
   { etiqueta: "Resumen", a: "/mi-cuenta" },
   { etiqueta: "Mis pedidos", a: "/mi-cuenta/pedidos" },
+  { etiqueta: "Favoritos", a: "/mi-cuenta/favoritos" },
   { etiqueta: "Direcciones", a: "/mi-cuenta/direcciones" },
   { etiqueta: "Datos y seguridad", a: "/mi-cuenta/datos" },
 ];

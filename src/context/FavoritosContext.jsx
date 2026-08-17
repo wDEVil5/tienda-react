@@ -43,6 +43,11 @@ export function FavoritosProvider({ children }) {
 
   const esFavorito = useCallback((productoId) => ids.has(productoId), [ids]);
 
+  // Deja el set exactamente con estos ids. La página "Favoritos" la usa tras
+  // cargar sus tarjetas, para que el set sea la verdad y quitar un favorito haga
+  // desaparecer la tarjeta al instante (sin una carrera con la hidratación).
+  const sincronizarIds = useCallback((lista) => setIds(new Set(lista)), []);
+
   // Alterna el favorito de forma OPTIMISTA: cambia el corazón al instante y, si
   // la API falla, revierte. Asume sesión iniciada (el botón redirige al login
   // antes de llamar). Devuelve el nuevo estado (true = quedó favorito).
@@ -73,7 +78,7 @@ export function FavoritosProvider({ children }) {
 
   return (
     <FavoritosContext.Provider
-      value={{ ids, cantidad: ids.size, esFavorito, alternarFavorito }}
+      value={{ ids, cantidad: ids.size, esFavorito, alternarFavorito, sincronizarIds }}
     >
       {children}
     </FavoritosContext.Provider>

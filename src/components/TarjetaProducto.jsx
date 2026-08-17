@@ -1,23 +1,28 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import styles from "./TarjetaProducto.module.css";
 import ImagenProducto from "./ImagenProducto.jsx";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 import { useCuenta } from "../context/CuentaContext.jsx";
 import { useFavoritos } from "../context/FavoritosContext.jsx";
+import { useAccesoModal } from "../context/AccesoModalContext.jsx";
 
 function TarjetaProducto({ producto }) {
     const { agregarAlCarrito } = useCarritoContext();
     const { estaAutenticado } = useCuenta();
     const { esFavorito, alternarFavorito } = useFavoritos();
-    const navegar = useNavigate();
+    const { abrirAcceso } = useAccesoModal();
     const favorito = esFavorito(producto.id);
     const enOferta = producto.precioAnterior !== null;
 
-    // Un invitado no tiene lista de deseos: lo mandamos a iniciar sesión. Con
-    // sesión, el toggle es optimista; si la API falla, el contexto revierte solo.
+    // Un invitado no tiene lista de deseos: abrimos el modal de acceso en la misma
+    // página y, al iniciar sesión, retomamos el favorito. Con sesión, el toggle es
+    // optimista; si la API falla, el contexto revierte solo.
     const alternarCorazon = async () => {
         if (!estaAutenticado) {
-            navegar("/login");
+            abrirAcceso({
+                mensaje: "Inicia sesión para guardar productos en tus favoritos.",
+                onExito: () => alternarFavorito(producto.id).catch(() => {}),
+            });
             return;
         }
         try {

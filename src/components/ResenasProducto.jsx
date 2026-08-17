@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import Estrellas from "./Estrellas.jsx";
 import { useCuenta } from "../context/CuentaContext.jsx";
+import { useAccesoModal } from "../context/AccesoModalContext.jsx";
 import {
   eliminarResena,
   guardarResena,
@@ -53,7 +53,7 @@ function EntradaEstrellas({ valor, onCambiar }) {
 
 function ResenasProducto({ productoId }) {
   const { estaAutenticado } = useCuenta();
-  const navegar = useNavigate();
+  const { abrirAcceso } = useAccesoModal();
 
   const [resenas, setResenas] = useState([]);
   const [meta, setMeta] = useState(null);
@@ -117,7 +117,11 @@ function ResenasProducto({ productoId }) {
 
   const abrirFormulario = () => {
     if (!estaAutenticado) {
-      navegar("/login");
+      // Modal de acceso en la misma página; al iniciar sesión, abre el formulario.
+      abrirAcceso({
+        mensaje: "Inicia sesión para calificar este producto.",
+        onExito: () => setFormAbierto(true),
+      });
       return;
     }
     // Prefill con la reseña existente (edición) o vacío (nueva).

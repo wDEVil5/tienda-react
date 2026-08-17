@@ -38,7 +38,7 @@ import Carrito from "./components/Carrito.jsx";
 import Toast from "./components/Toast.jsx";
 import styles from "./App.module.css";
 import Header from "./components/Header.jsx";
-import ModalAcceso from "./components/ModalAcceso.jsx";
+import { useAccesoModal } from "./context/AccesoModalContext.jsx";
 import Footer from "./components/Footer.jsx";
 import RutaProtegida from "./components/RutaProtegida.jsx";
 import { obtenerCatalogo, obtenerCategorias, obtenerMasVendidos } from "./services/productosApi.js";
@@ -58,8 +58,9 @@ function App() {
   const [reintento, setReintento] = useState(0);
 
   const [carritoAbierto, setCarritoAbierto] = useState(false);
-  const [accesoAbierto, setAccesoAbierto] = useState(false);
-  const [modoAcceso, setModoAcceso] = useState("login");
+  // El modal de acceso se controla por contexto (se puede abrir desde cualquier
+  // componente, con mensaje dinámico). El provider lo renderiza.
+  const { abrirAcceso } = useAccesoModal();
 
   // Categorías (con sus subcategorías) para el header y el Home.
   useEffect(() => {
@@ -240,10 +241,7 @@ function App() {
           busqueda={busqueda}
           onBuscar={setBusqueda}
           onAbrirCarrito={() => setCarritoAbierto(true)}
-          onAbrirAcceso={(modo = "login") => {
-            setModoAcceso(modo);
-            setAccesoAbierto(true);
-          }}
+          onAbrirAcceso={(modo = "login") => abrirAcceso({ modo })}
         />
       )}
 
@@ -358,13 +356,6 @@ function App() {
         ></div>
       )}
 
-      {accesoAbierto && (
-        <ModalAcceso
-          modoInicial={modoAcceso}
-          alCerrar={() => setAccesoAbierto(false)}
-        />
-      )}
-
       {/* El Carrito SIEMPRE montado: se desliza dentro/fuera según "abierto" */}
       <Carrito
         onCerrar={() => setCarritoAbierto(false)}
@@ -379,10 +370,7 @@ function App() {
       {!esCheckout && !esPantallaPrivada && (
         <Footer
           productos={productos}
-          onAbrirAcceso={(modo = "login") => {
-            setModoAcceso(modo);
-            setAccesoAbierto(true);
-          }}
+          onAbrirAcceso={(modo = "login") => abrirAcceso({ modo })}
         />
       )}
     </div>

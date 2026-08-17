@@ -9,6 +9,7 @@ import { ReglasProvider } from './context/ReglasContext.jsx'
 import { IdentidadProvider } from './context/IdentidadContext.jsx'
 import { ConfirmProvider } from './context/ConfirmContext.jsx'
 import { FavoritosProvider } from './context/FavoritosContext.jsx'
+import { AccesoModalProvider } from './context/AccesoModalContext.jsx'
 import { aplicarRetornoPago } from './lib/retornoPago.js'
 
 // Debe ocurrir antes de montar BrowserRouter: Pages entrega la raíz estática y
@@ -24,7 +25,9 @@ createRoot(document.getElementById('root')).render(
             <FavoritosProvider>
               <CarritoProvider>
                 <ConfirmProvider>
-                  <App />
+                  <AccesoModalProvider>
+                    <App />
+                  </AccesoModalProvider>
                 </ConfirmProvider>
               </CarritoProvider>
             </FavoritosProvider>

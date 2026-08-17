@@ -1,8 +1,9 @@
 import { useEffect, useLayoutEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 import { useCuenta } from "../context/CuentaContext.jsx";
 import { useFavoritos } from "../context/FavoritosContext.jsx";
+import { useAccesoModal } from "../context/AccesoModalContext.jsx";
 import ImagenProducto from "../components/ImagenProducto.jsx";
 import TarjetaProducto from "../components/TarjetaProducto.jsx";
 import ControlCantidad from "../components/ControlCantidad.jsx";
@@ -34,7 +35,7 @@ function ProductoDetalle({ productos }) {
   const { agregarAlCarrito, carrito } = useCarritoContext();
   const { estaAutenticado } = useCuenta();
   const { esFavorito, alternarFavorito } = useFavoritos();
-  const navegar = useNavigate();
+  const { abrirAcceso } = useAccesoModal();
   const [cantidad, setCantidad] = useState(1); // cantidad a agregar
   const [imagenSeleccionada, setImagenSeleccionada] = useState(null);
 
@@ -136,11 +137,14 @@ function ProductoDetalle({ productos }) {
   }
 
   const favorito = esFavorito(producto.id);
-  // Invitado → a iniciar sesión (la lista de deseos es de cuenta). Con sesión el
-  // toggle es optimista y el contexto revierte solo si la API falla.
+  // Invitado → modal de acceso en la misma página; al iniciar sesión, retoma el
+  // favorito. Con sesión el toggle es optimista y el contexto revierte solo.
   const alternarFavoritoDetalle = async () => {
     if (!estaAutenticado) {
-      navegar("/login");
+      abrirAcceso({
+        mensaje: "Inicia sesión para guardar productos en tus favoritos.",
+        onExito: () => alternarFavorito(producto.id).catch(() => {}),
+      });
       return;
     }
     try {

@@ -4,9 +4,12 @@ import styles from "./ModalAcceso.module.css";
 
 // Capa de acceso para visitantes: reutiliza el formulario y contrato de sesión
 // de /login, por lo que no crea un segundo flujo de autenticación que mantener.
-function ModalAcceso({ alCerrar, modoInicial = "login" }) {
+function ModalAcceso({ alCerrar, alCompletar, modoInicial = "login", mensaje = "" }) {
   const dialogoRef = useRef(null);
   const [modo, setModo] = useState(modoInicial);
+  // Si no se pasa un `alCompletar` propio, completar equivale a cerrar (mismo
+  // comportamiento que el modal abierto desde el Header/Footer).
+  const completar = alCompletar ?? alCerrar;
 
   useEffect(() => {
     const overflowAnterior = document.body.style.overflow;
@@ -43,6 +46,11 @@ function ModalAcceso({ alCerrar, modoInicial = "login" }) {
             ×
           </button>
         </header>
+        {mensaje && (
+          <p className={styles.aviso} role="status">
+            <i className="fa-solid fa-circle-info" aria-hidden="true" /> {mensaje}
+          </p>
+        )}
         <div
           className={`${styles.pestanas} ${modo === "registro" ? styles.pestanasRegistro : ""}`}
           role="tablist"
@@ -80,9 +88,9 @@ function ModalAcceso({ alCerrar, modoInicial = "login" }) {
           aria-labelledby={modo === "login" ? "pestana-iniciar-sesion" : "pestana-crear-cuenta"}
         >
           {modo === "login" ? (
-            <Login key="login" enModal alCompletar={alCerrar} alCambiarModo={setModo} />
+            <Login key="login" enModal alCompletar={completar} alCambiarModo={setModo} />
           ) : (
-            <Registro key="registro" enModal alCompletar={alCerrar} alCambiarModo={setModo} />
+            <Registro key="registro" enModal alCompletar={completar} alCambiarModo={setModo} />
           )}
         </div>
       </section>

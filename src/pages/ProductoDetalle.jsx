@@ -7,7 +7,7 @@ import ImagenProducto from "../components/ImagenProducto.jsx";
 import TarjetaProducto from "../components/TarjetaProducto.jsx";
 import ControlCantidad from "../components/ControlCantidad.jsx";
 import ResenasProducto from "../components/ResenasProducto.jsx";
-import { obtenerProductoDetalle, obtenerProductosSimilares } from "../services/productosApi.js";
+import { obtenerMasVendidos, obtenerProductoDetalle, obtenerProductosSimilares } from "../services/productosApi.js";
 import styles from "./ProductoDetalle.module.css";
 
 // Límite de presentación. El backend y el panel admin deberán validar el
@@ -93,6 +93,21 @@ function ProductoDetalle({ productos }) {
     };
   }, [producto?.slug, producto?.id]);
 
+  // "Te podrían interesar": más vendidos del catálogo (recomendación popular,
+  // distinta de los similares por subcategoría). Se piden una sola vez.
+  const [masVendidos, setMasVendidos] = useState([]);
+  useEffect(() => {
+    let vigente = true;
+    obtenerMasVendidos({ limit: 12 })
+      .then((lista) => {
+        if (vigente && Array.isArray(lista)) setMasVendidos(lista);
+      })
+      .catch(() => {});
+    return () => {
+      vigente = false;
+    };
+  }, []);
+
   // React Router conserva la posición previa del documento al cambiar de ruta.
   // Cada detalle debe comenzar arriba, también al abrir un relacionado desde
   // esta misma página (en ese caso el componente no se desmonta: solo cambia :id).
@@ -171,6 +186,11 @@ function ProductoDetalle({ productos }) {
     .filter((p) => p.categoria === producto.categoria && p.id !== producto.id)
     .slice(0, 6);
   const sugeridos = similares.length > 0 ? similares : relacionadosLocales;
+
+  // "Te podrían interesar": más vendidos, excluyendo el actual y los que ya
+  // aparecen en "similares" para no repetir tarjetas.
+  const idsMostrados = new Set([producto.id, ...sugeridos.map((p) => p.id)]);
+  const teInteresan = masVendidos.filter((p) => !idsMostrados.has(p.id)).slice(0, 6);
 
   // Las reseñas usan el id real (UUID) del backend. En el fallback de demo
   // (Fake Store, ids numéricos) no hay reseñas: ocultamos la sección.
@@ -345,20 +365,31 @@ function ProductoDetalle({ productos }) {
             </dl>
           )}
 
+          {sugeridos.length > 0 && (
+            <section className={styles.recomendados} aria-labelledby="similares-titulo">
+              <h2 id="similares-titulo" className={styles.recomendadosTitulo}>Descubre productos similares</h2>
+              <div className={styles.recomendadosGrid}>
+                {sugeridos.map((p) => (
+                  <TarjetaProducto key={p.id} producto={p} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {teInteresan.length > 0 && (
+            <section className={styles.recomendados} aria-labelledby="interesan-titulo">
+              <h2 id="interesan-titulo" className={styles.recomendadosTitulo}>Te podrían interesar</h2>
+              <div className={styles.recomendadosGrid}>
+                {teInteresan.map((p) => (
+                  <TarjetaProducto key={p.id} producto={p} />
+                ))}
+              </div>
+            </section>
+          )}
+
           {productoTieneResenas && <ResenasProducto key={producto.id} productoId={producto.id} />}
         </div>
       </div>
-
-      {sugeridos.length > 0 && (
-        <section className={styles.relacionados}>
-          <h2 className={styles.relTitulo}>Descubre productos similares</h2>
-          <div className={styles.relGrid}>
-            {sugeridos.map((p) => (
-              <TarjetaProducto key={p.id} producto={p} />
-            ))}
-          </div>
-        </section>
-      )}
     </section>
   );
 }

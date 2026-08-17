@@ -120,6 +120,14 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
       return productos.map(crearProductoPublico)
     },
 
+    // "Descubre productos similares" de la ficha. El repositorio resuelve la
+    // subcategoría/categoría del producto de `slug`; el servicio hace la copia
+    // pública defensiva, igual que "más vendidos".
+    async obtenerSimilares(slug, { limit = 8 } = {}) {
+      const productos = await repositorio.similaresPublicados({ slug, limit })
+      return productos.map(crearProductoPublico)
+    },
+
     // Facetas del sidebar (marcas + rango de precio) para el mismo contexto de la
     // lista, sin considerar marca/precio (para que no se auto-recorten).
     async obtenerFacetas({ query = '', categoria = '', subcategoria = '', subcategoriaHija = '', soloOfertas = false, soloDisponibles = false } = {}) {
@@ -146,3 +154,4 @@ export const listarProductos = servicioProductos.listarProductos
 export const obtenerProductoPorSlug = servicioProductos.obtenerProductoPorSlug
 export const obtenerFacetas = servicioProductos.obtenerFacetas
 export const obtenerMasVendidos = servicioProductos.obtenerMasVendidos
+export const obtenerSimilares = servicioProductos.obtenerSimilares

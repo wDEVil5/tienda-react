@@ -182,6 +182,32 @@ export async function obtenerProductoDetalle({
 }
 
 /**
+ * Productos similares para la ficha ("Descubre productos similares"): misma
+ * subcategoría/categoría, ya normalizados. Sin API o ante un fallo devuelve []
+ * (la ficha simplemente no muestra la sección).
+ */
+export async function obtenerProductosSimilares({
+  slug,
+  limit,
+  fetchImpl = fetch,
+  apiUrl = import.meta.env.VITE_API_URL,
+} = {}) {
+  if (!apiUrl || !slug) return [];
+
+  try {
+    const parametros = limit ? `?limit=${limit}` : "";
+    const respuesta = await fetchImpl(
+      `${apiUrl.replace(/\/$/, "")}/productos/${encodeURIComponent(slug)}/similares${parametros}`,
+    );
+    if (!respuesta.ok) return [];
+    const cuerpo = await respuesta.json();
+    return Array.isArray(cuerpo.data) ? cuerpo.data.map(normalizarProductoApi) : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
  * Recupera categorías completas para no depender de la página visible del
  * catálogo. Sin API propia devuelve null y la UI usa su derivación temporal.
  */

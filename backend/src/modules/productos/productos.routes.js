@@ -8,6 +8,7 @@ import {
   obtenerFacetas,
   obtenerMasVendidos,
   obtenerProductoPorSlug,
+  obtenerSimilares,
 } from './productos.service.js'
 
 // La vitrina del Home pide pocos productos; acotamos el tope como en el catálogo.
@@ -170,6 +171,24 @@ productosRouter.get('/mas-vendidos', async (request, response, next) => {
 
   try {
     const productos = await obtenerMasVendidos({ limit })
+    return response.json({ data: productos })
+  } catch (error) {
+    return next(error)
+  }
+})
+
+// "Descubre productos similares" de la ficha. Ruta de dos segmentos: no colisiona
+// con '/:slug'. Devuelve productos de la misma subcategoría/categoría.
+productosRouter.get('/:slug/similares', async (request, response, next) => {
+  const limit = leerEnteroPositivo(request.query.limit, 8, 12)
+  if (limit === null) {
+    return response.status(400).json({
+      error: { code: 'INVALID_QUERY_PARAM', message: 'limit debe ser un entero entre 1 y 12.' },
+    })
+  }
+
+  try {
+    const productos = await obtenerSimilares(request.params.slug, { limit })
     return response.json({ data: productos })
   } catch (error) {
     return next(error)

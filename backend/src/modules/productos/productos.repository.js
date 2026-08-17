@@ -363,6 +363,45 @@ export function crearRepositorioProductos(cliente = prisma) {
       return producto ? crearProductoPublico(producto) : null
     },
 
+    // Productos similares al de `slug`: publicados, de la misma subcategoría
+    // (y, si no alcanzan, de la misma categoría), excluyendo el actual. Ordena
+    // destacados primero y luego los más nuevos. Devuelve la forma pública.
+    async similaresPublicados({ slug, limit = 8 }) {
+      const ahora = new Date()
+      const base = await cliente.producto.findFirst({
+        where: { estado: 'PUBLICADO', slug },
+        select: { id: true, categoriaId: true, subcategoriaId: true },
+      })
+      if (!base) return []
+
+      const orden = [{ destacado: 'desc' }, { createdAt: 'desc' }]
+
+      const porSubcategoria = base.subcategoriaId
+        ? await cliente.producto.findMany({
+            where: { estado: 'PUBLICADO', id: { not: base.id }, subcategoriaId: base.subcategoriaId },
+            include: crearInclusionProductoPublico(ahora),
+            orderBy: orden,
+            take: limit,
+          })
+        : []
+
+      if (porSubcategoria.length >= limit) {
+        return porSubcategoria.map(crearProductoPublico)
+      }
+
+      // Completar con la misma categoría, sin repetir los ya tomados ni el actual.
+      const excluidos = new Set(porSubcategoria.map((producto) => producto.id))
+      excluidos.add(base.id)
+      const porCategoria = await cliente.producto.findMany({
+        where: { estado: 'PUBLICADO', categoriaId: base.categoriaId, id: { notIn: [...excluidos] } },
+        include: crearInclusionProductoPublico(ahora),
+        orderBy: orden,
+        take: limit - porSubcategoria.length,
+      })
+
+      return [...porSubcategoria, ...porCategoria].map(crearProductoPublico)
+    },
+
     // Hidrata productos públicos por una lista de ids, PRESERVANDO ese orden
     // (findMany con `in` no lo respeta). Reutilizado por favoritos; filtra a
     // PUBLICADO, así un producto archivado deja de aparecer en la lista.

@@ -32,6 +32,13 @@ function crearRepositorioEnMemoria() {
       // recortado al límite. La lógica real (groupBy) vive en el repositorio.
       return productos.filter((producto) => producto.estado === 'PUBLICADO').slice(0, limit)
     },
+    async similaresPublicados({ slug, limit = 8 }) {
+      // La resolución subcategoría/categoría vive en el repositorio real; aquí
+      // basta con publicados que no sean el producto base.
+      return productos
+        .filter((producto) => producto.estado === 'PUBLICADO' && producto.slug !== slug)
+        .slice(0, limit)
+    },
   }
 }
 
@@ -129,6 +136,14 @@ test('listarProductos ordena antes de paginar', async () => {
     resultado.data.map((producto) => producto.slug),
     ['detergente-liquido-concentrado-3-l', 'aceite-oliva-extra-virgen-500-ml'],
   )
+})
+
+test('obtenerSimilares excluye el producto base y entrega copia pública (sin estado)', async () => {
+  const resultado = await servicioEnMemoria.obtenerSimilares('aceite-oliva-extra-virgen-500-ml', { limit: 2 })
+
+  assert.equal(resultado.length, 2)
+  assert.ok(resultado.every((producto) => producto.slug !== 'aceite-oliva-extra-virgen-500-ml'))
+  assert.ok(resultado.every((producto) => !('estado' in producto)))
 })
 
 test('obtenerMasVendidos respeta el límite y no filtra el estado', async () => {

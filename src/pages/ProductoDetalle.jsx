@@ -6,7 +6,7 @@ import { useFavoritos } from "../context/FavoritosContext.jsx";
 import ImagenProducto from "../components/ImagenProducto.jsx";
 import TarjetaProducto from "../components/TarjetaProducto.jsx";
 import ControlCantidad from "../components/ControlCantidad.jsx";
-import { obtenerProductoDetalle } from "../services/productosApi.js";
+import { obtenerProductoDetalle, obtenerProductosSimilares } from "../services/productosApi.js";
 import styles from "./ProductoDetalle.module.css";
 
 // Límite de presentación. El backend y el panel admin deberán validar el
@@ -76,6 +76,21 @@ function ProductoDetalle({ productos }) {
   const cargandoProducto =
     !productoLocal &&
     (detalleRemoto.slug !== slug || !detalleRemoto.terminado);
+
+  // "Descubre productos similares": se piden al backend por el slug del producto
+  // ya resuelto. Sin API o ante un fallo la función devuelve [] y no se muestra.
+  const [similares, setSimilares] = useState([]);
+  useEffect(() => {
+    let vigente = true;
+    obtenerProductosSimilares({ slug: producto?.slug, limit: 6 })
+      .then((lista) => {
+        if (vigente) setSimilares(lista.filter((similar) => similar.id !== producto?.id));
+      })
+      .catch(() => {});
+    return () => {
+      vigente = false;
+    };
+  }, [producto?.slug, producto?.id]);
 
   // React Router conserva la posición previa del documento al cambiar de ruta.
   // Cada detalle debe comenzar arriba, también al abrir un relacionado desde
@@ -148,10 +163,13 @@ function ProductoDetalle({ productos }) {
     { etiqueta: "Vence", valor: formatearFechaProducto(producto.fechaVencimiento) },
   ].filter(({ valor }) => Boolean(valor));
 
-  // Relacionados: misma categoría, sin incluir el actual, hasta 4.
-  const relacionados = productos
+  // Sugeridos: preferimos los similares reales del backend (misma
+  // subcategoría/categoría); si la API no respondió, caemos a un derivado local
+  // por categoría de la colección ya cargada.
+  const relacionadosLocales = productos
     .filter((p) => p.categoria === producto.categoria && p.id !== producto.id)
-    .slice(0, 4);
+    .slice(0, 6);
+  const sugeridos = similares.length > 0 ? similares : relacionadosLocales;
 
   // Compatibilidad con productos antiguos: si aún no llega `imagenes`, usamos
   // la imagen principal. Al integrar backend se reciben hasta 5 URLs aquí.
@@ -319,11 +337,11 @@ function ProductoDetalle({ productos }) {
         </div>
       </div>
 
-      {relacionados.length > 0 && (
+      {sugeridos.length > 0 && (
         <section className={styles.relacionados}>
-          <h2 className={styles.relTitulo}>También te puede interesar</h2>
+          <h2 className={styles.relTitulo}>Descubre productos similares</h2>
           <div className={styles.relGrid}>
-            {relacionados.map((p) => (
+            {sugeridos.map((p) => (
               <TarjetaProducto key={p.id} producto={p} />
             ))}
           </div>

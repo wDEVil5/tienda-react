@@ -2,6 +2,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  width: 100%;
   height: 100%;
   min-width: 0;
   background: transparent;
@@ -14,11 +15,11 @@
 
 .imagenWrap {
   position: relative;
-  /* Marco cuadrado independiente del tamaño intrínseco de cada archivo. */
+  /* Marco cuadrado estable (aspect-ratio) para que NO se deforme aunque la
+     sección de texto crezca al igualar alturas entre tarjetas. */
   flex: 0 0 auto;
-  height: 0;
-  min-height: 0;
-  padding-bottom: 100%;
+  width: 100%;
+  aspect-ratio: 1 / 1;
   background-color: var(--color-superficie);
   border-radius: var(--radio-caja);
   /* El CTA se superpone a la base; el recorte queda en el enlace de imagen. */
@@ -60,8 +61,9 @@
 }
 
 .info {
-  display: grid;
-  align-content: start;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
   gap: 7px;
 }
 
@@ -89,13 +91,29 @@
 .calificacion {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 6px;
+  gap: 5px;
+  /* Anclada al fondo de la tarjeta: todas las calificaciones quedan alineadas. */
+  margin-top: auto;
+  padding-top: 6px;
+  color: #f5a623; /* estrella ámbar de calificación */
+  font-size: 13px;
 }
 
-.calificacionConteo {
+.calificacionPromedio {
+  color: var(--color-texto);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Sin reseñas: estrella apagada + texto tenue. */
+.sinCalificar {
+  color: #cfc9bd;
+}
+
+.textoSinCalificar {
   color: var(--color-texto-suave, #7a756c);
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 /* Precio comercial primero; marca y nombre describen después el producto. */
@@ -134,7 +152,8 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 6px;
-  min-height: 16px;
+  /* Reservada aunque no haya oferta, para alinear las filas siguientes. */
+  min-height: 18px;
 }
 
 .ahorro {
@@ -151,6 +170,8 @@
   font-size: 12.5px;
   font-weight: 700;
   line-height: 1.2;
+  /* Reservada aunque el producto no tenga marca (espacio en blanco). */
+  min-height: 1.2em;
 }
 
 /* Corazón de favoritos: arriba-derecha, no choca con el badge (arriba-izq). */

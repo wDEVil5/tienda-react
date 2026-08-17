@@ -79,9 +79,31 @@
 /* ---- Cuerpo: 2 columnas ---- */
 .contenido {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  /* Galería y panel de compra arriba; la zona de detalle (descripción + ficha +
+     reseñas) ocupa la columna izquierda debajo, con el panel a la derecha. */
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+  grid-template-areas:
+    "galeria compra"
+    "detalle compra";
   gap: var(--e-2xl);
   align-items: start;
+}
+
+.galeria {
+  grid-area: galeria;
+}
+
+.info {
+  grid-area: compra;
+}
+
+/* Zona inferior-izquierda: descripción, ficha técnica y reseñas apiladas. */
+.zonaDetalle {
+  grid-area: detalle;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-2xl);
+  min-width: 0;
 }
 
 .galeria {
@@ -159,6 +181,11 @@
   flex-direction: column;
   align-items: flex-start;
   gap: var(--e-md);
+  /* Panel de compra fijo al hacer scroll (como en Jumbo). El navegador lo
+     desactiva solo si el panel no cabe; en una columna corta funciona bien. */
+  position: sticky;
+  top: 16px;
+  align-self: start;
 }
 
 .eyebrow {
@@ -412,7 +439,7 @@
   }
 
   .contenido {
-    grid-template-columns: minmax(0, 1.05fr) minmax(420px, 0.95fr);
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
     gap: 48px;
   }
 
@@ -422,7 +449,7 @@
   }
 
   .info {
-    max-width: 540px;
+    max-width: none;
     padding-top: var(--e-sm);
   }
 
@@ -453,7 +480,7 @@
   }
 
   .contenido {
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 300px);
     gap: var(--e-xl);
   }
 
@@ -513,7 +540,19 @@
 
   .contenido {
     grid-template-columns: 1fr;
+    /* Apilado: primero galería, luego el panel de compra, y al final el
+       detalle (descripción + reseñas). */
+    grid-template-areas:
+      "galeria"
+      "compra"
+      "detalle";
     gap: var(--e-lg);
+  }
+
+  /* El panel de compra no se fija en móvil. */
+  .info {
+    position: static;
+    top: auto;
   }
 
   .imagenWrap {

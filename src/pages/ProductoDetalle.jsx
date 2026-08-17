@@ -204,8 +204,7 @@ function ProductoDetalle({ productos }) {
       </div>
 
       <div className={styles.contenido}>
-        {/* Columna izquierda: imagen. Una sola foto por ahora; la galería de
-            miniaturas del handoff requiere varias imágenes (backend, Fase 2). */}
+        {/* Galería (arriba-izquierda) */}
         <div className={styles.galeria}>
           <div className={styles.imagenWrap}>
             <ImagenProducto
@@ -238,7 +237,7 @@ function ProductoDetalle({ productos }) {
           </div>
         </div>
 
-        {/* Columna derecha: info */}
+        {/* Columna derecha (sticky): panel de compra */}
         <div className={styles.info}>
           <p className={styles.eyebrow}>
             {producto.categoria} · SKU {producto.sku ?? producto.id}
@@ -324,6 +323,10 @@ function ProductoDetalle({ productos }) {
             </div>
           </div>
 
+        </div>
+
+        {/* Zona de detalle (abajo-izquierda): descripción, ficha y reseñas. */}
+        <div className={styles.zonaDetalle}>
           <section className={styles.descripcionBloque} aria-labelledby="descripcion-titulo">
             <h2 id="descripcion-titulo" className={styles.descripcionTitulo}>
               Descripción
@@ -341,10 +344,10 @@ function ProductoDetalle({ productos }) {
               ))}
             </dl>
           )}
+
+          {productoTieneResenas && <ResenasProducto key={producto.id} productoId={producto.id} />}
         </div>
       </div>
-
-      {productoTieneResenas && <ResenasProducto key={producto.id} productoId={producto.id} />}
 
       {sugeridos.length > 0 && (
         <section className={styles.relacionados}>

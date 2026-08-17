@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./TarjetaProducto.module.css";
 import ImagenProducto from "./ImagenProducto.jsx";
-import Estrellas from "./Estrellas.jsx";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 import { useCuenta } from "../context/CuentaContext.jsx";
 import { useFavoritos } from "../context/FavoritosContext.jsx";
@@ -74,22 +73,32 @@ function TarjetaProducto({ producto }) {
                     </span>
                     {precioPorUnidad && <span className={styles.precioUnidad}>{precioPorUnidad}</span>}
                 </div>
-                {enOferta && (
-                    <div className={styles.ofertaInfo}>
-                        <span className={styles.precioAntes}>
-                            {"$\u202F"}{producto.precioAnterior.toLocaleString("es-CL")}
-                        </span>
-                        <span className={styles.ahorro}>Ahorras ${ahorro.toLocaleString("es-CL")}</span>
-                    </div>
-                )}
-                {producto.marca?.nombre && <p className={styles.marca}>{producto.marca.nombre}</p>}
+                {/* Fila de oferta SIEMPRE presente (vac\u00EDa si no hay oferta) para
+                    que todas las tarjetas alineen sus filas siguientes. */}
+                <div className={styles.ofertaInfo}>
+                    {enOferta && (
+                        <>
+                            <span className={styles.precioAntes}>
+                                {"$\u202F"}{producto.precioAnterior.toLocaleString("es-CL")}
+                            </span>
+                            <span className={styles.ahorro}>Ahorras ${ahorro.toLocaleString("es-CL")}</span>
+                        </>
+                    )}
+                </div>
+                {/* Marca SIEMPRE presente (espacio reservado si no hay marca). */}
+                <p className={styles.marca}>{producto.marca?.nombre ?? "\u00A0"}</p>
                 <h3 className={styles.nombre}>
                     <Link to={`/producto/${producto.slug ?? producto.id}`}>{producto.nombre}</Link>
                 </h3>
-                {producto.resenas?.conteo > 0 && (
+                {producto.resenas?.conteo > 0 && producto.resenas.promedio !== null ? (
                     <p className={styles.calificacion}>
-                        <Estrellas valor={producto.resenas.promedio ?? 0} tamano={13} />
-                        <span className={styles.calificacionConteo}>({producto.resenas.conteo})</span>
+                        <i className="fa-solid fa-star" aria-hidden="true"></i>
+                        <span className={styles.calificacionPromedio}>{producto.resenas.promedio.toFixed(1)}</span>
+                    </p>
+                ) : (
+                    <p className={`${styles.calificacion} ${styles.sinCalificar}`}>
+                        <i className="fa-solid fa-star" aria-hidden="true"></i>
+                        <span className={styles.textoSinCalificar}>Producto sin calificar</span>
                     </p>
                 )}
             </div>

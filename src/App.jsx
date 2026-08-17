@@ -22,6 +22,7 @@ import AdminContenido from "./pages/AdminContenido.jsx";
 import AdminBanners from "./pages/AdminBanners.jsx";
 import AdminCategorias from "./pages/AdminCategorias.jsx";
 import AdminMarcas from "./pages/AdminMarcas.jsx";
+import AdminResenas from "./pages/AdminResenas.jsx";
 import { Login, Registro } from "./pages/Acceso.jsx";
 import { RecuperarContrasena, RestablecerContrasena } from "./pages/RecuperarCuenta.jsx";
 import NewsletterBaja from "./pages/NewsletterBaja.jsx";
@@ -200,6 +201,7 @@ function App() {
         <Route path="/admin/banners" element={<AdminBanners />} />
         <Route path="/admin/categorias" element={<AdminCategorias />} />
         <Route path="/admin/marcas" element={<AdminMarcas />} />
+        <Route path="/admin/resenas" element={<AdminResenas />} />
         <Route path="/admin/*" element={<Navigate to="/admin/resumen" replace />} />
       </Routes>
     );

@@ -90,7 +90,33 @@ export function crearServicioResenas({ repositorio = repositorioResenas } = {}) 
       const productoId = await repositorio.eliminarPorIdConAgregado(id)
       return { eliminada: Boolean(productoId) }
     },
+
+    // Moderación: lista paginada de las reseñas más recientes del catálogo.
+    async listarParaAdmin({ page = 1, limit = 20 } = {}) {
+      const [items, total] = await Promise.all([
+        repositorio.listarRecientes({ page, limit }),
+        repositorio.contarTodas(),
+      ])
+      return {
+        data: items.map((resena) => ({
+          id: resena.id,
+          calificacion: resena.calificacion,
+          titulo: resena.titulo,
+          cuerpo: resena.cuerpo,
+          autor: resena.cliente?.nombre ?? 'Cliente',
+          producto: resena.producto
+            ? { nombre: resena.producto.nombre, slug: resena.producto.slug }
+            : null,
+          createdAt: resena.createdAt,
+        })),
+        meta: { page, limit, total, totalPages: Math.ceil(total / limit) || 1 },
+      }
+    },
   }
 }
 
 export const servicioResenas = crearServicioResenas()
+
+// Adaptadores para la inyección de dependencias del router de admin.
+export const listarResenasAdmin = (opciones) => servicioResenas.listarParaAdmin(opciones)
+export const eliminarResenaAdmin = (id) => servicioResenas.eliminarComoAdmin({ id })

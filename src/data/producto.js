@@ -59,6 +59,8 @@ export function normalizarProductoFakeStore(p) {
     oferta: p.id % 2 === 0 ? { porcentajeDescuento: 25 } : null,
     // Fake Store no marca destacados; simulamos con múltiplos de 3.
     destacado: p.id % 3 === 0,
+    // Fake Store no tiene reseñas propias.
+    resenas: { promedio: null, conteo: 0 },
   };
 }
 
@@ -110,5 +112,6 @@ export function normalizarProductoApi(producto) {
     contenidoUnidad: producto.contenidoUnidad ?? null,
     pesoDespachoGramos: producto.pesoDespachoGramos ?? null,
     precioPorUnidad: producto.precioPorUnidad ?? null,
+    resenas: producto.resenas ?? { promedio: null, conteo: 0 },
   };
 }

@@ -1,0 +1,180 @@
+/* Estados de acceso (sin sesión / error de red), fuera del shell. */
+.acceso {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: clamp(24px, 4vw, 52px);
+  background: var(--color-crudo);
+  color: var(--color-texto-suave);
+  text-align: center;
+}
+
+.accesoCaja {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+
+.accesoCaja h1 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 400;
+}
+
+.accesoCaja button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--color-acento);
+  border-radius: var(--radio-control);
+  background: var(--color-acento);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Contenido dentro del AdminShell. */
+.contenido {
+  padding: 30px 42px 48px;
+}
+
+.cabecera {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--color-borde-2);
+}
+
+.cabecera h1 {
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 400;
+}
+
+.total {
+  color: var(--color-texto-suave);
+  font-size: 14px;
+}
+
+.error {
+  margin-bottom: 16px;
+  color: var(--color-oferta);
+  font-size: 14px;
+}
+
+.estado,
+.vacio {
+  color: var(--color-texto-suave);
+  font-size: 15px;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  list-style: none;
+}
+
+.fila {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px 18px;
+  border: 1px solid var(--color-borde-2);
+  border-radius: var(--radio-tarjeta, 12px);
+  background: var(--color-superficie, #fff);
+}
+
+.filaInfo {
+  min-width: 0;
+}
+
+.filaCabecera {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filaTitulo {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--color-texto);
+}
+
+.filaMeta {
+  margin-top: 8px;
+  color: var(--color-texto-suave);
+  font-size: 13px;
+}
+
+.enlaceProducto {
+  color: var(--color-acento);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.enlaceProducto:hover {
+  text-decoration: underline;
+}
+
+.filaCuerpo {
+  margin-top: 8px;
+  color: var(--color-texto-2);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.borrar {
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--color-oferta);
+  border-radius: var(--radio-pill, 999px);
+  background: transparent;
+  color: var(--color-oferta);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.borrar:hover:not(:disabled) {
+  background: var(--color-oferta);
+  color: #fff;
+}
+
+.borrar:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.paginacion {
+  margin-top: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: var(--color-texto-suave);
+  font-size: 14px;
+}
+
+.paginacion button {
+  min-height: 38px;
+  padding: 0 16px;
+  border: 1px solid var(--color-borde-3, rgba(28, 27, 24, 0.18));
+  border-radius: var(--radio-caja, 8px);
+  background: var(--color-superficie, #fff);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.paginacion button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}

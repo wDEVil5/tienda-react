@@ -601,3 +601,16 @@ export function desactivarClienteAdmin(id, opciones = {}) {
     method: "PATCH",
   });
 }
+
+// Moderación de reseñas (ADMIN/OPERADOR): lista paginada + borrado.
+export function listarResenasAdmin({ page = 1, limit = 20, ...opciones } = {}) {
+  const parametros = new URLSearchParams({ page: String(page), limit: String(limit) });
+  return solicitarAdmin(`/admin/resenas?${parametros}`, { ...opciones, incluirMeta: true });
+}
+
+export function eliminarResenaAdmin(id, opciones = {}) {
+  return solicitarAdmin(`/admin/resenas/${encodeURIComponent(id)}`, {
+    ...opciones,
+    method: "DELETE",
+  });
+}

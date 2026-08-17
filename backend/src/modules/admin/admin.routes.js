@@ -150,6 +150,7 @@ import {
 import { validarBannerCambios, validarBannerNuevo } from '../banners/banners.validacion.js'
 import { recibirImagenBanner } from '../imagenes/imagenes.middleware.js'
 import { subirImagenBanner } from '../imagenes/imagenes.service.js'
+import { listarResenasAdmin, eliminarResenaAdmin } from '../resenas/resenas.service.js'
 
 export function crearRouterAdmin({
   servicio = {
@@ -223,6 +224,8 @@ export function crearRouterAdmin({
     actualizarBanner,
     eliminarBanner,
     subirImagenBanner,
+    listarResenasAdmin,
+    eliminarResenaAdmin,
   },
   middlewareSesion = requerirSesion,
 } = {}) {
@@ -1504,6 +1507,52 @@ export function crearRouterAdmin({
         if (error instanceof ErrorPedido) {
           return response.status(409).json({ error: { code: error.code, message: error.message } })
         }
+        return next(error)
+      }
+    },
+  )
+
+  // Moderación de reseñas: lista paginada de las más recientes del catálogo.
+  adminRouter.get(
+    '/resenas',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      const page = leerEnteroPositivo(request.query.page, 1)
+      const limit = leerEnteroPositivo(request.query.limit, 20, 100)
+      if (page === null || limit === null) {
+        return response.status(400).json({
+          error: { code: 'INVALID_QUERY_PARAM', message: 'page debe ser positivo y limit entre 1 y 100.' },
+        })
+      }
+      try {
+        return response.json(await servicio.listarResenasAdmin({ page, limit }))
+      } catch (error) {
+        return next(error)
+      }
+    },
+  )
+
+  // Moderación: eliminar cualquier reseña (respuesta 204; 404 si no existe).
+  adminRouter.delete(
+    '/resenas/:id',
+    middlewareSesion,
+    requerirRoles('ADMIN', 'OPERADOR'),
+    async (request, response, next) => {
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(request.params.id)) {
+        return response.status(404).json({
+          error: { code: 'REVIEW_NOT_FOUND', message: 'No encontramos esa reseña.' },
+        })
+      }
+      try {
+        const resultado = await servicio.eliminarResenaAdmin(request.params.id)
+        if (!resultado.eliminada) {
+          return response.status(404).json({
+            error: { code: 'REVIEW_NOT_FOUND', message: 'No encontramos esa reseña.' },
+          })
+        }
+        return response.status(204).end()
+      } catch (error) {
         return next(error)
       }
     },

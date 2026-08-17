@@ -60,6 +60,29 @@ export function crearRepositorioResenas(db = prisma) {
       return db.resena.count({ where: { productoId } })
     },
 
+    // Moderación: reseñas más recientes de TODO el catálogo, con su producto y
+    // autor (nombre completo, es vista interna).
+    async listarRecientes({ page = 1, limit = 20 }) {
+      return db.resena.findMany({
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+        select: {
+          id: true,
+          calificacion: true,
+          titulo: true,
+          cuerpo: true,
+          createdAt: true,
+          cliente: { select: { nombre: true } },
+          producto: { select: { nombre: true, slug: true } },
+        },
+      })
+    },
+
+    async contarTodas() {
+      return db.resena.count()
+    },
+
     async obtenerDeCliente(productoId, clienteId) {
       return db.resena.findUnique({
         where: { productoId_clienteId: { productoId, clienteId } },

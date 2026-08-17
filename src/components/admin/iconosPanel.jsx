@@ -149,3 +149,11 @@ export function IconoEquipo(props) {
     </Svg>
   );
 }
+
+export function IconoResenas(props) {
+  return (
+    <Svg {...props}>
+      <path d="M12 2 15.09 8.26 22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14l-5-4.87 6.91-1.01L12 2Z" />
+    </Svg>
+  );
+}

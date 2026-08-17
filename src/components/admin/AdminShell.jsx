@@ -10,6 +10,7 @@ import {
   IconoInventario,
   IconoMarcas,
   IconoPedidos,
+  IconoResenas,
   IconoProductos,
   IconoResumen,
 } from "./iconosPanel.jsx";
@@ -27,6 +28,7 @@ const ICONOS_SECCION = {
   Banners: IconoBanners,
   Marcas: IconoMarcas,
   Categorías: IconoCategorias,
+  Reseñas: IconoResenas,
   Equipo: IconoEquipo,
 };
 
@@ -42,6 +44,7 @@ const SECCIONES = [
   "Banners",
   "Marcas",
   "Categorías",
+  "Reseñas",
 ];
 
 // Secciones ya implementadas: su ítem del menú navega. El resto queda deshabilitado
@@ -58,6 +61,7 @@ const RUTAS = {
   Banners: "/admin/banners",
   Marcas: "/admin/marcas",
   Categorías: "/admin/categorias",
+  Reseñas: "/admin/resenas",
   Equipo: "/admin/equipo",
 };
 

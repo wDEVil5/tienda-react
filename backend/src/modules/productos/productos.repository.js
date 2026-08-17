@@ -117,6 +117,15 @@ function crearProductoPublico(producto) {
     pesoDespachoGramos: producto.pesoDespachoGramos,
     codigoBarras: producto.codigoBarras,
     precioPorUnidad: crearPrecioPorUnidad(producto),
+    // Agregado de reseñas (denormalizado en el producto). promedio a un decimal
+    // o null si aún no tiene reseñas; conteo para el "(N)" de las tarjetas.
+    resenas: {
+      promedio:
+        producto.resenaConteo > 0
+          ? Number((producto.resenaSuma / producto.resenaConteo).toFixed(1))
+          : null,
+      conteo: producto.resenaConteo ?? 0,
+    },
     fechaVencimiento: producto.fechaVencimiento,
     categoria: producto.categoria,
     subcategoria: producto.subcategoria,

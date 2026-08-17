@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./TarjetaProducto.module.css";
 import ImagenProducto from "./ImagenProducto.jsx";
+import Estrellas from "./Estrellas.jsx";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 import { useCuenta } from "../context/CuentaContext.jsx";
 import { useFavoritos } from "../context/FavoritosContext.jsx";
@@ -85,6 +86,12 @@ function TarjetaProducto({ producto }) {
                 <h3 className={styles.nombre}>
                     <Link to={`/producto/${producto.slug ?? producto.id}`}>{producto.nombre}</Link>
                 </h3>
+                {producto.resenas?.conteo > 0 && (
+                    <p className={styles.calificacion}>
+                        <Estrellas valor={producto.resenas.promedio ?? 0} tamano={13} />
+                        <span className={styles.calificacionConteo}>({producto.resenas.conteo})</span>
+                    </p>
+                )}
             </div>
         </article>
     );

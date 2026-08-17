@@ -260,6 +260,7 @@ model Producto {
   avisosStock      AvisoStock[]
   movimientosStock MovimientoStock[]
   atributos        ProductoAtributo[]
+  favoritos        Favorito[]
 
   @@index([categoriaId])
   @@index([subcategoriaId])
@@ -618,6 +619,7 @@ model Cliente {
   avisosStock        AvisoStock[]
   suscripciones      Suscriptor[]
   tokensRecuperacion TokenRecuperacion[]
+  favoritos          Favorito[]
 
   @@index([activo])
   @@map("clientes")
@@ -712,6 +714,27 @@ model AvisoStock {
   @@index([productoId])
   @@index([clienteId])
   @@map("avisos_stock")
+}
+
+// Lista de deseos del cliente: un producto marcado como favorito. Distinto de
+// "Avísame" (que es para agotados y admite invitados): favoritos es SIEMPRE de
+// una cuenta y no depende del stock. Relación N:M cliente↔producto materializada
+// como fila propia para poder ordenarla por fecha. Ambos lados en cascada: si se
+// borra el cliente o el producto, la fila de favorito desaparece.
+model Favorito {
+  id         String   @id @default(uuid()) @db.Uuid
+  clienteId  String   @map("cliente_id") @db.Uuid
+  productoId String   @map("producto_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  cliente  Cliente  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  producto Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
+
+  // Un producto aparece una sola vez en la lista de un cliente.
+  @@unique([clienteId, productoId])
+  @@index([clienteId])
+  @@index([productoId])
+  @@map("favoritos")
 }
 
 // Suscripción al boletín (newsletter del footer). A diferencia de "Avísame", no

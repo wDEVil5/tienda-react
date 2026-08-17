@@ -362,6 +362,20 @@ export function crearRepositorioProductos(cliente = prisma) {
 
       return producto ? crearProductoPublico(producto) : null
     },
+
+    // Hidrata productos públicos por una lista de ids, PRESERVANDO ese orden
+    // (findMany con `in` no lo respeta). Reutilizado por favoritos; filtra a
+    // PUBLICADO, así un producto archivado deja de aparecer en la lista.
+    async listarPublicosPorIds(ids) {
+      if (!Array.isArray(ids) || ids.length === 0) return []
+      const ahora = new Date()
+      const productos = await cliente.producto.findMany({
+        where: { estado: 'PUBLICADO', id: { in: ids } },
+        include: crearInclusionProductoPublico(ahora),
+      })
+      const porId = new Map(productos.map((producto) => [producto.id, producto]))
+      return ids.map((id) => porId.get(id)).filter(Boolean).map(crearProductoPublico)
+    },
   }
 }
 

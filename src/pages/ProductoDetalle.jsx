@@ -1,6 +1,8 @@
 import { useEffect, useLayoutEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
+import { useCuenta } from "../context/CuentaContext.jsx";
+import { useFavoritos } from "../context/FavoritosContext.jsx";
 import ImagenProducto from "../components/ImagenProducto.jsx";
 import TarjetaProducto from "../components/TarjetaProducto.jsx";
 import ControlCantidad from "../components/ControlCantidad.jsx";
@@ -29,6 +31,9 @@ function formatearFechaProducto(fecha) {
 function ProductoDetalle({ productos }) {
   const { slug } = useParams();
   const { agregarAlCarrito, carrito } = useCarritoContext();
+  const { estaAutenticado } = useCuenta();
+  const { esFavorito, alternarFavorito } = useFavoritos();
+  const navegar = useNavigate();
   const [cantidad, setCantidad] = useState(1); // cantidad a agregar
   const [imagenSeleccionada, setImagenSeleccionada] = useState(null);
 
@@ -98,6 +103,21 @@ function ProductoDetalle({ productos }) {
       </section>
     );
   }
+
+  const favorito = esFavorito(producto.id);
+  // Invitado → a iniciar sesión (la lista de deseos es de cuenta). Con sesión el
+  // toggle es optimista y el contexto revierte solo si la API falla.
+  const alternarFavoritoDetalle = async () => {
+    if (!estaAutenticado) {
+      navegar("/login");
+      return;
+    }
+    try {
+      await alternarFavorito(producto.id);
+    } catch {
+      // El corazón ya volvió a su estado previo.
+    }
+  };
 
   const enOferta = producto.precioAnterior !== null;
   const descuento = enOferta
@@ -251,6 +271,16 @@ function ProductoDetalle({ productos }) {
               disabled={!puedeAgregar}
             >
               {puedeAgregar ? "Agregar al carrito" : "Stock completo en tu carrito"}
+            </button>
+
+            <button
+              type="button"
+              className={`${styles.botonFavorito} ${favorito ? styles.botonFavoritoActivo : ""}`}
+              onClick={alternarFavoritoDetalle}
+              aria-pressed={favorito}
+            >
+              <i className={`${favorito ? "fa-solid" : "fa-regular"} fa-heart`} aria-hidden="true" />
+              {favorito ? "En favoritos" : "Agregar a favoritos"}
             </button>
           </div>
 

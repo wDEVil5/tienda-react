@@ -55,19 +55,25 @@ del ID token en el servidor). Cloudinary + Sharp para imágenes y Brandfetch par
 - **Páginas de listado** por categoría/subcategoría/búsqueda/ofertas con breadcrumb,
   orden, paginación y **sidebar de filtros** (marcas, rango de precio y atributos,
   calculados por facetas del servidor).
-- Ficha de producto con galería, stock, ofertas y relacionados.
+- Ficha de producto con galería, **panel de compra sticky**, **reseñas y calificaciones**,
+  **productos similares** y "te podrían interesar".
+- **Reseñas con compra verificada**: solo califica quien compró el producto; el promedio y
+  las estrellas se ven también en las tarjetas del catálogo.
+- **Favoritos** (lista de deseos por cuenta): corazón en tarjetas y ficha, con página propia.
+- **Modal de acceso**: el login/registro se abre sobre la misma página (sin navegar), con un
+  mensaje según la acción y reanudándola al iniciar sesión.
 - Carrito persistente (`localStorage`) con deshacer y drawer accesible.
-- **Checkout** en dos pasos (retiro o despacho), cotización en vivo y pago iniciado
-  desde el servidor.
-- Cuentas de cliente: registro/login (correo o Google), recuperación de contraseña,
-  direcciones, historial y detalle de pedidos.
+- **Checkout** en dos pasos (retiro o despacho), cotización en vivo y pago iniciado desde el
+  servidor; si falta stock, muestra qué productos y permite **ajustar las cantidades en línea**.
+- Cuentas de cliente: registro/login (correo o Google), recuperación de contraseña, **panel
+  con resumen**, direcciones, favoritos, historial y detalle de pedidos.
 - Responsive, con foco visible y navegación por teclado.
 
 ### 🔐 Panel de administración
 Resumen (KPIs, gráficos SVG sin librerías), Pedidos (comanda + CSV), Productos,
 Inventario (con bitácora de movimientos), Clientes, Categorías (**taxonomía de 3
 niveles + atributos configurables**), Marcas, Envíos, Identidad, Contenido (Markdown),
-Banners y Equipo. Control por rol (`ADMIN` / `OPERADOR`).
+Banners, **Reseñas** (moderación) y Equipo. Control por rol (`ADMIN` / `OPERADOR`).
 
 ### ⚙️ API propia (garantías del servidor)
 - Los **montos, descuentos, envío y stock los recalcula el servidor**: el cliente
@@ -76,7 +82,11 @@ Banners y Equipo. Control por rol (`ADMIN` / `OPERADOR`).
   snapshots históricos por pedido.
 - Disponibilidad honesta (`disponible` = stock − reservado) y suscripción "Avísame".
 - **Facetas** de catálogo (marcas, precio, atributos) para el sidebar del listado.
-- Webhook de Mercado Pago **idempotente** que avanza stock/pedido tras la aprobación.
+- **Reseñas con compra verificada** (cruce con pedidos pagados del cliente) y **agregado
+  denormalizado** (promedio + conteo) por producto; **favoritos** por cuenta.
+- Webhook de Mercado Pago **idempotente** que avanza stock/pedido tras la aprobación; la
+  confirmación por correo sale al **aprobarse el pago** (no al crear el pedido), y un
+  **barrido interno** expira los pedidos impagos liberando su reserva.
 - Correo transaccional con plantillas HTML (confirmación, cambio de estado,
   recuperación, boletín, reposición de stock).
 
@@ -131,9 +141,11 @@ npm run db:seed
 npm run dev          # http://localhost:3000
 ```
 
-Puntos de entrada de la API: catálogo y facetas (`/api/productos`, `/api/productos/facetas`),
-categorías y marcas, pedidos (`/api/pedidos/cotizar`, `/api/pedidos`), pagos
-(`/api/pagos`) y cuentas de cliente (`/api/cuenta`). Ver `backend/` para el detalle.
+Puntos de entrada de la API: catálogo, facetas y similares (`/api/productos`,
+`/api/productos/facetas`, `/api/productos/:slug/similares`), categorías y marcas, pedidos
+(`/api/pedidos/cotizar`, `/api/pedidos`), pagos (`/api/pagos`), reseñas (`/api/resenas`),
+y cuentas de cliente (`/api/cuenta`, con favoritos en `/api/cuenta/favoritos`). Ver
+`backend/` para el detalle.
 
 ## 🧪 Calidad
 

@@ -1,0 +1,64 @@
+# docker-compose.yml — entorno de desarrollo local de SumarketExpress.
+#
+# Por ahora solo levanta PostgreSQL 16 en un contenedor, para no tener que
+# instalar Postgres en la Mac. El backend y el frontend se siguen corriendo con
+# `npm run dev` como hasta ahora; solo apuntan su DATABASE_URL a esta base.
+#
+# Comandos base (desde esta carpeta):
+#   docker compose up -d        # levanta la base en segundo plano (-d = detached)
+#   docker compose ps           # ver qué contenedores corren
+#   docker compose logs -f db   # ver los logs de la base en vivo
+#   docker compose down         # apaga y borra el contenedor (los datos quedan)
+#   docker compose down -v      # apaga Y borra el volumen (BORRA los datos)
+
+services:
+  # Un "service" es la definición de un contenedor (o varios réplicas). Este se
+  # llama `db`; ese nombre también es su hostname dentro de la red de compose.
+  db:
+    # Imagen del registro (Docker Hub). `-alpine` = variante mínima (Linux Alpine),
+    # pesa mucho menos que la normal. La versión fija (16) evita sorpresas.
+    image: postgres:16-alpine
+
+    # Nombre legible del contenedor (si no, compose genera uno tipo `vite-db-1`).
+    container_name: sumarket_db
+
+    # Se reinicia solo si se cae o si reinicias Docker, salvo que lo pares a mano.
+    restart: unless-stopped
+
+    # Variables que la imagen de Postgres lee para inicializarse la PRIMERA vez
+    # (cuando el volumen está vacío): crea el usuario, su clave y la base.
+    #
+    # Los VALORES no viven aquí (esto se sube a git): se sustituyen desde el
+    # archivo `.env` de al lado (gitignored). Sintaxis:
+    #   ${VAR:-default}  → usa `default` si VAR no está (para valores no secretos).
+    #   ${VAR:?mensaje}  → FALLA con ese mensaje si VAR no está (fuerza el secreto
+    #                      a venir del .env; git nunca ve la contraseña).
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-sumarket}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?define POSTGRES_PASSWORD en tienda-react/.env}
+      POSTGRES_DB: ${POSTGRES_DB:-sumarket_express}
+
+    # Mapeo de puertos "host:contenedor". Usamos 5433 en la Mac porque el 5432 ya
+    # lo tiene un PostgreSQL nativo (Homebrew): así conviven sin chocar. Dentro del
+    # contenedor Postgres sigue en su 5432 estándar; solo cambia la puerta de tu Mac.
+    ports:
+      - "5433:5432"
+
+    # Volumen NOMBRADO: los datos de Postgres viven aquí y sobreviven a
+    # `docker compose down`. Es la diferencia entre "perder la base al apagar" y no.
+    volumes:
+      - sumarket_db_data:/var/lib/postgresql/data
+
+    # Chequeo de salud: Postgres tarda un momento en aceptar conexiones tras
+    # arrancar. `pg_isready` avisa cuándo está listo; en la Lección 3 la API va a
+    # esperar este "healthy" antes de conectarse.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-sumarket} -d ${POSTGRES_DB:-sumarket_express}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+# Los volúmenes nombrados se declaran aparte. Docker los gestiona (no es una
+# carpeta de tu repo), por eso no ensucian el proyecto ni entran a git.
+volumes:
+  sumarket_db_data:

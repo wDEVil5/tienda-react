@@ -1,0 +1,28 @@
+# docker-compose.override.yml — Docker Compose lo MERGEA automáticamente sobre
+# docker-compose.yml en cada `docker compose up` (sin -f). Convierte el servicio
+# `api` en modo DESARROLLO con hot-reload: tu código del host, en vivo, sin
+# reconstruir la imagen en cada cambio.
+#
+# Para correr la api en modo PRODUCCIÓN (ignorando este override):
+#   docker compose -f docker-compose.yml up -d --build api
+
+services:
+  api:
+    build:
+      # Usamos la etapa `builder` (tiene TODAS las deps y el código), no la runtime
+      # mínima: en dev queremos node --watch y las herramientas completas.
+      target: builder
+
+    # Override del CMD de producción: node --watch reinicia el server al guardar.
+    # (Sin --env-file: las variables llegan por env_file/environment del compose.)
+    command: node --watch src/server.js
+
+    volumes:
+      # Tu código del host montado EN VIVO: editar en la Mac = reiniciar en el
+      # contenedor. Esto es lo que da el hot-reload.
+      - ./backend:/app
+      # Volumen anónimo que PRESERVA el node_modules de la imagen. Es imprescindible:
+      # el de tu Mac está compilado para macOS (argon2 y otros módulos nativos) y NO
+      # sirve en el Linux del contenedor. Sin esta línea, el bind-mount de ./backend
+      # taparía el node_modules Linux con el de macOS y la app fallaría.
+      - /app/node_modules

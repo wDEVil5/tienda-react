@@ -166,8 +166,8 @@ npm run dev
 ```
 
 También hay imágenes para el **stack completo** (`docker compose up -d --build` levanta base
-+ API en contenedores) y una imagen del **frontend** (Vite → nginx). Detalle y solución de
-problemas en `backend/BACKEND.md` (§Docker).
++ API en contenedores, con **hot-reload** vía `docker-compose.override.yml`) y una imagen del
+**frontend** (Vite → nginx). Detalle y solución de problemas en `backend/BACKEND.md` (§Docker).
 
 Puntos de entrada de la API: catálogo, facetas y similares (`/api/productos`,
 `/api/productos/facetas`, `/api/productos/:slug/similares`), categorías y marcas, pedidos
@@ -189,9 +189,7 @@ cd backend && npm test                      # backend
    Mercado Pago (queda activar `MP_WEBHOOK_SECRET` en producción).
 2. Dominio propio para unificar front y API bajo el mismo origen (resuelve las
    cookies cross-site en Safari).
-3. `docker-compose.override.yml` de hot-reload (bind-mount + `node --watch`) para editar
-   en vivo con la API dockerizada.
-4. App móvil con React Native / Expo (fase posterior del roadmap).
+3. App móvil con React Native / Expo (fase posterior del roadmap).
 
 El alcance y las decisiones de producto se mantienen en un PRD en Notion.
 

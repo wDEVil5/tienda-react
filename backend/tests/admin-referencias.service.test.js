@@ -10,6 +10,9 @@ test('listarOpcionesProducto reúne las referencias necesarias para el editor', 
     async listarSubcategoriasActivas() {
       return [{ id: 'sub-1', nombre: 'Café', slug: 'despensa-cafe', categoriaId: 'cat-1' }]
     },
+    async listarSubcategoriasHijasActivas() {
+      return [{ id: 'hija-1', nombre: 'Café en grano', slug: 'despensa-cafe-grano', subcategoriaId: 'sub-1' }]
+    },
     async listarMarcas() {
       return [{ id: 'marca-1', nombre: 'Olivos', slug: 'olivos', logoUrl: null }]
     },
@@ -24,6 +27,7 @@ test('listarOpcionesProducto reúne las referencias necesarias para el editor', 
     { id: 'cat-1', nombre: 'Despensa', slug: 'despensa' },
   ])
   assert.equal(resultado.data.subcategorias[0].categoriaId, 'cat-1')
+  assert.equal(resultado.data.subcategoriasHijas[0].subcategoriaId, 'sub-1')
   assert.equal(resultado.data.marcas[0].nombre, 'Olivos')
   assert.equal(resultado.data.etiquetas[0].slug, 'vegano')
 })

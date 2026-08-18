@@ -184,7 +184,7 @@ export default function AdminProductoEditor() {
   const esNuevo = !id;
   const [usuario, setUsuario] = useState(undefined);
   const [formulario, setFormulario] = useState(PRODUCTO_FORMULARIO_INICIAL);
-  const [referencias, setReferencias] = useState({ categorias: [], subcategorias: [], marcas: [], etiquetas: [] });
+  const [referencias, setReferencias] = useState({ categorias: [], subcategorias: [], subcategoriasHijas: [], marcas: [], etiquetas: [] });
   const [atributosCategoria, setAtributosCategoria] = useState([]);
   const [cargandoAtributos, setCargandoAtributos] = useState(false);
   const [errorAtributos, setErrorAtributos] = useState(null);
@@ -237,6 +237,7 @@ export default function AdminProductoEditor() {
         setReferencias({
           categorias: opciones?.categorias ?? [],
           subcategorias: opciones?.subcategorias ?? [],
+          subcategoriasHijas: opciones?.subcategoriasHijas ?? [],
           marcas: opciones?.marcas ?? [],
           etiquetas: opciones?.etiquetas ?? [],
         });
@@ -289,16 +290,27 @@ export default function AdminProductoEditor() {
     setErrores((actual) => ({ ...actual, [campo]: undefined }));
   };
 
-  // Al cambiar la categoría, la subcategoría elegida deja de ser válida (pertenece
-  // a la anterior): la limpiamos para no enviar una combinación inconsistente.
+  // Al cambiar la categoría, la subcategoría y su hija dejan de ser válidas
+  // (pertenecen a la anterior): las limpiamos para no enviar una combinación
+  // inconsistente.
   const cambiarCategoria = (evento) => {
     const valor = evento.target.value;
-    setFormulario((actual) => ({ ...actual, categoriaId: valor, subcategoriaId: "", atributos: [] }));
+    setFormulario((actual) => ({ ...actual, categoriaId: valor, subcategoriaId: "", subcategoriaHijaId: "", atributos: [] }));
     setAtributosCategoria([]);
     setCargandoAtributos(Boolean(valor));
     setErrorAtributos(null);
     setTocados((actual) => ({ ...actual, categoriaId: true }));
     setErrores((actual) => ({ ...actual, categoriaId: undefined }));
+    setErrorGeneral(null);
+  };
+
+  // Al cambiar la subcategoría, su hija (tercer nivel) deja de pertenecerle: se
+  // limpia para no enviar una combinación cruzada.
+  const cambiarSubcategoria = (evento) => {
+    const valor = evento.target.value;
+    setFormulario((actual) => ({ ...actual, subcategoriaId: valor, subcategoriaHijaId: "" }));
+    setTocados((actual) => ({ ...actual, subcategoriaId: true }));
+    setErrores((actual) => ({ ...actual, subcategoriaId: undefined }));
     setErrorGeneral(null);
   };
 
@@ -509,7 +521,7 @@ export default function AdminProductoEditor() {
                     {...props}
                     className={styles.input}
                     value={formulario.subcategoriaId}
-                    onChange={cambiar("subcategoriaId")}
+                    onChange={cambiarSubcategoria}
                     disabled={!formulario.categoriaId || disponibles.length === 0}
                   >
                     <option value="">
@@ -520,6 +532,30 @@ export default function AdminProductoEditor() {
                           : "Sin subcategoría"}
                     </option>
                     {disponibles.map((s) => <option key={s.id} value={s.id}>{s.nombre}</option>)}
+                  </select>
+                );
+              }}
+            </Campo>
+
+            <Campo id="subcategoriaHijaId" etiqueta="Subcategoría (nivel 3)" ayuda="Opcional. Depende de la subcategoría elegida. Necesaria para que el producto aparezca al filtrar por el tercer nivel del menú.">
+              {(props) => {
+                const disponibles = referencias.subcategoriasHijas.filter((h) => h.subcategoriaId === formulario.subcategoriaId);
+                return (
+                  <select
+                    {...props}
+                    className={styles.input}
+                    value={formulario.subcategoriaHijaId}
+                    onChange={cambiar("subcategoriaHijaId")}
+                    disabled={!formulario.subcategoriaId || disponibles.length === 0}
+                  >
+                    <option value="">
+                      {!formulario.subcategoriaId
+                        ? "Elige una subcategoría primero"
+                        : disponibles.length === 0
+                          ? "Esta subcategoría no tiene tercer nivel"
+                          : "Sin tercer nivel"}
+                    </option>
+                    {disponibles.map((h) => <option key={h.id} value={h.id}>{h.nombre}</option>)}
                   </select>
                 );
               }}

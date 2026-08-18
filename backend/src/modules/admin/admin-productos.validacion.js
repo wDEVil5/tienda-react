@@ -32,6 +32,7 @@ export const esquemaCambiosProductoAdmin = z.object({
   fechaVencimiento: z.string().date().nullable().optional(),
   categoriaId: uuid.optional(),
   subcategoriaId: uuid.nullable().optional(),
+  subcategoriaHijaId: uuid.nullable().optional(),
   marcaId: uuid.nullable().optional(),
   etiquetaIds: z.array(uuid).max(10).refine(
     (ids) => new Set(ids).size === ids.length,
@@ -77,6 +78,7 @@ const esquemaProductoNuevoAdmin = z.object({
   fechaVencimiento: z.string().date().nullable().optional(),
   categoriaId: uuid,
   subcategoriaId: uuid.nullable().optional(),
+  subcategoriaHijaId: uuid.nullable().optional(),
   marcaId: uuid.nullable().optional(),
   etiquetaIds: z.array(uuid).max(10).refine(
     (ids) => new Set(ids).size === ids.length,

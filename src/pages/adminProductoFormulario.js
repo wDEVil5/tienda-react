@@ -23,6 +23,7 @@ export const PRODUCTO_FORMULARIO_INICIAL = {
   fechaVencimiento: "",
   categoriaId: "",
   subcategoriaId: "",
+  subcategoriaHijaId: "",
   marcaId: "",
   etiquetaIds: [],
   atributos: [],
@@ -43,6 +44,7 @@ export function crearFormularioProducto(producto = {}) {
     fechaVencimiento: producto.fechaVencimiento?.slice(0, 10) ?? "",
     categoriaId: producto.categoriaId ?? producto.categoria?.id ?? "",
     subcategoriaId: producto.subcategoriaId ?? producto.subcategoria?.id ?? "",
+    subcategoriaHijaId: producto.subcategoriaHijaId ?? producto.subcategoriaHija?.id ?? "",
     marcaId: producto.marcaId ?? producto.marca?.id ?? "",
     etiquetaIds: producto.etiquetaIds ?? producto.etiquetas?.map(({ id }) => id) ?? [],
     atributos: producto.atributos?.map(({ atributoId, opcionId }) => ({ atributoId, opcionId })) ?? [],
@@ -159,6 +161,7 @@ export function normalizarPayloadProductoAdmin(valores, { esNuevo = false } = {}
 
   // Subcategoría y marca opcionales: vacío al editar → null (desasocia); al crear se omite.
   agregarTextoOpcional(payload, "subcategoriaId", valores.subcategoriaId, esNuevo);
+  agregarTextoOpcional(payload, "subcategoriaHijaId", valores.subcategoriaHijaId, esNuevo);
   agregarTextoOpcional(payload, "marcaId", valores.marcaId, esNuevo);
   agregarTextoOpcional(payload, "codigoBarras", valores.codigoBarras, esNuevo);
   agregarTextoOpcional(payload, "origen", valores.origen, esNuevo);

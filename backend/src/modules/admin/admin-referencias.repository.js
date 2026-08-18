@@ -25,6 +25,16 @@ export function crearRepositorioReferenciasAdmin(cliente = prisma) {
       })
     },
 
+    // Subcategorías hijas activas (tercer nivel, con su subcategoriaId) para que
+    // el editor ofrezca solo las de la subcategoría elegida.
+    listarSubcategoriasHijasActivas() {
+      return cliente.subcategoriaHija.findMany({
+        where: { activa: true },
+        select: { id: true, nombre: true, slug: true, subcategoriaId: true },
+        orderBy: [{ orden: 'asc' }, { nombre: 'asc' }],
+      })
+    },
+
     listarMarcas() {
       return cliente.marca.findMany({
         select: { id: true, nombre: true, slug: true, logoUrl: true },

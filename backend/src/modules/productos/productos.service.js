@@ -84,13 +84,25 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
         ...(precioMin !== 0 ? { precioMin } : {}),
         ...(Number.isFinite(precioMax) ? { precioMax } : {}),
       }
-      const [productos, total, maxDescuento] = await Promise.all([
+      let [productos, total, maxDescuento] = await Promise.all([
         repositorio.listarPublicados({ ...filtros, page, limit, orden }),
         repositorio.contarPublicados(filtros),
         soloOfertas
           ? repositorio.obtenerMaximoDescuentoVigente(ahora)
           : Promise.resolve(null),
       ])
+
+      // Fallback de tercer nivel: si la subcategoría hija aún no tiene productos
+      // etiquetados, mostramos los de su subcategoría padre en vez de dejar la
+      // página vacía. El filtro real por hija sigue funcionando en cuanto se
+      // etiqueta al menos un producto.
+      if (total === 0 && filtros.subcategoriaHija) {
+        const { subcategoriaHija: _hija, ...filtrosSinHija } = filtros
+        ;[productos, total] = await Promise.all([
+          repositorio.listarPublicados({ ...filtrosSinHija, page, limit, orden }),
+          repositorio.contarPublicados(filtrosSinHija),
+        ])
+      }
 
       const productosPublicos = productos.map(crearProductoPublico)
 
@@ -135,7 +147,7 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
       const categoriaFiltrada = normalizarTextoBusqueda(categoria)
       const subcategoriaFiltrada = normalizarTextoBusqueda(subcategoria)
       const subcategoriaHijaFiltrada = normalizarTextoBusqueda(subcategoriaHija)
-      return repositorio.facetasPublicadas({
+      const filtros = {
         ahora: new Date(),
         ...(textoBusqueda ? { query: textoBusqueda } : {}),
         ...(categoriaFiltrada ? { categoria: categoriaFiltrada } : {}),
@@ -143,7 +155,14 @@ export function crearServicioProductos(repositorio = repositorioProductos) {
         ...(subcategoriaHijaFiltrada ? { subcategoriaHija: subcategoriaHijaFiltrada } : {}),
         ...(soloOfertas ? { soloOfertas: true } : {}),
         ...(soloDisponibles ? { soloDisponibles: true } : {}),
-      })
+      }
+      // Mismo fallback que el listado: si la hija no tiene productos, las facetas
+      // se calculan sobre la subcategoría padre para que coincidan con la lista.
+      if (filtros.subcategoriaHija && (await repositorio.contarPublicados(filtros)) === 0) {
+        const { subcategoriaHija: _hija, ...filtrosSinHija } = filtros
+        return repositorio.facetasPublicadas(filtrosSinHija)
+      }
+      return repositorio.facetasPublicadas(filtros)
     },
   }
 }

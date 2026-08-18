@@ -3,6 +3,7 @@ import { prisma } from '../../lib/prisma.js'
 const incluirProductoAdmin = {
   categoria: true,
   subcategoria: { select: { id: true, nombre: true, slug: true } },
+  subcategoriaHija: { select: { id: true, nombre: true, slug: true } },
   marca: true,
   imagenes: { orderBy: { orden: 'asc' } },
   etiquetas: { include: { etiqueta: true } },
@@ -94,6 +95,15 @@ export function crearRepositorioProductosAdmin(cliente = prisma) {
       return cliente.subcategoria.findUnique({
         where: { id },
         select: { id: true, categoriaId: true },
+      })
+    },
+
+    // Devuelve { id, subcategoriaId } o null: valida que la hija exista y
+    // pertenezca a la subcategoría efectiva del producto (no a otra).
+    obtenerSubcategoriaHija(id) {
+      return cliente.subcategoriaHija.findUnique({
+        where: { id },
+        select: { id: true, subcategoriaId: true },
       })
     },
 

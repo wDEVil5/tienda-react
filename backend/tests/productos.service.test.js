@@ -169,3 +169,52 @@ test('obtenerProductoPorSlug devuelve solo productos publicados', async () => {
   assert.equal(producto?.nombre, 'Aceite de oliva extra virgen 500 ml')
   assert.equal(productoInactivo, null)
 })
+
+test('listarProductos cae a la subcategoría cuando la hija no tiene productos (fallback de tercer nivel)', async () => {
+  const unoPublicado = productos.find((producto) => producto.estado === 'PUBLICADO')
+  const repositorio = {
+    // Con filtro de hija no hay nada; sin él (fallback) sí aparece el producto.
+    async listarPublicados(filtros = {}) {
+      return filtros.subcategoriaHija ? [] : [unoPublicado]
+    },
+    async contarPublicados(filtros = {}) {
+      return filtros.subcategoriaHija ? 0 : 1
+    },
+    async obtenerMaximoDescuentoVigente() {
+      return null
+    },
+  }
+  const servicio = crearServicioProductos(repositorio)
+
+  const { data, meta } = await servicio.listarProductos({
+    subcategoria: 'leche',
+    subcategoriaHija: 'leche-entera',
+  })
+
+  assert.equal(meta.total, 1)
+  assert.equal(data.length, 1)
+  assert.equal(data[0].slug, unoPublicado.slug)
+})
+
+test('listarProductos respeta el filtro de hija cuando sí tiene productos', async () => {
+  const unoPublicado = productos.find((producto) => producto.estado === 'PUBLICADO')
+  let listadosSinHija = 0
+  const repositorio = {
+    async listarPublicados(filtros = {}) {
+      if (!filtros.subcategoriaHija) listadosSinHija += 1
+      return [unoPublicado]
+    },
+    async contarPublicados() {
+      return 1
+    },
+    async obtenerMaximoDescuentoVigente() {
+      return null
+    },
+  }
+  const servicio = crearServicioProductos(repositorio)
+
+  await servicio.listarProductos({ subcategoria: 'leche', subcategoriaHija: 'leche-entera' })
+
+  // No debe reintentar sin la hija: el tercer nivel filtró de verdad.
+  assert.equal(listadosSinHija, 0)
+})

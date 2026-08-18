@@ -114,6 +114,49 @@ test('actualizarProducto deriva la clave de búsqueda al cambiar el nombre', asy
   assert.equal(actualizado.nombre, 'Café de grano')
 })
 
+test('actualizarProducto conecta la subcategoría hija cuando pertenece a la subcategoría', async () => {
+  let datosActualizacion
+  const producto = {
+    id: 'producto-1', sku: 'LE-001', slug: 'leche-entera', nombre: 'Leche entera 1 L', descripcion: 'x',
+    precio: 1200, precioAnterior: null, stock: 10, estado: 'PUBLICADO', destacado: false,
+    alertaStockBajo: null, codigoBarras: null, origen: null, contenidoCantidad: null,
+    contenidoUnidad: null, pesoDespachoGramos: null, fechaVencimiento: null,
+    categoriaId: 'cat-1', subcategoriaId: 'sub-leche',
+    categoria: { id: 'cat-1', nombre: 'Lácteos', slug: 'lacteos' },
+    marca: null, imagenes: [], etiquetas: [],
+  }
+  const repositorio = {
+    async obtenerPorId() { return producto },
+    async obtenerSubcategoriaHija(id) {
+      return id === 'hija-entera' ? { id: 'hija-entera', subcategoriaId: 'sub-leche' } : null
+    },
+    async actualizarPorId(_id, datos) { datosActualizacion = datos; return { ...producto, ...datos } },
+  }
+  const servicio = crearServicioProductosAdmin(repositorio)
+
+  await servicio.actualizarProducto('producto-1', { subcategoriaHijaId: 'hija-entera' })
+
+  assert.deepEqual(datosActualizacion.subcategoriaHija, { connect: { id: 'hija-entera' } })
+})
+
+test('actualizarProducto rechaza una hija que pertenece a otra subcategoría', async () => {
+  const producto = {
+    id: 'producto-1', categoriaId: 'cat-1', subcategoriaId: 'sub-leche',
+    estado: 'BORRADOR', precio: 1200, precioAnterior: null, imagenes: [{ id: 'img' }],
+  }
+  const repositorio = {
+    async obtenerPorId() { return producto },
+    async obtenerSubcategoriaHija() { return { id: 'hija-otra', subcategoriaId: 'sub-yogur' } },
+    async actualizarPorId() { throw new Error('no debería actualizar') },
+  }
+  const servicio = crearServicioProductosAdmin(repositorio)
+
+  await assert.rejects(
+    servicio.actualizarProducto('producto-1', { subcategoriaHijaId: 'hija-otra' }),
+    /INVALID_PRODUCT_REFERENCE|válid/i,
+  )
+})
+
 test('reemplazarImagenesProducto delega una galería completa al repositorio', async () => {
   let imagenesRecibidas
   const clavesEliminadas = []

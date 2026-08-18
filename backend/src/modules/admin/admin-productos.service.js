@@ -58,6 +58,11 @@ function crearProductoParaEdicion(producto) {
     subcategoria: producto.subcategoria
       ? { id: producto.subcategoria.id, nombre: producto.subcategoria.nombre, slug: producto.subcategoria.slug }
       : null,
+    // Tercer nivel (opcional): el editor lo preselecciona con subcategoriaHijaId.
+    subcategoriaHijaId: producto.subcategoriaHijaId ?? null,
+    subcategoriaHija: producto.subcategoriaHija
+      ? { id: producto.subcategoriaHija.id, nombre: producto.subcategoriaHija.nombre, slug: producto.subcategoriaHija.slug }
+      : null,
     // Marca opcional: el editor la preselecciona con marcaId (null = sin marca).
     marcaId: producto.marcaId ?? null,
     marca: producto.marca
@@ -110,7 +115,7 @@ function crearResumenProductoAdmin(producto) {
 
 function construirDatosActualizacion(cambios) {
   const {
-    categoriaId, subcategoriaId, marcaId, etiquetaIds, atributos, fechaVencimiento, ...campos
+    categoriaId, subcategoriaId, subcategoriaHijaId, marcaId, etiquetaIds, atributos, fechaVencimiento, ...campos
   } = cambios
   const datos = { ...campos }
 
@@ -127,6 +132,13 @@ function construirDatosActualizacion(cambios) {
     datos.subcategoria = subcategoriaId === null
       ? { disconnect: true }
       : { connect: { id: subcategoriaId } }
+  }
+
+  // Subcategoría hija (tercer nivel) opcional: mismo patrón que la subcategoría.
+  if (subcategoriaHijaId !== undefined) {
+    datos.subcategoriaHija = subcategoriaHijaId === null
+      ? { disconnect: true }
+      : { connect: { id: subcategoriaHijaId } }
   }
 
   // Marca opcional: null la desasocia (SetNull), un id la conecta.
@@ -161,7 +173,7 @@ function construirDatosActualizacion(cambios) {
   return datos
 }
 
-async function validarReferencias(repositorio, cambios, categoriaIdEfectiva) {
+async function validarReferencias(repositorio, cambios, categoriaIdEfectiva, subcategoriaIdEfectiva) {
   const categoriaInvalida =
     cambios.categoriaId !== undefined &&
     !(await repositorio.existeCategoriaActiva(cambios.categoriaId))
@@ -182,10 +194,22 @@ async function validarReferencias(repositorio, cambios, categoriaIdEfectiva) {
       (categoriaIdEfectiva !== undefined && subcategoria.categoriaId !== categoriaIdEfectiva)
   }
 
-  if (categoriaInvalida || marcaInvalida || etiquetasInvalidas || subcategoriaInvalida) {
+  // Subcategoría hija (tercer nivel): null la limpia. Si viene un id, requiere una
+  // subcategoría efectiva y debe pertenecer a ella (no a otra rama del árbol).
+  let hijaInvalida = false
+  if (cambios.subcategoriaHijaId != null) {
+    if (!subcategoriaIdEfectiva) {
+      hijaInvalida = true
+    } else {
+      const hija = await repositorio.obtenerSubcategoriaHija(cambios.subcategoriaHijaId)
+      hijaInvalida = !hija || hija.subcategoriaId !== subcategoriaIdEfectiva
+    }
+  }
+
+  if (categoriaInvalida || marcaInvalida || etiquetasInvalidas || subcategoriaInvalida || hijaInvalida) {
     throw new ErrorProductoAdmin(
       'INVALID_PRODUCT_REFERENCE',
-      'Categoría, subcategoría, marca o etiquetas no son válidas.',
+      'Categoría, subcategoría, subcategoría hija, marca o etiquetas no son válidas.',
     )
   }
 
@@ -243,9 +267,21 @@ export function crearServicioProductosAdmin(
 
       // Si se mueve de categoría y no se informan nuevos valores, limpiamos las
       // facetas anteriores: no existe una asignación válida entre categorías.
-      const cambiosEfectivos = (
+      let cambiosEfectivos = cambios
+      if (
         cambios.categoriaId && cambios.categoriaId !== productoActual.categoriaId && cambios.atributos === undefined
-      ) ? { ...cambios, atributos: [] } : cambios
+      ) {
+        cambiosEfectivos = { ...cambiosEfectivos, atributos: [] }
+      }
+      // Si cambia o se quita la subcategoría sin informar una hija nueva, limpiamos
+      // la hija anterior: dejaría de pertenecer a la subcategoría del producto.
+      if (
+        cambios.subcategoriaId !== undefined &&
+        cambios.subcategoriaId !== productoActual.subcategoriaId &&
+        cambios.subcategoriaHijaId === undefined
+      ) {
+        cambiosEfectivos = { ...cambiosEfectivos, subcategoriaHijaId: null }
+      }
 
       const precio = cambiosEfectivos.precio ?? productoActual.precio
       const precioAnterior = cambiosEfectivos.precioAnterior === undefined
@@ -269,6 +305,9 @@ export function crearServicioProductosAdmin(
         repositorio,
         cambiosEfectivos,
         cambiosEfectivos.categoriaId ?? productoActual.categoriaId,
+        cambiosEfectivos.subcategoriaId !== undefined
+          ? cambiosEfectivos.subcategoriaId
+          : productoActual.subcategoriaId,
       )
 
       const productoActualizado = await repositorio.actualizarPorId(
@@ -293,7 +332,7 @@ export function crearServicioProductosAdmin(
     },
 
     async crearProducto(datos) {
-      await validarReferencias(repositorio, datos, datos.categoriaId)
+      await validarReferencias(repositorio, datos, datos.categoriaId, datos.subcategoriaId ?? null)
       const slug = datos.slug ?? crearSlug(datos.nombre)
       const producto = await repositorio.crear({
         ...construirDatosActualizacion({ ...datos, slug }),

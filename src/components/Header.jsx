@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import styles from "./Header.module.css";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 import { useCuenta } from "../context/CuentaContext.jsx";
+import { obtenerCatalogo } from "../services/productosApi.js";
 
 // Íconos lineales (1.5px) recreados como SVG inline: sin dependencia de Font
 // Awesome y sin emoji, como pide la dirección visual. Heredan currentColor.
@@ -115,6 +116,13 @@ const UMBRAL_CONDENSADO_SALIDA = 56;
 const CLAVE_RECIENTES = "sumarket.busquedasRecientes";
 const MAX_RECIENTES = 6;
 
+// Autocompletar: se dispara desde 2 caracteres (1 casi siempre calza medio
+// catálogo) con un pequeño retardo para no pedir en cada tecla. Pocas
+// sugerencias mantienen el panel legible y la respuesta liviana.
+const MIN_CARACTERES_SUGERENCIA = 2;
+const MAX_SUGERENCIAS = 6;
+const RETARDO_SUGERENCIA_MS = 180;
+
 function leerRecientes() {
   if (typeof localStorage === "undefined") return [];
   try {
@@ -156,6 +164,8 @@ function Header({
   );
   const [buscadorAbierto, setBuscadorAbierto] = useState(false);
   const [recientes, setRecientes] = useState(leerRecientes);
+  const [sugerencias, setSugerencias] = useState([]);
+  const [cargandoSugerencias, setCargandoSugerencias] = useState(false);
   const cuentaRef = useRef(null);
   const botonCuentaRef = useRef(null);
   const panelCuentaRef = useRef(null);
@@ -164,6 +174,10 @@ function Header({
   // "Lo más buscado": accesos rápidos a las primeras categorías del catálogo (no
   // inventamos analítica de búsquedas; usamos las secciones reales de la tienda).
   const populares = categorias.slice(0, 6);
+  // Término efectivo para autocompletar (sin espacios de borde). El input está
+  // controlado por el padre, así que basta con observar la prop `busqueda`.
+  const terminoBusqueda = busqueda.trim();
+  const mostrandoSugerencias = terminoBusqueda.length >= MIN_CARACTERES_SUGERENCIA;
   const [posicionCuenta, setPosicionCuenta] = useState({ top: 0, left: 0 });
   const cerrarMenu = () => setMenuAbierto(false);
   const cerrarCuenta = () => setCuentaAbierta(false);
@@ -218,6 +232,39 @@ function Header({
     };
   }, []);
 
+  // Autocompletar en vivo. Todo el setState vive dentro del temporizador (nunca
+  // sincrónico en el cuerpo del efecto) para no infringir la regla de hooks. El
+  // flag `vigente` descarta respuestas de un término ya obsoleto (carreras).
+  useEffect(() => {
+    if (!buscadorAbierto) return undefined;
+    let vigente = true;
+    const temporizador = setTimeout(() => {
+      if (terminoBusqueda.length < MIN_CARACTERES_SUGERENCIA) {
+        if (vigente) {
+          setSugerencias([]);
+          setCargandoSugerencias(false);
+        }
+        return;
+      }
+      setCargandoSugerencias(true);
+      obtenerCatalogo({ busqueda: terminoBusqueda, limit: MAX_SUGERENCIAS, orden: "relevancia" })
+        .then((resultado) => {
+          if (!vigente) return;
+          setSugerencias(resultado.productos ?? []);
+          setCargandoSugerencias(false);
+        })
+        .catch(() => {
+          if (!vigente) return;
+          setSugerencias([]);
+          setCargandoSugerencias(false);
+        });
+    }, RETARDO_SUGERENCIA_MS);
+    return () => {
+      vigente = false;
+      clearTimeout(temporizador);
+    };
+  }, [buscadorAbierto, terminoBusqueda]);
+
   const agregarReciente = (termino) => {
     setRecientes((actuales) => {
       const sinDuplicado = actuales.filter((t) => t.toLowerCase() !== termino.toLowerCase());
@@ -248,6 +295,13 @@ function Header({
   const buscarEnCatalogo = (evento) => {
     evento.preventDefault();
     ejecutarBusqueda(busqueda);
+  };
+
+  // Ir directo a la ficha desde una sugerencia (cierra el panel).
+  const irAProducto = (producto) => {
+    if (!producto?.slug) return;
+    setBuscadorAbierto(false);
+    navegar(`/producto/${producto.slug}`);
   };
 
   // Navega a la página de una categoría o subcategoría (cierra menús abiertos).
@@ -443,8 +497,59 @@ function Header({
             <IconoLupa />
           </button>
 
-          {buscadorAbierto && (recientes.length > 0 || populares.length > 0) && (
+          {buscadorAbierto && (mostrandoSugerencias || recientes.length > 0 || populares.length > 0) && (
             <div className={styles.buscadorPanel} role="dialog" aria-label="Sugerencias de búsqueda">
+              {mostrandoSugerencias ? (
+                <div className={styles.sugerencias}>
+                  <button
+                    type="button"
+                    className={styles.sugerenciaBuscar}
+                    onClick={() => ejecutarBusqueda(terminoBusqueda)}
+                  >
+                    <span className={styles.sugerenciaBuscarLupa}>
+                      <IconoLupa />
+                    </span>
+                    <span>
+                      Buscar <strong>“{terminoBusqueda}”</strong>
+                    </span>
+                  </button>
+                  {sugerencias.length > 0 ? (
+                    <ul className={styles.sugerenciaLista}>
+                      {sugerencias.map((producto) => (
+                        <li key={producto.slug}>
+                          <button
+                            type="button"
+                            className={styles.sugerenciaItem}
+                            onClick={() => irAProducto(producto)}
+                          >
+                            <span className={styles.sugerenciaImagen}>
+                              {producto.imagen ? (
+                                <img src={producto.imagen} alt="" loading="lazy" />
+                              ) : null}
+                            </span>
+                            <span className={styles.sugerenciaTexto}>
+                              <span className={styles.sugerenciaNombre}>{producto.nombre}</span>
+                              {producto.marca?.nombre && (
+                                <span className={styles.sugerenciaMarca}>{producto.marca.nombre}</span>
+                              )}
+                            </span>
+                            <span className={styles.sugerenciaPrecio}>
+                              {"$ "}{producto.precio.toLocaleString("es-CL")}
+                            </span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className={styles.sugerenciaVacio}>
+                      {cargandoSugerencias
+                        ? "Buscando…"
+                        : `Sin coincidencias directas. Pulsa Enter para ver todos los resultados de “${terminoBusqueda}”.`}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <>
               {recientes.length > 0 && (
                 <div className={styles.buscadorCol}>
                   <p className={styles.buscadorColTitulo}>Búsqueda reciente</p>
@@ -489,6 +594,8 @@ function Header({
                     ))}
                   </div>
                 </div>
+              )}
+                </>
               )}
             </div>
           )}

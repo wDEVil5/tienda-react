@@ -1,0 +1,23 @@
+# Qué NO enviar al build (ni copiar con `COPY . .`). Es lo primero que lee Docker.
+
+# Dependencias: se reinstalan dentro de la imagen con `npm ci`. Enviarlas sería
+# lento y podrían venir compiladas para tu Mac (no para el Linux del contenedor).
+node_modules
+
+# Cliente de Prisma generado: se regenera dentro con `prisma generate`.
+src/generated
+
+# SECRETOS: jamás dentro de la imagen. Las variables entran en tiempo de ejecución.
+.env
+.env.*
+
+# Ruido que no aporta a una imagen de servidor.
+.git
+.gitignore
+*.md
+BACKEND.md
+coverage
+.DS_Store
+npm-debug.log*
+Dockerfile
+.dockerignore

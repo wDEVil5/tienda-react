@@ -67,6 +67,9 @@ export default function PaginaCatalogo({ categorias = [] }) {
   const subcategorias = categoriaActual?.subcategorias ?? [];
   const subActual = subcategorias.find((s) => s.slug === sub) ?? null;
   const nivel3Actual = subActual?.subcategoriasHijas?.find((item) => item.slug === nivel3) ?? null;
+  // Las píldoras son contextuales (como Jumbo): dentro de una subcategoría con
+  // tercer nivel mostramos sus hijas; en el nivel de categoría, las subcategorías.
+  const hijasDeSub = subActual?.subcategoriasHijas ?? [];
 
   const titulo =
     modo === "ofertas"
@@ -431,7 +434,25 @@ export default function PaginaCatalogo({ categorias = [] }) {
         )}
 
         <div className={styles.contenido}>
-          {modo === "categoria" && subcategorias.length > 0 && (
+          {modo === "categoria" && sub && hijasDeSub.length > 0 ? (
+            <div className={styles.chips} aria-label={`Tipos de ${subActual.nombre}`}>
+              <Link
+                to={`/categoria/${slug}?sub=${encodeURIComponent(sub)}`}
+                className={`${styles.chip} ${!nivel3 ? styles.chipActivo : ""}`}
+              >
+                Todo
+              </Link>
+              {hijasDeSub.map((hija) => (
+                <Link
+                  key={hija.slug ?? hija.id}
+                  to={`/categoria/${slug}?sub=${encodeURIComponent(sub)}&nivel3=${encodeURIComponent(hija.slug)}`}
+                  className={`${styles.chip} ${nivel3 === hija.slug ? styles.chipActivo : ""}`}
+                >
+                  {hija.nombre}
+                </Link>
+              ))}
+            </div>
+          ) : modo === "categoria" && subcategorias.length > 0 ? (
             <div className={styles.chips} aria-label="Subcategorías">
               <Link to={`/categoria/${slug}`} className={`${styles.chip} ${!sub ? styles.chipActivo : ""}`}>
                 Todo
@@ -446,7 +467,7 @@ export default function PaginaCatalogo({ categorias = [] }) {
                 </Link>
               ))}
             </div>
-          )}
+          ) : null}
           {cargando ? (
             <p className={styles.estado} role="status">Cargando productos…</p>
           ) : error ? (

@@ -165,11 +165,11 @@ cd backend && npm test                      # backend
 ## 🗺️ Próximos pasos
 
 1. Verificar en producción (HTTPS) el retorno de Mercado Pago hacia la confirmación;
-   el webhook ya es la fuente de verdad.
-2. Verificar la firma del webhook (`x-signature`) en producción.
-3. Dominio propio para unificar front y API bajo el mismo origen (resuelve las
+   el webhook ya es la fuente de verdad y su firma (`x-signature`) se valida en el
+   servidor (queda activar `MP_WEBHOOK_SECRET` en producción).
+2. Dominio propio para unificar front y API bajo el mismo origen (resuelve las
    cookies cross-site en Safari).
-4. App móvil con React Native / Expo (fase posterior del roadmap).
+3. App móvil con React Native / Expo (fase posterior del roadmap).
 
 El alcance y las decisiones de producto se mantienen en un PRD en Notion.
 

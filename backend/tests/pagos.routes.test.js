@@ -7,10 +7,10 @@ import { ErrorPago } from '../src/modules/pagos/pagos.service.js'
 
 const UUID = '11111111-1111-4111-8111-111111111111'
 
-function crearApp(servicio) {
+function crearApp(servicio, verificarFirma) {
   const app = express()
   app.use(express.json())
-  app.use('/api/pagos', crearRouterPagos(servicio))
+  app.use('/api/pagos', crearRouterPagos(servicio, verificarFirma))
   return app
 }
 
@@ -132,4 +132,42 @@ test('POST /webhook siempre responde 200 y pasa el cuerpo al servicio', async ()
   assert.equal(response.status, 200)
   assert.equal(response.body.ok, true)
   assert.deepEqual(recibido, { referenciaExterna: 'r1', estado: 'APROBADO' })
+})
+
+test('POST /webhook responde 401 y NO procesa si la firma es inválida', async () => {
+  let llamado = false
+  const app = crearApp(
+    {
+      async procesarNotificacion() {
+        llamado = true
+        return { procesado: true }
+      },
+    },
+    () => ({ ok: false, motivo: 'no-coincide' }),
+  )
+
+  const response = await request(app).post('/api/pagos/webhook').send({ data: { id: '123' } })
+
+  assert.equal(response.status, 401)
+  assert.equal(response.body.error.code, 'INVALID_WEBHOOK_SIGNATURE')
+  assert.equal(llamado, false)
+})
+
+test('POST /webhook procesa cuando la firma es válida', async () => {
+  let llamado = false
+  const app = crearApp(
+    {
+      async procesarNotificacion() {
+        llamado = true
+        return { procesado: true, estado: 'APROBADO', aplicado: true }
+      },
+    },
+    () => ({ ok: true, motivo: 'ok' }),
+  )
+
+  const response = await request(app).post('/api/pagos/webhook').send({ data: { id: '123' } })
+
+  assert.equal(response.status, 200)
+  assert.equal(response.body.ok, true)
+  assert.equal(llamado, true)
 })

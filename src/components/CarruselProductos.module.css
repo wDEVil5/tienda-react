@@ -112,11 +112,33 @@
   pointer-events: none;
 }
 
+/* Variante "encajado": el carrusel vive dentro de un contenedor angosto (una
+   columna), así que se quita el layout de página y se pega al ancho disponible.
+   Las flechas se recuestan en los bordes, superpuestas a las tarjetas extremas. */
+.encajado {
+  padding: 0;
+}
+.encajado .inner,
+.encajado .marco {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+.encajado .header {
+  margin-bottom: var(--e-md);
+}
+
 @media (max-width: 1023px) {
   .inner,
   .marco {
     padding-right: var(--e-xl);
     padding-left: var(--e-xl);
+  }
+  /* En encajado no reintroducimos el padding lateral de página. */
+  .encajado .inner,
+  .encajado .marco {
+    padding-right: 0;
+    padding-left: 0;
   }
 }
 

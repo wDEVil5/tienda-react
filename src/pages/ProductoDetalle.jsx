@@ -5,7 +5,7 @@ import { useCuenta } from "../context/CuentaContext.jsx";
 import { useFavoritos } from "../context/FavoritosContext.jsx";
 import { useAccesoModal } from "../context/AccesoModalContext.jsx";
 import ImagenProducto from "../components/ImagenProducto.jsx";
-import TarjetaProducto from "../components/TarjetaProducto.jsx";
+import CarruselProductos from "../components/CarruselProductos.jsx";
 import Estrellas from "../components/Estrellas.jsx";
 import ResenasProducto from "../components/ResenasProducto.jsx";
 import { leerDetalleProducto, obtenerMasVendidos, obtenerProductoDetalle, obtenerProductosSimilares } from "../services/productosApi.js";
@@ -230,7 +230,7 @@ function ProductoDetalle({ productos }) {
   // "Te podrían interesar": más vendidos, excluyendo el actual y los que ya
   // aparecen en "similares" para no repetir tarjetas.
   const idsMostrados = new Set([producto.id, ...sugeridos.map((p) => p.id)]);
-  const teInteresan = masVendidos.filter((p) => !idsMostrados.has(p.id)).slice(0, 6);
+  const teInteresan = masVendidos.filter((p) => !idsMostrados.has(p.id)).slice(0, 12);
 
   // Las reseñas usan el id real (UUID) del backend. En el fallback de demo
   // (Fake Store, ids numéricos) no hay reseñas: ocultamos la sección.
@@ -404,25 +404,11 @@ function ProductoDetalle({ productos }) {
           )}
 
           {sugeridos.length > 0 && (
-            <section className={styles.recomendados} aria-labelledby="similares-titulo">
-              <h2 id="similares-titulo" className={styles.recomendadosTitulo}>Descubre productos similares</h2>
-              <div className={styles.recomendadosGrid}>
-                {sugeridos.map((p) => (
-                  <TarjetaProducto key={p.id} producto={p} />
-                ))}
-              </div>
-            </section>
+            <CarruselProductos titulo="Descubre productos similares" productos={sugeridos} encajado />
           )}
 
           {teInteresan.length > 0 && (
-            <section className={styles.recomendados} aria-labelledby="interesan-titulo">
-              <h2 id="interesan-titulo" className={styles.recomendadosTitulo}>Te podrían interesar</h2>
-              <div className={styles.recomendadosGrid}>
-                {teInteresan.map((p) => (
-                  <TarjetaProducto key={p.id} producto={p} />
-                ))}
-              </div>
-            </section>
+            <CarruselProductos titulo="Te podrían interesar" productos={teInteresan} encajado />
           )}
 
           {productoTieneResenas && <ResenasProducto key={producto.id} productoId={producto.id} />}

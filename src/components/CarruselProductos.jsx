@@ -5,7 +5,11 @@ import styles from "./CarruselProductos.module.css";
 // Fila horizontal de productos (patrón "Lo más vendido" de un súper): reusa las
 // TarjetaProducto en una pista con scroll y flechas de avance. `accion` es un
 // nodo opcional a la derecha del título (p. ej. un enlace "Ver todo").
-function CarruselProductos({ titulo, eyebrow, productos, accion }) {
+//
+// `encajado` lo adapta a un contenedor angosto (p. ej. una columna de la ficha):
+// quita el ancho máximo, el centrado y el padding lateral de página, para que las
+// tarjetas queden a ras del contenido que lo rodea.
+function CarruselProductos({ titulo, eyebrow, productos, accion, encajado = false }) {
   const pistaRef = useRef(null);
   const [alInicio, setAlInicio] = useState(true);
   const [alFinal, setAlFinal] = useState(false);
@@ -40,7 +44,7 @@ function CarruselProductos({ titulo, eyebrow, productos, accion }) {
   if (!productos?.length) return null;
 
   return (
-    <section className={styles.seccion}>
+    <section className={`${styles.seccion} ${encajado ? styles.encajado : ""}`}>
       <div className={styles.inner}>
         <header className={styles.header}>
           <div>

@@ -544,32 +544,6 @@
 }
 
 /* Secciones de recomendación dentro de la columna (similares + te interesan). */
-.recomendados {
-  display: flex;
-  flex-direction: column;
-  gap: var(--e-md);
-}
-
-.recomendadosTitulo {
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 400;
-  color: var(--color-texto);
-}
-
-.recomendadosGrid {
-  display: grid;
-  /* Rellena el ancho de la columna con tantas tarjetas como quepan. */
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 16px;
-}
-
-@media (max-width: 767px) {
-  .recomendadosGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
 .noEncontrado {
   display: flex;
   flex-direction: column;

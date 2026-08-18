@@ -1,15 +1,17 @@
 # docker-compose.yml — entorno de desarrollo local de SumarketExpress.
 #
-# Por ahora solo levanta PostgreSQL 16 en un contenedor, para no tener que
-# instalar Postgres en la Mac. El backend y el frontend se siguen corriendo con
-# `npm run dev` como hasta ahora; solo apuntan su DATABASE_URL a esta base.
+# Levanta DOS servicios: la base (db) y la API (api). El frontend se sigue
+# corriendo con `npm run dev` en la Mac (apunta a http://localhost:3000).
 #
 # Comandos base (desde esta carpeta):
-#   docker compose up -d        # levanta la base en segundo plano (-d = detached)
-#   docker compose ps           # ver qué contenedores corren
-#   docker compose logs -f db   # ver los logs de la base en vivo
-#   docker compose down         # apaga y borra el contenedor (los datos quedan)
-#   docker compose down -v      # apaga Y borra el volumen (BORRA los datos)
+#   docker compose up -d --build   # construye la API y levanta todo (-d = detached)
+#   docker compose ps              # ver qué contenedores corren
+#   docker compose logs -f api     # ver los logs de la API en vivo
+#   docker compose down            # apaga y borra los contenedores (los datos quedan)
+#   docker compose down -v         # apaga Y borra el volumen (BORRA los datos)
+#
+# OJO: el servicio `api` publica el 3000. Si tienes el backend corriendo a mano
+# (`npm run dev`), páralo antes o chocarán por el puerto.
 
 services:
   # Un "service" es la definición de un contenedor (o varios réplicas). Este se
@@ -57,6 +59,34 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+
+  # La API (backend). En vez de una imagen del registro, la CONSTRUYE desde su
+  # Dockerfile (el multi-stage de la Lección 2).
+  api:
+    build:
+      context: ./backend
+    container_name: sumarket_api
+    restart: unless-stopped
+
+    # Espera a que la base pase su healthcheck antes de arrancar. Resuelve el
+    # clásico "la API arrancó antes que Postgres y falló la primera conexión".
+    depends_on:
+      db:
+        condition: service_healthy
+
+    # Carga TODAS las variables del backend (ADMIN_*, MP_*, correo, Google, etc.).
+    env_file:
+      - ./backend/.env
+    # ...pero SOBREESCRIBE la DATABASE_URL (environment gana sobre env_file): dentro
+    # de la red de compose la base NO es `localhost:5433` (eso es tu Mac), sino el
+    # SERVICIO `db` en su puerto INTERNO 5432. Compose resuelve `db` por DNS interno.
+    # Esta línea es el corazón de la lección: los contenedores se hablan por NOMBRE.
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-sumarket}:${POSTGRES_PASSWORD:?define POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-sumarket_express}?schema=public
+
+    # Publica el 3000 del contenedor en el 3000 de tu Mac (para el frontend y curl).
+    ports:
+      - "3000:3000"
 
 # Los volúmenes nombrados se declaran aparte. Docker los gestiona (no es una
 # carpeta de tu repo), por eso no ensucian el proyecto ni entran a git.

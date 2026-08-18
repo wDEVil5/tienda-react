@@ -1,0 +1,15 @@
+# Qué NO enviar al build de la imagen del FRONTEND (contexto = raíz del repo).
+node_modules
+dist
+backend           # el backend tiene su propia imagen; no es parte del front
+.env
+.env.*
+.git
+.gitignore
+*.md
+coverage
+.DS_Store
+npm-debug.log*
+Dockerfile
+.dockerignore
+docker-compose.yml

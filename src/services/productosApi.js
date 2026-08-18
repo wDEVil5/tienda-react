@@ -181,6 +181,20 @@ export async function obtenerProductoDetalle({
   );
 }
 
+// Caché en memoria del detalle prefetcheado. Permite "retener" la navegación
+// (pedir la ficha ANTES de mostrarla) y luego renderizarla al instante, sin un
+// segundo fetch ni parpadeo de esqueleto. `has` distingue "no cacheado"
+// (undefined) de "cacheado como no encontrado" (null).
+const cacheDetalle = new Map();
+
+export function guardarDetalleProducto(slug, producto) {
+  if (slug) cacheDetalle.set(slug, producto);
+}
+
+export function leerDetalleProducto(slug) {
+  return slug && cacheDetalle.has(slug) ? cacheDetalle.get(slug) : undefined;
+}
+
 /**
  * Productos similares para la ficha ("Descubre productos similares"): misma
  * subcategoría/categoría, ya normalizados. Sin API o ante un fallo devuelve []

@@ -5,12 +5,15 @@ import { useCarritoContext } from "../context/CarritoContext.jsx";
 import { useCuenta } from "../context/CuentaContext.jsx";
 import { useFavoritos } from "../context/FavoritosContext.jsx";
 import { useAccesoModal } from "../context/AccesoModalContext.jsx";
+import { useIrAProducto } from "../hooks/useIrAProducto.js";
 
 function TarjetaProducto({ producto }) {
     const { agregarAlCarrito } = useCarritoContext();
     const { estaAutenticado } = useCuenta();
     const { esFavorito, alternarFavorito } = useFavoritos();
     const { abrirAcceso } = useAccesoModal();
+    const { alClicProducto } = useIrAProducto();
+    const slugProducto = producto.slug ?? producto.id;
     const favorito = esFavorito(producto.id);
     const enOferta = producto.precioAnterior !== null;
 
@@ -43,7 +46,10 @@ function TarjetaProducto({ producto }) {
     return (
         <article className={styles.tarjeta}>
             <div className={styles.imagenWrap}>
-                <Link to={`/producto/${producto.slug ?? producto.id}`}>
+                <Link
+                    to={`/producto/${slugProducto}`}
+                    onClick={(evento) => alClicProducto(evento, slugProducto)}
+                >
                     <ImagenProducto
                         className={styles.imagen}
                         src={producto.imagen}
@@ -85,7 +91,12 @@ function TarjetaProducto({ producto }) {
                 {/* Marca SIEMPRE presente (espacio reservado si no hay marca). */}
                 <p className={styles.marca}>{producto.marca?.nombre ?? "\u00A0"}</p>
                 <h3 className={styles.nombre}>
-                    <Link to={`/producto/${producto.slug ?? producto.id}`}>{producto.nombre}</Link>
+                    <Link
+                        to={`/producto/${slugProducto}`}
+                        onClick={(evento) => alClicProducto(evento, slugProducto)}
+                    >
+                        {producto.nombre}
+                    </Link>
                 </h3>
                 <button
                     type="button"

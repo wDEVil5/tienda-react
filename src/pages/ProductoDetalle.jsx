@@ -8,7 +8,8 @@ import ImagenProducto from "../components/ImagenProducto.jsx";
 import TarjetaProducto from "../components/TarjetaProducto.jsx";
 import Estrellas from "../components/Estrellas.jsx";
 import ResenasProducto from "../components/ResenasProducto.jsx";
-import { obtenerMasVendidos, obtenerProductoDetalle, obtenerProductosSimilares } from "../services/productosApi.js";
+import { leerDetalleProducto, obtenerMasVendidos, obtenerProductoDetalle, obtenerProductosSimilares } from "../services/productosApi.js";
+import { fetchSilencioso } from "../lib/sondaDeRed.js";
 import styles from "./ProductoDetalle.module.css";
 
 // Límite de presentación. El backend y el panel admin deberán validar el
@@ -39,6 +40,9 @@ function ProductoDetalle({ productos }) {
   const [imagenSeleccionada, setImagenSeleccionada] = useState(null);
   const [copiado, setCopiado] = useState(false); // "Compartir" copió el enlace
 
+  // Detalle prefetcheado por la navegación "retenida" (clic en una tarjeta): ya
+  // está en caché, así que la ficha se muestra al instante y sin esqueleto.
+  const detalleCacheado = leerDetalleProducto(slug);
   // La colección actual resuelve navegación interna. Si se abre una URL directa
   // de una página aún no cargada, el efecto consulta su ficha al backend.
   const productoLocal = productos.find(
@@ -52,7 +56,8 @@ function ProductoDetalle({ productos }) {
   });
 
   useEffect(() => {
-    if (productoLocal) return undefined;
+    // Ya tenemos la ficha (prefetch o colección local): no repetimos la consulta.
+    if (detalleCacheado !== undefined || productoLocal) return undefined;
 
     let vigente = true;
 
@@ -71,11 +76,14 @@ function ProductoDetalle({ productos }) {
     return () => {
       vigente = false;
     };
-  }, [productoLocal, slug]);
+  }, [detalleCacheado, productoLocal, slug]);
 
   const producto =
-    productoLocal ?? (detalleRemoto.slug === slug ? detalleRemoto.producto : null);
+    (detalleCacheado !== undefined ? detalleCacheado : null) ??
+    productoLocal ??
+    (detalleRemoto.slug === slug ? detalleRemoto.producto : null);
   const cargandoProducto =
+    detalleCacheado === undefined &&
     !productoLocal &&
     (detalleRemoto.slug !== slug || !detalleRemoto.terminado);
 
@@ -84,7 +92,7 @@ function ProductoDetalle({ productos }) {
   const [similares, setSimilares] = useState([]);
   useEffect(() => {
     let vigente = true;
-    obtenerProductosSimilares({ slug: producto?.slug, limit: 6 })
+    obtenerProductosSimilares({ slug: producto?.slug, limit: 6, fetchImpl: fetchSilencioso })
       .then((lista) => {
         if (vigente) setSimilares(lista.filter((similar) => similar.id !== producto?.id));
       })
@@ -99,7 +107,7 @@ function ProductoDetalle({ productos }) {
   const [masVendidos, setMasVendidos] = useState([]);
   useEffect(() => {
     let vigente = true;
-    obtenerMasVendidos({ limit: 12 })
+    obtenerMasVendidos({ limit: 12, fetchImpl: fetchSilencioso })
       .then((lista) => {
         if (vigente && Array.isArray(lista)) setMasVendidos(lista);
       })

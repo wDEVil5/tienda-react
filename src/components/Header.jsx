@@ -7,6 +7,7 @@ import { useCuenta } from "../context/CuentaContext.jsx";
 import { useCarga } from "../context/CargaContext.jsx";
 import { obtenerCatalogo } from "../services/productosApi.js";
 import { fetchSilencioso } from "../lib/sondaDeRed.js";
+import { useIrAProducto } from "../hooks/useIrAProducto.js";
 import BarraProgreso from "./BarraProgreso.jsx";
 
 // Íconos lineales (1.5px) recreados como SVG inline: sin dependencia de Font
@@ -156,6 +157,7 @@ function Header({
   const { totalItems } = useCarritoContext();
   const { estaAutenticado, cliente, cerrarSesion } = useCuenta();
   const { activa: cargaActiva } = useCarga();
+  const { irAProducto: irAProductoConCarga } = useIrAProducto();
   const navegar = useNavigate();
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [cuentaAbierta, setCuentaAbierta] = useState(false);
@@ -303,11 +305,11 @@ function Header({
     ejecutarBusqueda(busqueda);
   };
 
-  // Ir directo a la ficha desde una sugerencia (cierra el panel).
+  // Ir a la ficha desde una sugerencia con navegación retenida (cierra el panel).
   const irAProducto = (producto) => {
     if (!producto?.slug) return;
     setBuscadorAbierto(false);
-    navegar(`/producto/${producto.slug}`);
+    irAProductoConCarga(producto.slug);
   };
 
   // Navega a la página de una categoría o subcategoría (cierra menús abiertos).

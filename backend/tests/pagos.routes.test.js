@@ -116,14 +116,18 @@ test('POST / responde 409 si el pedido ya fue pagado', async () => {
   assert.equal(response.body.error.code, 'ORDER_ALREADY_PAID')
 })
 
-test('POST /webhook siempre responde 200 y pasa el cuerpo al servicio', async () => {
+test('POST /webhook responde 200 y pasa el cuerpo al servicio (con firma válida)', async () => {
   let recibido
-  const app = crearApp({
-    async procesarNotificacion(payload) {
-      recibido = payload
-      return { procesado: true, estado: 'APROBADO', aplicado: true }
+  const app = crearApp(
+    {
+      async procesarNotificacion(payload) {
+        recibido = payload
+        return { procesado: true, estado: 'APROBADO', aplicado: true }
+      },
     },
-  })
+    // Verificador inyectado: aísla el paso del cuerpo de la firma (que se prueba aparte).
+    () => ({ ok: true }),
+  )
 
   const response = await request(app)
     .post('/api/pagos/webhook')
@@ -132,6 +136,36 @@ test('POST /webhook siempre responde 200 y pasa el cuerpo al servicio', async ()
   assert.equal(response.status, 200)
   assert.equal(response.body.ok, true)
   assert.deepEqual(recibido, { referenciaExterna: 'r1', estado: 'APROBADO' })
+})
+
+test('POST /:pagoId/reconciliar reconcilia y devuelve el snapshot actualizado', async () => {
+  let reconciliado
+  const app = crearApp({
+    async reconciliarPago(pagoId) {
+      reconciliado = pagoId
+      return { procesado: true, estado: 'APROBADO' }
+    },
+    async obtenerEstadoParaCheckout(pagoId) {
+      return { id: pagoId, estado: 'APROBADO', proveedor: 'mercadopago', pedido: { numero: 9 } }
+    },
+  })
+
+  const response = await request(app).post(`/api/pagos/${UUID}/reconciliar`)
+
+  assert.equal(response.status, 200)
+  assert.equal(reconciliado, UUID)
+  assert.equal(response.body.data.estado, 'APROBADO')
+})
+
+test('POST /:pagoId/reconciliar responde 404 para un id inválido', async () => {
+  const app = crearApp({
+    async reconciliarPago() { throw new Error('no debería llamarse') },
+  })
+
+  const response = await request(app).post('/api/pagos/no-es-uuid/reconciliar')
+
+  assert.equal(response.status, 404)
+  assert.equal(response.body.error.code, 'PAYMENT_NOT_FOUND')
 })
 
 test('POST /webhook responde 401 y NO procesa si la firma es inválida', async () => {

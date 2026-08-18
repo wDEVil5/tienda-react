@@ -3,6 +3,7 @@ import {
   iniciarPago,
   obtenerEstadoParaCheckout,
   procesarNotificacion,
+  reconciliarPago,
   ErrorPago,
 } from './pagos.service.js'
 import { validarIniciarPago, validarPagoId } from './pagos.validacion.js'
@@ -31,7 +32,7 @@ function verificarFirmaPorDefecto(request) {
 // El id del pedido (uuid) actúa como capacidad, igual que el checkout de
 // invitado; no exige sesión.
 export function crearRouterPagos(
-  servicio = { iniciarPago, obtenerEstadoParaCheckout, procesarNotificacion },
+  servicio = { iniciarPago, obtenerEstadoParaCheckout, procesarNotificacion, reconciliarPago },
   verificarFirma = verificarFirmaPorDefecto,
 ) {
   const router = Router()
@@ -47,6 +48,32 @@ export function crearRouterPagos(
     }
 
     try {
+      const pago = await servicio.obtenerEstadoParaCheckout(validacion.data)
+      if (!pago) {
+        return response.status(404).json({
+          error: { code: 'PAYMENT_NOT_FOUND', message: 'No encontramos el pago.' },
+        })
+      }
+      return response.json({ data: pago })
+    } catch (error) {
+      return next(error)
+    }
+  })
+
+  // Reconciliación activa al volver del checkout: consulta el estado real del pago
+  // a la pasarela y lo aplica (idempotente), sin esperar al webhook. Devuelve el
+  // snapshot ya actualizado. Si la pasarela no puede consultar o el pago sigue
+  // pendiente, responde igual con el snapshot vigente (no es un error).
+  router.post('/:pagoId/reconciliar', async (request, response, next) => {
+    const validacion = validarPagoId(request.params.pagoId)
+    if (!validacion.success) {
+      return response.status(404).json({
+        error: { code: 'PAYMENT_NOT_FOUND', message: 'No encontramos el pago.' },
+      })
+    }
+
+    try {
+      await servicio.reconciliarPago(validacion.data)
       const pago = await servicio.obtenerEstadoParaCheckout(validacion.data)
       if (!pago) {
         return response.status(404).json({

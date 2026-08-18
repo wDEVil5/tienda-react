@@ -48,3 +48,29 @@ export async function obtenerEstadoPago({
 
   return datos?.data;
 }
+
+// Reconciliación activa: al volver del checkout, le pide al servidor que consulte
+// el estado real del pago a Mercado Pago y lo confirme, sin esperar al webhook.
+// Devuelve el mismo snapshot que obtenerEstadoPago (ya actualizado).
+export async function reconciliarPago({
+  pagoId,
+  fetchImpl = fetch,
+  apiUrl = apiUrlPorDefecto(),
+} = {}) {
+  if (!apiUrl) throw new Error("La reconciliación del pago requiere la API propia.");
+
+  const respuesta = await fetchImpl(`${apiUrl.replace(/\/$/, "")}/pagos/${pagoId}/reconciliar`, {
+    method: "POST",
+    credentials: "include",
+  });
+  const datos = await respuesta.json().catch(() => null);
+
+  if (!respuesta.ok) {
+    const error = new Error(datos?.error?.message ?? "No pudimos reconciliar el pago.");
+    error.code = datos?.error?.code;
+    error.status = respuesta.status;
+    throw error;
+  }
+
+  return datos?.data;
+}

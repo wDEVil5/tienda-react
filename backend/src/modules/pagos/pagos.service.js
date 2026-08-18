@@ -27,6 +27,50 @@ export function crearServicioPagos({
   pasarela = pasarelaPorDefecto(),
   notificador = notificadorPedidos,
 } = {}) {
+  // Aplica un resultado YA RESUELTO ({ referenciaExterna, estado }) al pago que le
+  // corresponde. Idempotente en dos niveles (aquí + la tx del repositorio). Lo
+  // comparten el webhook y la reconciliación del retorno: ambos terminan aquí, así
+  // que el efecto sobre stock/pedido/correo es exactamente el mismo por una sola vía.
+  async function aplicarResultado(interpretada) {
+    const pago = await repositorio.buscarPorReferencia(interpretada.referenciaExterna)
+    if (!pago) {
+      return { procesado: false, motivo: 'PAGO_NO_ENCONTRADO' }
+    }
+
+    // Ya está en el estado entrante: la misma resolución llegó de nuevo.
+    if (pago.estado === interpretada.estado) {
+      return { procesado: true, idempotente: true }
+    }
+    // Solo transiciones legales desde PENDIENTE (aprobar o rechazar).
+    if (!esTransicionPagoValida(pago.estado, interpretada.estado)) {
+      return { procesado: false, motivo: 'TRANSICION_INVALIDA' }
+    }
+
+    if (interpretada.estado === 'APROBADO') {
+      const resultado = await repositorio.aprobarPagoTransaccional(pago.id)
+
+      // La confirmación por correo sale AQUÍ, no al crear el pedido: solo si el
+      // pago quedó aprobado y el pedido avanzó (consumido). Fire-and-forget para
+      // no bloquear la respuesta; la idempotencia de `consumido` evita duplicados.
+      if (resultado.consumido && resultado.pedido) {
+        notificador
+          .enviarConfirmacion(resultado.pedido)
+          .catch((error) =>
+            console.error(
+              `No se pudo enviar la confirmación del pedido ${resultado.pedido.numero}: ${error.message}`,
+            ),
+          )
+      }
+
+      // El pedido completo no debe viajar en la respuesta.
+      delete resultado.pedido
+      return { procesado: true, estado: 'APROBADO', ...resultado }
+    }
+
+    const resultado = await repositorio.rechazarPagoTransaccional(pago.id)
+    return { procesado: true, estado: 'RECHAZADO', ...resultado }
+  }
+
   return {
     // Inicia el pago de un pedido: crea el registro de pago, pide una preferencia
     // a la pasarela y devuelve la URL a la que redirigir al cliente. El estado
@@ -69,53 +113,42 @@ export function crearServicioPagos({
       return repositorio.obtenerEstadoParaCheckout(pagoId)
     },
 
-    // Procesa una notificación del proveedor (webhook). Es la ÚNICA vía por la
-    // que un pago cambia de estado: el redirect del navegador no cuenta. Es
-    // idempotente en dos niveles: acá (si ya está en el estado entrante, no-op) y
-    // en la transacción del repositorio (guarda updateMany where estado=PENDIENTE).
+    // Procesa una notificación del proveedor (webhook). Traduce el payload a
+    // { referenciaExterna, estado } y lo aplica por el camino común.
     async procesarNotificacion(payload) {
       const interpretada = await pasarela.interpretarNotificacion(payload)
       if (!interpretada) {
         return { procesado: false, motivo: 'NOTIFICACION_INVALIDA' }
       }
+      return aplicarResultado(interpretada)
+    },
 
-      const pago = await repositorio.buscarPorReferencia(interpretada.referenciaExterna)
+    // Reconciliación al volver del checkout: en vez de solo esperar el webhook,
+    // le preguntamos a la pasarela el estado real del pago (por nuestra
+    // referenciaExterna) y lo aplicamos. Cubre webhooks atrasados o perdidos. Es
+    // idempotente: si el webhook ya lo resolvió, no hace nada de nuevo.
+    async reconciliarPago(pagoId) {
+      const pago = await repositorio.obtenerReferenciaYEstado(pagoId)
       if (!pago) {
         return { procesado: false, motivo: 'PAGO_NO_ENCONTRADO' }
       }
-
-      // Ya está en el estado entrante: la misma notificación llegó de nuevo.
-      if (pago.estado === interpretada.estado) {
-        return { procesado: true, idempotente: true }
+      // Ya resolvió (lo confirmó el webhook u otra reconciliación): nada que hacer.
+      if (pago.estado !== 'PENDIENTE') {
+        return { procesado: true, idempotente: true, estado: pago.estado }
       }
-      // Solo transiciones legales desde PENDIENTE (aprobar o rechazar).
-      if (!esTransicionPagoValida(pago.estado, interpretada.estado)) {
-        return { procesado: false, motivo: 'TRANSICION_INVALIDA' }
+      if (!pago.referenciaExterna) {
+        return { procesado: false, motivo: 'SIN_REFERENCIA' }
       }
-
-      if (interpretada.estado === 'APROBADO') {
-        const resultado = await repositorio.aprobarPagoTransaccional(pago.id)
-
-        // La confirmación por correo sale AQUÍ, no al crear el pedido: solo si el
-        // pago quedó aprobado y el pedido avanzó (consumido). Fire-and-forget para
-        // no bloquear el webhook; la idempotencia de `consumido` evita duplicados.
-        if (resultado.consumido && resultado.pedido) {
-          notificador
-            .enviarConfirmacion(resultado.pedido)
-            .catch((error) =>
-              console.error(
-                `No se pudo enviar la confirmación del pedido ${resultado.pedido.numero}: ${error.message}`,
-              ),
-            )
-        }
-
-        // El pedido completo no debe viajar en la respuesta del webhook.
-        delete resultado.pedido
-        return { procesado: true, estado: 'APROBADO', ...resultado }
+      // La pasarela falsa no soporta consulta: no hay nada que reconciliar.
+      if (typeof pasarela.consultarPorReferencia !== 'function') {
+        return { procesado: false, motivo: 'NO_SOPORTADO' }
       }
 
-      const resultado = await repositorio.rechazarPagoTransaccional(pago.id)
-      return { procesado: true, estado: 'RECHAZADO', ...resultado }
+      const interpretada = await pasarela.consultarPorReferencia(pago.referenciaExterna)
+      if (!interpretada) {
+        return { procesado: false, motivo: 'SIN_RESULTADO' }
+      }
+      return aplicarResultado(interpretada)
     },
   }
 }
@@ -125,3 +158,4 @@ const servicioPagos = crearServicioPagos()
 export const iniciarPago = (pedidoId) => servicioPagos.iniciarPago(pedidoId)
 export const obtenerEstadoParaCheckout = (pagoId) => servicioPagos.obtenerEstadoParaCheckout(pagoId)
 export const procesarNotificacion = (payload) => servicioPagos.procesarNotificacion(payload)
+export const reconciliarPago = (pagoId) => servicioPagos.reconciliarPago(pagoId)

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useCuenta } from "../context/CuentaContext.jsx";
 import { obtenerCheckoutPendiente } from "../services/checkoutPendiente.js";
-import { obtenerEstadoPago } from "../services/pagosApi.js";
+import { obtenerEstadoPago, reconciliarPago } from "../services/pagosApi.js";
 import styles from "./EstadoPago.module.css";
 
 const clp = (monto) => `$\u202F${Number(monto ?? 0).toLocaleString("es-CL")}`;
@@ -37,9 +37,15 @@ function EstadoPago() {
     let temporizador;
     const inicio = Date.now();
 
-    const consultar = async () => {
+    // El PRIMER intento reconcilia (le pide al servidor que consulte el pago a MP
+    // y lo confirme), así no dependemos de que el webhook haya llegado ya. Si la
+    // reconciliación falla, cae a la consulta normal. Los intentos siguientes solo
+    // consultan el snapshot (que el webhook va actualizando), sin martillar a MP.
+    const consultar = async (reconciliar = false) => {
       try {
-        const pago = await obtenerEstadoPago({ pagoId });
+        const pago = reconciliar
+          ? await reconciliarPago({ pagoId }).catch(() => obtenerEstadoPago({ pagoId }))
+          : await obtenerEstadoPago({ pagoId });
         if (!vigente) return;
 
         if (pago.estado === "APROBADO") {
@@ -65,7 +71,7 @@ function EstadoPago() {
       }
     };
 
-    consultar();
+    consultar(true);
     return () => {
       vigente = false;
       window.clearTimeout(temporizador);

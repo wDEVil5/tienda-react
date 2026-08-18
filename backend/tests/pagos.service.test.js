@@ -241,3 +241,83 @@ test('procesarNotificacion rechaza una transición inválida (pago ya terminal)'
 
   assert.deepEqual(r, { procesado: false, motivo: 'TRANSICION_INVALIDA' })
 })
+
+// --- Reconciliación del retorno: reconciliarPago ---
+
+test('reconciliarPago consulta la pasarela y aprueba cuando el pago sigue pendiente', async () => {
+  let aprobadoId
+  const servicio = crearServicioPagos({
+    repositorio: {
+      async obtenerReferenciaYEstado() {
+        return { id: 'pago1', estado: 'PENDIENTE', referenciaExterna: 'ref1' }
+      },
+      async buscarPorReferencia() { return { id: 'pago1', estado: 'PENDIENTE' } },
+      async aprobarPagoTransaccional(id) { aprobadoId = id; return { aplicado: true, consumido: true } },
+    },
+    pasarela: {
+      proveedor: 'mercadopago',
+      async consultarPorReferencia(ref) {
+        return ref === 'ref1' ? { referenciaExterna: 'ref1', estado: 'APROBADO' } : null
+      },
+    },
+    notificador: { async enviarConfirmacion() {} },
+  })
+
+  const r = await servicio.reconciliarPago('pago1')
+
+  assert.equal(aprobadoId, 'pago1')
+  assert.equal(r.estado, 'APROBADO')
+})
+
+test('reconciliarPago es no-op si el pago ya está terminal (no consulta a la pasarela)', async () => {
+  let consultada = false
+  const servicio = crearServicioPagos({
+    repositorio: {
+      async obtenerReferenciaYEstado() {
+        return { id: 'pago1', estado: 'APROBADO', referenciaExterna: 'ref1' }
+      },
+    },
+    pasarela: {
+      proveedor: 'mercadopago',
+      async consultarPorReferencia() { consultada = true; return null },
+    },
+  })
+
+  const r = await servicio.reconciliarPago('pago1')
+
+  assert.deepEqual(r, { procesado: true, idempotente: true, estado: 'APROBADO' })
+  assert.equal(consultada, false)
+})
+
+test('reconciliarPago no hace nada si la pasarela no devuelve resultado', async () => {
+  const servicio = crearServicioPagos({
+    repositorio: {
+      async obtenerReferenciaYEstado() {
+        return { id: 'pago1', estado: 'PENDIENTE', referenciaExterna: 'ref1' }
+      },
+    },
+    pasarela: {
+      proveedor: 'fake',
+      async consultarPorReferencia() { return null },
+    },
+  })
+
+  const r = await servicio.reconciliarPago('pago1')
+
+  assert.deepEqual(r, { procesado: false, motivo: 'SIN_RESULTADO' })
+})
+
+test('reconciliarPago no soporta pasarela sin consulta (falsa)', async () => {
+  const servicio = crearServicioPagos({
+    repositorio: {
+      async obtenerReferenciaYEstado() {
+        return { id: 'pago1', estado: 'PENDIENTE', referenciaExterna: 'ref1' }
+      },
+    },
+    pasarela: { proveedor: 'fake' },
+  })
+
+  const r = await servicio.reconciliarPago('pago1')
+
+  assert.deepEqual(r, { procesado: false, motivo: 'NO_SOPORTADO' })
+})

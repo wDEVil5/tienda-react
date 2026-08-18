@@ -34,5 +34,11 @@ export function crearPasarelaFalsa({ prefijo = 'fake' } = {}) {
       }
       return { referenciaExterna: payload.referenciaExterna, estado: payload.estado }
     },
+
+    // La pasarela falsa no tiene un pago externo que consultar: la reconciliación
+    // no aplica (en dev el estado se confirma con el webhook simulado).
+    async consultarPorReferencia() {
+      return null
+    },
   }
 }

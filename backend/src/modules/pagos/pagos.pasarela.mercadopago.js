@@ -113,5 +113,23 @@ export function crearPasarelaMercadoPago({
 
       return { referenciaExterna: pago.external_reference, estado }
     },
+
+    // Reconciliación del retorno del checkout: busca el pago por NUESTRA
+    // external_reference (el pagoId) y devuelve su estado terminal, o null si no
+    // hay resultado o aún no resolvió. Permite confirmar sin esperar al webhook.
+    async consultarPorReferencia(referenciaExterna) {
+      if (!referenciaExterna) return null
+
+      const resultado = await mpFetch(
+        `/v1/payments/search?sort=date_created&criteria=desc&external_reference=${encodeURIComponent(referenciaExterna)}`,
+      )
+      const pago = resultado?.results?.[0]
+      if (!pago) return null
+
+      const estado = MAPA_ESTADO[pago.status]
+      if (!estado || !pago.external_reference) return null
+
+      return { referenciaExterna: pago.external_reference, estado }
+    },
   }
 }

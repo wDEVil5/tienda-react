@@ -92,7 +92,9 @@ Banners, **Reseñas** (moderación) y Equipo. Control por rol (`ADMIN` / `OPERAD
   productos, el listado y las facetas caen a su subcategoría padre.
 - **Reseñas con compra verificada** (cruce con pedidos pagados del cliente) y **agregado
   denormalizado** (promedio + conteo) por producto; **favoritos** por cuenta.
-- Webhook de Mercado Pago **idempotente** que avanza stock/pedido tras la aprobación; la
+- Webhook de Mercado Pago **idempotente** y con **firma verificada** (`x-signature`
+  HMAC-SHA256) que avanza stock/pedido tras la aprobación; al volver del checkout el
+  servidor **reconcilia** el pago contra Mercado Pago (por si el webhook se atrasa). La
   confirmación por correo sale al **aprobarse el pago** (no al crear el pedido), y un
   **barrido interno** expira los pedidos impagos liberando su reserva.
 - Correo transaccional con plantillas HTML (confirmación, cambio de estado,
@@ -164,9 +166,9 @@ cd backend && npm test                      # backend
 
 ## 🗺️ Próximos pasos
 
-1. Verificar en producción (HTTPS) el retorno de Mercado Pago hacia la confirmación;
-   el webhook ya es la fuente de verdad y su firma (`x-signature`) se valida en el
-   servidor (queda activar `MP_WEBHOOK_SECRET` en producción).
+1. Probar el circuito de pago completo en producción (HTTPS): el webhook es la fuente
+   de verdad, su firma (`x-signature`) se valida y el retorno se reconcilia contra
+   Mercado Pago (queda activar `MP_WEBHOOK_SECRET` en producción).
 2. Dominio propio para unificar front y API bajo el mismo origen (resuelve las
    cookies cross-site en Safari).
 3. App móvil con React Native / Expo (fase posterior del roadmap).

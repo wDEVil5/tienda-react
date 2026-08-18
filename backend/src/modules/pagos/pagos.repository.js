@@ -59,6 +59,16 @@ export function crearRepositorioPagos(db = prisma) {
       })
     },
 
+    // Para reconciliar el retorno del checkout: necesitamos la referencia del
+    // proveedor (para consultarle el pago) y el estado actual (para saber si sigue
+    // pendiente y vale la pena consultar).
+    async obtenerReferenciaYEstado(pagoId) {
+      return db.pago.findUnique({
+        where: { id: pagoId },
+        select: { id: true, estado: true, referenciaExterna: true },
+      })
+    },
+
     // El webhook encuentra su pago por la referencia del proveedor.
     async buscarPorReferencia(referenciaExterna) {
       return db.pago.findUnique({

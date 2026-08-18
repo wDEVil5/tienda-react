@@ -1,0 +1,22 @@
+/* Franja anclada al borde inferior del header (que es position: sticky, así que
+   la pista absoluta se ancla a él y lo acompaña al hacer scroll). */
+.pista {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  pointer-events: none;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.barra {
+  height: 100%;
+  border-radius: 0 3px 3px 0;
+  background: linear-gradient(90deg, var(--bnv-verde-claro), var(--bnv-verde));
+  /* Un halo sutil en la punta, como las barras de carga tipo NProgress. */
+  box-shadow: 0 0 8px rgba(45, 138, 79, 0.5);
+  /* El ancho crece suave; la opacidad se desvanece al completar. */
+  transition: width 0.2s ease, opacity 0.35s ease 0.1s;
+}

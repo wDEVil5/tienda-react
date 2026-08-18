@@ -4,7 +4,10 @@ import { Link, useNavigate } from "react-router-dom";
 import styles from "./Header.module.css";
 import { useCarritoContext } from "../context/CarritoContext.jsx";
 import { useCuenta } from "../context/CuentaContext.jsx";
+import { useCarga } from "../context/CargaContext.jsx";
 import { obtenerCatalogo } from "../services/productosApi.js";
+import { fetchSilencioso } from "../lib/sondaDeRed.js";
+import BarraProgreso from "./BarraProgreso.jsx";
 
 // Íconos lineales (1.5px) recreados como SVG inline: sin dependencia de Font
 // Awesome y sin emoji, como pide la dirección visual. Heredan currentColor.
@@ -152,6 +155,7 @@ function Header({
 }) {
   const { totalItems } = useCarritoContext();
   const { estaAutenticado, cliente, cerrarSesion } = useCuenta();
+  const { activa: cargaActiva } = useCarga();
   const navegar = useNavigate();
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [cuentaAbierta, setCuentaAbierta] = useState(false);
@@ -247,7 +251,9 @@ function Header({
         return;
       }
       setCargandoSugerencias(true);
-      obtenerCatalogo({ busqueda: terminoBusqueda, limit: MAX_SUGERENCIAS, orden: "relevancia" })
+      // Silencioso: el autocompletar no debe mover la barra de progreso global
+      // (dispararía un parpadeo por cada pausa al tipear).
+      obtenerCatalogo({ busqueda: terminoBusqueda, limit: MAX_SUGERENCIAS, orden: "relevancia", fetchImpl: fetchSilencioso })
         .then((resultado) => {
           if (!vigente) return;
           setSugerencias(resultado.productos ?? []);
@@ -839,6 +845,9 @@ function Header({
         </div>,
         document.body,
       )}
+
+      {/* Franja de carga anclada al borde inferior del nav. */}
+      <BarraProgreso activa={cargaActiva} />
     </header>
   );
 }

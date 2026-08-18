@@ -22,6 +22,7 @@ construida con Express, PostgreSQL y Prisma. Proyecto personal de aprendizaje.
 ![Mercado Pago](https://img.shields.io/badge/Mercado_Pago-00B1EA?style=for-the-badge&logo=mercadopago&logoColor=white)
 ![Google Auth](https://img.shields.io/badge/Google_Auth-4285F4?style=for-the-badge&logo=google&logoColor=white)
 ![Vitest](https://img.shields.io/badge/Vitest-6E9F18?style=for-the-badge&logo=vitest&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
 [**🌐 Ver demo en vivo**](https://sumarketexpress.sumarket.workers.dev/)
 
@@ -151,6 +152,23 @@ npm run db:seed
 npm run dev          # http://localhost:3000
 ```
 
+### 🐳 Con Docker (sin instalar PostgreSQL)
+
+Requiere Docker Desktop corriendo. La base va en un contenedor; la app corre en el host
+(hot-reload nativo):
+
+```bash
+cp .env.example .env           # raíz: credenciales de la base + VITE_API_URL
+docker compose up -d db        # PostgreSQL 16 en el 5433 (para no chocar con uno nativo)
+cd backend                     # DATABASE_URL → ...@localhost:5433/sumarket_express
+npx prisma migrate deploy && npm run db:seed && npm run admin:create
+npm run dev
+```
+
+También hay imágenes para el **stack completo** (`docker compose up -d --build` levanta base
++ API en contenedores) y una imagen del **frontend** (Vite → nginx). Detalle y solución de
+problemas en `backend/BACKEND.md` (§Docker).
+
 Puntos de entrada de la API: catálogo, facetas y similares (`/api/productos`,
 `/api/productos/facetas`, `/api/productos/:slug/similares`), categorías y marcas, pedidos
 (`/api/pedidos/cotizar`, `/api/pedidos`), pagos (`/api/pagos`), reseñas (`/api/resenas`),
@@ -171,7 +189,9 @@ cd backend && npm test                      # backend
    Mercado Pago (queda activar `MP_WEBHOOK_SECRET` en producción).
 2. Dominio propio para unificar front y API bajo el mismo origen (resuelve las
    cookies cross-site en Safari).
-3. App móvil con React Native / Expo (fase posterior del roadmap).
+3. `docker-compose.override.yml` de hot-reload (bind-mount + `node --watch`) para editar
+   en vivo con la API dockerizada.
+4. App móvil con React Native / Expo (fase posterior del roadmap).
 
 El alcance y las decisiones de producto se mantienen en un PRD en Notion.
 

@@ -51,12 +51,16 @@ del ID token en el servidor). Cloudinary + Sharp para imágenes y Brandfetch par
 - Inicio editorial: **carrusel de banners** administrable, filas de destacados,
   **lo más vendido** (ranking real de ventas) y ofertas — sin catálogo embutido.
 - Navegación tipo supermercado: **mega-menú** de categorías con subcategorías y
-  **buscador** (por nombre, categoría o marca) con historial y accesos rápidos.
+  **buscador** con **autocompletado en vivo**, historial de búsquedas y resultados
+  **tolerantes a la separación** (escribir "camposur" encuentra la marca "Campo Sur").
 - **Páginas de listado** por categoría/subcategoría/búsqueda/ofertas con breadcrumb,
-  orden, paginación y **sidebar de filtros** (marcas, rango de precio y atributos,
-  calculados por facetas del servidor).
+  orden, paginación, **píldoras contextuales** que bajan al siguiente nivel de la
+  taxonomía y **sidebar de filtros** (marcas, rango de precio y atributos, calculados
+  por facetas del servidor).
 - Ficha de producto con galería, **panel de compra sticky**, **reseñas y calificaciones**,
-  **productos similares** y "te podrían interesar".
+  y filas con scroll de **productos similares** y "te podrían interesar".
+- **Barra de progreso** de carga ligada a la actividad de red real, y navegación que
+  **precarga la ficha** antes de mostrarla (sin páginas a medio cargar).
 - **Reseñas con compra verificada**: solo califica quien compró el producto; el promedio y
   las estrellas se ven también en las tarjetas del catálogo.
 - **Favoritos** (lista de deseos por cuenta): corazón en tarjetas y ficha, con página propia.
@@ -70,7 +74,8 @@ del ID token en el servidor). Cloudinary + Sharp para imágenes y Brandfetch par
 - Responsive, con foco visible y navegación por teclado.
 
 ### 🔐 Panel de administración
-Resumen (KPIs, gráficos SVG sin librerías), Pedidos (comanda + CSV), Productos,
+Resumen (KPIs, gráficos SVG sin librerías), Pedidos (comanda + CSV), Productos
+(con **taxonomía de 3 niveles asignable** por producto y atributos por categoría),
 Inventario (con bitácora de movimientos), Clientes, Categorías (**taxonomía de 3
 niveles + atributos configurables**), Marcas, Envíos, Identidad, Contenido (Markdown),
 Banners, **Reseñas** (moderación) y Equipo. Control por rol (`ADMIN` / `OPERADOR`).
@@ -82,6 +87,9 @@ Banners, **Reseñas** (moderación) y Equipo. Control por rol (`ADMIN` / `OPERAD
   snapshots históricos por pedido.
 - Disponibilidad honesta (`disponible` = stock − reservado) y suscripción "Avísame".
 - **Facetas** de catálogo (marcas, precio, atributos) para el sidebar del listado.
+- **Búsqueda tolerante a la separación** (marcas/categorías por coincidencia sin
+  separadores) y **fallback de tercer nivel**: si una subcategoría hija aún no tiene
+  productos, el listado y las facetas caen a su subcategoría padre.
 - **Reseñas con compra verificada** (cruce con pedidos pagados del cliente) y **agregado
   denormalizado** (promedio + conteo) por producto; **favoritos** por cuenta.
 - Webhook de Mercado Pago **idempotente** que avanza stock/pedido tras la aprobación; la

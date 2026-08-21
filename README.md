@@ -191,7 +191,7 @@ cd backend && npm test                      # backend
    cookies cross-site en Safari).
 3. App móvil con React Native / Expo (fase posterior del roadmap).
 
-El alcance y las decisiones de producto se mantienen en un PRD en Notion.
+El alcance y las decisiones de producto se mantienen en un PRD.
 
 ---
 

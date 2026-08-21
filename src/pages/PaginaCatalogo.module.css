@@ -370,6 +370,16 @@
   color: var(--bnv-texto-2);
   font-size: 14px;
 }
+.estado p {
+  margin: 0;
+  font-weight: 600;
+  color: var(--bnv-tinta);
+}
+.estado span {
+  display: block;
+  margin-top: 6px;
+  font-size: 12.5px;
+}
 .vacio {
   display: flex;
   flex-direction: column;

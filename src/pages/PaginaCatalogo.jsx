@@ -469,7 +469,10 @@ export default function PaginaCatalogo({ categorias = [] }) {
             </div>
           ) : null}
           {cargando ? (
-            <p className={styles.estado} role="status">Cargando productos…</p>
+            <div className={styles.estado} role="status">
+              <p>Cargando productos…</p>
+              <span>La primera carga tras un rato puede tardar unos segundos.</span>
+            </div>
           ) : error ? (
             <p className={styles.estado} role="alert">{error}</p>
           ) : productos.length === 0 ? (

@@ -1,45 +1,164 @@
-/* Franja clara con 4 argumentos en una fila, cada uno en una sola línea.
-   Repartidos a lo ancho; sin líneas divisorias (banda limpia). */
-.tira {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 16px 40px;
+/* Franja de garantías v3: cuatro cifras SIN contenedor (sin tarjeta ni fondo
+   propio). El único elemento gráfico es la línea de 1px. Colores/tipografías por
+   tokens del handoff. */
+
+.seccion {
+  padding: 56px 0; /* sin background: hereda el fondo de la página */
+}
+
+/* Mismo contenedor que el resto del Home → contenido a ~1240px, alineado. */
+.inner {
   max-width: 1320px;
   margin: 0 auto;
-  padding: 20px var(--e-2xl);
-  border-block: 1px solid var(--bnv-borde);
+  padding: 0 var(--e-2xl);
 }
 
-.celda {
-  font-family: var(--bnv-sans);
-  font-size: 13.5px;
-  line-height: 1.4;
-  white-space: nowrap;
+/* Línea fina que se traza al entrar. */
+.linea {
+  display: block;
+  height: 1px;
+  background: var(--color-borde-3);
+  transform-origin: left center;
+  animation: trazo 1.1s cubic-bezier(0.22, 0.8, 0.24, 1) both;
 }
 
-.titulo {
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* Cada columna sube en cascada (delays escalonados abajo). */
+.columna {
+  padding: 30px 30px 8px 0;
+  animation: subir 0.72s cubic-bezier(0.22, 0.8, 0.24, 1) both;
+}
+.columna:last-child {
+  padding-right: 0;
+}
+.columna:nth-child(1) { animation-delay: 0.20s; }
+.columna:nth-child(2) { animation-delay: 0.34s; }
+.columna:nth-child(3) { animation-delay: 0.48s; }
+.columna:nth-child(4) { animation-delay: 0.62s; }
+
+/* ---- Cifra ---- */
+.cifra {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0 0 14px;
+}
+.numero {
+  font-family: var(--font-display);
+  font-size: 48px;
   font-weight: 600;
-  color: var(--bnv-tinta);
+  letter-spacing: -0.05em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-texto);
+}
+.unidad {
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--color-texto-tenue);
 }
 
-.detalle {
-  color: var(--bnv-texto-2);
+/* ---- Etiqueta rodante ---- */
+.rollbox {
+  height: 44px;
+  overflow: hidden;
+}
+.roll {
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.46s cubic-bezier(0.3, 0.8, 0.25, 1);
+}
+.rollEtiqueta,
+.rollNota {
+  height: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: flex-start;
+  font-size: 15px;
+  line-height: 1.35;
+}
+.rollEtiqueta {
+  color: var(--color-texto-2);
+}
+.rollNota {
+  color: var(--color-acento);
+}
+.columna:hover .roll,
+.columna:focus-within .roll {
+  transform: translateY(-44px);
 }
 
-.sep {
-  color: var(--bnv-tenue);
+/* ---- Enlace (aparece en hover/foco) ---- */
+.enlace {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 15px;
+  color: var(--color-acento);
+  text-decoration: none;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity 0.3s ease, transform 0.38s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.columna:hover .enlace,
+.columna:focus-within .enlace {
+  opacity: 1;
+  transform: translateX(0);
 }
 
-/* Móvil: 2×2. Cada celda ocupa ~media fila. */
-@media (max-width: 767px) {
-  .tira {
-    gap: 12px 24px;
-    padding: 16px;
+/* Nota fija solo para táctil. */
+.notaMovil {
+  display: none;
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--color-texto-tenue);
+}
+
+@keyframes trazo {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes subir {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes aparecer {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 1023px) {
+  .inner { padding: 0 var(--e-xl); }
+  .grid { grid-template-columns: 1fr 1fr; row-gap: 8px; }
+  .numero { font-size: 40px; }
+  .columna:nth-child(2) { padding-right: 0; }
+}
+
+@media (max-width: 639px) {
+  .grid { grid-template-columns: 1fr; }
+  .numero { font-size: 36px; }
+  .columna {
+    padding-right: 0;
+    animation-name: aparecer; /* solo fade, sin cascada */
+    animation-delay: 0s;
   }
-  .celda {
-    flex: 1 1 45%;
-    white-space: normal;
-    font-size: 13px;
-  }
+}
+
+/* Táctil: la nota se ve siempre y el enlace animado se oculta (el hover no puede
+   ser la única vía a la información). */
+@media (hover: none) {
+  .notaMovil { display: block; }
+  .enlace { display: none; }
+}
+
+/* Respeta la preferencia de menos movimiento: todo en estado final. */
+@media (prefers-reduced-motion: reduce) {
+  .linea,
+  .columna { animation: none; }
+  .roll,
+  .enlace { transition: none; }
 }

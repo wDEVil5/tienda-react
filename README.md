@@ -185,8 +185,9 @@ cd backend && npm test                      # backend
 ## 🗺️ Próximos pasos
 
 1. Probar el circuito de pago completo en producción (HTTPS): el webhook es la fuente
-   de verdad, su firma (`x-signature`) se valida y el retorno se reconcilia contra
-   Mercado Pago (queda activar `MP_WEBHOOK_SECRET` en producción).
+   de verdad, su firma (`x-signature`) se valida —`MP_WEBHOOK_SECRET` **ya activo en
+   producción**: un aviso sin firma válida recibe `401`— y el retorno se reconcilia
+   contra Mercado Pago. Falta cerrar el circuito con un pago de prueba de punta a punta.
 2. Dominio propio para unificar front y API bajo el mismo origen (resuelve las
    cookies cross-site en Safari).
 3. App móvil con React Native / Expo (fase posterior del roadmap).

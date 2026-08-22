@@ -14,7 +14,7 @@
 
 /* Encabezado alineado con el resto de la página. */
 .inner {
-  max-width: 1280px;
+  max-width: 1320px;
   margin: 0 auto;
   padding: 0 var(--e-2xl);
 }
@@ -59,7 +59,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-width: 1280px;
+  max-width: 1320px;
   margin: 0 auto;
   padding: 0 var(--e-2xl);
   -webkit-mask-image: linear-gradient(

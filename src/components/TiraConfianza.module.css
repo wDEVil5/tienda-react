@@ -5,9 +5,9 @@
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 16px 40px;
-  max-width: 1200px;
+  max-width: 1320px;
   margin: 0 auto;
-  padding: 20px 24px;
+  padding: 20px var(--e-2xl);
   border-block: 1px solid var(--bnv-borde);
 }
 

@@ -1,94 +1,223 @@
-.categorias {
-  margin: var(--e-2xl) 0;
+/* Sección "Categorías" — layout bento asimétrico. Colores/tipografías por tokens
+   del handoff (--color-*, --font-*), no hex sueltos. */
+
+.seccion {
+  padding: var(--e-2xl) 0;
 }
 
+/* Mismo contenedor que los carruseles → el contenido alinea con el resto del Home. */
+.inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 var(--e-2xl);
+}
+
+/* Recuadro de fondo de la sección (llena el ancho alineado). */
+.caja {
+  padding: 44px 40px 48px;
+  background: var(--color-fondo);
+  border: 1px solid var(--color-borde-2);
+  border-radius: 20px;
+}
+
+/* ---- Encabezado ---- */
 .header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--e-md);
-  margin-bottom: var(--e-lg);
+  margin-bottom: 26px;
 }
-
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-acento);
+  margin: 0 0 8px;
+}
 .titulo {
   font-family: var(--font-display);
-  font-size: clamp(25px, 2vw, 28px);
-  font-weight: 400;
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
   color: var(--color-texto);
+  margin: 0;
 }
 
-.verTodas {
-  font-size: 13.5px;
-  color: var(--color-acento);
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.verTodas:hover {
-  text-decoration: underline;
-}
-
+/* ---- Grilla bento ---- */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--e-md);
+  grid-template-columns: 1.35fr 1fr 1fr;
+  grid-auto-rows: 150px;
+  gap: 14px;
 }
 
-/* El tile ES la imagen placeholder (rayas del handoff); el texto va anclado
-   abajo-izquierda, DENTRO del tile (align-items:flex-end + padding). */
-.tile {
-  display: flex;
-  align-items: flex-end;
-  aspect-ratio: 16 / 10;
-  width: 100%; /* llena la celda del grid (un button no se estira solo) */
-  padding: var(--e-lg);
-  border: none; /* reset: el button trae borde de sistema */
-  border-radius: var(--radio-tarjeta);
-  background-image: repeating-linear-gradient(
-    135deg,
-    #efece3 0 9px,
-    #f6f4ed 9px 18px
-  );
+/* Tarjeta base: toda el área es clickeable; contenido pegado abajo. */
+.tarjeta {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  text-decoration: none;
   color: inherit;
-  font: inherit; /* reset: hereda la tipografía en vez de la del button */
-  text-align: left; /* reset: el button centra el texto */
-  cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: transform 0.18s ease;
 }
-
-.tile:hover {
+.tarjeta:hover {
   transform: translateY(-3px);
 }
+.tarjeta:focus-visible {
+  outline: 2px solid var(--color-acento);
+  outline-offset: 3px;
+}
 
+/* Textura diagonal sutil (queda bajo el texto). */
+.textura {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0 2px, transparent 2px 12px);
+}
+
+.imagen {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Contenido por encima de textura/imagen. */
+.contenido {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ---- Destacada ---- */
+.destacada {
+  grid-column: 1;
+  grid-row: span 2;
+  background: var(--color-acento);
+  padding: 26px;
+}
+.destacada .contenido {
+  justify-content: space-between;
+}
+/* Con imagen: overlay para mantener contraste del texto. */
+.destacada .imagen + .contenido::before {
+  content: "";
+  position: absolute;
+  inset: -26px;
+  z-index: -1;
+  background: linear-gradient(to top, rgba(10, 32, 22, 0.85), rgba(10, 32, 22, 0.15));
+}
+.badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.65);
+}
+.nombreDestacada {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  color: #fff;
+}
+.metaDestacada {
+  display: block;
+  margin-top: 6px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* ---- Secundarias ---- */
+.secundaria {
+  background: var(--color-crudo);
+  padding: 22px;
+}
+.secundaria .contenido {
+  justify-content: flex-end;
+}
+.secundaria .textura {
+  background-image: repeating-linear-gradient(135deg, rgba(47, 107, 74, 0.06) 0 2px, transparent 2px 12px);
+}
 .nombre {
   font-family: var(--font-display);
   font-size: 20px;
-  font-weight: 400;
-  text-transform: capitalize;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--color-texto);
 }
-
 .conteo {
-  margin-top: 1px;
-  font-size: 12px;
-  color: var(--color-texto-suave);
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--color-texto-tenue);
 }
 
-/* Móvil: 2 columnas y títulos un paso abajo. */
-@media (max-width: 767px) {
+/* Próximamente: sin relleno, solo borde; no es enlace. */
+.proximamente {
+  background: transparent;
+  border: 1px solid var(--color-borde);
+  cursor: default;
+}
+.proximamente:hover {
+  transform: none;
+}
+
+/* ---- CTA ---- */
+.cta {
+  background: var(--color-acento-bg);
+  padding: 22px;
+}
+.cta .contenido {
+  justify-content: space-between;
+}
+.ctaTexto {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-acento);
+}
+.flecha {
+  font-size: 22px;
+  line-height: 1;
+  color: var(--color-acento);
+  transition: transform 0.18s ease;
+}
+.cta:hover .flecha {
+  transform: translateX(4px);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 1023px) {
+  .inner {
+    padding: 0 var(--e-xl);
+  }
+  .caja {
+    padding: 32px 24px 36px;
+  }
+  .grid {
+    grid-template-columns: 1fr 1fr;
+    grid-auto-rows: 140px;
+  }
+  .destacada {
+    grid-column: 1 / -1;
+    grid-row: auto;
+    min-height: 180px;
+  }
+}
+
+@media (max-width: 639px) {
   .titulo {
     font-size: 26px;
   }
-
   .grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
+    grid-auto-rows: 110px;
   }
-
-  .tile {
-    aspect-ratio: 4 / 3;
-  }
-
-  .nombre {
-    font-size: 17px;
+  .destacada {
+    min-height: 160px;
   }
 }

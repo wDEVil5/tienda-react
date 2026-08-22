@@ -182,10 +182,11 @@
   align-items: flex-start;
   gap: 10px;
   width: 100%;
-  /* Panel de compra fijo al hacer scroll (como en Jumbo). El navegador lo
-     desactiva solo si el panel no cabe; en una columna corta funciona bien. */
+  /* Panel de compra fijo al hacer scroll. El `top` deja aire suficiente para que
+     el header (sticky) no tape el título al quedar pegado. El navegador desactiva
+     el sticky solo si el panel no cabe; en una columna corta funciona bien. */
   position: sticky;
-  top: 16px;
+  top: 84px;
   align-self: start;
 }
 

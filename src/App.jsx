@@ -43,6 +43,10 @@ import Footer from "./components/Footer.jsx";
 import RutaProtegida from "./components/RutaProtegida.jsx";
 import { obtenerCatalogo, obtenerCategorias, obtenerMasVendidos } from "./services/productosApi.js";
 
+// Si la carga tarda más de esto, mostramos un aviso extra: casi siempre es la
+// primera visita con la API "en frío" (plan gratuito que se activa al entrar).
+const AVISO_CARGA_LENTA_MS = 3000;
+
 function App() {
   const ubicacion = useLocation();
   const navegar = useNavigate();
@@ -54,6 +58,7 @@ function App() {
   const [ofertasDestacadas, setOfertasDestacadas] = useState(null);
   const [masVendidos, setMasVendidos] = useState(null);
   const [cargando, setCargando] = useState(true); // ¿esta cargando?
+  const [cargaLenta, setCargaLenta] = useState(false); // aviso si la 1ª carga tarda
   const [error, setError] = useState(null); // null = sin error, string = mensaje a mostrar
   const [reintento, setReintento] = useState(0);
 
@@ -76,6 +81,10 @@ function App() {
   useEffect(() => {
     if (esAdmin) return undefined;
     let vigente = true;
+    // Si tarda, avisamos que la primera visita es lenta por la API en frío.
+    const avisoLento = window.setTimeout(() => {
+      if (vigente) setCargaLenta(true);
+    }, AVISO_CARGA_LENTA_MS);
     obtenerCatalogo({ limit: 24 })
       .then((resultado) => {
         if (!vigente) return;
@@ -102,10 +111,15 @@ function App() {
         if (vigente) setError("No se pudo cargar el catálogo. Revisa tu conexión e intenta de nuevo.");
       })
       .finally(() => {
-        if (vigente) setCargando(false);
+        window.clearTimeout(avisoLento);
+        if (vigente) {
+          setCargando(false);
+          setCargaLenta(false);
+        }
       });
     return () => {
       vigente = false;
+      window.clearTimeout(avisoLento);
     };
   }, [esAdmin, reintento]);
 
@@ -156,6 +170,7 @@ function App() {
 
   const reintentar = () => {
     setCargando(true);
+    setCargaLenta(false);
     setError(null);
     setReintento((n) => n + 1);
   };
@@ -215,6 +230,12 @@ function App() {
         <div className={styles.cargando} role="status">
           <span className={styles.loader} aria-hidden="true"></span>
           <p>Cargando productos...</p>
+          {cargaLenta && (
+            <p className={styles.cargaAviso}>
+              La primera visita puede tardar unos segundos mientras se activa el
+              servidor. Gracias por tu paciencia.
+            </p>
+          )}
         </div>
       </div>
     );

@@ -27,13 +27,15 @@
   grid-template-columns: repeat(4, 1fr);
 }
 
-/* Cada columna sube en cascada (delays escalonados abajo). */
+/* Cada columna sube en cascada (delays escalonados abajo). Contenido centrado
+   dentro de su columna para que las cuatro cifras queden repartidas y simétricas. */
 .columna {
-  padding: 30px 30px 8px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 30px 16px 8px;
   animation: subir 0.72s cubic-bezier(0.22, 0.8, 0.24, 1) both;
-}
-.columna:last-child {
-  padding-right: 0;
 }
 .columna:nth-child(1) { animation-delay: 0.20s; }
 .columna:nth-child(2) { animation-delay: 0.34s; }
@@ -44,6 +46,7 @@
 .cifra {
   display: flex;
   align-items: baseline;
+  justify-content: center;
   gap: 6px;
   margin: 0 0 14px;
 }
@@ -78,6 +81,7 @@
   min-height: 44px;
   display: flex;
   align-items: flex-start;
+  justify-content: center;
   font-size: 15px;
   line-height: 1.35;
 }
@@ -135,14 +139,12 @@
   .inner { padding: 0 var(--e-xl); }
   .grid { grid-template-columns: 1fr 1fr; row-gap: 8px; }
   .numero { font-size: 40px; }
-  .columna:nth-child(2) { padding-right: 0; }
 }
 
 @media (max-width: 639px) {
   .grid { grid-template-columns: 1fr; }
   .numero { font-size: 36px; }
   .columna {
-    padding-right: 0;
     animation-name: aparecer; /* solo fade, sin cascada */
     animation-delay: 0s;
   }

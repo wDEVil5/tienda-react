@@ -67,6 +67,15 @@
   background-color: #285d40;
 }
 
+.cargaAviso {
+  max-width: 300px;
+  text-align: center;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--color-texto-tenue);
+  animation: aparecer 0.3s ease;
+}
+
 .loader {
   width: 36px;
   height: 36px;
